@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Apolo (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Apolo (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

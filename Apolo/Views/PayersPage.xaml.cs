@@ -1,0 +1,81 @@
+using Microsoft.UI.Xaml.Controls;
+using CommunityToolkit.Mvvm.DependencyInjection;
+using Apolo.ViewModels;
+using Microsoft.UI.Xaml;
+using Models;
+using System;
+
+namespace Apolo.Pages
+{
+    public sealed partial class PayersPage : Page
+    {
+
+        public PayersViewModel ViewModel => (PayersViewModel)DataContext;
+        public PayersPage()
+        {
+            InitializeComponent();
+            DataContext = Ioc.Default.GetService<PayersViewModel>();
+        }
+
+        private async void Page_Loaded(object sender, RoutedEventArgs e) =>
+            await ViewModel.LoadAsync();
+
+        private async void DeletePayer_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button btn)
+                return;
+            if (btn.DataContext is not PayerSummary item)
+                return;
+
+            var dialog = new ContentDialog()
+            {
+                Title = "Delete payer?",
+                Content = $"This will delete payer '{item.FullName}'. \n"
+                 + $"Note: You can only delete payers with no students.",
+                PrimaryButtonText = "Delete",
+                CloseButtonText = "Cancel",
+                DefaultButton = ContentDialogButton.Close,
+                XamlRoot = Content.XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                await ViewModel.DeletePayerAsync(item);
+            }
+        }
+
+        private async void EditPayer_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button btn)
+                return;
+            if (btn.DataContext is not PayerSummary item)
+                return;
+
+            // Prefill with the current names
+            var firstBox = new TextBox { Header = "First name", Text = item.FirstName, MinWidth = 300 };
+            var lastBox = new TextBox { Header = "Last name", Text = item.LastName, MinWidth = 300 };
+
+            var panel = new StackPanel { Spacing = 8 };
+            panel.Children.Add(firstBox);
+            panel.Children.Add(lastBox);
+
+            var dialog = new ContentDialog()
+            {
+                Title = "Edit payer",
+                Content = panel,
+                PrimaryButtonText = "Save",
+                CloseButtonText = "Cancel",
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = Content.XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                await ViewModel.UpdatePayerAsync(item.Id, firstBox.Text, lastBox.Text);
+            }
+
+        }
+    }
+}
