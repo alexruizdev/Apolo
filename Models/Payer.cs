@@ -6,6 +6,9 @@ namespace Models
     {
         public string FullName => $"{FirstName} {LastName}";
     }
+
+    public sealed record PayerOption(Guid Id, string FullName);
+
     public sealed class Payer
     {
         public Guid Id { get; set; } = Guid.NewGuid();

@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Composition.SystemBackdrops;
 using WinRT;
 using Microsoft.UI.Composition;
+using Apolo.ViewModels;
 
 namespace Apolo
 {
@@ -48,6 +49,9 @@ namespace Apolo
             {
                 case "payers":
                     RootFrame.Navigate(typeof(PayersPage)); 
+                    break;
+                case "customers":
+                    RootFrame.Navigate(typeof(StudentsPage));
                     break;
             }
         }

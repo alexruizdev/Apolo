@@ -2,6 +2,13 @@
 
 namespace Models
 {
+
+    public sealed record StudentSummary(Guid Id, string FirstName, string LastName,
+        Guid PayerId, string PayerName, int? CommuteMinutes)
+    {
+        public string FullName => $"{FirstName} {LastName}";
+    }
+
     public sealed class Student
     {
         public Guid Id { get; set; }  = Guid.NewGuid();
@@ -11,7 +18,7 @@ namespace Models
         [MaxLength(100)]
         public string LastName { get; set; } = string.Empty;
 
-        public int? CommuteMinutes { get; set; } // commute to service location
+        public int CommuteMinutes { get; set; } // commute to service location
 
         public Guid PayerId { get; set; }
         public Payer Payer { get; set; } = null!;
