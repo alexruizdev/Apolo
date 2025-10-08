@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page x:Class="Apolo.ViewModels.StudentsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="using:Apolo.ViewModels"
+      xmlns:vm="using:Apolo.ViewModels"
+      xmlns:m="using:Models"
+      x:Name="PageRoot"
+      Loaded="Page_Loaded">
+
+    <ScrollView>
+        <StackPanel Padding="24"
+                    Spacing="16">
+
+            <TextBlock Text="Students"
+                       FontSize="28"
+                       FontWeight="SemiBold" />
+
+            <StackPanel>
+                <TextBlock Text="Loading..."
+                           Foreground="Gray"
+                           Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <TextBlock Text="{Binding ErrorMessage}"
+                           Foreground="Tomato"
+                           TextWrapping="Wrap"
+                           Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibilityConverter}}" />
+            </StackPanel>
+
+            <ListView ItemsSource="{Binding Students}">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="m:StudentSummary">
+                        <Grid ColumnDefinitions="*, Auto"
+                              Padding="8">
+                            <StackPanel Orientation="Vertical"
+                                        Spacing="4">
+                                <TextBlock Text="{x:Bind FullName}"
+                                           FontWeight="SemiBold" />
+                                <TextBlock>
+                                    <Run Text="Payer: " />
+                                    <Run Text="{x:Bind PayerName}" />
+                                </TextBlock>
+                                <TextBlock>
+                                    <Run Text="Commuting: " />
+                                    <Run Text="{x:Bind CommuteMinutes}" />
+                                    <Run Text=" min" />
+                                </TextBlock>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1"
+                                        Orientation="Horizontal"
+                                        Spacing="8">
+                                <Button Content="Edit"
+                                        Click="EditStudent_Click"
+                                        IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                                <Button Content="Delete"
+                                        Click="DeleteStudent_Click"
+                                        IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <AppBarSeparator />
+
+            <!--Add new student-->
+            <StackPanel Spacing="8">
+                <TextBlock Text="Add new student"
+                           FontWeight="SemiBold" />
+                <TextBox Header="First name"
+                         Text="{x:Bind ViewModel.NewFirstName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         MaxLength="100" />
+                <TextBox Header="Last name"
+                         Text="{x:Bind ViewModel.NewLastName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         MaxLength="100" />
+                <NumberBox Header="Commuting time (minutes):"
+                           Value="{x:Bind ViewModel.NewCommute, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                           SpinButtonPlacementMode="Inline"
+                           SmallChange="15"
+                           LargeChange="30" />
+                <ComboBox Header="Payer"
+                          ItemsSource="{x:Bind ViewModel.Payers}"
+                          SelectedValuePath="Id"
+                          DisplayMemberPath="FullName"
+                          SelectedValue="{x:Bind ViewModel.NewSelectedPayerId, Mode=TwoWay}" />
+                <Button Content="Add"
+                        Command="{Binding AddStudentCommand}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+            </StackPanel>
+
+        </StackPanel>
+    </ScrollView>
+
+</Page>

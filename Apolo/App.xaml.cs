@@ -25,16 +25,12 @@ namespace Apolo
 
         private static IServiceProvider ConfigureServices()
         {
-            // Choose a local path for the SQLite file
-            //var appData = ApplicationData.GetDefault().LocalFolder.Path;
-            //var dbDir = Path.Combine(appData, "Apolo");
-            //Directory.CreateDirectory(dbDir);
-            //var dbPath = Path.Combine(dbDir, "app.db");
-
             var builder = new ServiceCollection();
             builder.AddDbContext<ApoloContext>();
             builder.AddSingleton<PayerRepository>();
+            builder.AddSingleton<StudentRepository>();
             builder.AddSingleton<PayersViewModel>();
+            builder.AddSingleton<StudentsViewModel>();
             builder.AddSingleton<MainWindow>();
 
             Ioc.Default.ConfigureServices(builder.BuildServiceProvider());
