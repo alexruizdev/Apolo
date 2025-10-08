@@ -10,8 +10,6 @@ using System.Threading.Tasks;
 
 namespace Apolo.ViewModels
 {
-
-
     public partial class StudentsViewModel : ObservableObject
     {
         StudentRepository _studentRepository;
@@ -35,9 +33,9 @@ namespace Apolo.ViewModels
         [RelayCommand]
         public async Task LoadAsync()
         {
-            if (IsBusy)
-                return;
+            if (IsBusy) return;
             IsBusy = true;
+            ErrorMessage = null;
 
             try
             {
@@ -79,6 +77,7 @@ namespace Apolo.ViewModels
             }
 
             IsBusy = true;
+            ErrorMessage = null;
             try
             {
                 var entity = new Student
@@ -124,7 +123,6 @@ namespace Apolo.ViewModels
             catch (DbUpdateException)
             {
                 ErrorMessage = "Delete failed due to related data. Check constraints.";
-
             }
             catch (Exception ex)
             {

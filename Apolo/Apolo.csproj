@@ -17,6 +17,7 @@
     <None Remove="HomePage.xaml" />
     <None Remove="ViewModels\StudentsPage.xaml" />
     <None Remove="Views\PayersPage.xaml" />
+    <None Remove="Views\ServicesPage.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -55,6 +56,11 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Repository\Repository.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\ServicesPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="ViewModels\StudentsPage.xaml">

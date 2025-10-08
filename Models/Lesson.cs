@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace Models
 {
@@ -8,14 +9,12 @@ namespace Models
 
         public DateOnly Date { get; set; } // day/month/year
 
+        [Required, MaxLength(120)]
+        public string Name { get; set; } = string.Empty;
+
         public int DurationMinutes { get; set; }
         public bool IsOnline { get; set; }
 
-        public Guid ServiceId { get; set; }
-        public Service Service { get; set; } = null!;
-
-        public Guid? SpecificationId { get; set; }
-        public Specification? Specification { get; set; }
 
         [Precision(18, 2)]
         public decimal GrandTotal { get; set; }
