@@ -25,6 +25,9 @@
             <ui:NavigationViewItem Content="Services"
                                    Icon="Edit"
                                    Tag="services" />
+            <ui:NavigationViewItem Content="Specifications"
+                                   Icon="SolidStar"
+                                   Tag="specifications" />
         </ui:NavigationView.MenuItems>
         
         <Frame x:Name="RootFrame" />

@@ -53,7 +53,7 @@ namespace Apolo.ViewModels
             // Prefill with the current names
             var firstBox = new TextBox { Header = "First name", Text = item.FirstName, MinWidth = 320, MaxLength = 100 };
             var lastBox = new TextBox { Header = "Last name", Text = item.LastName, MinWidth = 320, MaxLength = 100 };
-            var commute = new NumberBox { Header = "Commuting time (minutes):", Value = item.CommuteMinutes ?? 0, SmallChange = 15, LargeChange = 30 };
+            var commute = new NumberBox { Header = "Commuting time (minutes):", Value = item.CommuteMinutes, SmallChange = 15, LargeChange = 30 };
 
             var payerBox = new ComboBox
             {
@@ -85,7 +85,6 @@ namespace Apolo.ViewModels
             {
                 await ViewModel.UpdateStudentAsync(item.Id, firstBox.Text, lastBox.Text, (int)commute.Value, (Guid)payerBox.SelectedValue);
             }
-
         }
     }
 }

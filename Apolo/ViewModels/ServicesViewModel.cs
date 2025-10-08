@@ -4,17 +4,15 @@ using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Apolo.ViewModels
 {
     public partial class ServicesViewModel : ObservableObject
     {
-        ServiceRepository _serviceRepository;
+        ServiceRepository _repository;
 
         public ObservableCollection<ServiceSummary> Services { get; } = new();
 
@@ -25,7 +23,7 @@ namespace Apolo.ViewModels
 
         public ServicesViewModel(ServiceRepository serviceRepository)
         {
-            _serviceRepository = serviceRepository;
+            _repository = serviceRepository;
         }
 
         [RelayCommand]
@@ -37,7 +35,7 @@ namespace Apolo.ViewModels
 
             try
             {
-                var items = await _serviceRepository.GetServicesAsync();
+                var items = await _repository.GetServicesAsync();
                 Services.Clear();
                 foreach (var item in items) Services.Add(item);
             }
@@ -74,7 +72,7 @@ namespace Apolo.ViewModels
                     Name = name,
                     PricePerHour = (decimal)NewPrice
                 };
-                await _serviceRepository.AddAsync(entity);
+                await _repository.AddAsync(entity);
 
                 Services.Add(new ServiceSummary(entity.Id, entity.Name, entity.PricePerHour));
 
@@ -99,7 +97,7 @@ namespace Apolo.ViewModels
 
             try
             {
-                await _serviceRepository.DeleteAsync(item.Id);
+                await _repository.DeleteAsync(item.Id);
 
                 var toRemove = Services.FirstOrDefault(s => s.Id == item.Id);
                 if (toRemove != null) Services.Remove(toRemove);
@@ -136,7 +134,7 @@ namespace Apolo.ViewModels
 
             try
             {
-                await _serviceRepository.UpdateAsync(id, name, price);
+                await _repository.UpdateAsync(id, name, price);
 
                 // Update item in UI list
                 var idx = Services.Select((s, i) => (s, i)).FirstOrDefault(t => t.s.Id == id).i;
