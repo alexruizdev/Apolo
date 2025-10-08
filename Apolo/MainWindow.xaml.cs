@@ -1,10 +1,11 @@
 using Apolo.Pages;
+using Apolo.ViewModels;
+using Apolo.Views;
+using Microsoft.UI.Composition;
+using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Composition.SystemBackdrops;
 using WinRT;
-using Microsoft.UI.Composition;
-using Apolo.ViewModels;
 
 namespace Apolo
 {
@@ -50,8 +51,11 @@ namespace Apolo
                 case "payers":
                     RootFrame.Navigate(typeof(PayersPage)); 
                     break;
-                case "customers":
+                case "students":
                     RootFrame.Navigate(typeof(StudentsPage));
+                    break;
+                case "services":
+                    RootFrame.Navigate(typeof(ServicesPage));
                     break;
             }
         }

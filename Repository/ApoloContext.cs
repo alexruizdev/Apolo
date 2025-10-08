@@ -10,7 +10,6 @@ namespace Repository
 
         public DbSet<Payer> Payers { get; set; }
         public DbSet<Student> Students { get; set; }
-        public DbSet<ServiceType> ServiceTypes { get; set; }
         public DbSet<Service> Services { get; set; }
         public DbSet<Specification> Specifications { get; set; }
         public DbSet<Lesson> Lessons { get; set; }
@@ -34,17 +33,10 @@ namespace Repository
             modelBuilder.Entity<Student>()
                 .HasIndex(s => new { s.PayerId, s.LastName, s.FirstName });
 
-            // ServiceType
-            modelBuilder.Entity<ServiceType>()
-                .HasIndex(st => st.Name)
-                .IsUnique();
-
             // Service 
             modelBuilder.Entity<Service>()
-                .HasOne(s => s.ServiceType)
-                .WithMany(st => st.Services)
-                .HasForeignKey(s => s.ServiceTypeId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasIndex(s => s.Name)
+                .IsUnique();
 
             // Specifications (N:1 to Customer, N:1 to Service)
             modelBuilder.Entity<Specification>()
@@ -56,19 +48,7 @@ namespace Repository
                 .HasOne(sp => sp.Service)
                 .WithMany(s => s.Specifications)
                 .HasForeignKey(sp => sp.ServiceId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Lesson (N:1 to Service, optional 1:0..N to Specification)
-            modelBuilder.Entity<Lesson>()
-                .HasOne(l => l.Service)
-                .WithMany(s => s.Lessons)
-                .HasForeignKey(l => l.ServiceId)
-                .OnDelete(DeleteBehavior.Restrict);
-            modelBuilder.Entity<Lesson>()
-                .HasOne(l => l.Specification)
-                .WithMany()
-                .HasForeignKey(l => l.SpecificationId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Attendance (join: Lesson x Customer, unique per pair)
             modelBuilder.Entity<Attendance>()

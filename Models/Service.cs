@@ -1,18 +1,19 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace Models
 {
+    public sealed record ServiceSummary (Guid Id, string Name, decimal PricePerHour);
     public sealed class Service
     {
         public Guid Id { get; set; } = Guid.NewGuid();
 
-        public int ServiceTypeId { get; set; }
-        public ServiceType ServiceType { get; set; } = null!;
+        [Required, MaxLength(120)]
+        public string Name { get; set; } = string.Empty;
 
         [Precision(18, 2)]
         public decimal PricePerHour { get; set; }
 
         public ICollection<Specification> Specifications { get; set; } = new List<Specification>();
-        public ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();
     }
 }

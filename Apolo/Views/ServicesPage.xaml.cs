@@ -1,0 +1,84 @@
+using Apolo.ViewModels;
+using CommunityToolkit.Mvvm.DependencyInjection;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Models;
+using System;
+using Windows.Security.Cryptography.Core;
+
+namespace Apolo.Views;
+
+public sealed partial class ServicesPage : Page
+{
+    public ServicesViewModel ViewModel => (ServicesViewModel)DataContext;
+    public ServicesPage()
+    {
+        InitializeComponent();
+        DataContext = Ioc.Default.GetService<ServicesViewModel>();
+    }
+
+    private async void Page_Loaded(object sender, RoutedEventArgs e) =>
+        await ViewModel.LoadAsync();
+
+    private async void DeleteService_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button btn)
+            return;
+        if (btn.DataContext is not ServiceSummary item)
+            return;
+
+        var dialog = new ContentDialog()
+        {
+            Title = "Delete service?",
+            Content = $"This will delete service '{item.Name}'. \n"
+             + $"Note: related specifications will also be removed.",
+            PrimaryButtonText = "Delete",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
+            XamlRoot = Content.XamlRoot
+        };
+
+        var result = await dialog.ShowAsync();
+        if (result == ContentDialogResult.Primary)
+        {
+            await ViewModel.DeleteServiceAsync(item);
+        }
+    }
+
+    private async void EditService_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button btn)
+            return;
+        if (btn.DataContext is not ServiceSummary item)
+            return;
+
+        // Prefill with the current names
+        var nameBox = new TextBox { Header = "Name", Text = item.Name, MinWidth = 320, MaxLength = 100 };
+        var priceBox = new NumberBox {
+            Header = "Price per hour:", 
+            Value = (double)item.PricePerHour, 
+            PlaceholderText = "0.00"
+        };
+
+        var panel = new StackPanel { Spacing = 8 };
+        panel.Children.Add(nameBox);
+        panel.Children.Add(priceBox);
+
+        var dialog = new ContentDialog()
+        {
+            Title = "Edit service",
+            Content = panel,
+            PrimaryButtonText = "Save",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = Content.XamlRoot
+        };
+
+        var result = await dialog.ShowAsync();
+        if (result == ContentDialogResult.Primary)
+        {
+            await ViewModel.UpdateServiceAsync(item.Id, nameBox.Text, (decimal)priceBox.Value);
+        }
+
+    }
+}

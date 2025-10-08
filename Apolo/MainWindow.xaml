@@ -21,7 +21,10 @@
                                    Tag="payers" />
             <ui:NavigationViewItem Content="Students"
                                    Icon="Contact"
-                                   Tag="customers" />
+                                   Tag="students" />
+            <ui:NavigationViewItem Content="Services"
+                                   Icon="Edit"
+                                   Tag="services" />
         </ui:NavigationView.MenuItems>
         
         <Frame x:Name="RootFrame" />

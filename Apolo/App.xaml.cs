@@ -3,11 +3,9 @@ using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
-using Microsoft.Windows.Storage;
 using Models;
 using Repository;
 using System;
-using System.IO;
 using System.Linq;
 
 namespace Apolo
@@ -29,8 +27,10 @@ namespace Apolo
             builder.AddDbContext<ApoloContext>();
             builder.AddSingleton<PayerRepository>();
             builder.AddSingleton<StudentRepository>();
+            builder.AddSingleton<ServiceRepository>();
             builder.AddSingleton<PayersViewModel>();
             builder.AddSingleton<StudentsViewModel>();
+            builder.AddSingleton<ServicesViewModel>();
             builder.AddSingleton<MainWindow>();
 
             Ioc.Default.ConfigureServices(builder.BuildServiceProvider());
