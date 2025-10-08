@@ -1,5 +1,15 @@
 ﻿namespace Models
 {
+    public sealed record SpecificationSummary(
+        Guid Id,
+        string SpecificationName,
+        Guid studentId,
+        string StudentName,
+        Guid ServiceId,
+        string ServiceName,
+        int DurationMinutes,
+        bool IsOnline
+        );
     public sealed class Specification
     {
         public Guid Id { get; set; } = Guid.NewGuid();
@@ -13,6 +23,6 @@
         public Service Service { get; set; } = null!;
 
         public int DurationMinutes { get; set; }
-        public bool IsOnline {get; set; }   
+        public bool IsOnline { get; set; }
     }
 }

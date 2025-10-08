@@ -12,7 +12,7 @@ namespace Apolo.ViewModels
 {
     public partial class StudentsViewModel : ObservableObject
     {
-        StudentRepository _studentRepository;
+        StudentRepository _repository;
 
         public ObservableCollection<StudentSummary> Students { get; } = new();
         public ObservableCollection<PayerOption> Payers { get; } = new();
@@ -27,7 +27,7 @@ namespace Apolo.ViewModels
 
         public StudentsViewModel(StudentRepository studentRepository)
         {
-            _studentRepository = studentRepository;
+            _repository = studentRepository;
         }
 
         [RelayCommand]
@@ -40,13 +40,13 @@ namespace Apolo.ViewModels
             try
             {
                 // Payer options
-                var payerItems = await _studentRepository.GetPayerOptionsAsync();
+                var payerItems = await _repository.GetPayerOptionsAsync();
 
                 Payers.Clear();
                 foreach (var p in payerItems) Payers.Add(p);
 
                 // Students
-                var studentItems = await _studentRepository.GetSudentsAsync();
+                var studentItems = await _repository.GetSudentsAsync();
                 Students.Clear();
                 foreach (var s in studentItems) Students.Add(s);
             }
@@ -87,7 +87,7 @@ namespace Apolo.ViewModels
                     PayerId = payerId.Value,
                     CommuteMinutes = NewCommute
                 };
-                await _studentRepository.UpsertAsync(entity);
+                await _repository.UpsertAsync(entity);
 
                 var payerName = Payers.First(p => p.Id == payerId.Value).FullName;
                 Students.Add(new StudentSummary(entity.Id, first, last, payerId.Value, payerName, NewCommute));
@@ -115,7 +115,7 @@ namespace Apolo.ViewModels
 
             try
             {
-                await _studentRepository.DeleteAsync(item.Id);
+                await _repository.DeleteAsync(item.Id);
 
                 var toRemove = Students.FirstOrDefault(s => s.Id == item.Id);
                 if (toRemove != null) Students.Remove(toRemove);
@@ -148,14 +148,13 @@ namespace Apolo.ViewModels
 
             try
             {
-                await _studentRepository.UpdateAsync(id, newPayerId, first, last, commute);
+                await _repository.UpdateAsync(id, newPayerId, first, last, commute);
 
                 // Update item in UI list
                 var idx = Students.Select((s, i) => (s, i)).FirstOrDefault(t => t.s.Id == id).i;
                 if (idx >= 0)
                 {
                     var payerName = Payers.First(p => p.Id == newPayerId).FullName;
-                    var current = Students[idx];
                     Students[idx] = new StudentSummary(id, first, last, newPayerId, payerName, commute);
                 }
             }

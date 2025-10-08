@@ -28,9 +28,11 @@ namespace Apolo
             builder.AddSingleton<PayerRepository>();
             builder.AddSingleton<StudentRepository>();
             builder.AddSingleton<ServiceRepository>();
+            builder.AddSingleton<SpecificationRepository>();
             builder.AddSingleton<PayersViewModel>();
             builder.AddSingleton<StudentsViewModel>();
             builder.AddSingleton<ServicesViewModel>();
+            builder.AddSingleton<SpecificationsViewModel>();
             builder.AddSingleton<MainWindow>();
 
             Ioc.Default.ConfigureServices(builder.BuildServiceProvider());
