@@ -1,5 +1,13 @@
 ﻿namespace Models
 {
+    public sealed record SpecificationOption(
+        Guid Id,
+        string Display,
+        Guid ServiceId,
+        string ServiceName,
+        decimal PricePerHour,
+        int DurationMinutes,
+        bool IsOnline);
     public sealed record SpecificationSummary(
         Guid Id,
         string SpecificationName,

@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -238,12 +237,11 @@ namespace Apolo.ViewModels
                     Date = date,
                     DurationMinutes = duration,
                     IsOnline = isOnline,
-                    GrandTotal = price
+                    PricePerStudent = price
                 };
                 instance.Attendaces.Add(new Attendance
                 {
                     StudentId = studentId,
-                    Price = price,
                     IsPaid = false,
                 });
 

@@ -30,7 +30,7 @@ public sealed partial class SpecificationsPage : Page
         var dialog = new ContentDialog()
         {
             Title = "Delete specification?",
-            Content = $"This will delete specification '{item.StudentName} {item.ServiceName}'. \n",
+            Content = $"This will delete specification '{item.StudentName} {item.ServiceName}'.",
             PrimaryButtonText = "Delete",
             CloseButtonText = "Cancel",
             DefaultButton = ContentDialogButton.Close,

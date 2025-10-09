@@ -21,10 +21,10 @@ namespace Repository
                      p.Id,
                      p.FirstName,
                      p.LastName,
-                     p.Students
-                              .SelectMany(s => s.Attendances)
-                              .Where(a => !a.IsPaid)
-                              .Sum(a => (decimal?)a.Price) ?? 0m
+                     _db.Attendances
+                        .Where(a => !a.IsPaid && a.Student.PayerId == p.Id)
+                        .Select(a => a.Lesson.PricePerStudent)
+                        .Sum(x => (decimal?)x) ?? 0m
                  ))
                  .AsNoTracking()
                  .ToListAsync();
