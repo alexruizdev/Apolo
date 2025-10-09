@@ -16,6 +16,7 @@
     <None Remove="CurstomersPage.xaml" />
     <None Remove="HomePage.xaml" />
     <None Remove="ViewModels\StudentsPage.xaml" />
+    <None Remove="Views\InvoicesPage.xaml" />
     <None Remove="Views\LessonsPage.xaml" />
     <None Remove="Views\PayersPage.xaml" />
     <None Remove="Views\ServicesPage.xaml" />
@@ -55,9 +56,15 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.9" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.6584" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.250916003" />
+    <PackageReference Include="QuestPDF" Version="2025.7.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Repository\Repository.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\InvoicesPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\LessonsPage.xaml">
