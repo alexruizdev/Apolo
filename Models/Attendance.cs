@@ -2,6 +2,7 @@
 
 namespace Models
 {
+    public sealed record AttendanceSummary(Guid Id, Guid StudentId, string StudentName, bool IsPaid);
     public sealed class Attendance
     {
         public Guid Id { get; set; } = Guid.NewGuid();
@@ -13,7 +14,6 @@ namespace Models
         public Student Student { get; set; } = null!;
 
         [Precision (18, 2)]
-        public decimal Price { get; set; }
         public bool IsPaid { get; set; }
     }
 }

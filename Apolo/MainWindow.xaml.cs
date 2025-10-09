@@ -18,7 +18,7 @@ namespace Apolo
             InitializeComponent();
             TrySetMicaBackdrop();
             NavView.SelectedItem = NavView.MenuItems[0] as NavigationViewItem;
-            RootFrame.Navigate(typeof(PayersPage));
+            RootFrame.Navigate(typeof(LessonsPage));
         }
 
         bool TrySetMicaBackdrop()
@@ -48,6 +48,9 @@ namespace Apolo
             var tag = (args.SelectedItem as NavigationViewItem)?.Tag?.ToString();
             switch (tag)
             {
+                case "lessons":
+                    RootFrame.Navigate(typeof(LessonsPage));
+                    break;
                 case "payers":
                     RootFrame.Navigate(typeof(PayersPage)); 
                     break;

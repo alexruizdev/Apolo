@@ -4,7 +4,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Models;
 using System;
-using Windows.Security.Cryptography.Core;
 
 namespace Apolo.Views;
 

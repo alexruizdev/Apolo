@@ -16,6 +16,9 @@
                        SelectionChanged="NavView_SelectionChanged">
 
         <ui:NavigationView.MenuItems>
+            <ui:NavigationViewItem Content="Lessons"
+                                   Icon="Calendar"
+                                   Tag="lessons" />
             <ui:NavigationViewItem Content="Payers"
                                    Icon="People"
                                    Tag="payers" />

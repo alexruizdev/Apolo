@@ -80,20 +80,6 @@ namespace Repository
 
         private void EnforceBusinessRules()
         {
-            // Recalculate GrandTotal as sum of Attendance.Price for changed instances
-            var changedInstances = ChangeTracker.Entries<Lesson>()
-                .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified)
-                .Select(e => e.Entity)
-                .ToList();
-
-            foreach (var inst in changedInstances)
-            {
-                if (Entry(inst).Collection(i => i.Attendaces).IsLoaded)
-                {
-                    inst.GrandTotal = inst.Attendaces.Sum(a => a.Price);
-                }
-            }
-
             var newOrModInstances = ChangeTracker.Entries<Lesson>()
                 .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
 
