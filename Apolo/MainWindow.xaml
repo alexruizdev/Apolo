@@ -19,6 +19,9 @@
             <ui:NavigationViewItem Content="Lessons"
                                    Icon="Calendar"
                                    Tag="lessons" />
+            <ui:NavigationViewItem Content="Invoicing"
+                                   Icon="Calculator"
+                                   Tag="invoicing" />
             <ui:NavigationViewItem Content="Payers"
                                    Icon="People"
                                    Tag="payers" />

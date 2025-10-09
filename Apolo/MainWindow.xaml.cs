@@ -51,6 +51,9 @@ namespace Apolo
                 case "lessons":
                     RootFrame.Navigate(typeof(LessonsPage));
                     break;
+                case "invoicing":
+                    RootFrame.Navigate(typeof(InvoicesPage));
+                    break;
                 case "payers":
                     RootFrame.Navigate(typeof(PayersPage)); 
                     break;
