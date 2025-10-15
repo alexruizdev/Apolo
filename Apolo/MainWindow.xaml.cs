@@ -66,6 +66,9 @@ namespace Apolo
                 case "specifications":
                     RootFrame.Navigate(typeof(SpecificationsPage));
                     break;
+                case "settings":
+                    RootFrame.Navigate(typeof(SettingsPage));
+                    break;
             }
         }
     }

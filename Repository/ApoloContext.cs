@@ -14,6 +14,8 @@ namespace Repository
         public DbSet<Specification> Specifications { get; set; }
         public DbSet<Lesson> Lessons { get; set; }
         public DbSet<Attendance> Attendances { get; set; }
+        public DbSet<InvoiceAttendance> InvoiceAttendances { get; set; }
+        public DbSet<Invoice> Invoices { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -64,6 +66,26 @@ namespace Repository
             modelBuilder.Entity<Attendance>()
                 .HasIndex(a => new { a.LessonId, a.StudentId })
                 .IsUnique();
+
+            // Invoice 
+            modelBuilder.Entity<Invoice>(invoice =>
+            {
+                invoice.HasKey(i => i.Id);
+                invoice.Property(i => i.Id).ValueGeneratedOnAdd();
+                invoice.HasIndex(i => i.Name).IsUnique();
+            });
+
+            modelBuilder.Entity<InvoiceAttendance>()
+                .HasOne(x => x.Invoice)
+                .WithMany(i => i.Lines)
+                .HasForeignKey(x => x.InvoiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<InvoiceAttendance>()
+                .HasOne(x => x.Attendance)
+                .WithMany()
+                .HasForeignKey(x => x.AttendanceId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Constraints
             //modelBuilder.Entity<Payer>()

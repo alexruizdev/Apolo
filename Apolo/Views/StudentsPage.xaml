@@ -29,34 +29,43 @@
             <ListView ItemsSource="{Binding Students}">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="m:StudentSummary">
-                        <Grid ColumnDefinitions="*, Auto"
-                              Padding="8">
-                            <StackPanel Orientation="Vertical"
-                                        Spacing="4">
-                                <TextBlock Text="{x:Bind FullName}"
-                                           FontWeight="SemiBold" />
-                                <TextBlock>
+                        <StackPanel Spacing="8"
+                                    Padding="8">
+                            <Grid ColumnDefinitions="Auto, Auto">
+                                <StackPanel Orientation="Vertical"
+                                            Spacing="4">
+                                    <TextBlock Text="{x:Bind FullName}"
+                                               FontWeight="SemiBold" />
+                                    <TextBlock>
                                     <Run Text="Payer: " />
                                     <Run Text="{x:Bind PayerName}" />
-                                </TextBlock>
-                                <TextBlock>
+                                    </TextBlock>
+                                    <TextBlock>
                                     <Run Text="Commuting: " />
                                     <Run Text="{x:Bind CommuteMinutes}" />
                                     <Run Text=" min" />
-                                </TextBlock>
-                            </StackPanel>
+                                    </TextBlock>
+                                </StackPanel>
 
-                            <StackPanel Grid.Column="1"
-                                        Orientation="Horizontal"
-                                        Spacing="8">
-                                <Button Content="Edit"
-                                        Click="EditStudent_Click"
-                                        IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
-                                <Button Content="Delete"
-                                        Click="DeleteStudent_Click"
-                                        IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
-                            </StackPanel>
-                        </Grid>
+                                <StackPanel Grid.Column="1"
+                                            Orientation="Horizontal"
+                                            Spacing="8"
+                                            Margin="20,0,0,0"
+                                            VerticalAlignment="Top">
+                                    <Button Content="Edit"
+                                            Click="EditStudent_Click"
+                                            IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                                    <Button Content="Delete"
+                                            Click="DeleteStudent_Click"
+                                            IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Separator -->
+                            <Border Height="1"
+                                    Background="LightGray"
+                                    Margin="0,8,0,0" />
+                        </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>

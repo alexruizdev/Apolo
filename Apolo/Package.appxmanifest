@@ -10,7 +10,7 @@
   <Identity
     Name="bc1a2b6a-ebae-4cc6-8e0e-8f176d21993f"
     Publisher="CN=alexd"
-    Version="1.0.0.0" />
+    Version="1.0.3.0" />
 
   <mp:PhoneIdentity PhoneProductId="bc1a2b6a-ebae-4cc6-8e0e-8f176d21993f" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
@@ -35,7 +35,7 @@
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
         DisplayName="Apolo"
-        Description="Apolo"
+        Description="Application for teachers to manage their classes invoicing"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">

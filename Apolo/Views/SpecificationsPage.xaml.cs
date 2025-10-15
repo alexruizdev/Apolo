@@ -97,13 +97,13 @@ public sealed partial class SpecificationsPage : Page
 
         // price = hourly * minutes / 60
         var service = ViewModel.Services.First(s => s.Id == item.ServiceId);
-        var price = Math.Round(service.PricePerHour * (item.DurationMinutes / 60m), 2, MidpointRounding.AwayFromZero);
+        //var price = Math.Round(service.PricePerHour * (item.DurationMinutes / 60m), 2, MidpointRounding.AwayFromZero);
 
         var datePicker = new CalendarDatePicker { Header = "Date", IsTodayHighlighted = true };
         var priceBox = new NumberBox
         {
             Header = "Price per hour:",
-            Value = (double)price,
+            Value = (double)service.PricePerHour,
             PlaceholderText = "0.00"
         };
 
@@ -125,7 +125,7 @@ public sealed partial class SpecificationsPage : Page
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
         {
-            price = Math.Round((decimal)priceBox.Value, 2, MidpointRounding.AwayFromZero);
+            var price = Math.Round((decimal)priceBox.Value, 2, MidpointRounding.AwayFromZero);
             var dto = datePicker.Date ?? DateTimeOffset.Now;
             var date = DateOnly.FromDateTime(dto.Date);
             await ViewModel.CreateLessonFromSpecificationAsync(item.studentId, service.Name, item.DurationMinutes, item.IsOnline, price, date);

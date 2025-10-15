@@ -15,6 +15,7 @@
             <conv:InverseBooleanConverter x:Key="InverseBooleanConverter" />
             <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
             <conv:DecimalToCurrencyConverter x:Key="DecimalToCurrencyConverter" />
+            <conv:DateFormatConverter x:Key="DateFormatConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

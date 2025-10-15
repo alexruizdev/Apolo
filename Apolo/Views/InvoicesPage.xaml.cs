@@ -8,6 +8,7 @@ using Microsoft.Windows.Storage.Pickers;
 using System;
 using System.Linq;
 using WinRT.Interop;
+using Apolo.Service;
 
 namespace Apolo.Views
 {
@@ -51,14 +52,23 @@ namespace Apolo.Views
         private async void ExportPdf_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not Button button) return;
+            if (ViewModel.SelectedPayerId is null) return;
 
             // Gather rows to include (selected; if none selected, include all)
             var attendances = ViewModel.Attendances.Where(a => a.IsSelected).ToArray();
             if (attendances.Length == 0) attendances = ViewModel.Attendances.ToArray();
             if (attendances.Length == 0) return;
 
-            var payer = ViewModel.Payers.FirstOrDefault(p => p.Id == ViewModel.SelectedPayerId);
-            var payerName = payer?.FullName ?? "Unknown";
+            // Load seller profile
+            var profile = await Ioc.Default.GetRequiredService<UserProfileService>().LoadProfileAsync(); 
+
+            var payer = await ViewModel.GetPayer(ViewModel.SelectedPayerId.Value);
+
+            var requestedName = InvoiceNameBox.Text;
+
+            var attendanceIds = attendances.Select(a => a.AttendanceId).ToArray();
+            var (invoiceId, invoiceName) = await ViewModel.CreateAndPersistInvoiceAsync(
+                ViewModel.SelectedPayerId.Value, attendanceIds, requestedName);
 
             // Ask where to save
             var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
@@ -67,20 +77,47 @@ namespace Apolo.Views
             var folder = await picker.PickSingleFolderAsync();
             if (folder == null) return;
 
-            var filePath = Path.Combine(folder.Path, $"Invoice_{payerName.Replace(' ', '_')}_{DateTime.Now:ddMMyyyy}.pdf");
+            var filePath = Path.Combine(folder.Path, $"{invoiceName}.pdf");
 
             // Build PDF
-            ViewModel.BuildInvoicePdf(payerName, attendances, filePath);
-
-            var done = new ContentDialog
+            try
             {
-                Title = "Invoice saved",
-                Content = $"Saved to: {filePath}",
-                CloseButtonText = "OK",
-                XamlRoot = Content.XamlRoot
-            };
+                ViewModel.BuildInvoicePdf(
+                    invoiceName, 
+                    DateOnly.FromDateTime(DateTime.Now),
+                    profile, 
+                    payer,
+                    attendances, 
+                    filePath);
+                var done = new ContentDialog
+                {
+                    Title = "Invoice saved",
+                    Content = $"Saved to: {filePath}",
+                    CloseButtonText = "OK",
+                    XamlRoot = Content.XamlRoot
+                };
+                _ = await done.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                var error = new ContentDialog
+                {
+                    Title = "Error saving invoice",
+                    Content = $"Error while saving invoice: {ex.Message}",
+                    CloseButtonText = "OK",
+                    XamlRoot = Content.XamlRoot
+                };
+                _ = await error.ShowAsync();
+            }
+        }
 
-            _ = await done.ShowAsync();
+        private async void LoadByName_Click(object sender, RoutedEventArgs e)
+        {
+            var name = InvoiceNameSearchBox.Text?.Trim();
+            if (!string.IsNullOrEmpty(name))
+            {
+                await ViewModel.LoadByInvoiceAsync(name);
+            }
         }
     }
 }

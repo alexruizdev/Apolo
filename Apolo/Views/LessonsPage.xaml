@@ -12,12 +12,12 @@
         <StackPanel Padding="24"
                     Spacing="16">
 
+            <TextBlock Text="Lessons"
+                       FontSize="28"
+                       FontWeight="SemiBold" />
             <StackPanel Orientation="Horizontal"
                         Spacing="16"
                         VerticalAlignment="Center">
-                <TextBlock Text="Lessons"
-                           FontSize="28"
-                           FontWeight="SemiBold" />
                 <ToggleSwitch Header="Only updaid"
                               IsOn="{x:Bind ViewModel.ShownOnlyUnpaid, Mode=TwoWay}" />
                 <Button Content="New lesson"
@@ -42,12 +42,12 @@
                         <StackPanel Spacing="8"
                                     Padding="8">
                             <!--Header line-->
-                            <Grid ColumnDefinitions="*, Auto, Auto"
-                                  RowDefinitions="Auto, Auto">
-                                <StackPanel>
-                                    <TextBlock Text="{x:Bind Date}"
+                            <Grid ColumnDefinitions="*, Auto">
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="12"
+                                            VerticalAlignment="Center">
+                                    <TextBlock Text="{x:Bind Date, Converter={StaticResource DateFormatConverter}}"
                                                FontWeight="SemiBold" />
-                                    <TextBlock Text="-" />
                                     <TextBlock Text="{x:Bind Name}"
                                                FontWeight="SemiBold" />
                                     <TextBlock>
@@ -55,7 +55,6 @@
                                         <Run Text="{x:Bind DurationMinutes}" />
                                         <Run Text=" min" />
                                     </TextBlock>
-                                    <TextBlock Text="-" />
                                     <TextBlock>
                                         <Run Text="Total: " />
                                         <Run Text="{x:Bind GrandTotal, Converter={StaticResource DecimalToCurrencyConverter}}" />
@@ -81,7 +80,7 @@
                                     <DataTemplate x:DataType="m:AttendanceSummary">
                                         <Grid ColumnDefinitions="Auto, Auto, Auto, Auto"
                                               Padding="4">
-                                            <TextBlock Text="{x:Bind StudentName}" />
+                                            <TextBlock Text="{x:Bind StudentName}" VerticalAlignment="Center" Margin="0,0,10,0"/>
                                             <CheckBox Grid.Column="2"
                                                       Content="Paid"
                                                       IsChecked="{x:Bind IsPaid}"
@@ -100,9 +99,12 @@
                                     </DataTemplate>
                                 </ListView.ItemTemplate>
                             </ListView>
-                            
-                            <AppBarSeparator />
-                            
+
+                            <!-- Separator -->
+                            <Border Height="1"
+                                    Background="LightGray"
+                                    Margin="0,8,0,0" />
+
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>

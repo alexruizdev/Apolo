@@ -34,6 +34,9 @@
             <ui:NavigationViewItem Content="Specifications"
                                    Icon="SolidStar"
                                    Tag="specifications" />
+            <ui:NavigationViewItem Content="Settings"
+                                   Icon="Setting"
+                                   Tag="settings" />
         </ui:NavigationView.MenuItems>
         
         <Frame x:Name="RootFrame" />

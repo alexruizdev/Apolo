@@ -1,4 +1,5 @@
-﻿using Apolo.ViewModels;
+﻿using Apolo.Service;
+using Apolo.ViewModels;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,7 +38,9 @@ namespace Apolo
             builder.AddSingleton<SpecificationsViewModel>();
             builder.AddSingleton<LessonsViewModel>();
             builder.AddSingleton<InvoicesViewModel>();
+            builder.AddSingleton<SettingsViewModel>();
             builder.AddSingleton<MainWindow>();
+            builder.AddSingleton<UserProfileService>();
 
             Ioc.Default.ConfigureServices(builder.BuildServiceProvider());
             return Ioc.Default;
@@ -58,12 +61,20 @@ namespace Apolo
                     var payerOne = new Payer
                     {
                         FirstName = "Payer",
-                        LastName = "1"
+                        LastName = "1",
+                        Address = "Address 1",
+                        ZipCode = "1",
+                        City = "City 1",
+                        TaxId = "11111",
                     };
                     var payerTwo = new Payer
                     {
                         FirstName = "Payer",
-                        LastName = "2"
+                        LastName = "2",
+                        Address = "Address 2",
+                        ZipCode = "2",
+                        City = "City 2",
+                        TaxId = "22222",
                     };
                     dbContext.Payers.AddRange(payerOne, payerTwo);
                     dbContext.SaveChanges();

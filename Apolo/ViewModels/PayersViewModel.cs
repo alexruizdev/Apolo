@@ -21,6 +21,14 @@ namespace Apolo.ViewModels
         [ObservableProperty]
         private string newLastName = "";
         [ObservableProperty]
+        private string newAddress = "";
+        [ObservableProperty]
+        private string newZipCode = "";
+        [ObservableProperty]
+        private string newCity = "";
+        [ObservableProperty]
+        private string newTaxId = "";
+        [ObservableProperty]
         private bool isBusy;
         [ObservableProperty]
         private string? errorMessage;
@@ -66,6 +74,10 @@ namespace Apolo.ViewModels
             if (IsBusy) return;
             var first = (NewFirstName ?? "").Trim();
             var last = (NewLastName ?? "").Trim();
+            var address = (NewAddress ?? "").Trim();
+            var zipCode = (NewZipCode ?? "").Trim();
+            var city = (NewCity ?? "").Trim();
+            var taxId = (NewTaxId ?? "").Trim();
             if (string.IsNullOrWhiteSpace(first) && string.IsNullOrWhiteSpace(last))
             {
                 ErrorMessage = "Enter at least a first or last name.";
@@ -80,16 +92,24 @@ namespace Apolo.ViewModels
                 var payer = new Payer
                 {
                     FirstName = first,
-                    LastName = last
+                    LastName = last,
+                    Address = address,
+                    ZipCode = zipCode,
+                    City = city,
+                    TaxId = taxId,
                 };
 
                 await _payerRepository.UpsertAsync(payer);
 
                 // Append to UI (no unpaid items yet)
-                Payers.Add(new PayerSummary(payer.Id,payer.FirstName, payer.LastName, 0m));
+                Payers.Add(new PayerSummary(payer.Id,payer.FirstName, payer.LastName, 0m, address, zipCode, city, taxId));
 
                 NewFirstName = "";
                 NewLastName = "";
+                NewAddress = string.Empty;
+                NewZipCode = string.Empty;
+                NewCity = string.Empty;
+                NewTaxId = string.Empty;
             }
             catch (Exception ex)
             {
@@ -131,11 +151,15 @@ namespace Apolo.ViewModels
             finally { IsBusy = false; }
         }
 
-        public async Task UpdatePayerAsync (Guid payerId, string firstName, string lastName)
+        public async Task UpdatePayerAsync (Guid payerId, string firstName, string lastName, string address, string zipCode, string city, string taxId)
         {
             if (IsBusy) return;
             var first = (firstName ?? "").Trim();
             var last = (lastName ?? "").Trim();
+            address = (address ?? "").Trim();
+            zipCode = (zipCode ?? "").Trim();
+            city = (city ?? "").Trim();
+            taxId = (taxId ?? "").Trim();
             if (string.IsNullOrWhiteSpace(first) && string.IsNullOrWhiteSpace(last))
             {
                 ErrorMessage = "Enter at least a first or last name.";
@@ -147,7 +171,7 @@ namespace Apolo.ViewModels
 
             try
             {
-                await _payerRepository.UpdateAsync(payerId, first, last);
+                await _payerRepository.UpdateAsync(payerId, first, last, address, zipCode, city, taxId);
 
                 // Update the UI item by replacing it in the collection
                 var index = Payers.Select((item, i) => (item, i))
@@ -155,7 +179,7 @@ namespace Apolo.ViewModels
                 if (index >= 0)
                 {
                     var current = Payers[index];
-                    var updated = new PayerSummary(current.Id, first, last, current.Outstanding);
+                    var updated = new PayerSummary(current.Id, first, last, current.Outstanding, address, zipCode, city, taxId);
                     Payers[index] = updated;
                 }
             }

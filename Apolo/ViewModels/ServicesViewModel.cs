@@ -67,7 +67,7 @@ namespace Apolo.ViewModels
             ErrorMessage = null;
             try
             {
-                var entity = new Service
+                var entity = new Models.Service
                 {
                     Name = name,
                     PricePerHour = (decimal)NewPrice

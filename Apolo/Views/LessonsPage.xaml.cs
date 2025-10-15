@@ -47,12 +47,13 @@ namespace Apolo.Views
                 DisplayMemberPath = "Name"
             };
 
-            var nameBox = new TextBox { Header = "Lesson name (from service)", IsReadOnly = true, MinWidth = 320 };
+            var nameBox = new TextBox { Header = "Lesson name", MinWidth = 320 };
 
             var datePick = new CalendarDatePicker { Header = "Date", IsTodayHighlighted = true, Date = DateTimeOffset.Now };
             var durationBox = new NumberBox { Header = "Duration (minutes):", Value = 60, SmallChange = 15, LargeChange = 30 };
             var onlineBox = new CheckBox { Content = "Online" };
-            var priceBox = new NumberBox { Header = "Total Price to distribute:", PlaceholderText = "0.00" };
+            var totalPriceBox = new CheckBox { Content = "Total price" };
+            var priceBox = new NumberBox { Header = "Price per hour:", PlaceholderText = "0.00" };
 
             var error = new TextBlock
             {
@@ -65,8 +66,10 @@ namespace Apolo.Views
             panel.Children.Add(studentsList);
             panel.Children.Add(specificationBox);
             panel.Children.Add(serviceBox);
+            panel.Children.Add(nameBox);
             panel.Children.Add(datePick);
             panel.Children.Add(durationBox);
+            panel.Children.Add(totalPriceBox);
             panel.Children.Add(onlineBox);
             panel.Children.Add(priceBox);
             panel.Children.Add(error);
@@ -156,6 +159,10 @@ namespace Apolo.Views
                 await RefreshSpecificationsAsync();
             };
 
+
+            totalPriceBox.Checked += (_, __) => durationBox.IsEnabled = false;
+            totalPriceBox.Unchecked += (_, __) => durationBox.IsEnabled = true;
+
             void Validate()
             {
                 error.Text = string.Empty;
@@ -165,7 +172,8 @@ namespace Apolo.Views
                     error.Text = "Select at least one student.";
                 else if (serviceBox.SelectedItem is not ServiceSummary)
                     error.Text = "Select a service.";
-                else if (double.IsNaN(durationBox.Value) || durationBox.Value <= 0)
+                else if (totalPriceBox.IsChecked == true &&
+                    (double.IsNaN(durationBox.Value) || durationBox.Value <= 0))
                     error.Text = "Duration must be a positive integer.";
 
                 if (!string.IsNullOrEmpty(error.Text))
@@ -192,7 +200,9 @@ namespace Apolo.Views
                 var selectedIds = studentsList.SelectedItems.Cast<StudentOption>().Select(s => s.Id).ToList();
                 var dto = datePick.Date ?? DateTimeOffset.Now;
                 var date = DateOnly.FromDateTime(dto.Date);
-                await ViewModel.CreateLessonAsync((string)serviceBox.SelectedValue, date, (int)durationBox.Value, onlineBox.IsChecked == true, (decimal)priceBox.Value, selectedIds);
+                bool isTotalPrice = totalPriceBox.IsChecked == true;
+                int duration = isTotalPrice ? 0 : (int)durationBox.Value;
+                await ViewModel.CreateLessonAsync(nameBox.Text, date, duration, onlineBox.IsChecked == true, isTotalPrice, (decimal)priceBox.Value, selectedIds);
             }
         }
 
@@ -207,12 +217,13 @@ namespace Apolo.Views
                 IsTodayHighlighted = true,
                 Date = new DateTimeOffset(row.Date.ToDateTime(TimeOnly.MinValue))
             };
-            var durationBox = new NumberBox { Header = "Duration (minutes):", Value = row.DurationMinutes, SmallChange = 15, LargeChange = 30 };
+            var durationBox = new NumberBox { Header = "Duration (minutes):", Value = row.DurationMinutes, SmallChange = 15, LargeChange = 30, IsEnabled = !row.IsTotalPrice };
             var onlineBox = new CheckBox { Content = "Online", IsChecked = row.IsOnline };
+            var totalPriceBox = new CheckBox { Content = "Total price", IsChecked = row.IsTotalPrice };
             var priceBox = new NumberBox
             {
                 Header = "Price per hour:",
-                Value = (double)row.PricePerStudent,
+                Value = (double)row.PricePerHour,
                 PlaceholderText = "0.00"
             };
 
@@ -221,7 +232,11 @@ namespace Apolo.Views
             panel.Children.Add(datePick);
             panel.Children.Add(durationBox);
             panel.Children.Add(onlineBox);
+            panel.Children.Add(totalPriceBox);
             panel.Children.Add(priceBox);
+
+            totalPriceBox.Checked += (_, __) => durationBox.IsEnabled = false;
+            totalPriceBox.Unchecked += (_, __) => durationBox.IsEnabled = true;
 
             var dialog = new ContentDialog()
             {
@@ -237,12 +252,15 @@ namespace Apolo.Views
             {
                 var dto = datePick.Date ?? new DateTimeOffset(row.Date.ToDateTime(TimeOnly.MinValue));
                 var date = DateOnly.FromDateTime(dto.Date);
+                bool isTotalPrice = totalPriceBox.IsChecked == true;
+                int duration = isTotalPrice ? 0 : (int)durationBox.Value;
                 await ViewModel.UpdateLessonAsync(
                     row.Id, 
                     nameBox.Text, 
-                    date, 
-                    (int)durationBox.Value, 
-                    onlineBox.IsChecked == true, 
+                    date,
+                    duration, 
+                    onlineBox.IsChecked == true,
+                    isTotalPrice,
                     (decimal)priceBox.Value);
             }
         }

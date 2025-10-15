@@ -7,6 +7,7 @@
       x:Name="PageRoot"
       Loaded="Page_Loaded">
 
+
     <ScrollViewer>
         <StackPanel Padding="24"
                     Spacing="16">
@@ -30,7 +31,7 @@
             <ListView ItemsSource="{Binding Payers}">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="m:PayerSummary">
-                        <Grid ColumnDefinitions="*, Auto"
+                        <Grid ColumnDefinitions="Auto, Auto"
                               Padding="8">
                             <StackPanel Orientation="Horizontal"
                                         Spacing="12"
@@ -46,12 +47,14 @@
 
                             <StackPanel Grid.Column="1"
                                         Orientation="Horizontal"
-                                        Spacing="8">
+                                        Spacing="8"
+                                        Margin="20 0">
                                 <Button Content="Edit"
                                         Click="EditPayer_Click"
                                         IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
                                 <Button Content="Delete"
                                         Click="DeletePayer_Click"
+                                        Style="{StaticResource AccentButtonStyle}"
                                         IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
                             </StackPanel>
                         </Grid>
@@ -69,6 +72,14 @@
                          Text="{Binding NewFirstName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 <TextBox Header="Last Name"
                          Text="{Binding NewLastName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Header="Address"
+                         Text="{Binding NewAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Header="Zip code"
+                         Text="{Binding NewZipCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Header="City"
+                         Text="{Binding NewCity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Header="CIF/NIF"
+                         Text="{Binding NewTaxId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                 <Button Content="Add"
                         Command="{Binding AddPayerCommand}"

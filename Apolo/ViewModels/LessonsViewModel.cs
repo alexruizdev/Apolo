@@ -69,6 +69,7 @@ namespace Apolo.ViewModels
             DateOnly date,
             int duration,
             bool isOnline,
+            bool isTotalPrice,
             decimal price,
             IReadOnlyList<Guid> studentIds)
         {
@@ -79,23 +80,26 @@ namespace Apolo.ViewModels
             name = (name ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(name))
             {
+                IsBusy = false;
                 ErrorMessage = "Service name is required.";
                 return;
             }
-            if (duration <= 0)
+            if (duration <= 0 && !isTotalPrice)
             {
+                IsBusy = false;
                 ErrorMessage = "Enter a valid non-negative duration (e.g., 60).";
                 return;
             }
             if (studentIds.Count <= 0)
             {
+                IsBusy = false;
                 ErrorMessage = "Select at least one student.";
                 return;
             }
 
             try
             {
-                var lesson = await _repository.CreateLesson(name, date, duration, isOnline, price, studentIds);
+                var lesson = await _repository.CreateLesson(name, date, duration, isOnline, isTotalPrice, price, studentIds);
 
                 // Add to UI
                 var attendanceRows = new List<AttendanceSummary>();
@@ -115,6 +119,7 @@ namespace Apolo.ViewModels
                     lesson.Date,
                     lesson.DurationMinutes,
                     lesson.IsOnline,
+                    lesson.IsTotalPrice,
                     lesson.PricePerStudent,
                     attendanceRows));
             }
@@ -125,7 +130,7 @@ namespace Apolo.ViewModels
             finally { IsBusy = false; }
         }
 
-        public async Task UpdateLessonAsync(Guid id, string name, DateOnly date, int duration, bool isOnline, decimal price)
+        public async Task UpdateLessonAsync(Guid id, string name, DateOnly date, int duration, bool isOnline, bool isTotalPrice, decimal price)
         {
             if (IsBusy) return;
             IsBusy = true;
@@ -134,25 +139,28 @@ namespace Apolo.ViewModels
             name = (name ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(name))
             {
+                IsBusy = false;
                 ErrorMessage = "Service name is required.";
                 return;
             }
 
-            if (duration <= 0)
+            if (duration <= 0 && !isTotalPrice)
             {
+                IsBusy = false;
                 ErrorMessage = "Enter a valid non-negative duration (e.g., 60).";
                 return;
             }
 
             if (price <= 0)
             {
+                IsBusy = false;
                 ErrorMessage = "Enter a valid non-negative price per student (e.g., 42.5).";
                 return;
             }
 
             try
             {
-                var entity = await _repository.UpdateLesson(id, name, date, duration, isOnline, price);
+                var entity = await _repository.UpdateLesson(id, name, date, duration, isOnline, isTotalPrice, price);
 
                 // Update item in UI list
                 var idx = Lessons.Select((s, i) => (s, i)).FirstOrDefault(t => t.s.Id == id).i;
@@ -165,6 +173,7 @@ namespace Apolo.ViewModels
                         entity.Date,
                         entity.DurationMinutes,
                         entity.IsOnline,
+                        entity.IsTotalPrice,
                         entity.PricePerStudent,
                         Lessons[idx].Attendances);
                 }

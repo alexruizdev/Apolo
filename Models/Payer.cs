@@ -2,7 +2,14 @@
 
 namespace Models
 {
-    public sealed record PayerSummary(Guid Id, string FirstName, string LastName, decimal Outstanding)
+    public sealed record PayerSummary(Guid Id, 
+        string FirstName, 
+        string LastName, 
+        decimal Outstanding,
+        string? Address,
+        string? Zip, 
+        string? City, 
+        string? TaxId)
     {
         public string FullName => $"{FirstName} {LastName}";
     }
@@ -23,6 +30,11 @@ namespace Models
         }
 
         public override string ToString() => FullName;
+
+        [MaxLength(200)] public string? Address { get; set; }
+        [MaxLength(5)] public string? ZipCode { get; set; }
+        [MaxLength(100)] public string? City { get; set; }
+        [MaxLength(100)] public string? TaxId { get; set; }
 
         public ICollection<Student> Students { get; set; } = new List<Student>();
     }

@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Page
-    x:Class="Apolo.Views.InvoicesPage"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+<Page x:Class="Apolo.Views.InvoicesPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:local="using:Apolo.Views"
       xmlns:vm="using:Apolo.ViewModels"
       xmlns:m="using:Models"
@@ -12,7 +11,7 @@
     <ScrollView>
         <StackPanel Padding="24"
                     Spacing="16">
-            
+
             <TextBlock Text="Invoicing"
                        FontSize="28"
                        FontWeight="SemiBold" />
@@ -25,19 +24,39 @@
                           ItemsSource="{Binding Payers}"
                           SelectedValuePath="Id"
                           DisplayMemberPath="FullName"
-                          SelectedValue="{x:Bind ViewModel.SelectedPayerId, Mode=TwoWay}"/>
+                          SelectedValue="{x:Bind ViewModel.SelectedPayerId, Mode=TwoWay}" />
                 <Button Content="Load"
                         Click="LoadForPayer_Click"
-                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+                        VerticalAlignment="Bottom"/>
                 <CheckBox Content="Select all"
                           IsThreeState="True"
-                          IsChecked="{x:Bind ViewModel.AllSelected, Mode=TwoWay}" />
+                          IsChecked="{x:Bind ViewModel.AllSelected, Mode=TwoWay}"
+                          VerticalAlignment="Bottom" />
                 <Button Content="Mark selected as paid"
                         Click="MarkPaid_Click"
-                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+                        VerticalAlignment="Bottom" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBox x:Name="InvoiceNameBox"
+                         Header="Invoice name (optional)"
+                         Width="260" />
                 <Button Content="Generate PDF..."
                         Click="ExportPdf_Click"
-                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+                        VerticalAlignment="Bottom" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBox x:Name="InvoiceNameSearchBox"
+                         Header="Search invoice by name"
+                         Width="260" />
+                <Button Content="Load by invoice name"
+                        Click="LoadByName_Click"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+                        VerticalAlignment="Bottom" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal"
@@ -65,21 +84,23 @@
             <ListView ItemsSource="{Binding Attendances}">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="vm:InvoiceAttendanceSummary">
-                        <Grid ColumnDefinitions="Auto, 90, *, *, Auto"
-                              Padding="6">
-                            <CheckBox Grid.Column="0"
-                                      IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
-                                      VerticalAlignment="Center" />
-                            <TextBlock Grid.Column="1"
-                                       Text="{x:Bind Date}" />
-                            <TextBlock Grid.Column="2"
-                                       Text="{x:Bind LessonName}" />
-                            <TextBlock Grid.Column="3"
-                                       Text="{x:Bind StudentName}" />
-                            <TextBlock Grid.Column="4">
+                        <StackPanel Spacing="8"
+                                    Padding="8"
+                                    Orientation="Horizontal">
+                            <CheckBox IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
+                                      VerticalAlignment="Center"
+                                      Width="20"
+                                      Height="20" />
+                            <TextBlock Text="{x:Bind Date, Converter={StaticResource DateFormatConverter}}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="{x:Bind LessonName}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="{x:Bind StudentName}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock VerticalAlignment="Center">
                                 <Run Text="{x:Bind Price, Converter={StaticResource DecimalToCurrencyConverter}}" />
                             </TextBlock>
-                        </Grid>
+                        </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>

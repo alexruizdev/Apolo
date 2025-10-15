@@ -12,7 +12,7 @@
         <StackPanel Padding="24"
                     Spacing="16">
 
-            <TextBlock Text="Services"
+            <TextBlock Text="Specifications"
                        FontSize="28"
                        FontWeight="SemiBold" />
             <StackPanel>

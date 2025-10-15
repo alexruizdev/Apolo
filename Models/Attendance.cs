@@ -4,14 +4,6 @@ namespace Models
 {
     public sealed record AttendanceSummary(Guid Id, Guid StudentId, string StudentName, bool IsPaid);
 
-    public sealed record InvoiceAttendance(
-        Guid AttendanceId,
-        Guid LessonId,
-        DateOnly Date,
-        string LessonName,
-        Guid StudentId,
-        string StudentName,
-        decimal Price);
     public sealed class Attendance
     {
         public Guid Id { get; set; } = Guid.NewGuid();

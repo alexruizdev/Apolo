@@ -55,6 +55,7 @@ namespace Repository
                     i.Date,
                     i.DurationMinutes,
                     i.IsOnline,
+                    i.IsTotalPrice,
                     i.PricePerStudent,
                     Attendances = i.Attendaces.Select(a => new
                     {
@@ -76,6 +77,7 @@ namespace Repository
                     row.Date, 
                     row.DurationMinutes,
                     row.IsOnline,
+                    row.IsTotalPrice,
                     row.PricePerStudent,
                     attendancesDtos));
             }
@@ -94,14 +96,15 @@ namespace Repository
             return result;
         }
 
-        public async Task<Lesson> CreateLesson(string name, DateOnly date, int duration, bool isOnline, decimal pricePerStudent, IReadOnlyList<Guid> studentIds)
+        public async Task<Lesson> CreateLesson(string name, DateOnly date, int duration, bool isOnline, bool isTotalPrice, decimal pricePerStudent, IReadOnlyList<Guid> studentIds)
         {
             var lesson = new Lesson
             {
                 Name = name,
                 Date = date,
-                DurationMinutes = duration,
+                DurationMinutes = isTotalPrice ? 0 : duration,
                 IsOnline = isOnline,
+                IsTotalPrice = isTotalPrice,
                 PricePerStudent = pricePerStudent
             };
 
@@ -122,7 +125,7 @@ namespace Repository
             return lesson;
         }
 
-        public async Task<Lesson> UpdateLesson(Guid id, string name, DateOnly date, int duration, bool isOnline, decimal pricePerStudent)
+        public async Task<Lesson> UpdateLesson(Guid id, string name, DateOnly date, int duration, bool isOnline, bool isTotalPrice, decimal pricePerStudent)
         {
             var entity = await _db.Lessons.Include(l => l.Attendaces).FirstOrDefaultAsync(i => i.Id == id);
 
@@ -131,8 +134,9 @@ namespace Repository
 
             entity.Name = name;
             entity.Date = date;
-            entity.DurationMinutes = duration;
+            entity.DurationMinutes = isTotalPrice ? 0 : duration;
             entity.IsOnline = isOnline;
+            entity.IsTotalPrice = isTotalPrice;
             entity.PricePerStudent = pricePerStudent;
 
             await _db.SaveChangesAsync();
