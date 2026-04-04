@@ -1,3 +1,4 @@
+using Apolo.Service;
 using Apolo.ViewModels;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -79,7 +80,7 @@ namespace Apolo.Views
                 Title = "Create lesson",
                 Content = panel,
                 PrimaryButtonText = "Create",
-                CloseButtonText = "Cancel",
+                CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = Content.XamlRoot
             };
@@ -243,7 +244,7 @@ namespace Apolo.Views
                 Title = "Edit lesson",
                 Content = panel,
                 PrimaryButtonText = "Save",
-                CloseButtonText = "Cancel",
+                CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = Content.XamlRoot
             };
@@ -295,7 +296,7 @@ namespace Apolo.Views
                 Title = "Add attendances",
                 Content = panel,
                 PrimaryButtonText = "Add",
-                CloseButtonText = "Cancel",
+                CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = Content.XamlRoot
             };
@@ -343,7 +344,7 @@ namespace Apolo.Views
                 Title = "Edit attendance",
                 Content = panel,
                 PrimaryButtonText = "Save",
-                CloseButtonText = "Cancel",
+                CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = Content.XamlRoot
             };
@@ -366,8 +367,8 @@ namespace Apolo.Views
             {
                 Title = "Delete attendace?",
                 Content = $"Remove {attendance.StudentName} from '{lesson.Name}'?",
-                PrimaryButtonText = "Delete",
-                CloseButtonText = "Cancel",
+                PrimaryButtonText = Loc.Buttons_Delete,
+                CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Close,
                 XamlRoot = Content.XamlRoot
             };

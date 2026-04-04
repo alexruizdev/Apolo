@@ -1,3 +1,4 @@
+using Apolo.Service;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -30,8 +31,8 @@ namespace Apolo.ViewModels
                 Title = "Delete student?",
                 Content = $"This will delete student '{item.FullName}'. \n"
                  + $"Note: related specifications and attendances will also be removed.",
-                PrimaryButtonText = "Delete",
-                CloseButtonText = "Cancel",
+                PrimaryButtonText = Loc.Buttons_Delete,
+                CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Close,
                 XamlRoot = Content.XamlRoot
             };
@@ -57,7 +58,7 @@ namespace Apolo.ViewModels
 
             var payerBox = new ComboBox
             {
-                Header = "Payer",
+                Header = Loc.Box_Payer,
                 ItemsSource = ViewModel.Payers,
                 SelectedValuePath = "Id",
                 DisplayMemberPath = "FullName",
@@ -75,7 +76,7 @@ namespace Apolo.ViewModels
                 Title = "Edit student",
                 Content = panel,
                 PrimaryButtonText = "Save",
-                CloseButtonText = "Cancel",
+                CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = Content.XamlRoot
             };

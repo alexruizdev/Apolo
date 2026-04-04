@@ -1,3 +1,4 @@
+using Apolo.Service;
 using Apolo.ViewModels;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -31,8 +32,8 @@ public sealed partial class ServicesPage : Page
             Title = "Delete service?",
             Content = $"This will delete service '{item.Name}'. \n"
              + $"Note: related specifications will also be removed.",
-            PrimaryButtonText = "Delete",
-            CloseButtonText = "Cancel",
+            PrimaryButtonText = Loc.Buttons_Delete,
+            CloseButtonText = Loc.Buttons_Cancel,
             DefaultButton = ContentDialogButton.Close,
             XamlRoot = Content.XamlRoot
         };
@@ -68,7 +69,7 @@ public sealed partial class ServicesPage : Page
             Title = "Edit service",
             Content = panel,
             PrimaryButtonText = "Save",
-            CloseButtonText = "Cancel",
+            CloseButtonText = Loc.Buttons_Cancel,
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = Content.XamlRoot
         };

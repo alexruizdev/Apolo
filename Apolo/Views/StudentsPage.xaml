@@ -4,6 +4,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:local="using:Apolo.Views"
       xmlns:vm="using:Apolo.ViewModels"
+      xmlns:loc="using:Apolo.Service"
       xmlns:m="using:Models"
       x:Name="PageRoot"
       Loaded="Page_Loaded">
@@ -12,7 +13,7 @@
         <StackPanel Padding="24"
                     Spacing="16">
 
-            <TextBlock Text="Students"
+            <TextBlock Text="{x:Bind loc:Loc.Menu_Students}"
                        FontSize="28"
                        FontWeight="SemiBold" />
 
@@ -52,10 +53,10 @@
                                             Spacing="8"
                                             Margin="20,0,0,0"
                                             VerticalAlignment="Top">
-                                    <Button Content="Edit"
+                                    <Button x:Uid="Buttons/Edit"
                                             Click="EditStudent_Click"
                                             IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
-                                    <Button Content="Delete"
+                                    <Button Content="{x:Bind loc:Loc.Buttons_Delete}"
                                             Click="DeleteStudent_Click"
                                             IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
                                 </StackPanel>
@@ -87,7 +88,7 @@
                            SpinButtonPlacementMode="Inline"
                            SmallChange="15"
                            LargeChange="30" />
-                <ComboBox Header="Payer"
+                <ComboBox Header="{x:Bind loc:Loc.Box_Payer}"
                           ItemsSource="{x:Bind ViewModel.Payers}"
                           SelectedValuePath="Id"
                           DisplayMemberPath="FullName"

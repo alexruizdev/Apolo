@@ -4,6 +4,7 @@ using Apolo.ViewModels;
 using Microsoft.UI.Xaml;
 using Models;
 using System;
+using Apolo.Service;
 
 namespace Apolo.Pages
 {
@@ -32,8 +33,8 @@ namespace Apolo.Pages
                 Title = "Delete payer?",
                 Content = $"This will delete payer '{item.FullName}'. \n"
                  + $"Note: You can only delete payers with no students.",
-                PrimaryButtonText = "Delete",
-                CloseButtonText = "Cancel",
+                PrimaryButtonText = Loc.Buttons_Delete,
+                CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Close,
                 XamlRoot = Content.XamlRoot
             };
@@ -74,7 +75,7 @@ namespace Apolo.Pages
                 Title = "Edit payer",
                 Content = panel,
                 PrimaryButtonText = "Save",
-                CloseButtonText = "Cancel",
+                CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = Content.XamlRoot
             };

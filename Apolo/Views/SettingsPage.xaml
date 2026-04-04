@@ -4,6 +4,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:local="using:Apolo.Views"
       xmlns:vm="using:Apolo.ViewModels"
+      xmlns:loc="using:Apolo.Service"
       xmlns:m="using:Models"
       x:Name="PageRoot"
       Loaded="Page_Loaded">
@@ -12,7 +13,7 @@
         <StackPanel Padding="24"
                     Spacing="16">
 
-            <TextBlock Text="Settings"
+            <TextBlock Text="{x:Bind loc:Loc.Menu_Settings}"
                        FontSize="28"
                        FontWeight="SemiBold" />
 

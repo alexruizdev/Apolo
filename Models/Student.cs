@@ -14,9 +14,7 @@ namespace Models
     {
         public Guid Id { get; set; }  = Guid.NewGuid();
 
-        [MaxLength(100)]
         public string FirstName { get; set; } = string.Empty;
-        [MaxLength(100)]
         public string LastName { get; set; } = string.Empty;
 
         public int CommuteMinutes { get; set; } // commute to service location

@@ -3,6 +3,7 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:vm="using:Apolo.ViewModels"
+      xmlns:loc="using:Apolo.Service"
       xmlns:m="using:Models"
       x:Name="PageRoot"
       Loaded="Page_Loaded">
@@ -12,7 +13,7 @@
         <StackPanel Padding="24"
                     Spacing="16">
 
-            <TextBlock Text="Payers"
+            <TextBlock Text="{x:Bind loc:Loc.Menu_Payers}"
                        FontSize="28"
                        FontWeight="SemiBold" />
 
@@ -49,10 +50,10 @@
                                         Orientation="Horizontal"
                                         Spacing="8"
                                         Margin="20 0">
-                                <Button Content="Edit"
+                                <Button x:Uid="Buttons/Edit"
                                         Click="EditPayer_Click"
                                         IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
-                                <Button Content="Delete"
+                                <Button Content="{x:Bind loc:Loc.Buttons_Delete}"
                                         Click="DeletePayer_Click"
                                         Style="{StaticResource AccentButtonStyle}"
                                         IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />

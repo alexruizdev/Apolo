@@ -8,7 +8,7 @@ namespace Models
     {
         public Guid Id { get; set; } = Guid.NewGuid();
 
-        [Required, MaxLength(120)]
+        [Required]
         public string Name { get; set; } = string.Empty;
 
         [Precision(18, 2)]

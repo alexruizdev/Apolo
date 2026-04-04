@@ -19,9 +19,7 @@ namespace Models
     public sealed class Payer
     {
         public Guid Id { get; set; } = Guid.NewGuid();
-        [MaxLength(100)]
         public string FirstName { get; set; } = string.Empty;
-        [MaxLength(100)]
         public string LastName { get; set; } = string.Empty;
 
         public string FullName
@@ -31,10 +29,10 @@ namespace Models
 
         public override string ToString() => FullName;
 
-        [MaxLength(200)] public string? Address { get; set; }
-        [MaxLength(5)] public string? ZipCode { get; set; }
-        [MaxLength(100)] public string? City { get; set; }
-        [MaxLength(100)] public string? TaxId { get; set; }
+        public string? Address { get; set; }
+        public string? ZipCode { get; set; }
+        public string? City { get; set; }
+        public string? TaxId { get; set; }
 
         public ICollection<Student> Students { get; set; } = new List<Student>();
     }

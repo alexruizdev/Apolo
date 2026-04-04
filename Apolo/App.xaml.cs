@@ -54,31 +54,6 @@ namespace Apolo
                 var dbContext = scope.ServiceProvider.GetRequiredService<ApoloContext>();
                 dbContext.Database.EnsureCreated();
                 dbContext.Database.Migrate();
-
-                // Seed initial data if the database is empty
-                if (!dbContext.Payers.Any())
-                {
-                    var payerOne = new Payer
-                    {
-                        FirstName = "Payer",
-                        LastName = "1",
-                        Address = "Address 1",
-                        ZipCode = "1",
-                        City = "City 1",
-                        TaxId = "11111",
-                    };
-                    var payerTwo = new Payer
-                    {
-                        FirstName = "Payer",
-                        LastName = "2",
-                        Address = "Address 2",
-                        ZipCode = "2",
-                        City = "City 2",
-                        TaxId = "22222",
-                    };
-                    dbContext.Payers.AddRange(payerOne, payerTwo);
-                    dbContext.SaveChanges();
-                }
             }
         }
 

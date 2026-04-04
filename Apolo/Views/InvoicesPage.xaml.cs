@@ -39,7 +39,7 @@ namespace Apolo.Views
                 Title = "Mark as paid?",
                 Content = $"Mark {selectedCount} attendance(s) as paid?",
                 PrimaryButtonText = "Mark paid",
-                CloseButtonText = "Cancel",
+                CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = Content.XamlRoot
             };

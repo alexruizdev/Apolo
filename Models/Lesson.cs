@@ -21,7 +21,7 @@ namespace Models
 
         public DateOnly Date { get; set; }
 
-        [Required, MaxLength(120)]
+        [Required]
         public string Name { get; set; } = string.Empty;
 
         public int DurationMinutes { get; set; }

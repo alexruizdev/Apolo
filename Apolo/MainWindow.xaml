@@ -6,6 +6,7 @@
         xmlns:local="using:Apolo"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="using:Microsoft.UI.Xaml.Controls"
+        xmlns:loc="using:Apolo.Service"
         Title="Apolo"
         Activated="Window_Activated"
         mc:Ignorable="d">
@@ -16,25 +17,25 @@
                        SelectionChanged="NavView_SelectionChanged">
 
         <ui:NavigationView.MenuItems>
-            <ui:NavigationViewItem Content="Lessons"
+            <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Lessons}"
                                    Icon="Calendar"
                                    Tag="lessons" />
-            <ui:NavigationViewItem Content="Invoicing"
+            <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Invoicing}"
                                    Icon="Calculator"
                                    Tag="invoicing" />
-            <ui:NavigationViewItem Content="Payers"
+            <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Payers}"
                                    Icon="People"
-                                   Tag="payers" />
-            <ui:NavigationViewItem Content="Students"
+                                   Tag="    payers" />
+            <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Students}"
                                    Icon="Contact"
                                    Tag="students" />
-            <ui:NavigationViewItem Content="Services"
+            <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Services}"
                                    Icon="Edit"
                                    Tag="services" />
-            <ui:NavigationViewItem Content="Specifications"
+            <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Specifications}"
                                    Icon="SolidStar"
                                    Tag="specifications" />
-            <ui:NavigationViewItem Content="Settings"
+            <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Settings}"
                                    Icon="Setting"
                                    Tag="settings" />
         </ui:NavigationView.MenuItems>

@@ -1,3 +1,4 @@
+using Apolo.Service;
 using Apolo.ViewModels;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -31,8 +32,8 @@ public sealed partial class SpecificationsPage : Page
         {
             Title = "Delete specification?",
             Content = $"This will delete specification '{item.StudentName} {item.ServiceName}'.",
-            PrimaryButtonText = "Delete",
-            CloseButtonText = "Cancel",
+            PrimaryButtonText = Loc.Buttons_Delete,
+            CloseButtonText = Loc.Buttons_Cancel,
             DefaultButton = ContentDialogButton.Close,
             XamlRoot = Content.XamlRoot
         };
@@ -76,7 +77,7 @@ public sealed partial class SpecificationsPage : Page
             Title = "Edit specification",
             Content = panel,
             PrimaryButtonText = "Save",
-            CloseButtonText = "Cancel",
+            CloseButtonText = Loc.Buttons_Cancel,
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = Content.XamlRoot
         };
@@ -116,7 +117,7 @@ public sealed partial class SpecificationsPage : Page
             Title = "Create lesson",
             Content = panel,
             PrimaryButtonText = "Create",
-            CloseButtonText = "Cancel",
+            CloseButtonText = Loc.Buttons_Cancel,
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = Content.XamlRoot
         };
