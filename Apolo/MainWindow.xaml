@@ -11,35 +11,63 @@
         Activated="Window_Activated"
         mc:Ignorable="d">
 
-    <ui:NavigationView x:Name="NavView"
-                       IsSettingsVisible="True"
-                       PaneDisplayMode="Left"
-                       SelectionChanged="NavView_SelectionChanged">
+    <Grid>
 
-        <ui:NavigationView.MenuItems>
-            <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Lessons}"
-                                   Icon="Calendar"
-                                   Tag="lessons" />
-            <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Invoicing}"
-                                   Icon="Calculator"
-                                   Tag="invoicing" />
-            <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Payers}"
-                                   Icon="People"
-                                   Tag="    payers" />
-            <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Students}"
-                                   Icon="Contact"
-                                   Tag="students" />
-            <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Services}"
-                                   Icon="Edit"
-                                   Tag="services" />
-            <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Specifications}"
-                                   Icon="SolidStar"
-                                   Tag="specifications" />
-            <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Settings}"
-                                   Icon="Setting"
-                                   Tag="settings" />
-        </ui:NavigationView.MenuItems>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <!--  TitleBar  -->
+            <RowDefinition Height="*" />
+            <!--  NavigationView  -->
+        </Grid.RowDefinitions>
         
-        <Frame x:Name="RootFrame" />
-    </ui:NavigationView>
+        <TitleBar Title="Apolo"
+                  Subtitle="Invoice manager"
+                  IsBackButtonVisible="False"
+                  IsPaneToggleButtonVisible="False">
+
+            <TitleBar.Content>
+                <AutoSuggestBox Width="360"
+                                VerticalAlignment="Center"
+                                PlaceholderText="Search.."
+                                QueryIcon="Find" />
+            </TitleBar.Content>
+
+        </TitleBar>
+
+
+
+        <ui:NavigationView x:Name="NavView"
+                           Grid.Row="1"
+                           IsSettingsVisible="False"
+                           PaneDisplayMode="Left"
+                           SelectionChanged="NavView_SelectionChanged">
+
+            <ui:NavigationView.MenuItems>
+                <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Lessons}"
+                                       Icon="Calendar"
+                                       Tag="lessons" />
+                <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Invoicing}"
+                                       Icon="Calculator"
+                                       Tag="invoicing" />
+                <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Payers}"
+                                       Icon="People"
+                                       Tag="payers" />
+                <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Students}"
+                                       Icon="Contact"
+                                       Tag="students" />
+                <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Services}"
+                                       Icon="Edit"
+                                       Tag="services" />
+                <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Specifications}"
+                                       Icon="SolidStar"
+                                       Tag="specifications" />
+                <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Settings}"
+                                       Icon="Setting"
+                                       Tag="settings" />
+            </ui:NavigationView.MenuItems>
+
+            <Frame x:Name="RootFrame" />
+        </ui:NavigationView>
+
+    </Grid>
 </Window>

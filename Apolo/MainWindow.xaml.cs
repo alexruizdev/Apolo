@@ -17,6 +17,7 @@ namespace Apolo
         {
             InitializeComponent();
             TrySetMicaBackdrop();
+            ExtendsContentIntoTitleBar = true;
             NavView.SelectedItem = NavView.MenuItems[0] as NavigationViewItem;
             RootFrame.Navigate(typeof(LessonsPage));
         }
