@@ -8,7 +8,7 @@
 		<Platforms>x86;x64;ARM64</Platforms>
 		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
-    <PublishProfile>win-$(Platform).pubxml</PublishProfile>
+    <PublishProfile>Properties\PublishProfiles\FolderProfile.pubxml</PublishProfile>
 		<UseWinUI>true</UseWinUI>
 		<EnableMsixTooling>true</EnableMsixTooling>
     <Nullable>enable</Nullable>
@@ -43,7 +43,7 @@
 	</ItemGroup>
 	
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.14" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.14">
 			<PrivateAssets>all</PrivateAssets>
