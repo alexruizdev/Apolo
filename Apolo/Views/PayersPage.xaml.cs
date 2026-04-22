@@ -87,5 +87,45 @@ namespace Apolo.Pages
             }
 
         }
+
+        private async void NewPayer_Click(object sender, RoutedEventArgs e)
+        {
+            var firstNameBox = new TextBox { Header = "First name", MinWidth = 320 };
+            var lastNameBox = new TextBox { Header = "Last name", MinWidth = 320 };
+            var addressBox = new TextBox { Header = "Address", MinWidth = 320 };
+            var zipCodeBox = new TextBox { Header = "Zip code", MinWidth = 320 };
+            var cityBox = new TextBox { Header = "City", MinWidth = 320 };
+            var idBox = new TextBox { Header = "CIF/NIF", MinWidth = 320 };
+
+            var panel = new StackPanel { Spacing = 8 };
+            panel.Children.Add(firstNameBox);
+            panel.Children.Add(lastNameBox);
+            panel.Children.Add(addressBox);
+            panel.Children.Add(zipCodeBox);
+            panel.Children.Add(cityBox);
+            panel.Children.Add(idBox);
+
+            var dialog = new ContentDialog()
+            {
+                Title = "Create payer",
+                Content = panel,
+                PrimaryButtonText = "Create",
+                CloseButtonText = Loc.Buttons_Cancel,
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = Content.XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                await ViewModel.AddPayerAsync(
+                    firstNameBox.Text,
+                    lastNameBox.Text,
+                    addressBox.Text,
+                    zipCodeBox.Text,
+                    cityBox.Text,
+                    idBox.Text);
+            }
+        }
     }
 }

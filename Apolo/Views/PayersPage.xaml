@@ -9,36 +9,40 @@
       Loaded="Page_Loaded">
 
 
-    <ScrollViewer>
-        <StackPanel Padding="24"
-                    Spacing="16">
+    <StackPanel Padding="24"
+                Spacing="16">
 
-            <TextBlock Text="{x:Bind loc:Loc.Menu_Payers}"
-                       FontSize="28"
-                       FontWeight="SemiBold" />
+        <TextBlock Text="{x:Bind loc:Loc.Menu_Payers}"
+                    FontSize="28"
+                    FontWeight="SemiBold" />
 
-            <!--Status / errors-->
-            <StackPanel>
-                <TextBlock Text="Loading..."
-                           Foreground="Gray"
-                           Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                <TextBlock Text="{Binding ErrorMessage}"
-                           Foreground="Tomato"
-                           TextWrapping="Wrap"
-                           Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibilityConverter}}" />
-            </StackPanel>
+        <Button Content="New payer"
+                Click="NewPayer_Click"
+                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
 
-            <!--List of payers-->
+        <!--Status / errors-->
+        <StackPanel>
+            <TextBlock Text="Loading..."
+                        Foreground="Gray"
+                        Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
+            <TextBlock Text="{Binding ErrorMessage}"
+                        Foreground="Tomato"
+                        TextWrapping="Wrap"
+                        Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibilityConverter}}" />
+        </StackPanel>
+
+        <!--List of payers-->
+        <ScrollView MaxHeight="500">
             <ListView ItemsSource="{Binding Payers}">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="m:PayerSummary">
-                        <Grid ColumnDefinitions="Auto, Auto"
-                              Padding="8">
+                        <Grid ColumnDefinitions="*, Auto"
+                                Padding="8">
                             <StackPanel Orientation="Horizontal"
                                         Spacing="12"
                                         Padding="8">
                                 <TextBlock Text="{x:Bind FullName}"
-                                           FontWeight="SemiBold" />
+                                            FontWeight="SemiBold" />
                                 <TextBlock Text="-" />
                                 <TextBlock>
                                     <Run Text="Outstanding:" />
@@ -52,41 +56,16 @@
                                         Margin="20 0">
                                 <Button x:Uid="Buttons/Edit"
                                         Click="EditPayer_Click"
+                                        Style="{StaticResource AccentButtonStyle}"
                                         IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
                                 <Button Content="{x:Bind loc:Loc.Buttons_Delete}"
                                         Click="DeletePayer_Click"
-                                        Style="{StaticResource AccentButtonStyle}"
                                         IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
                             </StackPanel>
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-
-            <AppBarSeparator />
-
-            <!--Form to add a new payer-->
-            <StackPanel Spacing="8">
-                <TextBlock Text="Add new payer"
-                           FontWeight="SemiBold" />
-                <TextBox Header="First Name"
-                         Text="{Binding NewFirstName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBox Header="Last Name"
-                         Text="{Binding NewLastName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBox Header="Address"
-                         Text="{Binding NewAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBox Header="Zip code"
-                         Text="{Binding NewZipCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBox Header="City"
-                         Text="{Binding NewCity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBox Header="CIF/NIF"
-                         Text="{Binding NewTaxId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-
-                <Button Content="Add"
-                        Command="{Binding AddPayerCommand}"
-                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
-            </StackPanel>
-
-        </StackPanel>
-    </ScrollViewer>
+        </ScrollView>
+    </StackPanel>
 </Page>

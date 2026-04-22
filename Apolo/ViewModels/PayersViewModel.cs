@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DocumentFormat.OpenXml.Vml.Office;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
@@ -16,18 +17,6 @@ namespace Apolo.ViewModels
 
         public ObservableCollection<PayerSummary> Payers { get; } = new();
 
-        [ObservableProperty]
-        private string newFirstName = "";
-        [ObservableProperty]
-        private string newLastName = "";
-        [ObservableProperty]
-        private string newAddress = "";
-        [ObservableProperty]
-        private string newZipCode = "";
-        [ObservableProperty]
-        private string newCity = "";
-        [ObservableProperty]
-        private string newTaxId = "";
         [ObservableProperty]
         private bool isBusy;
         [ObservableProperty]
@@ -68,19 +57,42 @@ namespace Apolo.ViewModels
         }
 
 
-        [RelayCommand]
-        public async Task AddPayerAsync()
+        public async Task AddPayerAsync(
+            string firstName,
+            string lastName,
+            string addressCode,
+            string zipCode,
+            string city,
+            string taxId)
         {
             if (IsBusy) return;
-            var first = (NewFirstName ?? "").Trim();
-            var last = (NewLastName ?? "").Trim();
-            var address = (NewAddress ?? "").Trim();
-            var zipCode = (NewZipCode ?? "").Trim();
-            var city = (NewCity ?? "").Trim();
-            var taxId = (NewTaxId ?? "").Trim();
-            if (string.IsNullOrWhiteSpace(first) && string.IsNullOrWhiteSpace(last))
+            firstName = (firstName ?? "").Trim();
+            lastName = (lastName ?? "").Trim();
+            addressCode = (addressCode ?? "").Trim();
+            zipCode = (zipCode ?? "").Trim();
+            city = (city ?? "").Trim();
+            taxId = (taxId ?? "").Trim();
+
+            if (string.IsNullOrWhiteSpace(firstName) && string.IsNullOrWhiteSpace(lastName))
             {
                 ErrorMessage = "Enter at least a first or last name.";
+                return;
+            }
+
+            var payer = new Payer
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                Address = addressCode,
+                ZipCode = zipCode,
+                City = city,
+                TaxId = taxId,
+            };
+
+            // Check student name
+            if (Payers.Any(p => p.FullName == payer.FullName))
+            {
+                ErrorMessage = $"Payer name already exists {payer.FullName}.";
                 return;
             }
 
@@ -89,27 +101,18 @@ namespace Apolo.ViewModels
 
             try
             {
-                var payer = new Payer
-                {
-                    FirstName = first,
-                    LastName = last,
-                    Address = address,
-                    ZipCode = zipCode,
-                    City = city,
-                    TaxId = taxId,
-                };
-
                 await _payerRepository.UpsertAsync(payer);
 
                 // Append to UI (no unpaid items yet)
-                Payers.Add(new PayerSummary(payer.Id,payer.FirstName, payer.LastName, 0m, address, zipCode, city, taxId));
-
-                NewFirstName = "";
-                NewLastName = "";
-                NewAddress = string.Empty;
-                NewZipCode = string.Empty;
-                NewCity = string.Empty;
-                NewTaxId = string.Empty;
+                Payers.Add(new PayerSummary(
+                    payer.Id, 
+                    payer.FirstName, 
+                    payer.LastName, 
+                    0m, 
+                    payer.Address, 
+                    payer.ZipCode, 
+                    payer.City, 
+                    payer.TaxId));
             }
             catch (Exception ex)
             {
