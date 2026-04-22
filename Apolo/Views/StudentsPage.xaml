@@ -17,7 +17,7 @@
                    FontSize="28"
                    FontWeight="SemiBold" />
 
-        <Button Content="New lesson"
+        <Button Content="New student"
                 Click="NewStudent_Click"
                 IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
 

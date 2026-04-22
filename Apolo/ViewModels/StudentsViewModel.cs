@@ -1,11 +1,15 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net;
+using System.Reflection.Emit;
 using System.Threading.Tasks;
 
 namespace Apolo.ViewModels
@@ -13,6 +17,7 @@ namespace Apolo.ViewModels
     public partial class StudentsViewModel : ObservableObject
     {
         StudentRepository _repository;
+        PayerRepository _payerRepository;
 
         public ObservableCollection<StudentSummary> Students { get; } = new();
         public ObservableCollection<PayerOption> Payers { get; } = new();
@@ -20,9 +25,10 @@ namespace Apolo.ViewModels
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private string? errorMessage;
 
-        public StudentsViewModel(StudentRepository studentRepository)
+        public StudentsViewModel(StudentRepository studentRepository, PayerRepository payerRepository)
         {
             _repository = studentRepository;
+            _payerRepository = payerRepository;
         }
 
         [RelayCommand]
@@ -64,22 +70,55 @@ namespace Apolo.ViewModels
                 ErrorMessage = "Enter at least a first or last name.";
                 return;
             }
-            if (!payerId.HasValue) {
-                ErrorMessage = "Student has to have a payer selected.";
+
+            var entity = new Student
+            {
+                FirstName = first,
+                LastName = last,
+                CommuteMinutes = commute
+            };
+
+            // Check student name
+            if (Students.Any(s => s.FullName == entity.FullName))
+            {
+                ErrorMessage = $"Student name already exists {entity.FullName}.";
                 return;
+            }
+
+            if (!payerId.HasValue) {
+                if (Payers.Any(p => p.FullName == entity.FullName))
+                {
+                    ErrorMessage = $"Payers is not selected and there is already a payer with that name: {entity.FullName}.";
+                    return;
+                }
+                IsBusy = true;
+                ErrorMessage = null;
+                try
+                {
+                    var payer = new Payer
+                    {
+                        FirstName = first,
+                        LastName = last
+                    };
+
+                    await _payerRepository.UpsertAsync(payer);
+                    Payers.Add(new PayerOption(payer.Id, payer.FullName));
+                    payerId = payer.Id;
+
+                }
+                catch (Exception ex)
+                {
+                    ErrorMessage = ex.Message;
+                    IsBusy = false;
+                    return;
+                }
             }
 
             IsBusy = true;
             ErrorMessage = null;
             try
             {
-                var entity = new Student
-                {
-                    FirstName = first,
-                    LastName = last,
-                    PayerId = payerId.Value,
-                    CommuteMinutes = commute
-                };
+                entity.PayerId = payerId.Value;
                 await _repository.UpsertAsync(entity);
 
                 var payerName = Payers.First(p => p.Id == payerId.Value).FullName;

@@ -49,7 +49,7 @@ namespace Apolo.ViewModels
         {
             var firstNameBox = new TextBox { Header = "First name", MinWidth = 320 };
             var lastNameBox = new TextBox { Header = "Last name", MinWidth = 320 };
-            var durationBox = new NumberBox { Header = "Duration (minutes):", Value = 60, SmallChange = 15, LargeChange = 30 };
+            var commuteBox = new NumberBox { Header = "Commute (minutes):", Value = 60, SmallChange = 15, LargeChange = 30 };
             var payersBox = new ComboBox
             {
                 Header = "Payer (optional if student is payer)",
@@ -61,7 +61,7 @@ namespace Apolo.ViewModels
             var panel = new StackPanel { Spacing = 8 };
             panel.Children.Add(firstNameBox);
             panel.Children.Add(lastNameBox);
-            panel.Children.Add(durationBox);
+            panel.Children.Add(commuteBox);
             panel.Children.Add(payersBox);
             var dialog = new ContentDialog()
             {
@@ -80,7 +80,7 @@ namespace Apolo.ViewModels
                     firstNameBox.Text, 
                     lastNameBox.Text, 
                     (Guid?)payersBox.SelectedValue, 
-                    (int)durationBox.Value);
+                    (int)commuteBox.Value);
             }
         }
 
