@@ -132,4 +132,53 @@ public sealed partial class SpecificationsPage : Page
             await ViewModel.CreateLessonFromSpecificationAsync(item.studentId, service.Name, item.DurationMinutes, item.IsOnline, price, date);
         }
     }
+
+    private async void NewSpecification_Click(object sender, RoutedEventArgs e)
+    {
+        var nameBox = new TextBox { Header = "Specification name", MinWidth = 320 };
+        var studentBox = new ComboBox
+        {
+            Header = "Student",
+            ItemsSource = ViewModel.Students,
+            DisplayMemberPath = "FullName",
+            SelectedValuePath = "Id"
+        };
+        var serviceBox = new ComboBox
+        {
+            Header = "Service",
+            ItemsSource = ViewModel.Services,
+            SelectedValuePath = "Id",
+            DisplayMemberPath = "Name"
+        };
+        var durationBox = new NumberBox { Header = "Duration (minutes):", Value = 60, SmallChange = 15, LargeChange = 30 };
+        var onlineBox = new CheckBox { Content = "Online" };
+
+        var panel = new StackPanel { Spacing = 8 };
+        panel.Children.Add(nameBox);
+        panel.Children.Add(studentBox);
+        panel.Children.Add(serviceBox);
+        panel.Children.Add(durationBox);
+        panel.Children.Add(onlineBox);
+
+        var dialog = new ContentDialog()
+        {
+            Title = "Create specification",
+            Content = panel,
+            PrimaryButtonText = "Create",
+            CloseButtonText = Loc.Buttons_Cancel,
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = Content.XamlRoot
+        };
+
+        var result = await dialog.ShowAsync();
+        if (result == ContentDialogResult.Primary)
+        {
+            await ViewModel.AddSpecificationAsync(
+                nameBox.Text,
+                (int)durationBox.Value,
+                onlineBox.IsChecked == true,
+                (Guid?)studentBox.SelectedValue,
+                (Guid?)serviceBox.SelectedValue);
+        }
+    }
 }
