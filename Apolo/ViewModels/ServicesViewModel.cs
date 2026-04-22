@@ -16,8 +16,6 @@ namespace Apolo.ViewModels
 
         public ObservableCollection<ServiceSummary> Services { get; } = new();
 
-        [ObservableProperty] private string newName = string.Empty;
-        [ObservableProperty] private double newPrice;
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private string? errorMessage;
 
@@ -46,18 +44,17 @@ namespace Apolo.ViewModels
             finally { IsBusy = false; }
         }
 
-        [RelayCommand]
-        public async Task AddServiceAsync()
+        public async Task AddServiceAsync(string name, decimal price)
         {
             if (IsBusy) return;
 
-            var name = (NewName ?? "").Trim();
+            name = (name ?? "").Trim();
             if (string.IsNullOrEmpty(name))
             {
                 ErrorMessage = "Name is required.";
                 return;
             }
-            if (NewPrice <= 0)
+            if (price < 0)
             {
                 ErrorMessage = "Enter a valid non-negative price (e.g., 42.50).";
                 return;
@@ -70,15 +67,11 @@ namespace Apolo.ViewModels
                 var entity = new Models.Service
                 {
                     Name = name,
-                    PricePerHour = (decimal)NewPrice
+                    PricePerHour = price
                 };
                 await _repository.AddAsync(entity);
 
                 Services.Add(new ServiceSummary(entity.Id, entity.Name, entity.PricePerHour));
-
-                // Reset form
-                NewName = string.Empty;
-                NewPrice = 0;
             }
             catch (Exception ex)
             {

@@ -8,32 +8,37 @@
       xmlns:m="using:Models"
       x:Name="PageRoot"
       Loaded="Page_Loaded">
-    <ScrollView>
-        <StackPanel Padding="24"
-                    Spacing="16">
 
-            <TextBlock Text="{x:Bind loc:Loc.Menu_Services}"
-                       FontSize="28"
-                       FontWeight="SemiBold" />
-            <StackPanel>
-                <TextBlock Text="Loading..."
-                           Foreground="Gray"
-                           Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                <TextBlock Text="{Binding ErrorMessage}"
-                           Foreground="Tomato"
-                           TextWrapping="Wrap"
-                           Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibilityConverter}}" />
-            </StackPanel>
+    <StackPanel Padding="24"
+                Spacing="16">
 
+        <TextBlock Text="{x:Bind loc:Loc.Menu_Services}"
+                    FontSize="28"
+                    FontWeight="SemiBold" />
+
+        <Button Content="New service"
+                Click="NewService_Click"
+                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+        <StackPanel>
+            <TextBlock Text="Loading..."
+                        Foreground="Gray"
+                        Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
+            <TextBlock Text="{Binding ErrorMessage}"
+                        Foreground="Tomato"
+                        TextWrapping="Wrap"
+                        Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibilityConverter}}" />
+        </StackPanel>
+
+        <ScrollView MaxHeight="500">
             <ListView ItemsSource="{Binding Services}">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="m:ServiceSummary">
                         <Grid ColumnDefinitions="*, Auto"
-                              Padding="8">
+                                Padding="8">
                             <StackPanel Orientation="Horizontal"
                                         Spacing="4">
                                 <TextBlock Text="{x:Bind Name}"
-                                           FontWeight="SemiBold" />
+                                            FontWeight="SemiBold" />
                                 <TextBlock Text="-" />
                                 <TextBlock>
                                     <Run Text="Price:" />
@@ -50,31 +55,13 @@
                                         IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
                                 <Button Content="{x:Bind loc:Loc.Buttons_Delete}"
                                         Click="DeleteService_Click"
+                                        Style="{StaticResource AccentButtonStyle}"
                                         IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
                             </StackPanel>
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-
-            <AppBarSeparator />
-
-            <!--Add new service-->
-            <StackPanel Spacing="8">
-                <TextBlock Text="Add new service"
-                           FontWeight="SemiBold" />
-                <TextBox Header="Name"
-                         Text="{x:Bind ViewModel.NewName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         MaxLength="120" />
-                <NumberBox Header="Price per hour:"
-                           Value="{x:Bind ViewModel.NewPrice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                           PlaceholderText="0.00" />
-                <Button Content="Add"
-                        Command="{Binding AddServiceCommand}"
-                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
-            </StackPanel>
-
-        </StackPanel>
-
-    </ScrollView>
+        </ScrollView>
+    </StackPanel>
 </Page>
