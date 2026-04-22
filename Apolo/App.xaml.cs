@@ -7,7 +7,9 @@ using Microsoft.UI.Xaml;
 using Models;
 using Repository;
 using System;
+using System.IO;
 using System.Linq;
+using Windows.Storage;
 
 namespace Apolo
 {
@@ -25,7 +27,8 @@ namespace Apolo
         private static IServiceProvider ConfigureServices()
         {
             var builder = new ServiceCollection();
-            builder.AddDbContext<ApoloContext>();
+            var dbPath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "app.db");
+            builder.AddDbContext<ApoloContext>(options => options.UseSqlite($"DataSource={dbPath}"));
             builder.AddSingleton<PayerRepository>();
             builder.AddSingleton<StudentRepository>();
             builder.AddSingleton<ServiceRepository>();
@@ -60,9 +63,11 @@ namespace Apolo
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             m_window = new MainWindow();
-
+            MainWindow = m_window;
             m_window.Activate();
         }
+
+        public Window? MainWindow { get; private set; }
 
         private Window? m_window;
     }

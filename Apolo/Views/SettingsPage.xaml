@@ -66,6 +66,13 @@
                         IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
             </StackPanel>
 
+            <TextBlock Text="Database" />
+
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left" Spacing="20">
+                <Button x:Name="DeleteDatabaseButton" Content="Delete Entire Database" Click="DeleteDatabaseButton_Click" Background="Red" Foreground="White"/>
+                <Button x:Name="ImportExcelButton" Content="Import from Excel" Click="ImportExcelButton_Click" Background="Green" Foreground="White"/>
+            </StackPanel>
+
         </StackPanel>
 
     </ScrollView>

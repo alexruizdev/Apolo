@@ -1,7 +1,9 @@
 ﻿using Apolo.Service;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
 using Models;
+using Repository;
 using System;
 using System.Threading.Tasks;
 
@@ -10,6 +12,15 @@ namespace Apolo.ViewModels
     public partial class SettingsViewModel : ObservableObject
     {
         private readonly UserProfileService _service;
+
+        private ApoloContext? _context;
+
+        ServiceRepository _serviceRepository;
+        PayerRepository _payerRepository;
+        StudentRepository _studentRepository;
+        SpecificationRepository _specificationRepository;
+        LessonRepository _lessonRepository;
+        InvoiceRepository _invoiceRepository;
 
         [ObservableProperty] private string fullName = string.Empty;
         [ObservableProperty] private string address = string.Empty;
@@ -24,9 +35,23 @@ namespace Apolo.ViewModels
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private string? statusMessage;
 
-        public SettingsViewModel(UserProfileService service)
+        public SettingsViewModel(
+            UserProfileService service, 
+            ServiceRepository serviceRepository, 
+            PayerRepository payerRepository,
+            StudentRepository studentRepository,
+            SpecificationRepository specificationRepository,
+            LessonRepository lessonRepository,
+            InvoiceRepository invoiceRepository)
         {
             _service = service;
+            _context = Ioc.Default.GetService<ApoloContext>();
+            _serviceRepository = serviceRepository;
+            _payerRepository = payerRepository;
+            _studentRepository = studentRepository;
+            _specificationRepository = specificationRepository;
+            _lessonRepository = lessonRepository;
+            _invoiceRepository = invoiceRepository;
         }
 
         [RelayCommand]
@@ -78,6 +103,74 @@ namespace Apolo.ViewModels
                 StatusMessage = "Saved.";
             }
             finally { IsBusy = false; }
+        }
+
+        [RelayCommand]
+        public async Task ClearDatabaseAsync()
+        {
+            if (IsBusy) return;
+            if (_context == null) return;
+            IsBusy = true;
+            StatusMessage = null;
+
+
+            await _context.Database.EnsureDeletedAsync();
+            await _context.Database.EnsureCreatedAsync();
+            _context.SaveChanges();
+        }
+
+        [RelayCommand]
+        public async Task ImportDatabaseFromExcel(string file)
+        {
+            if (IsBusy)
+                throw new Exception("System is busy.");
+            if (_context == null)
+                throw new Exception("Can't access database.");
+            if (string.IsNullOrEmpty(file))
+                throw new ArgumentException("No file selected.");
+
+            var reader = new Excel.Reader();
+            reader.ReadExcelAndStore(file);
+
+            // Insert data into database
+            // Services
+            foreach (var service in reader.Services)
+            {
+                await _serviceRepository.AddAsync(service);
+            }
+
+            // Payers
+            foreach (var payer in reader.Payers)
+            {
+                await _payerRepository.UpsertAsync(payer);
+            }
+
+            // Students
+            foreach (var student in reader.Students)
+            {
+                await _studentRepository.UpsertAsync(student);
+            }
+
+            // Specifications
+            foreach (var specification in reader.Specifications)
+            {
+                await _specificationRepository.AddSpecificationAsync(specification);
+            }
+
+            // Lessons
+            foreach (var lesson in reader.Lessons)
+            {
+                await _lessonRepository.UpsertAsync(lesson);
+            }
+
+            // Invoices
+            foreach (var invoice in reader.Invoices)
+            {
+                await _invoiceRepository.UpsertAsync(invoice);
+            }
+
+            // TODO : display entries added
+            // TODO: generate a list with invoices
         }
     }
 }

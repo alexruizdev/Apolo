@@ -97,6 +97,12 @@ namespace Repository
 
         }
 
+        public async Task UpsertAsync(Invoice invoice)
+        {
+            _db.Invoices.Add(invoice);
+            await _db.SaveChangesAsync();
+        }
+
         public async Task<(int invoiceId, string InvoiceName)> CreateInvoiceAsync(Guid payerId, 
             IEnumerable<Guid> attendanceIds, string? requestedName)
         {
