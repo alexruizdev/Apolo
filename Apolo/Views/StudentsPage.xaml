@@ -9,96 +9,75 @@
       x:Name="PageRoot"
       Loaded="Page_Loaded">
 
-    <ScrollView>
-        <StackPanel Padding="24"
-                    Spacing="16">
 
-            <TextBlock Text="{x:Bind loc:Loc.Menu_Students}"
-                       FontSize="28"
-                       FontWeight="SemiBold" />
+    <StackPanel Padding="24"
+                Spacing="16">
 
-            <StackPanel>
-                <TextBlock Text="Loading..."
+        <TextBlock Text="{x:Bind loc:Loc.Menu_Students}"
+                   FontSize="28"
+                   FontWeight="SemiBold" />
+
+        <Button Content="New lesson"
+                Click="NewStudent_Click"
+                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+
+        <StackPanel>
+            <TextBlock Text="Loading..."
                            Foreground="Gray"
                            Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                <TextBlock Text="{Binding ErrorMessage}"
+            <TextBlock Text="{Binding ErrorMessage}"
                            Foreground="Tomato"
                            TextWrapping="Wrap"
                            Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibilityConverter}}" />
-            </StackPanel>
+        </StackPanel>
 
+        <ScrollView MaxHeight="500">
             <ListView ItemsSource="{Binding Students}">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="m:StudentSummary">
                         <StackPanel Spacing="8"
-                                    Padding="8">
-                            <Grid ColumnDefinitions="Auto, Auto">
+                                        Padding="8">
+                            <Grid ColumnDefinitions="*, Auto">
                                 <StackPanel Orientation="Vertical"
-                                            Spacing="4">
+                                                Spacing="4">
                                     <TextBlock Text="{x:Bind FullName}"
-                                               FontWeight="SemiBold" />
+                                                   FontWeight="SemiBold" />
                                     <TextBlock>
-                                    <Run Text="Payer: " />
-                                    <Run Text="{x:Bind PayerName}" />
+                                        <Run Text="Payer: " />
+                                        <Run Text="{x:Bind PayerName}" />
                                     </TextBlock>
                                     <TextBlock>
-                                    <Run Text="Commuting: " />
-                                    <Run Text="{x:Bind CommuteMinutes}" />
-                                    <Run Text=" min" />
+                                        <Run Text="Commuting: " />
+                                        <Run Text="{x:Bind CommuteMinutes}" />
+                                        <Run Text=" min" />
                                     </TextBlock>
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="1"
-                                            Orientation="Horizontal"
-                                            Spacing="8"
-                                            Margin="20,0,0,0"
-                                            VerticalAlignment="Top">
+                                                Orientation="Horizontal"
+                                                Spacing="8"
+                                                Margin="20,0,0,0"
+                                                VerticalAlignment="Top">
                                     <Button x:Uid="Buttons/Edit"
-                                            Click="EditStudent_Click"
-                                            IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                                                Click="EditStudent_Click"
+                                                Style="{StaticResource AccentButtonStyle}"
+                                                IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
                                     <Button Content="{x:Bind loc:Loc.Buttons_Delete}"
-                                            Click="DeleteStudent_Click"
-                                            IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                                                Click="DeleteStudent_Click"
+                                                IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
                                 </StackPanel>
                             </Grid>
 
                             <!-- Separator -->
                             <Border Height="1"
-                                    Background="LightGray"
-                                    Margin="0,8,0,0" />
+                                        Background="LightGray"
+                                        Margin="0,8,0,0" />
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
+        </ScrollView>
 
-            <AppBarSeparator />
-
-            <!--Add new student-->
-            <StackPanel Spacing="8">
-                <TextBlock Text="Add new student"
-                           FontWeight="SemiBold" />
-                <TextBox Header="First name"
-                         Text="{x:Bind ViewModel.NewFirstName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         MaxLength="100" />
-                <TextBox Header="Last name"
-                         Text="{x:Bind ViewModel.NewLastName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         MaxLength="100" />
-                <NumberBox Header="Commuting time (minutes):"
-                           Value="{x:Bind ViewModel.NewCommute, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                           SpinButtonPlacementMode="Inline"
-                           SmallChange="15"
-                           LargeChange="30" />
-                <ComboBox Header="{x:Bind loc:Loc.Box_Payer}"
-                          ItemsSource="{x:Bind ViewModel.Payers}"
-                          SelectedValuePath="Id"
-                          DisplayMemberPath="FullName"
-                          SelectedValue="{x:Bind ViewModel.NewSelectedPayerId, Mode=TwoWay}" />
-                <Button Content="Add"
-                        Command="{Binding AddStudentCommand}"
-                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
-            </StackPanel>
-
-        </StackPanel>
-    </ScrollView>
+    </StackPanel>
 
 </Page>

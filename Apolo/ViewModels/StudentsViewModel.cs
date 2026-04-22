@@ -20,11 +20,6 @@ namespace Apolo.ViewModels
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private string? errorMessage;
 
-        [ObservableProperty] private string newFirstName = string.Empty;
-        [ObservableProperty] private string newLastName = string.Empty;
-        [ObservableProperty] private int newCommute;
-        [ObservableProperty] private Guid? newSelectedPayerId;
-
         public StudentsViewModel(StudentRepository studentRepository)
         {
             _repository = studentRepository;
@@ -57,14 +52,12 @@ namespace Apolo.ViewModels
             finally { IsBusy = false; }
         }
 
-        [RelayCommand]
-        public async Task AddStudentAsync()
+        public async Task AddStudentAsync(string firstName, string lastName, Guid? payerId, int commute)
         {
             if (IsBusy) return;
 
-            var first = (NewFirstName ?? "").Trim();
-            var last = (NewLastName ?? "").Trim();
-            var payerId = NewSelectedPayerId;
+            var first = (firstName ?? "").Trim();
+            var last = (lastName ?? "").Trim();
 
             if (string.IsNullOrWhiteSpace(first) && string.IsNullOrWhiteSpace(last))
             {
@@ -85,18 +78,12 @@ namespace Apolo.ViewModels
                     FirstName = first,
                     LastName = last,
                     PayerId = payerId.Value,
-                    CommuteMinutes = NewCommute
+                    CommuteMinutes = commute
                 };
                 await _repository.UpsertAsync(entity);
 
                 var payerName = Payers.First(p => p.Id == payerId.Value).FullName;
-                Students.Add(new StudentSummary(entity.Id, first, last, payerId.Value, payerName, NewCommute));
-
-                // Reset form
-                NewFirstName = string.Empty;
-                NewLastName = string.Empty;
-                NewCommute = 0;
-                NewSelectedPayerId = null;
+                Students.Add(new StudentSummary(entity.Id, first, last, payerId.Value, payerName, commute));
             }
             catch (Exception ex)
             {

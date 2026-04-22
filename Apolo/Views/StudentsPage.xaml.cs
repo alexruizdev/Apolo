@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Models;
 using System;
+using Windows.Devices.Enumeration;
 
 namespace Apolo.ViewModels
 {
@@ -41,6 +42,45 @@ namespace Apolo.ViewModels
             if (result == ContentDialogResult.Primary)
             {
                 await ViewModel.DeleteStudentAsync(item);
+            }
+        }
+
+        private async void NewStudent_Click(object sender, RoutedEventArgs e)
+        {
+            var firstNameBox = new TextBox { Header = "First name", MinWidth = 320 };
+            var lastNameBox = new TextBox { Header = "Last name", MinWidth = 320 };
+            var durationBox = new NumberBox { Header = "Duration (minutes):", Value = 60, SmallChange = 15, LargeChange = 30 };
+            var payersBox = new ComboBox
+            {
+                Header = "Payer (optional if student is payer)",
+                ItemsSource = ViewModel.Payers,
+                DisplayMemberPath = "FullName",
+                SelectedValuePath = "Id"
+            };
+
+            var panel = new StackPanel { Spacing = 8 };
+            panel.Children.Add(firstNameBox);
+            panel.Children.Add(lastNameBox);
+            panel.Children.Add(durationBox);
+            panel.Children.Add(payersBox);
+            var dialog = new ContentDialog()
+            {
+                Title = "Create student",
+                Content = panel,
+                PrimaryButtonText = "Create",
+                CloseButtonText = Loc.Buttons_Cancel,
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = Content.XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                await ViewModel.AddStudentAsync(
+                    firstNameBox.Text, 
+                    lastNameBox.Text, 
+                    (Guid?)payersBox.SelectedValue, 
+                    (int)durationBox.Value);
             }
         }
 
