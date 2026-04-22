@@ -37,10 +37,11 @@
                            Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibilityConverter}}" />
             </StackPanel>
 
-            <ListView ItemsSource="{Binding Lessons}">
+            <ListView ItemsSource="{x:Bind ViewModel.Lessons, Mode=OneWay}"
+                      SelectionMode="None">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="m:LessonSummary">
-                        <StackPanel Spacing="8"
+                        <StackPanel Spacing="8" 
                                     Padding="8">
                             <!--Header line-->
                             <Grid ColumnDefinitions="*, Auto">
@@ -51,11 +52,13 @@
                                                FontWeight="SemiBold" />
                                     <TextBlock Text="{x:Bind Name}"
                                                FontWeight="SemiBold" />
-                                    <TextBlock>
-                                        <Run Text="Duration: " />
-                                        <Run Text="{x:Bind DurationMinutes}" />
-                                        <Run Text=" min" />
-                                    </TextBlock>
+                                    
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <SymbolIcon Symbol="Clock" />
+                                        <TextBlock Text="{x:Bind DurationMinutes}" />
+                                        <TextBlock Text="min" />
+                                    </StackPanel>
+                                    
                                     <TextBlock>
                                         <Run Text="Total: " />
                                         <Run Text="{x:Bind GrandTotal, Converter={StaticResource DecimalToCurrencyConverter}}" />
@@ -70,14 +73,14 @@
                                             IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
                                     <Button Content="Add attendance"
                                             Click="AddAttendances_Click"
-                                            IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                                            IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" 
+                                            Style="{StaticResource AccentButtonStyle}"/>
                                 </StackPanel>
                             </Grid>
 
                             <!--Attendances-->
-                            <ListView ItemsSource="{x:Bind Attendances}"
-                                      SelectionMode="None">
-                                <ListView.ItemTemplate>
+                            <ItemsRepeater ItemsSource="{x:Bind Attendances}">
+                                <ItemsRepeater.ItemTemplate>
                                     <DataTemplate x:DataType="m:AttendanceSummary">
                                         <Grid ColumnDefinitions="Auto, Auto, Auto, Auto"
                                               Padding="4">
@@ -91,15 +94,16 @@
                                                         Spacing="8">
                                                 <Button x:Uid="Buttons/Edit"
                                                         Click="EditAttendances_Click"
-                                                        IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                                                        IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" 
+                                                        CommandParameter="{x:Bind}"/>
                                                 <Button Content="{x:Bind loc:Loc.Buttons_Delete}"
                                                         Click="RemoveAttendance_Click"
                                                         IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
                                             </StackPanel>
                                         </Grid>
                                     </DataTemplate>
-                                </ListView.ItemTemplate>
-                            </ListView>
+                                </ItemsRepeater.ItemTemplate>
+                            </ItemsRepeater>
 
                             <!-- Separator -->
                             <Border Height="1"

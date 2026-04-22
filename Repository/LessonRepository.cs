@@ -35,53 +35,41 @@ namespace Repository
             return result.OrderBy(x => x.Name).ToList();
         }
 
+        // TODO: add threshold as input
         public async Task<IEnumerable<LessonSummary>> GetLessonsAsync(bool showOnlyUnpaid)
         {
-            IQueryable<Lesson> query = _db.Lessons
-               .AsNoTracking()
-               .Include(l => l.Attendaces)
-               .ThenInclude(a => a.Student);
+            // 1. Calculate the date threshold once
+            var dateThreshold = DateOnly.FromDateTime(DateTime.Now.AddMonths(-1));
 
+            // 2. Start the query with AsNoTracking (crucial for read-only performance)
+            var query = _db.Lessons.AsNoTracking();
+
+            // 3. Apply Filters
             if (showOnlyUnpaid)
             {
                 query = query.Where(l => l.Attendaces.Any(a => !a.IsPaid));
             }
 
-            var rows = await query
-                .Select(i => new
-                {
-                    i.Id,
-                    i.Name,
-                    i.Date,
-                    i.DurationMinutes,
-                    i.IsOnline,
-                    i.IsTotalPrice,
-                    i.PricePerStudent,
-                    Attendances = i.Attendaces.Select(a => new
-                    {
+            query = query.Where(l => l.Date >= dateThreshold);
+
+            return await query
+                .OrderByDescending(l => l.Date)
+                .Select(l => new LessonSummary(
+                    l.Id,
+                    l.Name,
+                    l.Date,
+                    l.DurationMinutes,
+                    l.IsOnline,
+                    l.IsTotalPrice,
+                    l.PricePerStudent,
+                    l.Attendaces.Select(a => new AttendanceSummary(
                         a.Id,
                         a.StudentId,
-                        a.IsPaid,
-                        StudentName = a.Student.FullName
-                    }).ToList()
-                })
+                        a.Student.FullName, // EF handles the join automatically here
+                        a.IsPaid
+                    )).ToList()
+                ))
                 .ToListAsync();
-            var result = new List<LessonSummary>();
-            foreach (var row in rows)
-            {
-                var attendancesDtos = row.Attendances.Select(a => new AttendanceSummary(
-                    a.Id, a.StudentId, a.StudentName, a.IsPaid)).ToList();
-                result.Add(new LessonSummary(
-                    row.Id, 
-                    row.Name, 
-                    row.Date, 
-                    row.DurationMinutes,
-                    row.IsOnline,
-                    row.IsTotalPrice,
-                    row.PricePerStudent,
-                    attendancesDtos));
-            }
-            return result.OrderByDescending(x => x.Date);
         }
 
         private static List<decimal> EqualSplit(decimal total, int count)
@@ -96,13 +84,20 @@ namespace Repository
             return result;
         }
 
+        public async Task<Lesson> UpsertAsync(Lesson lesson)
+        {
+            _db.Lessons.Add(lesson);
+            await _db.SaveChangesAsync();
+            return lesson;
+        }
+
         public async Task<Lesson> CreateLesson(string name, DateOnly date, int duration, bool isOnline, bool isTotalPrice, decimal pricePerStudent, IReadOnlyList<Guid> studentIds)
         {
             var lesson = new Lesson
             {
                 Name = name,
                 Date = date,
-                DurationMinutes = isTotalPrice ? 0 : duration,
+                DurationMinutes = isTotalPrice ? 0 : duration, // TODO: enable duration for total price lessons
                 IsOnline = isOnline,
                 IsTotalPrice = isTotalPrice,
                 PricePerStudent = pricePerStudent
