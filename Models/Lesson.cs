@@ -11,6 +11,7 @@ namespace Models
         bool IsOnline,
         bool IsTotalPrice,
         decimal PricePerHour,
+        string? Notes,
         IReadOnlyList<AttendanceSummary> Attendances)
     {
         public decimal GrandTotal => Lesson.GetPrice(PricePerHour, DurationMinutes, Attendances.Count(), IsTotalPrice, IsOnline);
@@ -27,6 +28,7 @@ namespace Models
         public int DurationMinutes { get; set; }
         public bool IsOnline { get; set; }
         public bool IsTotalPrice { get; set; }
+        public string? Notes { get; set; }
 
 
         [Precision(18, 2)]

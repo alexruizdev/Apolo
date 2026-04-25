@@ -57,6 +57,14 @@ namespace Apolo.Views
             var totalPriceBox = new CheckBox { Content = "Total price" };
             var priceBox = new NumberBox { Header = "Price per hour:", PlaceholderText = "0.00" };
 
+            var noteBox = new TextBox
+            {
+                Header = "Notes",
+                MinWidth = 400,
+                AcceptsReturn = true,
+                TextWrapping = TextWrapping.Wrap
+            };
+
             var error = new TextBlock
             {
                 Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.IndianRed),
@@ -75,11 +83,20 @@ namespace Apolo.Views
             panel.Children.Add(onlineBox);
             panel.Children.Add(priceBox);
             panel.Children.Add(error);
+            panel.Children.Add(noteBox);
+
+            var viewer = new ScrollViewer
+            {
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                VerticalScrollMode = ScrollMode.Enabled,
+                MaxHeight = 500,
+                Content = panel
+            };
 
             var dialog = new ContentDialog()
             {
                 Title = "Create lesson",
-                Content = panel,
+                Content = viewer,
                 PrimaryButtonText = "Create",
                 CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
@@ -204,7 +221,7 @@ namespace Apolo.Views
                 var date = DateOnly.FromDateTime(dto.Date);
                 bool isTotalPrice = totalPriceBox.IsChecked == true;
                 int duration = isTotalPrice ? 0 : (int)durationBox.Value;
-                await ViewModel.CreateLessonAsync(nameBox.Text, date, duration, onlineBox.IsChecked == true, isTotalPrice, (decimal)priceBox.Value, selectedIds);
+                await ViewModel.CreateLessonAsync(nameBox.Text, date, duration, onlineBox.IsChecked == true, isTotalPrice, (decimal)priceBox.Value, noteBox.Text, selectedIds);
             }
         }
 
@@ -228,6 +245,16 @@ namespace Apolo.Views
                 Value = (double)row.PricePerHour,
                 PlaceholderText = "0.00"
             };
+            string note = row.Notes ?? string.Empty;
+
+            var noteBox = new TextBox
+            {
+                Header = "Notes",
+                Text = note,
+                MinWidth = 400,
+                AcceptsReturn = true,
+                TextWrapping = TextWrapping.Wrap
+            };
 
             var panel = new StackPanel { Spacing = 8 };
             panel.Children.Add(nameBox);
@@ -236,14 +263,23 @@ namespace Apolo.Views
             panel.Children.Add(onlineBox);
             panel.Children.Add(totalPriceBox);
             panel.Children.Add(priceBox);
+            panel.Children.Add(noteBox);
 
             totalPriceBox.Checked += (_, __) => durationBox.IsEnabled = false;
             totalPriceBox.Unchecked += (_, __) => durationBox.IsEnabled = true;
 
+            var viewer = new ScrollViewer
+            {
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                VerticalScrollMode = ScrollMode.Enabled,
+                MaxHeight = 500,
+                Content = panel
+            };
+
             var dialog = new ContentDialog()
             {
                 Title = "Edit lesson",
-                Content = panel,
+                Content = viewer,
                 PrimaryButtonText = "Save",
                 CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
@@ -263,7 +299,49 @@ namespace Apolo.Views
                     duration, 
                     onlineBox.IsChecked == true,
                     isTotalPrice,
-                    (decimal)priceBox.Value);
+                    (decimal)priceBox.Value,
+                    noteBox.Text);
+            }
+        }
+
+        private async void Notes_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button b || b.DataContext is not LessonSummary row) return;
+
+            var noteBox = new TextBox { 
+                Header = "Notes", 
+                MinWidth = 400, 
+                AcceptsReturn = true, 
+                TextWrapping = TextWrapping.Wrap 
+            };
+
+            noteBox.Text = row.Notes;
+
+            var panel = new StackPanel { Spacing = 8 };
+            panel.Children.Add(noteBox);
+
+            var viewer = new ScrollViewer
+            {
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                VerticalScrollMode = ScrollMode.Enabled,
+                MaxHeight = 500,
+                Content = panel
+            };
+
+            var dialog = new ContentDialog
+            {
+                Title = $"{row.Name} Notes",
+                Content = viewer,
+                PrimaryButtonText = "Save",
+                CloseButtonText = Loc.Buttons_Cancel,
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = Content.XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                await ViewModel.UpdateLessonNoteAsync(row.Id, noteBox.Text);
             }
         }
 
@@ -293,10 +371,18 @@ namespace Apolo.Views
             panel.Children.Add(list);
             panel.Children.Add(error);
 
+            var viewer = new ScrollViewer
+            {
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                VerticalScrollMode = ScrollMode.Enabled,
+                MaxHeight = 500,
+                Content = panel
+            };
+
             var dialog = new ContentDialog
             {
                 Title = "Add attendances",
-                Content = panel,
+                Content = viewer,
                 PrimaryButtonText = "Add",
                 CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
@@ -362,10 +448,12 @@ namespace Apolo.Views
 
         private async void RemoveAttendance_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not Button b || b.DataContext is not AttendanceSummary attendance)
+            if (sender is not Button b)
                 return;
-            var lesson = FindAncestorDataContext<LessonSummary>(b);
-            if (lesson is null) return;
+            if (b.CommandParameter is not AttendanceSummary attendance)
+                return;
+            if (b.DataContext is not LessonSummary lesson)
+                return;
 
             var dialog = new ContentDialog()
             {

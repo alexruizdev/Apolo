@@ -70,6 +70,9 @@
                                     <Button Content="Edit lesson"
                                             Click="EditLesson_Click"
                                             IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                                    <Button Content="Notes"
+                                            Click="Notes_Click"
+                                            IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
                                     <Button Content="Add attendance"
                                             Click="AddAttendances_Click"
                                             IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" 
@@ -97,7 +100,8 @@
                                                         CommandParameter="{x:Bind}"/>
                                                 <Button Content="{x:Bind loc:Loc.Buttons_Delete}"
                                                         Click="RemoveAttendance_Click"
-                                                        IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                                                        IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" 
+                                                        CommandParameter="{x:Bind}"/>
                                             </StackPanel>
                                         </Grid>
                                     </DataTemplate>

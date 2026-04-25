@@ -71,6 +71,7 @@ namespace Apolo.ViewModels
             bool isOnline,
             bool isTotalPrice,
             decimal price,
+            string? note,
             IReadOnlyList<Guid> studentIds)
         {
             if (IsBusy) return;
@@ -99,7 +100,7 @@ namespace Apolo.ViewModels
 
             try
             {
-                var lesson = await _repository.CreateLesson(name, date, duration, isOnline, isTotalPrice, price, studentIds);
+                var lesson = await _repository.CreateLesson(name, date, duration, isOnline, isTotalPrice, price, note, studentIds);
 
                 // Add to UI
                 var attendanceRows = new List<AttendanceSummary>();
@@ -121,6 +122,7 @@ namespace Apolo.ViewModels
                     lesson.IsOnline,
                     lesson.IsTotalPrice,
                     lesson.PricePerStudent,
+                    lesson.Notes,
                     attendanceRows));
             }
             catch (Exception ex)
@@ -130,7 +132,7 @@ namespace Apolo.ViewModels
             finally { IsBusy = false; }
         }
 
-        public async Task UpdateLessonAsync(Guid id, string name, DateOnly date, int duration, bool isOnline, bool isTotalPrice, decimal price)
+        public async Task UpdateLessonAsync(Guid id, string name, DateOnly date, int duration, bool isOnline, bool isTotalPrice, decimal price, string? note)
         {
             if (IsBusy) return;
             IsBusy = true;
@@ -160,7 +162,7 @@ namespace Apolo.ViewModels
 
             try
             {
-                var entity = await _repository.UpdateLesson(id, name, date, duration, isOnline, isTotalPrice, price);
+                var entity = await _repository.UpdateLesson(id, name, date, duration, isOnline, isTotalPrice, price, note);
 
                 // Update item in UI list
                 var idx = Lessons.Select((s, i) => (s, i)).FirstOrDefault(t => t.s.Id == id).i;
@@ -175,7 +177,40 @@ namespace Apolo.ViewModels
                         entity.IsOnline,
                         entity.IsTotalPrice,
                         entity.PricePerStudent,
+                        note,
                         Lessons[idx].Attendances);
+                }
+            }
+            catch (DbUpdateException)
+            {
+                ErrorMessage = "Save failed due to related data. Check constraints.";
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = ex.Message;
+            }
+            finally { IsBusy = false; }
+        }
+
+        public async Task UpdateLessonNoteAsync(Guid id, string? note)
+        {
+            if (IsBusy) return;
+            IsBusy = true;
+            ErrorMessage = null;
+
+            if (string.IsNullOrWhiteSpace(note))
+                note = null; // Normalize to null for easier handling in the database and UI
+            try
+            {
+                var entity = await _repository.UpdateLessonNoteAsync(id, note);
+                // Update item in UI list
+                var idx = Lessons.Select((s, i) => (s, i)).FirstOrDefault(t => t.s.Id == id).i;
+                if (idx >= 0)
+                {
+                    Lessons[idx] = Lessons[idx] with
+                    {
+                        Notes = entity.Notes
+                    };
                 }
             }
             catch (DbUpdateException)

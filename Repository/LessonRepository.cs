@@ -63,6 +63,7 @@ namespace Repository
                     l.IsOnline,
                     l.IsTotalPrice,
                     l.PricePerStudent,
+                    l.Notes,
                     l.Attendaces.Select(a => new AttendanceSummary(
                         a.Id,
                         a.StudentId,
@@ -92,7 +93,7 @@ namespace Repository
             return lesson;
         }
 
-        public async Task<Lesson> CreateLesson(string name, DateOnly date, int duration, bool isOnline, bool isTotalPrice, decimal pricePerStudent, IReadOnlyList<Guid> studentIds)
+        public async Task<Lesson> CreateLesson(string name, DateOnly date, int duration, bool isOnline, bool isTotalPrice, decimal pricePerStudent, string? notes, IReadOnlyList<Guid> studentIds)
         {
             var lesson = new Lesson
             {
@@ -101,6 +102,7 @@ namespace Repository
                 DurationMinutes = isTotalPrice ? 0 : duration, // TODO: enable duration for total price lessons
                 IsOnline = isOnline,
                 IsTotalPrice = isTotalPrice,
+                Notes = notes,
                 PricePerStudent = pricePerStudent
             };
 
@@ -121,7 +123,17 @@ namespace Repository
             return lesson;
         }
 
-        public async Task<Lesson> UpdateLesson(Guid id, string name, DateOnly date, int duration, bool isOnline, bool isTotalPrice, decimal pricePerStudent)
+        public async Task<Lesson> UpdateLessonNoteAsync(Guid id, string? note)
+        {
+            var entity = await _db.Lessons.FirstOrDefaultAsync(i => i.Id == id);
+            if (entity is null)
+                throw new InvalidDataException("Lesson not found.");
+            entity.Notes = note;
+            await _db.SaveChangesAsync();
+            return entity;
+        }
+
+        public async Task<Lesson> UpdateLesson(Guid id, string name, DateOnly date, int duration, bool isOnline, bool isTotalPrice, decimal pricePerStudent, string? note)
         {
             var entity = await _db.Lessons.Include(l => l.Attendaces).FirstOrDefaultAsync(i => i.Id == id);
 
@@ -134,6 +146,7 @@ namespace Repository
             entity.IsOnline = isOnline;
             entity.IsTotalPrice = isTotalPrice;
             entity.PricePerStudent = pricePerStudent;
+            entity.Notes = note;
 
             await _db.SaveChangesAsync();
 
