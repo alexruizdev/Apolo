@@ -36,11 +36,8 @@ namespace Repository
         }
 
         // TODO: add threshold as input
-        public async Task<IEnumerable<LessonSummary>> GetLessonsAsync(bool showOnlyUnpaid)
+        public async Task<IEnumerable<LessonSummary>> GetLessonsAsync(bool showOnlyUnpaid, int? months)
         {
-            // 1. Calculate the date threshold once
-            var dateThreshold = DateOnly.FromDateTime(DateTime.Now.AddMonths(-1));
-
             // 2. Start the query with AsNoTracking (crucial for read-only performance)
             var query = _db.Lessons.AsNoTracking();
 
@@ -50,7 +47,11 @@ namespace Repository
                 query = query.Where(l => l.Attendaces.Any(a => !a.IsPaid));
             }
 
-            query = query.Where(l => l.Date >= dateThreshold);
+            if (months is not null)
+            {
+                var dateThreshold = DateOnly.FromDateTime(DateTime.Now.AddMonths(-months.Value));
+                query = query.Where(l => l.Date >= dateThreshold);
+            }
 
             return await query
                 .OrderByDescending(l => l.Date)

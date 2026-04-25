@@ -2,9 +2,13 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
+using DocumentFormat.OpenXml.Office2016.Excel;
 using Models;
 using Repository;
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Apolo.ViewModels
@@ -117,10 +121,46 @@ namespace Apolo.ViewModels
             await _context.Database.EnsureDeletedAsync();
             await _context.Database.EnsureCreatedAsync();
             _context.SaveChanges();
+
+            IsBusy = false;
+        }
+
+        public async Task<string> GenerateExportSummary(string folderPath, 
+            int serviceCount, int payerCount,
+            int studentCount, int specificationCount,
+            int lessonCount, int invoiceCount)
+        {
+            // 1. Create a descriptive filename with a timestamp
+            string fileName = $"Summary_{DateTime.Now:yyyyMMdd_HHmm}.txt";
+            string fullPath = Path.Combine(folderPath, fileName);
+
+            // 2. Build the content using a StringBuilder
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("===========================================");
+            sb.AppendLine("       APOLO APP - IMPORT SUMMARY          ");
+            sb.AppendLine("===========================================");
+            sb.AppendLine($"Date: {DateTime.Now:f}");
+            sb.AppendLine();
+            sb.AppendLine("RESULTS:");
+            sb.AppendLine($"- Services Imported: {serviceCount}");
+            sb.AppendLine($"- Payers Imported: {payerCount}");
+            sb.AppendLine($"- Students Imported: {studentCount}");
+            sb.AppendLine($"- Specifications Imported: {specificationCount}");
+            sb.AppendLine($"- Lessons Imported: {lessonCount}");
+            sb.AppendLine($"- Invoices Processed: {invoiceCount}");
+            sb.AppendLine();
+            sb.AppendLine("STATUS: Success");
+            sb.AppendLine("===========================================");
+            sb.AppendLine("All data has been saved to the Excel file.");
+
+            // 3. Write the file
+            await File.WriteAllTextAsync(fullPath, sb.ToString());
+
+            return fullPath;
         }
 
         [RelayCommand]
-        public async Task ImportDatabaseFromExcel(string file)
+        public async Task<string> ImportDatabaseFromExcel(string file)
         {
             if (IsBusy)
                 throw new Exception("System is busy.");
@@ -128,6 +168,9 @@ namespace Apolo.ViewModels
                 throw new Exception("Can't access database.");
             if (string.IsNullOrEmpty(file))
                 throw new ArgumentException("No file selected.");
+            var root = Path.GetDirectoryName(file);
+            if (!Directory.Exists(root))
+                throw new ArgumentException($"Directory {root} does not exist.");
 
             var reader = new Excel.Reader();
             reader.ReadExcelAndStore(file);
@@ -170,7 +213,40 @@ namespace Apolo.ViewModels
             }
 
             // TODO : display entries added
-            // TODO: generate a list with invoices
+            return await GenerateExportSummary(root, 
+                reader.Services.Count,
+                reader.Payers.Count,
+                reader.Students.Count,
+                reader.Specifications.Count,
+                reader.Lessons.Count,
+                reader.Invoices.Count);
+        }
+
+        [RelayCommand]
+        public async Task ExportDatabaseToExcel(string folder)
+        {
+            if (IsBusy)
+                throw new Exception("System is busy.");
+            if (_context == null)
+                throw new Exception("Can't access database.");
+            if (string.IsNullOrEmpty(folder))
+                throw new ArgumentException("No folder selected.");
+            if (!Directory.Exists(folder))
+                throw new ArgumentException($"Folder {folder} does not exist.");
+
+            string templatePath = Path.Combine(Windows.ApplicationModel.Package.Current.InstalledPath,
+                "Assets", "Excel", "Template.xlsx");
+
+
+            var writer = new Excel.Writer();
+            writer.Services.AddRange(await _serviceRepository.GetServicesAsync());
+            writer.Payers.AddRange(await _payerRepository.GetPayersAsync());
+            writer.Students.AddRange(await _studentRepository.GetSudentsAsync());
+            writer.Specifications.AddRange(await _specificationRepository.GetSpecificationsAsync());
+            writer.Lessons.AddRange(await _lessonRepository.GetLessonsAsync(false, null));
+            writer.Invoices.AddRange(await _invoiceRepository.GetInvoicesAsync());
+
+            writer.WriteExcel(templatePath, folder);
         }
     }
 }

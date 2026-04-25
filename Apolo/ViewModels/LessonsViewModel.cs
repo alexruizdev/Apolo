@@ -52,7 +52,7 @@ namespace Apolo.ViewModels
                 Services.Clear();
                 foreach (var s in serviceItems) Services.Add(s);
 
-                var items = await _repository.GetLessonsAsync(ShownOnlyUnpaid);
+                var items = await _repository.GetLessonsAsync(ShownOnlyUnpaid, 1); // TODO
 
                 Lessons.Clear();
                 foreach (var item in items) Lessons.Add(item);
