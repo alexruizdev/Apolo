@@ -81,4 +81,32 @@ public sealed partial class ServicesPage : Page
         }
 
     }
+
+    private async void NewService_Click(object sender, RoutedEventArgs e)
+    {
+        var nameBox = new TextBox { Header = "Name", MinWidth = 320, MaxLength = 120 };
+        var priceBox = new NumberBox { Header = "Price per hour", MinWidth = 320, PlaceholderText = "0.00", Value = 0 };
+
+        var panel = new StackPanel { Spacing = 8 };
+        panel.Children.Add(nameBox);
+        panel.Children.Add(priceBox);
+
+        var dialog = new ContentDialog()
+        {
+            Title = "Create service",
+            Content = panel,
+            PrimaryButtonText = "Create",
+            CloseButtonText = Loc.Buttons_Cancel,
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = Content.XamlRoot
+        };
+
+        var result = await dialog.ShowAsync();
+        if (result == ContentDialogResult.Primary)
+        {
+            await ViewModel.AddServiceAsync(
+                nameBox.Text,
+                (decimal)priceBox.Value);
+        }
+    }
 }

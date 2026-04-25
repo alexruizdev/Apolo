@@ -18,12 +18,6 @@ namespace Apolo.ViewModels
         public ObservableCollection<StudentOption> Students { get; } = new();
         public ObservableCollection<ServiceSummary> Services { get; } = new();
 
-        [ObservableProperty] private string newSpecificationName = string.Empty;
-        [ObservableProperty] private int newDuration;
-        [ObservableProperty] private bool newIsOnline;
-        [ObservableProperty] private Guid? newSelectedStudentId;
-        [ObservableProperty] private Guid? newSelectedServiceId;
-
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private string? errorMessage;
 
@@ -67,28 +61,32 @@ namespace Apolo.ViewModels
             finally { IsBusy = false; }
         }
 
-        [RelayCommand]
-        public async Task AddSpecificationAsync()
+        public async Task AddSpecificationAsync(
+            string name,
+            int duration,
+            bool online,
+            Guid? studentId,
+            Guid? serviceId)
         {
             if (IsBusy) return;
 
-            var name = (NewSpecificationName ?? string.Empty).Trim();
+            name = (name ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(name))
             {
                 ErrorMessage = "Specification name is required.";
                 return;
             }
-            if (NewDuration <= 0)
+            if (duration <= 0)
             {
                 ErrorMessage = "Enter a valid non-negative price (e.g., 60).";
                 return;
             }
-            if (NewSelectedServiceId is null)
+            if (serviceId is null)
             {
                 ErrorMessage = "Select a service.";
                 return;
             }
-            if (NewSelectedStudentId is null)
+            if (studentId is null)
             {
                 ErrorMessage = "Select a student.";
                 return;
@@ -101,10 +99,10 @@ namespace Apolo.ViewModels
                 var specification = new Specification
                 {
                     Name = name,
-                    StudentId = NewSelectedStudentId.Value,
-                    ServiceId = NewSelectedServiceId.Value,
-                    DurationMinutes = NewDuration,
-                    IsOnline = NewIsOnline
+                    StudentId = studentId.Value,
+                    ServiceId = serviceId.Value,
+                    DurationMinutes = duration,
+                    IsOnline = online
                 };
                 await _repository.AddSpecificationAsync(specification);
 
@@ -115,13 +113,6 @@ namespace Apolo.ViewModels
                     specification.Id, specification.Name, specification.StudentId, studentName,
                     specification.ServiceId, serviceName, specification.DurationMinutes, specification.IsOnline
                     ));
-
-                // reset form
-                NewSpecificationName = string.Empty;
-                NewDuration = 0;
-                NewIsOnline = false;
-                NewSelectedServiceId = null;
-                NewSelectedStudentId = null;
             }
             catch (DbUpdateException)
             {

@@ -8,9 +8,9 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="bc1a2b6a-ebae-4cc6-8e0e-8f176d21993f"
+    Name="Apolo.Manager"
     Publisher="CN=aruizdlc"
-    Version="0.0.0.0" />
+    Version="0.0.1.0" />
 
   <mp:PhoneIdentity PhoneProductId="bc1a2b6a-ebae-4cc6-8e0e-8f176d21993f" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 

@@ -30,7 +30,7 @@ namespace Repository
             var exists = await _db.Services.AnyAsync(s => s.Name.ToLower() == service.Name.ToLower());
             if (exists)
             {
-                throw new InvalidDataException("A service with this name already exists.");
+                throw new InvalidDataException($"A service with this name already exists: {service.Name}.");
             }
             _db.Services.Add(service);
             await _db.SaveChangesAsync();

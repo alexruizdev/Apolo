@@ -28,7 +28,8 @@ namespace Apolo.Views
             {
                 Header = "Students",
                 SelectionMode = ListViewSelectionMode.Multiple,
-                ItemsSource = ViewModel.Students
+                ItemsSource = ViewModel.Students,
+                MaxHeight = 240
             };
             studentsList.DisplayMemberPath = "FullName";
 
@@ -278,7 +279,8 @@ namespace Apolo.Views
             {
                 Header = "Students",
                 SelectionMode = ListViewSelectionMode.Multiple,
-                ItemsSource = options
+                ItemsSource = options,
+                MaxHeight = 240
             };
             list.DisplayMemberPath = "FullName";
             var error = new TextBlock
@@ -326,13 +328,15 @@ namespace Apolo.Views
 
         private async void EditAttendances_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not Button b || b.DataContext is not AttendanceSummary attendance) return;
+            if (sender is not Button b)
+                return;
+            if (b.CommandParameter is not AttendanceSummary attendance) 
+                return;
+            if (b.DataContext is not LessonSummary lesson)
+                return;
 
             // find parent lesson id
             if (b.Parent as FrameworkElement is null) return;
-
-            var lesson = FindAncestorDataContext<LessonSummary>(b);
-            if (lesson is null) return;
 
             var paidBox = new CheckBox { Content = "Paid", IsChecked = attendance.IsPaid };
 

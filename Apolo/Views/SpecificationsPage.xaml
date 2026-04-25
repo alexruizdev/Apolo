@@ -9,28 +9,33 @@
       x:Name="PageRoot"
       Loaded="Page_Loaded">
 
-    <ScrollView>
-        <StackPanel Padding="24"
-                    Spacing="16">
+    <StackPanel Padding="24"
+                Spacing="16">
 
-            <TextBlock Text="{x:Bind loc:Loc.Menu_Specifications}"
-                       FontSize="28"
-                       FontWeight="SemiBold" />
-            <StackPanel>
-                <TextBlock Text="Loading..."
-                           Foreground="Gray"
-                           Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                <TextBlock Text="{Binding ErrorMessage}"
-                           Foreground="Tomato"
-                           TextWrapping="Wrap"
-                           Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibilityConverter}}" />
-            </StackPanel>
+        <TextBlock Text="{x:Bind loc:Loc.Menu_Specifications}"
+                    FontSize="28"
+                    FontWeight="SemiBold" />
 
+        <Button Content="New specification"
+            Click="NewSpecification_Click"
+            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+        
+        <StackPanel>
+            <TextBlock Text="Loading..."
+                        Foreground="Gray"
+                        Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
+            <TextBlock Text="{Binding ErrorMessage}"
+                        Foreground="Tomato"
+                        TextWrapping="Wrap"
+                        Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibilityConverter}}" />
+        </StackPanel>
+
+        <ScrollView MaxHeight="500">
             <ListView ItemsSource="{Binding Specifications}">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="m:SpecificationSummary">
                         <Grid ColumnDefinitions="*, Auto"
-                              Padding="8">
+                                Padding="8">
                             <StackPanel Orientation="Vertical"
                                         Spacing="2">
                                 <TextBlock>
@@ -48,8 +53,8 @@
                                     <Run Text=" min" />
                                 </TextBlock>
                                 <CheckBox IsChecked="{x:Bind IsOnline}"
-                                          IsHitTestVisible="False"
-                                          Content="Online" />
+                                            IsHitTestVisible="False"
+                                            Content="Online" />
                             </StackPanel>
 
                             <StackPanel Grid.Column="1"
@@ -69,40 +74,6 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-
-            <AppBarSeparator />
-
-            <!--Add new specification -->
-            <StackPanel Spacing="8">
-                <TextBlock Text="Add new specification"
-                           FontWeight="SemiBold" />
-                <TextBox Header="Specification name"
-                         Text="{x:Bind ViewModel.NewSpecificationName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         MaxLength="120" />
-                <ComboBox Header="Student"
-                          ItemsSource="{x:Bind ViewModel.Students}"
-                          SelectedValuePath="Id"
-                          DisplayMemberPath="FullName"
-                          SelectedValue="{x:Bind ViewModel.NewSelectedStudentId, Mode=TwoWay}" />
-                <ComboBox Header="Service"
-                          ItemsSource="{x:Bind ViewModel.Services}"
-                          SelectedValuePath="Id"
-                          DisplayMemberPath="Name"
-                          SelectedValue="{x:Bind ViewModel.NewSelectedServiceId, Mode=TwoWay}" />
-                <NumberBox Header="Duration (minutes):"
-                           Value="{x:Bind ViewModel.NewDuration, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                           SpinButtonPlacementMode="Inline"
-                           SmallChange="15"
-                           LargeChange="30" />
-                <CheckBox Content="Online"
-                          IsChecked="{x:Bind ViewModel.NewIsOnline, Mode=TwoWay}" />
-                <Button Content="Add"
-                        Command="{Binding AddSpecificationCommand}"
-                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
-            </StackPanel>
-
-        </StackPanel>
-
-    </ScrollView>
-
+        </ScrollView>
+    </StackPanel>
 </Page>

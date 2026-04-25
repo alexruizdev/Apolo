@@ -97,6 +97,12 @@ namespace Repository
 
         }
 
+        public async Task UpsertAsync(Invoice invoice)
+        {
+            _db.Invoices.Add(invoice);
+            await _db.SaveChangesAsync();
+        }
+
         public async Task<(int invoiceId, string InvoiceName)> CreateInvoiceAsync(Guid payerId, 
             IEnumerable<Guid> attendanceIds, string? requestedName)
         {
@@ -137,6 +143,16 @@ namespace Repository
             await _db.SaveChangesAsync();
         }
 
-
+        public async Task<IEnumerable<Invoice>> GetInvoicesAsync()
+        {
+            var result = await _db.Invoices
+                .AsNoTracking()
+                .Include(x => x.Payer)
+                .Include(x => x.Lines)
+                    .ThenInclude(x => x.Attendance)
+                        .ThenInclude(x => x.Student)
+                .ToListAsync();
+            return result.OrderBy(x => x.CreatedUTC);
+        }
     }
 }
