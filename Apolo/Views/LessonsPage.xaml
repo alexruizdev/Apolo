@@ -44,24 +44,28 @@
                                     Padding="8">
                             <!--Header line-->
                             <Grid ColumnDefinitions="*, Auto">
-                                <StackPanel Orientation="Horizontal"
-                                            Spacing="12"
-                                            VerticalAlignment="Center">
-                                    <TextBlock Text="{x:Bind Date, Converter={StaticResource DateFormatConverter}}"
-                                                FontWeight="SemiBold" />
-                                    <TextBlock Text="{x:Bind Name}"
-                                                FontWeight="SemiBold" />
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal"
+                                                Spacing="12"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="{x:Bind Date, Converter={StaticResource DateFormatConverter}}"
+                                                    FontWeight="SemiBold" />
+                                        <TextBlock Text="{x:Bind Name}"
+                                                    FontWeight="SemiBold" />
                                     
-                                    <StackPanel Orientation="Horizontal" Spacing="4">
-                                        <SymbolIcon Symbol="Clock" />
-                                        <TextBlock Text="{x:Bind DurationMinutes}" />
-                                        <TextBlock Text="min" />
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <SymbolIcon Symbol="Clock" />
+                                            <TextBlock Text="{x:Bind DurationMinutes}" />
+                                            <TextBlock Text="min" />
+                                        </StackPanel>
+                                    
+                                        <TextBlock>
+                                            <Run Text="Total: " />
+                                            <Run Text="{x:Bind GrandTotal, Converter={StaticResource DecimalToCurrencyConverter}}" />
+                                        </TextBlock>
+
                                     </StackPanel>
-                                    
-                                    <TextBlock>
-                                        <Run Text="Total: " />
-                                        <Run Text="{x:Bind GrandTotal, Converter={StaticResource DecimalToCurrencyConverter}}" />
-                                    </TextBlock>
+                                    <TextBlock Text="{x:Bind ShortNote}" HorizontalAlignment="Left"/>
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="1"

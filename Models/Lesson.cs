@@ -18,6 +18,7 @@ namespace Models
         IReadOnlyList<AttendanceSummary> Attendances)
     {
         public decimal GrandTotal => Lesson.GetPrice(Attendances.Count(), IsPricePerHour, DurationMinutes, PricePerAttendance, IsOnline, TravelAllowance, IsWeekenOrHoliday, WeekendFee);
+        public string ShortNote => Lesson.Truncate(Notes, 70);
     }
     public sealed class Lesson
     {
@@ -55,6 +56,15 @@ namespace Models
                 pricePerStudent = Math.Round(price * (duration.Value / 60m), 2, MidpointRounding.AwayFromZero);
             }
             return travel + (pricePerStudent * attendants);
+        }
+
+        public static string Truncate(string? input, int maxLength)
+        {
+            if (string.IsNullOrEmpty(input)) return string.Empty;
+
+            return input.Length <= maxLength
+                ? input
+                : $"{input[..maxLength]}...";
         }
     }
 }
