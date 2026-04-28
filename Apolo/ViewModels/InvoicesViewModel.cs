@@ -203,7 +203,7 @@ namespace Apolo.ViewModels
 
             var list = attendances.ToArray();
             decimal subTotal = list.Sum(a => a.Price);
-            decimal ivaPercent = user.IvaPercent;
+            decimal ivaPercent = (decimal)user.IvaPercent;
             decimal ivaAmount = Math.Round(subTotal * ivaPercent / 100m, 2, MidpointRounding.AwayFromZero);
             var total = subTotal + ivaAmount;
 

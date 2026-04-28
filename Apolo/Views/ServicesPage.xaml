@@ -38,12 +38,17 @@
                             <StackPanel Orientation="Horizontal"
                                         Spacing="4">
                                 <TextBlock Text="{x:Bind Name}"
-                                            FontWeight="SemiBold" />
-                                <TextBlock Text="-" />
-                                <TextBlock>
+                                            FontWeight="SemiBold" 
+                                        VerticalAlignment="Center"/>
+                                <TextBlock Text="-" 
+                                        VerticalAlignment="Center"/>
+                                <TextBlock VerticalAlignment="Center">
                                     <Run Text="Price:" />
-                                    <Run Text="{x:Bind PricePerHour, Converter={StaticResource DecimalToCurrencyConverter}}" />
+                                    <Run Text="{x:Bind Price, Converter={StaticResource DecimalToCurrencyConverter}}" />
                                 </TextBlock>
+                                <CheckBox IsChecked="{x:Bind IsPricePerHour}"
+                                          Content="Price/hour"
+                                          IsEnabled="False" />
 
                             </StackPanel>
 

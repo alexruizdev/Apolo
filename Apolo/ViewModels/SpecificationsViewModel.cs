@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Apolo.Service;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.EntityFrameworkCore;
 using Models;
@@ -13,17 +14,29 @@ namespace Apolo.ViewModels
     public partial class SpecificationsViewModel : ObservableObject
     {
         SpecificationRepository _repository;
+        UserProfileService _userProfileService;
+        UserProfile _userProfile;
 
         public ObservableCollection<SpecificationSummary> Specifications { get; } = new();
         public ObservableCollection<StudentOption> Students { get; } = new();
         public ObservableCollection<ServiceSummary> Services { get; } = new();
 
+        public decimal TravelAllowance => (decimal)_userProfile.TravelAllowance;
+        public decimal WeekendFee => (decimal)_userProfile.WeekendFee;
+
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private string? errorMessage;
 
-        public SpecificationsViewModel(SpecificationRepository repository)
+        public SpecificationsViewModel(SpecificationRepository repository, UserProfileService userProfileService)
         {
             _repository = repository;
+            _userProfileService = userProfileService;
+            _userProfile = userProfileService.LoadProfileAsync().Result;
+        }
+
+        public async Task RefreshProfileAsync()
+        {
+            _userProfile = await _userProfileService.LoadProfileAsync();
         }
 
         [RelayCommand]
@@ -64,7 +77,9 @@ namespace Apolo.ViewModels
         public async Task AddSpecificationAsync(
             string name,
             int duration,
+            double? price,
             bool online,
+            bool weekend,
             Guid? studentId,
             Guid? serviceId)
         {
@@ -102,7 +117,9 @@ namespace Apolo.ViewModels
                     StudentId = studentId.Value,
                     ServiceId = serviceId.Value,
                     DurationMinutes = duration,
-                    IsOnline = online
+                    Price = (decimal?)price,
+                    IsOnline = online,
+                    IsWeekenOrHoliday = weekend
                 };
                 await _repository.AddSpecificationAsync(specification);
 
@@ -111,8 +128,8 @@ namespace Apolo.ViewModels
 
                 Specifications.Add(new SpecificationSummary(
                     specification.Id, specification.Name, specification.StudentId, studentName,
-                    specification.ServiceId, serviceName, specification.DurationMinutes, specification.IsOnline
-                    ));
+                    specification.ServiceId, serviceName, specification.DurationMinutes, (double?)specification.Price,
+                    specification.IsOnline, specification.IsWeekenOrHoliday));
             }
             catch (DbUpdateException)
             {
@@ -151,7 +168,8 @@ namespace Apolo.ViewModels
             finally { IsBusy = false; }
         }
 
-        public async Task UpdateSpecificationAsync(Guid id, string name, int durationMinutes, bool isOnline, Guid serviceId)
+        public async Task UpdateSpecificationAsync(Guid id, string name, int durationMinutes, double? price,
+            bool isOnline, bool isWeekend, Guid serviceId)
         {
             if (IsBusy) return;
             name = (name ?? "").Trim();
@@ -171,7 +189,7 @@ namespace Apolo.ViewModels
 
             try
             {
-                await _repository.UpdateAsync(id, serviceId, name, durationMinutes, isOnline);
+                await _repository.UpdateAsync(id, serviceId, name, durationMinutes, (decimal?)price, isOnline, isWeekend);
 
                 // Update item in UI list
                 var idx = Specifications.Select((s, i) => (s, i)).FirstOrDefault(t => t.s.Id == id).i;
@@ -183,7 +201,9 @@ namespace Apolo.ViewModels
                     {
                         SpecificationName = name,
                         DurationMinutes = durationMinutes,
+                        Price = price,
                         IsOnline = isOnline,
+                        IsWeekenOrHoliday = isWeekend,
                         ServiceId = serviceId,
                         ServiceName = serviceName
                     };
@@ -200,39 +220,32 @@ namespace Apolo.ViewModels
             finally { IsBusy = false; }
         }
 
-        public async Task CreateLessonFromSpecificationAsync(Guid studentId, string serviceName, int duration, bool isOnline, decimal price, DateOnly date)
+        public async Task CreateLessonFromSpecificationAsync(SpecificationSummary specification, 
+            DateOnly date, ServiceSummary service, decimal travelAllowance, decimal weekendFee)
         {
             if (IsBusy) return;
-
-            serviceName = (serviceName ?? string.Empty).Trim();
-            if (string.IsNullOrWhiteSpace(serviceName))
-            {
-                ErrorMessage = "Name is required.";
-                return;
-            }
-            if (duration <= 0)
-            {
-                ErrorMessage = "Enter a valid non-negative duration (e.g., 60).";
-                return;
-            }
 
             IsBusy = true;
             ErrorMessage = null;
 
             try
             {
-
                 var instance = new Lesson
                 {
-                    Name = serviceName,
+                    Name = specification.ServiceName,
                     Date = date,
-                    DurationMinutes = duration,
-                    IsOnline = isOnline,
-                    PricePerStudent = price
+                    IsPricePerHour = service.IsPricePerHour,
+                    DurationMinutes = specification.DurationMinutes,
+                    PricePerAttendance = (decimal)(specification.Price ?? service.Price),
+                    IsOnline = specification.IsOnline,
+                    TravelAllowance = travelAllowance,
+                    IsWeekenOrHoliday = specification.IsWeekenOrHoliday,
+                    WeekendFee = weekendFee
                 };
                 instance.Attendaces.Add(new Attendance
                 {
-                    StudentId = studentId,
+                    LessonId = instance.Id,
+                    StudentId = specification.StudentId,
                     IsPaid = false,
                 });
 

@@ -1,7 +1,6 @@
 ﻿using Microsoft.Windows.Storage;
 using Models;
 using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Apolo.Service
 {
@@ -23,6 +22,9 @@ namespace Apolo.Service
                 TaxId = v[nameof(UserProfile.TaxId)] as string ?? "",
                 BankName = v[nameof(UserProfile.BankName)] as string ?? "",
                 BankAccount = v[nameof(UserProfile.BankAccount)] as string ?? "",
+                IvaPercent = v[nameof(UserProfile.IvaPercent)] as double? ?? 0,
+                TravelAllowance = v[nameof(UserProfile.TravelAllowance)] as double? ?? 0,
+                WeekendFee = v[nameof(UserProfile.WeekendFee)] as double? ?? 0
             };
 
             return Task.FromResult(p);
@@ -41,6 +43,9 @@ namespace Apolo.Service
             v[nameof(UserProfile.TaxId)] = profile.TaxId;
             v[nameof(UserProfile.BankName)] = profile.BankName;
             v[nameof(UserProfile.BankAccount)] = profile.BankAccount;
+            v[nameof(UserProfile.IvaPercent)] = profile.IvaPercent;
+            v[nameof(UserProfile.TravelAllowance)] = profile.TravelAllowance;
+            v[nameof(UserProfile.WeekendFee)] = profile.WeekendFee;
 
             return Task.CompletedTask;
         }

@@ -46,11 +46,6 @@
                                         <Run Text="Payer: " />
                                         <Run Text="{x:Bind PayerName}" />
                                     </TextBlock>
-                                    <TextBlock>
-                                        <Run Text="Commuting: " />
-                                        <Run Text="{x:Bind CommuteMinutes}" />
-                                        <Run Text=" min" />
-                                    </TextBlock>
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="1"

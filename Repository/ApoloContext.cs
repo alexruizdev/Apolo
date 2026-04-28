@@ -86,18 +86,6 @@ namespace Repository
                 .WithMany()
                 .HasForeignKey(x => x.AttendanceId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            // Constraints
-            //modelBuilder.Entity<Payer>()
-            //    .ToTable(t => t.HasCheckConstraint("CK_Payer_Balance", "Balance => 0"));
-            //modelBuilder.Entity<Student>()
-            //    .ToTable(t => t.HasCheckConstraint("CK_Student_Commute", "CommuteMinutes IS NULL OR CommuteMinutes >= 0"));
-            //modelBuilder.Entity<Service>()
-            //    .ToTable(t => t.HasCheckConstraint("CK_Service_Price", "PricePerHour >= 0"));
-            //modelBuilder.Entity<Lesson>()
-            //    .ToTable(t => t.HasCheckConstraint("CK_Lesson_Duration", "DurationMinutes > 0"));
-            //modelBuilder.Entity<Attendance>()
-            //    .ToTable(t => t.HasCheckConstraint("CK_Attendance_Price", "Price >= 0"));
         }
 
         private void EnforceBusinessRules()

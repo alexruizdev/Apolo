@@ -32,8 +32,7 @@ namespace Repository
                     s.FirstName,
                     s.LastName,
                     s.PayerId,
-                    s.Payer.FullName,
-                    s.CommuteMinutes))
+                    s.Payer.FullName))
                 .ToListAsync();
             return result.OrderBy(x => x.FirstName).ThenBy(x => x.LastName).ToList();
         }
@@ -57,7 +56,7 @@ namespace Repository
             await _db.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(Guid studentId, Guid payerId, string firstName, string lastName, int commute)
+        public async Task UpdateAsync(Guid studentId, Guid payerId, string firstName, string lastName)
         {
             var entity = await _db.Students.FirstOrDefaultAsync(s => s.Id == studentId);
 
@@ -68,7 +67,6 @@ namespace Repository
 
             entity.FirstName = firstName;
             entity.LastName = lastName;
-            entity.CommuteMinutes = commute;
             entity.PayerId = payerId;
 
             await _db.SaveChangesAsync();

@@ -19,7 +19,7 @@
 
             <TextBlock Text="{Binding StatusMessage}"
                        Foreground="Gray"
-                       Visibility="{Binding StatusMessage, Converter={StaticResource NullToVisibilityConverter}}" />
+                       Visibility="{Binding StatusMessage, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
             <Grid ColumnSpacing="24"
                   RowSpacing="12"
@@ -38,6 +38,10 @@
                              Text="{x:Bind ViewModel.City, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <TextBox Header="Phone"
                              Text="{x:Bind ViewModel.Phone, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox Header="IVA %"
+                        Text="{x:Bind ViewModel.IvaPercent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <NumberBox Header="Weekend and Holidays Fee"
+                            Value="{x:Bind ViewModel.WeekendFee, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
 
                 <!-- right column-->
@@ -51,6 +55,8 @@
                              Text="{x:Bind ViewModel.BankAccount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <TextBox Header="CIF"
                              Text="{x:Bind ViewModel.TaxId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <NumberBox Header="Travel Allowance"
+                               Value="{x:Bind ViewModel.TravelAllowance, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                 </StackPanel>
 

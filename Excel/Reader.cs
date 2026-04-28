@@ -39,10 +39,9 @@ namespace Excel
             foreach (var row in rows)
             {
                 string name = row.Cell(1).GetValue<string>().Trim();
-                var cellPrice = row.Cell(3);
-                decimal pricePerHour = 0;
-                if (cellPrice.DataType == XLDataType.Number)
-                    pricePerHour = cellPrice.GetValue<decimal>();
+                decimal price = 0;
+                if (row.Cell(3).DataType == XLDataType.Number)
+                    price = row.Cell(3).GetValue<decimal>();
 
                 if (string.IsNullOrEmpty(name))
                     throw new InvalidDataException("Service name cannot be empty.");
@@ -50,7 +49,8 @@ namespace Excel
                 Services.Add(new Service()
                 {
                     Name = name,
-                    PricePerHour = pricePerHour
+                    IsPricePerHour = true,
+                    Price = price
                 });
             }
         }
@@ -69,7 +69,6 @@ namespace Excel
             Students.Add(new Student()
             {
                 FirstName = "Astex Online Classes",
-                CommuteMinutes = 0,
                 PayerId = Payers.Last().Id,
             });
 
@@ -87,9 +86,6 @@ namespace Excel
                 int defaultTime = 0;
                 if (row.Field("Default Time").TryGetValue(out int defaultTimeResult))
                     defaultTime = defaultTimeResult;
-                int commutingTime = 0;
-                if (row.Field("Commuting Time").TryGetValue(out int commute))
-                    commutingTime = commute;
 
                 // TODO: remove after creating new Excel
                 if (name == "Pino")
@@ -131,7 +127,6 @@ namespace Excel
                     student = new Student()
                     {
                         FirstName = name,
-                        CommuteMinutes = commutingTime,
                         PayerId = payer.Id,
                     };
                     Students.Add(student);
@@ -229,6 +224,9 @@ namespace Excel
                 if (row.Field("Price").TryGetValue(out decimal priceResul))
                     finalPrice = priceResul;
                 bool online = row.Field("Online").GetValue<bool>();
+                decimal travelAllowance = 0;
+                if (row.Field("Commuting").TryGetValue(out decimal travelAllowanceResult))
+                    travelAllowance = travelAllowanceResult;
 
                 // Old version fixes (delete)
                 if (string.IsNullOrWhiteSpace(studentName ))
@@ -245,14 +243,17 @@ namespace Excel
                         continue;
                 }
 
-                var lesson =new Lesson()
+                var lesson = new Lesson()
                 {
-                    Name = string.IsNullOrEmpty(serviceName) ? "Lesson" : serviceName,
                     Date = lessonDate,
+                    Name = string.IsNullOrEmpty(serviceName) ? "Lesson" : serviceName,
+                    IsPricePerHour = false,
                     DurationMinutes = durationMinutes,
+                    PricePerAttendance = finalPrice,
                     IsOnline = online,
-                    PricePerStudent = finalPrice,
-                    IsTotalPrice = true
+                    TravelAllowance = travelAllowance,
+                    IsWeekenOrHoliday = false,
+                    WeekendFee = 0,
                 };
 
                 // Attendance
@@ -260,7 +261,8 @@ namespace Excel
                 {
                     StudentId = student.Id,
                     LessonId = lesson.Id,
-                    IsPaid = false
+                    IsPaid = false,
+                    Price = finalPrice
                 });
                 Lessons.Add(lesson);
             }
@@ -337,7 +339,7 @@ namespace Excel
                 for (int i = 0; i < lessons.Count && payment > 0; i++)
                 {
                     var lesson = lessons[i];
-                    payment -= lesson.PricePerStudent;
+                    payment -= lesson.PricePerAttendance;
                     var attendance = lesson.Attendaces.First(a => a.StudentId == student.Id);
                     attendance.IsPaid = true;
                     invoice.Lines.Add(new InvoiceAttendance()

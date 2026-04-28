@@ -2,11 +2,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
-using DocumentFormat.OpenXml.Office2016.Excel;
 using Models;
 using Repository;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,6 +33,9 @@ namespace Apolo.ViewModels
         [ObservableProperty] private string email = string.Empty;
         [ObservableProperty] private string bankName = string.Empty;
         [ObservableProperty] private string bankAccount = string.Empty;
+        [ObservableProperty] private double ivaPercent = 0;
+        [ObservableProperty] private double weekendFee = 0;
+        [ObservableProperty] private double travelAllowance = 0;
 
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private string? statusMessage;
@@ -77,6 +78,9 @@ namespace Apolo.ViewModels
                 Email = p.Email;
                 BankName = p.BankName;
                 BankAccount = p.BankAccount;
+                IvaPercent = p.IvaPercent;
+                WeekendFee = p.WeekendFee;
+                TravelAllowance = p.TravelAllowance;
                 StatusMessage = "Settings loaded.";
             }
             finally { IsBusy = false; }
@@ -102,6 +106,9 @@ namespace Apolo.ViewModels
                     Email = Email?.Trim() ?? string.Empty,
                     BankAccount = BankAccount?.Trim() ?? string.Empty,
                     BankName = BankName?.Trim() ?? string.Empty,
+                    IvaPercent = IvaPercent,
+                    WeekendFee = WeekendFee,
+                    TravelAllowance = TravelAllowance
                 };
                 await _service.SaveAsync(p);
                 StatusMessage = "Saved.";

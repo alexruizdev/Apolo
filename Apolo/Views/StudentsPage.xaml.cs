@@ -49,7 +49,6 @@ namespace Apolo.ViewModels
         {
             var firstNameBox = new TextBox { Header = "First name", MinWidth = 320 };
             var lastNameBox = new TextBox { Header = "Last name", MinWidth = 320 };
-            var commuteBox = new NumberBox { Header = "Commute (minutes):", Value = 60, SmallChange = 15, LargeChange = 30 };
             var payersBox = new ComboBox
             {
                 Header = "Payer (optional if student is payer)",
@@ -61,8 +60,8 @@ namespace Apolo.ViewModels
             var panel = new StackPanel { Spacing = 8 };
             panel.Children.Add(firstNameBox);
             panel.Children.Add(lastNameBox);
-            panel.Children.Add(commuteBox);
             panel.Children.Add(payersBox);
+
             var dialog = new ContentDialog()
             {
                 Title = "Create student",
@@ -77,10 +76,9 @@ namespace Apolo.ViewModels
             if (result == ContentDialogResult.Primary)
             {
                 await ViewModel.AddStudentAsync(
-                    firstNameBox.Text, 
-                    lastNameBox.Text, 
-                    (Guid?)payersBox.SelectedValue, 
-                    (int)commuteBox.Value);
+                    firstNameBox.Text,
+                    lastNameBox.Text,
+                    (Guid?)payersBox.SelectedValue);
             }
         }
 
@@ -94,7 +92,6 @@ namespace Apolo.ViewModels
             // Prefill with the current names
             var firstBox = new TextBox { Header = "First name", Text = item.FirstName, MinWidth = 320, MaxLength = 100 };
             var lastBox = new TextBox { Header = "Last name", Text = item.LastName, MinWidth = 320, MaxLength = 100 };
-            var commute = new NumberBox { Header = "Commuting time (minutes):", Value = item.CommuteMinutes, SmallChange = 15, LargeChange = 30 };
 
             var payerBox = new ComboBox
             {
@@ -108,7 +105,6 @@ namespace Apolo.ViewModels
             var panel = new StackPanel { Spacing = 8 };
             panel.Children.Add(firstBox);
             panel.Children.Add(lastBox);
-            panel.Children.Add(commute);
             panel.Children.Add(payerBox);
 
             var dialog = new ContentDialog()
@@ -124,7 +120,7 @@ namespace Apolo.ViewModels
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Primary)
             {
-                await ViewModel.UpdateStudentAsync(item.Id, firstBox.Text, lastBox.Text, (int)commute.Value, (Guid)payerBox.SelectedValue);
+                await ViewModel.UpdateStudentAsync(item.Id, firstBox.Text, lastBox.Text, (Guid)payerBox.SelectedValue);
             }
         }
     }

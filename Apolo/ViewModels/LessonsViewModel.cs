@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Apolo.Service;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.EntityFrameworkCore;
 using Models;
@@ -14,6 +15,8 @@ namespace Apolo.ViewModels
     public partial class LessonsViewModel : ObservableObject
     {
         LessonRepository _repository;
+        UserProfileService _userProfileService;
+        UserProfile _userProfile;
 
         public ObservableCollection<LessonSummary> Lessons { get; } = new();
         public ObservableCollection<StudentOption> Students { get; } = new();
@@ -23,9 +26,19 @@ namespace Apolo.ViewModels
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private string? errorMessage;
 
-        public LessonsViewModel(LessonRepository repository)
+        public decimal TravelAllowance => (decimal)_userProfile.TravelAllowance;
+        public decimal WeekendFee => (decimal)_userProfile.WeekendFee;
+
+        public LessonsViewModel(LessonRepository repository, UserProfileService userProfile)
         {
             _repository = repository;
+            _userProfileService = userProfile;
+            _userProfile = userProfile.LoadProfileAsync().Result;
+        }
+
+        public async Task RefreshProfileAsync()
+        {
+            _userProfile = await _userProfileService.LoadProfileAsync();
         }
 
         partial void OnShownOnlyUnpaidChanged(bool value)
@@ -64,13 +77,41 @@ namespace Apolo.ViewModels
             finally { IsBusy = false; }
         }
 
+        public bool ValidateLessonInput(string name, int? duration, bool isPricePerHour, decimal pricePerAttendance)
+        {
+            name = (name ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                ErrorMessage = "Service name is required.";
+                return false;
+            }
+
+            if (isPricePerHour)
+            {
+                if (duration is null)
+                {
+                    ErrorMessage = "Duration is required when the lesson is priced per hour.";
+                    return false;   
+                }
+                if (duration <= 0)
+                {
+                    ErrorMessage = "Enter a valid non-negative duration (e.g., 60).";
+                    return false;
+                }
+            }
+
+            if (pricePerAttendance <= 0)
+            {
+                ErrorMessage = "Enter a valid non-negative price per student (e.g., 42.5).";
+                return false;
+            }
+            return true;
+        }
+
         public async Task CreateLessonAsync(
-            string name,
-            DateOnly date,
-            int duration,
-            bool isOnline,
-            bool isTotalPrice,
-            decimal price,
+            DateOnly date, string name, ServiceSummary service,
+            int? duration, decimal pricePerAttendance,
+            bool isOnline, bool isWeekendOrHoliday,
             string? note,
             IReadOnlyList<Guid> studentIds)
         {
@@ -78,29 +119,17 @@ namespace Apolo.ViewModels
             IsBusy = true;
             ErrorMessage = null;
 
-            name = (name ?? string.Empty).Trim();
-            if (string.IsNullOrWhiteSpace(name))
+            if (!ValidateLessonInput(name, duration, service.IsPricePerHour, pricePerAttendance))
             {
                 IsBusy = false;
-                ErrorMessage = "Service name is required.";
-                return;
-            }
-            if (duration <= 0 && !isTotalPrice)
-            {
-                IsBusy = false;
-                ErrorMessage = "Enter a valid non-negative duration (e.g., 60).";
-                return;
-            }
-            if (studentIds.Count <= 0)
-            {
-                IsBusy = false;
-                ErrorMessage = "Select at least one student.";
-                return;
+                return; 
             }
 
             try
             {
-                var lesson = await _repository.CreateLesson(name, date, duration, isOnline, isTotalPrice, price, note, studentIds);
+                var lesson = await _repository.CreateLesson(date, name, service, duration,
+                    isOnline, TravelAllowance, isWeekendOrHoliday, WeekendFee, 
+                    service.IsPricePerHour, pricePerAttendance, note, studentIds);
 
                 // Add to UI
                 var attendanceRows = new List<AttendanceSummary>();
@@ -118,10 +147,13 @@ namespace Apolo.ViewModels
                     lesson.Id,
                     lesson.Name,
                     lesson.Date,
+                    lesson.IsPricePerHour,
                     lesson.DurationMinutes,
+                    lesson.PricePerAttendance,
                     lesson.IsOnline,
-                    lesson.IsTotalPrice,
-                    lesson.PricePerStudent,
+                    lesson.TravelAllowance,
+                    lesson.IsWeekenOrHoliday,
+                    lesson.WeekendFee,
                     lesson.Notes,
                     attendanceRows));
             }
@@ -132,37 +164,25 @@ namespace Apolo.ViewModels
             finally { IsBusy = false; }
         }
 
-        public async Task UpdateLessonAsync(Guid id, string name, DateOnly date, int duration, bool isOnline, bool isTotalPrice, decimal price, string? note)
+        public async Task UpdateLessonAsync(Guid id, DateOnly date, string name,
+            bool isPricePerHour, int? duration, decimal pricePerAttendance,
+            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, string? note)
         {
             if (IsBusy) return;
             IsBusy = true;
             ErrorMessage = null;
 
-            name = (name ?? string.Empty).Trim();
-            if (string.IsNullOrWhiteSpace(name))
+            if (!ValidateLessonInput(name, duration, isPricePerHour, pricePerAttendance))
             {
                 IsBusy = false;
-                ErrorMessage = "Service name is required.";
-                return;
-            }
-
-            if (duration <= 0 && !isTotalPrice)
-            {
-                IsBusy = false;
-                ErrorMessage = "Enter a valid non-negative duration (e.g., 60).";
-                return;
-            }
-
-            if (price <= 0)
-            {
-                IsBusy = false;
-                ErrorMessage = "Enter a valid non-negative price per student (e.g., 42.5).";
                 return;
             }
 
             try
             {
-                var entity = await _repository.UpdateLesson(id, name, date, duration, isOnline, isTotalPrice, price, note);
+                var entity = await _repository.UpdateLesson(id, date, name, 
+                    isPricePerHour, duration, pricePerAttendance,
+                    isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, note);
 
                 // Update item in UI list
                 var idx = Lessons.Select((s, i) => (s, i)).FirstOrDefault(t => t.s.Id == id).i;
@@ -173,10 +193,13 @@ namespace Apolo.ViewModels
                         id,
                         entity.Name,
                         entity.Date,
+                        entity.IsPricePerHour,
                         entity.DurationMinutes,
+                        entity.PricePerAttendance,
                         entity.IsOnline,
-                        entity.IsTotalPrice,
-                        entity.PricePerStudent,
+                        entity.TravelAllowance,
+                        entity.IsWeekenOrHoliday,
+                        entity.WeekendFee,
                         note,
                         Lessons[idx].Attendances);
                 }

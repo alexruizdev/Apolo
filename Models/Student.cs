@@ -5,7 +5,7 @@ namespace Models
     public sealed record StudentOption(Guid Id, string FullName);
 
     public sealed record StudentSummary(Guid Id, string FirstName, string LastName,
-        Guid PayerId, string PayerName, int CommuteMinutes)
+        Guid PayerId, string PayerName)
     {
         public string FullName => $"{FirstName} {LastName}".Trim();
     }
@@ -16,8 +16,6 @@ namespace Models
 
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
-
-        public int CommuteMinutes { get; set; } // commute to service location
 
         public string FullName => $"{FirstName} {LastName}".Trim();
 

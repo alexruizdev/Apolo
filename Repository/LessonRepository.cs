@@ -30,7 +30,8 @@ namespace Repository
                 .Select(s => new ServiceSummary(
                     s.Id,
                     s.Name,
-                    s.PricePerHour))
+                    s.IsPricePerHour,
+                    (double)s.Price))
                 .ToListAsync();
             return result.OrderBy(x => x.Name).ToList();
         }
@@ -59,10 +60,13 @@ namespace Repository
                     l.Id,
                     l.Name,
                     l.Date,
+                    l.IsPricePerHour,
                     l.DurationMinutes,
+                    l.PricePerAttendance,
                     l.IsOnline,
-                    l.IsTotalPrice,
-                    l.PricePerStudent,
+                    l.TravelAllowance,
+                    l.IsWeekenOrHoliday,
+                    l.WeekendFee,
                     l.Notes,
                     l.Attendaces.Select(a => new AttendanceSummary(
                         a.Id,
@@ -74,18 +78,6 @@ namespace Repository
                 .ToListAsync();
         }
 
-        private static List<decimal> EqualSplit(decimal total, int count)
-        {
-            if (count <= 0) return new List<decimal>();
-            var cents = (int)Math.Round(total * 100m, 0, MidpointRounding.AwayFromZero);
-            var baseShare = cents / count;
-            var remainder = cents % count;
-
-            var result = Enumerable.Repeat(baseShare / 100m, count).ToList();
-            for (int i = 0; i < remainder; i++) result[i] += 0.01m;
-            return result;
-        }
-
         public async Task<Lesson> UpsertAsync(Lesson lesson)
         {
             _db.Lessons.Add(lesson);
@@ -93,28 +85,34 @@ namespace Repository
             return lesson;
         }
 
-        public async Task<Lesson> CreateLesson(string name, DateOnly date, int duration, bool isOnline, bool isTotalPrice, decimal pricePerStudent, string? notes, IReadOnlyList<Guid> studentIds)
+        public async Task<Lesson> CreateLesson(DateOnly date, string name, ServiceSummary service, int? duration, 
+            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee,
+            bool isTotalPrice, decimal pricePerStudent, string? notes, IReadOnlyList<Guid> studentIds)
         {
             var lesson = new Lesson
             {
-                Name = name,
                 Date = date,
-                DurationMinutes = isTotalPrice ? 0 : duration, // TODO: enable duration for total price lessons
+                Name = name,
+                IsPricePerHour = service.IsPricePerHour,
+                DurationMinutes = duration, 
+                PricePerAttendance = (decimal)service.Price,
                 IsOnline = isOnline,
-                IsTotalPrice = isTotalPrice,
-                Notes = notes,
-                PricePerStudent = pricePerStudent
+                TravelAllowance = travelAllowance,
+                IsWeekenOrHoliday = isWeekendOrHoliday,
+                WeekendFee = weekendFee,
+                Notes = notes
             };
 
             _db.Lessons.Add(lesson);
 
-            // split equally accross selected students
             for (int i = 0; i < studentIds.Count; i++)
             {
                 lesson.Attendaces.Add(new Attendance
                 {
+                    LessonId = lesson.Id,
                     StudentId = studentIds[i],
-                    IsPaid = false
+                    IsPaid = false,
+                    Price = lesson.GetFinalPricePerStudent()
                 });
             }
 
@@ -133,19 +131,24 @@ namespace Repository
             return entity;
         }
 
-        public async Task<Lesson> UpdateLesson(Guid id, string name, DateOnly date, int duration, bool isOnline, bool isTotalPrice, decimal pricePerStudent, string? note)
+        public async Task<Lesson> UpdateLesson(Guid id, DateOnly date, string name, 
+            bool isPricePerHour, int? duration, decimal pricePerStudent,
+            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, string? note)
         {
             var entity = await _db.Lessons.Include(l => l.Attendaces).FirstOrDefaultAsync(i => i.Id == id);
 
             if (entity is null)
                 throw new InvalidDataException("Lesson not found.");
 
-            entity.Name = name;
             entity.Date = date;
-            entity.DurationMinutes = isTotalPrice ? 0 : duration;
+            entity.Name = name;
+            entity.IsPricePerHour = isPricePerHour;
+            entity.DurationMinutes = duration;
+            entity.PricePerAttendance = pricePerStudent;
             entity.IsOnline = isOnline;
-            entity.IsTotalPrice = isTotalPrice;
-            entity.PricePerStudent = pricePerStudent;
+            entity.TravelAllowance = travelAllowance;
+            entity.IsWeekenOrHoliday = isWeekendOrHoliday;
+            entity.WeekendFee = weekendFee;
             entity.Notes = note;
 
             await _db.SaveChangesAsync();
@@ -174,7 +177,8 @@ namespace Repository
                 {
                     LessonId = lessonId,
                     StudentId = newIds[i],
-                    IsPaid = false
+                    IsPaid = false,
+                    Price = lesson.GetFinalPricePerStudent()
                 });
             }
 
@@ -231,10 +235,10 @@ namespace Repository
                     sp.Id,
                     $"{sp.Name} - {sp.Student.FullName}".Trim(),
                     sp.ServiceId,
-                    sp.Service.Name,
-                    sp.Service.PricePerHour,
+                    (double?)sp.Price,
                     sp.DurationMinutes,
-                    sp.IsOnline))
+                    sp.IsOnline,
+                    sp.IsWeekenOrHoliday))
                 .ToListAsync();
 
         }

@@ -36,7 +36,8 @@ namespace Repository
                 .Select(s => new ServiceSummary(
                     s.Id,
                     s.Name,
-                    s.PricePerHour))
+                    s.IsPricePerHour,
+                    (double)s.Price))
                 .ToListAsync();
             return result.OrderBy(x => x.Name).ToList();
         }
@@ -53,7 +54,9 @@ namespace Repository
                     sp.ServiceId,
                     sp.Service.Name,
                     sp.DurationMinutes,
-                    sp.IsOnline
+                    (double?)sp.Price,
+                    sp.IsOnline,
+                    sp.IsWeekenOrHoliday
                 ))
                 .ToListAsync();
             return result.OrderBy(x => x.StudentName).ThenBy(x => x.SpecificationName).ToList();
@@ -72,7 +75,7 @@ namespace Repository
             await _db.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(Guid id, Guid serviceId, string name, int duration, bool isOnline)
+        public async Task UpdateAsync(Guid id, Guid serviceId, string name, int duration, decimal? price, bool isOnline, bool isWeekend)
         {
             var entity = await _db.Specifications.FirstOrDefaultAsync(sp => sp.Id == id);
 
@@ -84,7 +87,9 @@ namespace Repository
             entity.ServiceId = serviceId;   
             entity.Name = name;
             entity.DurationMinutes = duration;
+            entity.Price = price;
             entity.IsOnline = isOnline;
+            entity.IsWeekenOrHoliday = isWeekend;
 
             await _db.SaveChangesAsync();
         }

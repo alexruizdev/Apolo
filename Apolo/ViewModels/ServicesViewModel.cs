@@ -44,7 +44,7 @@ namespace Apolo.ViewModels
             finally { IsBusy = false; }
         }
 
-        public async Task AddServiceAsync(string name, decimal price)
+        public async Task AddServiceAsync(string name, bool isPricePerHour, decimal price)
         {
             if (IsBusy) return;
 
@@ -67,11 +67,12 @@ namespace Apolo.ViewModels
                 var entity = new Models.Service
                 {
                     Name = name,
-                    PricePerHour = price
+                    IsPricePerHour = isPricePerHour,
+                    Price = price
                 };
                 await _repository.AddAsync(entity);
 
-                Services.Add(new ServiceSummary(entity.Id, entity.Name, entity.PricePerHour));
+                Services.Add(new ServiceSummary(entity.Id, entity.Name, entity.IsPricePerHour, (double)entity.Price));
             }
             catch (Exception ex)
             {
@@ -106,7 +107,7 @@ namespace Apolo.ViewModels
             finally { IsBusy = false; }
         }
 
-        public async Task UpdateServiceAsync (Guid id, string name, decimal price)
+        public async Task UpdateServiceAsync (Guid id, string name, bool isPricePerHour, decimal price)
         {
             if (IsBusy) return;
 
@@ -127,13 +128,13 @@ namespace Apolo.ViewModels
 
             try
             {
-                await _repository.UpdateAsync(id, name, price);
+                await _repository.UpdateAsync(id, name, isPricePerHour, price);
 
                 // Update item in UI list
                 var idx = Services.Select((s, i) => (s, i)).FirstOrDefault(t => t.s.Id == id).i;
                 if (idx >= 0)
                 {
-                    Services[idx] = new ServiceSummary(id, name, price);
+                    Services[idx] = new ServiceSummary(id, name, isPricePerHour, (double)price);
                 }
             }
             catch (DbUpdateException)

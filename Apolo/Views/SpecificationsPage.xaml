@@ -52,9 +52,16 @@
                                     <Run Text="{x:Bind DurationMinutes}" />
                                     <Run Text=" min" />
                                 </TextBlock>
+                                <TextBlock>
+                                    <Run Text="Price: " />
+                                    <Run Text="{x:Bind Price}" />
+                                </TextBlock>
                                 <CheckBox IsChecked="{x:Bind IsOnline}"
                                             IsHitTestVisible="False"
                                             Content="Online" />
+                                <CheckBox IsChecked="{x:Bind IsWeekenOrHoliday}"
+                                        IsHitTestVisible="False"
+                                        Content="Weekend or holiday" />
                             </StackPanel>
 
                             <StackPanel Grid.Column="1"

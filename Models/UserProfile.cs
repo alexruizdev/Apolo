@@ -11,6 +11,9 @@
         public string Email { get; set; } = string.Empty;
         public string BankName { get; set; } = string.Empty;
         public string BankAccount { get; set; } = string.Empty;
-        public decimal IvaPercent { get; set; } = 0m;
+        public double IvaPercent { get; set; } = 0;
+
+        public double TravelAllowance { get; set; } = 0;
+        public double WeekendFee { get; set; } = 0;
     }
 }

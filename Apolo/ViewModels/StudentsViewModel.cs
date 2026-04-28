@@ -1,15 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net;
-using System.Reflection.Emit;
 using System.Threading.Tasks;
 
 namespace Apolo.ViewModels
@@ -58,7 +54,7 @@ namespace Apolo.ViewModels
             finally { IsBusy = false; }
         }
 
-        public async Task AddStudentAsync(string firstName, string lastName, Guid? payerId, int commute)
+        public async Task AddStudentAsync(string firstName, string lastName, Guid? payerId)
         {
             if (IsBusy) return;
 
@@ -74,8 +70,7 @@ namespace Apolo.ViewModels
             var entity = new Student
             {
                 FirstName = first,
-                LastName = last,
-                CommuteMinutes = commute
+                LastName = last
             };
 
             // Check student name
@@ -122,7 +117,7 @@ namespace Apolo.ViewModels
                 await _repository.UpsertAsync(entity);
 
                 var payerName = Payers.First(p => p.Id == payerId.Value).FullName;
-                Students.Add(new StudentSummary(entity.Id, first, last, payerId.Value, payerName, commute));
+                Students.Add(new StudentSummary(entity.Id, first, last, payerId.Value, payerName));
             }
             catch (Exception ex)
             {
@@ -157,7 +152,7 @@ namespace Apolo.ViewModels
             finally { IsBusy = false; }
         }
 
-        public async Task UpdateStudentAsync (Guid id, string firstName,  string lastName, int commute, Guid newPayerId)
+        public async Task UpdateStudentAsync (Guid id, string firstName,  string lastName, Guid newPayerId)
         {
             if (IsBusy) return;
             var first = (firstName ?? "").Trim();
@@ -174,14 +169,14 @@ namespace Apolo.ViewModels
 
             try
             {
-                await _repository.UpdateAsync(id, newPayerId, first, last, commute);
+                await _repository.UpdateAsync(id, newPayerId, first, last);
 
                 // Update item in UI list
                 var idx = Students.Select((s, i) => (s, i)).FirstOrDefault(t => t.s.Id == id).i;
                 if (idx >= 0)
                 {
                     var payerName = Payers.First(p => p.Id == newPayerId).FullName;
-                    Students[idx] = new StudentSummary(id, first, last, newPayerId, payerName, commute);
+                    Students[idx] = new StudentSummary(id, first, last, newPayerId, payerName);
                 }
             }
             catch (Exception ex)

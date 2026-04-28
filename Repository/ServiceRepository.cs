@@ -20,7 +20,8 @@ namespace Repository
                 .Select(s => new ServiceSummary(
                     s.Id,
                     s.Name,
-                    s.PricePerHour))
+                    s.IsPricePerHour,
+                    (double)s.Price))
                 .ToListAsync();
             return result.OrderBy(x => x.Name).ToList();
         }
@@ -49,7 +50,7 @@ namespace Repository
             await _db.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync (Guid id, string name, decimal price)
+        public async Task UpdateAsync (Guid id, string name, bool isPricePerHour, decimal price)
         {
             var entity = await _db.Services.FirstOrDefaultAsync(s => s.Id == id);
 
@@ -66,7 +67,8 @@ namespace Repository
             }
 
             entity.Name = name;
-            entity.PricePerHour = price;
+            entity.IsPricePerHour = isPricePerHour;
+            entity.Price = price;
 
             await _db.SaveChangesAsync();
         }

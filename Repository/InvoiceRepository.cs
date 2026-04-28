@@ -78,7 +78,7 @@ namespace Repository
                     a.Lesson.Name,
                     a.StudentId,
                     a.Student.FullName,
-                    a.Lesson.GetFinalPricePerStudent()
+                    a.Lesson.GetFinalPricePerStudent() // TODO: add price to invoice
                 ))
                 .ToListAsync();
             return result.OrderBy(x => x.Date);
