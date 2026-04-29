@@ -19,7 +19,10 @@ namespace Repository
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite("DataSource=app.db");
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseSqlite("DataSource=app.db");
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
