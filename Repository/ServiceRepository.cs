@@ -1,6 +1,5 @@
 ﻿using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Models;
 
 namespace Repository
@@ -34,7 +33,7 @@ namespace Repository
                 _db.Services.Add(service);
                 await _db.SaveChangesAsync();
             }
-            catch (DbUpdateException ex) when (ex.InnerException is SqliteException { SqliteErrorCode: 19 })
+            catch (DbUpdateException ex)
             {
                 // SQLite Error 19 is "Constraint Violation"
                 throw new InvalidDataException($"A service with this name already exists: {service.Name}.", ex);

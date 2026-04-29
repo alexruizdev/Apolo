@@ -15,70 +15,61 @@ namespace Repository
 
         public async Task<IEnumerable<PayerSummary>> GetPayersAsync()
         {
-            var unpaid = await _db.Attendances
+            // 1. Fetch only the 'ingredients' needed for the calculation
+            var unpaidAttendances = await _db.Attendances
                 .AsNoTracking()
                 .Where(a => !a.IsPaid)
                 .Select(a => new
                 {
-                    PayerId = a.Student.PayerId,
-                    a.LessonId,
-                    a.StudentId
+                    a.Student.PayerId,
+                    // We pull the Lesson properties needed for the static GetPrice method
+                    a.Lesson.IsPricePerHour,
+                    a.Lesson.DurationMinutes,
+                    a.Lesson.PricePerAttendance,
+                    a.Lesson.IsOnline,
+                    a.Lesson.TravelAllowance,
+                    a.Lesson.IsWeekenOrHoliday,
+                    a.Lesson.WeekendFee
                 })
                 .ToListAsync();
 
-            if (unpaid.Count == 0)
-            {
-                var basicPayers = await _db.Payers
-                    .AsNoTracking()
-                    .Select(p => new PayerSummary(
-                         p.Id,
-                         p.FirstName,
-                         p.LastName,
-                         0m,
-                         p.Address,
-                         p.ZipCode,
-                         p.City,
-                         p.TaxId
-                     ))
-                     .ToListAsync();
-                return basicPayers.OrderBy(x => x.FullName).ToList();
-            }
+            // 2. Group by Payer and calculate using the Model's logic
+            var debtMap = unpaidAttendances
+                .GroupBy(a => a.PayerId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Sum(a => Lesson.GetPrice(
+                        1, // Calculating price per student
+                        a.IsPricePerHour,
+                        a.DurationMinutes,
+                        a.PricePerAttendance,
+                        a.IsOnline,
+                        a.TravelAllowance,
+                        a.IsWeekenOrHoliday,
+                        a.WeekendFee))
+                );
 
-            var lessonIds = unpaid.Select(u => u.LessonId).Distinct().ToList();
-
-            var lessons = await _db.Lessons
+            // 3. Get the Payer list and inject the calculated debt
+            var payers = await _db.Payers
                 .AsNoTracking()
-                .Where(l => lessonIds.Contains(l.Id))
-                .ToDictionaryAsync(l => l.Id);
+                .Select(p => new PayerSummary(
+                    p.Id,
+                    p.FirstName,
+                    p.LastName,
+                    debtMap.ContainsKey(p.Id) ? debtMap[p.Id] : 0m,
+                    p.Address,
+                    p.ZipCode,
+                    p.City,
+                    p.TaxId
+                ))
+                .ToListAsync();
 
-            var totalsByPayer = unpaid
-                .GroupBy(u => u.PayerId)
-                .ToDictionary(g => g.Key, g => g.Sum(u =>
-                {
-                    return lessons[u.LessonId].GetFinalPricePerStudent();
-                }));
-
-            var result = await _db.Payers
-                 .Select(p => new PayerSummary(
-                     p.Id,
-                     p.FirstName,
-                     p.LastName,
-                     totalsByPayer.ContainsKey(p.Id) ? totalsByPayer[p.Id] : 0m,
-                     p.Address,
-                     p.ZipCode,
-                     p.City,
-                     p.TaxId
-                 ))
-                 .AsNoTracking()
-                 .ToListAsync();
-            return result.OrderBy(x => x.FullName).ToList();
+            return payers.OrderBy(x => x.FullName).ToList();
         }
 
         public async Task UpsertAsync(Payer payer)
         {
-            var existingPayer = await _db.Payers
-                .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id == payer.Id);
+            var existingPayer = await _db.Payers.FindAsync(payer.Id);
 
             if (existingPayer == null)
             {
@@ -86,7 +77,8 @@ namespace Repository
             }
             else
             {
-                _db.Payers.Update(payer);
+                // Update only the values, keeping the entity tracked
+                _db.Entry(existingPayer).CurrentValues.SetValues(payer);
             }
 
             await _db.SaveChangesAsync();
@@ -94,19 +86,16 @@ namespace Repository
 
         public async Task DeleteAsync(Guid id)
         {
-            var entity = await _db.Payers
-                .Include(p => p.Students)
-                .FirstOrDefaultAsync(p => p.Id == id);
+            // Check for existence and relations without loading all student objects
+            var hasStudents = await _db.Students.AnyAsync(s => s.PayerId == id);
 
-            if (entity is null)
+            if (hasStudents)
             {
-                throw new ArgumentNullException("Payer not found.");
+                throw new InvalidOperationException("Cannot delete: Payer has associated students.");
             }
 
-            if (entity.Students.Any())
-            {
-                throw new InvalidOperationException("Cannot delete this payer: it has associated students. Reassign or remove students first.");
-            }
+            var entity = await _db.Payers.FindAsync(id)
+                         ?? throw new ArgumentNullException("Payer not found.");
 
             _db.Payers.Remove(entity);
             await _db.SaveChangesAsync();
