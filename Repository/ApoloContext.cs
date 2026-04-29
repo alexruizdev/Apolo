@@ -43,6 +43,10 @@ namespace Repository
                 .HasIndex(s => s.Name)
                 .IsUnique();
 
+            modelBuilder.Entity<Service>()
+                .Property(s => s.Name)
+                .UseCollation("NOCASE"); // SQLite will now ignore case automatically
+
             // Specifications (N:1 to Customer, N:1 to Service)
             modelBuilder.Entity<Specification>()
                 .HasOne(sp => sp.Student)
