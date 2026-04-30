@@ -11,7 +11,7 @@ namespace Apolo.Tests.Data
         [TestInitialize]
         public override void Setup()
         {
-            base.Setup(); // Initializes _context and _connection from base
+            base.Setup(); 
             _repository = new ServiceRepository(_context);
         }
 

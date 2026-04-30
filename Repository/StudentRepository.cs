@@ -25,21 +25,38 @@ namespace Repository
 
         public async Task<IEnumerable<StudentSummary>> GetSudentsAsync()
         {
-            var result = await _db.Students
+            return await _db.Students
                 .AsNoTracking()
+                .OrderBy(s => s.FirstName)
+                .ThenBy(s => s.LastName)
                 .Select(s => new StudentSummary(
                     s.Id,
                     s.FirstName,
                     s.LastName,
                     s.PayerId,
-                    s.Payer.FullName))
+                    s.Payer != null ? s.Payer.FullName : "No Payer Assigned")) // Null safety
                 .ToListAsync();
-            return result.OrderBy(x => x.FirstName).ThenBy(x => x.LastName).ToList();
         }
 
         public async Task UpsertAsync(Student student)
         {
-            _db.Students.Add(student);
+            // A student must have a valid Payer
+            var payerExists = await _db.Payers.AnyAsync(p => p.Id == student.PayerId);
+            if (!payerExists)
+            {
+                throw new InvalidOperationException($"Cannot save student: Payer with ID {student.PayerId} does not exist.");
+            }
+
+            var existing = await _db.Students.FindAsync(student.Id);
+            if (existing == null)
+            {
+                _db.Students.Add(student);
+            }
+            else
+            {
+                _db.Entry(existing).CurrentValues.SetValues(student);
+            }
+
             await _db.SaveChangesAsync();
         }
 
