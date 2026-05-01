@@ -21,16 +21,24 @@ namespace Apolo.Tests.Data
         // Student const
         public const string StudentName1 = "Jane";
         public const string StudentLastName1 = "Smith";
+        public const string StudentName2 = "Alice";
+        public const string StudentLastName2 = "Johnson";
 
         // Lesson const
         public static readonly DateOnly LessonDate1 = DateOnly.Parse("08/19/2012");
         public const string LessonName1 = "Lesson 1";
-        public const int LessonDurationMinutes = 60;
+        public const int NormalDuration = 60;
+        public const int LongDuration = 180;
+        public const int ShortDuration = 25;
         public const decimal LessonPricePerAttendance = 50;
         public const decimal LessonTravelAllowance = 10;
         public const decimal LessonWeekendFee = 5;
         public const string LessonNotes = "This is a test lesson.";
         public const decimal LessonTotalPrice = 65; // 50 + 10 travel + 5 weekend fee
+
+        // Specification const
+        public const string SpecificationName1 = "Specification 1";
+        public const string SpecificationName2 = "Specification 2";
 
         // Service constructors
         public static Service CreateService1() => new Service
@@ -88,6 +96,13 @@ namespace Apolo.Tests.Data
             FirstName = StudentName1,
             LastName = StudentLastName1
         };
+        public static Student CreateStudent2(Guid payerId) => new Student
+        {
+            Id = Guid.NewGuid(),
+            PayerId = payerId,
+            FirstName = StudentName2,
+            LastName = StudentLastName2
+        };
 
         // Lesson constructors
         public static Lesson CreateLesson1() => new Lesson
@@ -96,13 +111,52 @@ namespace Apolo.Tests.Data
             Name = LessonName1,
             Date = LessonDate1,
             IsPricePerHour = true,
-            DurationMinutes = LessonDurationMinutes,
+            DurationMinutes = NormalDuration,
             PricePerAttendance = LessonPricePerAttendance,
             IsOnline = false,
             TravelAllowance = LessonTravelAllowance,
             IsWeekenOrHoliday = true,
             WeekendFee = LessonWeekendFee,
             Notes = LessonNotes
+        };
+
+        public static Lesson CreateLesson1(Guid studentId)
+        {
+            var lesson = CreateLesson1();
+            lesson.Attendaces = new List<Attendance>
+            {
+                new Attendance
+                {
+                    Id = Guid.NewGuid(),
+                    LessonId = lesson.Id,
+                    StudentId = studentId
+                }
+            };
+            return lesson;
+        }
+
+        // Specification constructors
+        public static Specification CreateSpecification1(Guid studentId, Guid serviceId) => new Specification
+        {
+            Id = Guid.NewGuid(),
+            Name = SpecificationName1,
+            StudentId = studentId,
+            ServiceId = serviceId,
+            DurationMinutes = LongDuration,
+            Price = ServicePrice2,
+            IsOnline = false,
+            IsWeekenOrHoliday = true
+        };
+
+        public static Specification CreateSpecification2(Guid studentId, Guid serviceId) => new Specification
+        {
+            Id = Guid.NewGuid(),
+            Name = SpecificationName2,
+            StudentId = studentId,
+            ServiceId = serviceId,
+            DurationMinutes = ShortDuration,
+            IsOnline = true,
+            IsWeekenOrHoliday = false
         };
     }
 }

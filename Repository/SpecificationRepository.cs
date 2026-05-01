@@ -14,13 +14,14 @@ namespace Repository
 
         public async Task<IEnumerable<StudentOption>> GetStudentOptionsAsync()
         {
-            var result = await _db.Students
+            return await _db.Students
                  .AsNoTracking()
+                 .OrderBy(s => s.FirstName)
+                 .ThenBy(s => s.LastName)
                  .Select(p => new StudentOption(
                      p.Id,
                      p.FullName))
                  .ToListAsync();
-            return result.OrderBy(x => x.FullName).ToList();
         }
 
         public async Task AddSpecificationAsync(Specification specification)
@@ -44,8 +45,10 @@ namespace Repository
 
         public async Task<IEnumerable<SpecificationSummary>> GetSpecificationsAsync()
         {
-            var result = await _db.Specifications
+            return await _db.Specifications
                 .AsNoTracking()
+                .OrderBy(sp => sp.Student.FirstName)
+                .ThenBy(sp => sp.Name)
                 .Select(sp => new SpecificationSummary(
                     sp.Id,
                     sp.Name,
@@ -59,7 +62,6 @@ namespace Repository
                     sp.IsWeekenOrHoliday
                 ))
                 .ToListAsync();
-            return result.OrderBy(x => x.StudentName).ThenBy(x => x.SpecificationName).ToList();
         }
 
         public async Task DeleteAsync(Guid id)
@@ -96,6 +98,11 @@ namespace Repository
 
         public async Task AddLessonFromSpecificationAsync(Lesson lesson)
         {
+            if (!lesson.Attendaces.Any())
+            {
+                throw new InvalidOperationException("Cannot create a lesson without any attendances.");
+            }
+
             _db.Lessons.Add(lesson);
             await _db.SaveChangesAsync();
         }
