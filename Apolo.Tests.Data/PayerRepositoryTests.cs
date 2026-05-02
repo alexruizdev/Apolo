@@ -39,7 +39,7 @@ namespace Apolo.Tests.Data
             // Arrange
             var payer = TestGenerator.CreatePayer1(emptyInfo: false);
             var student = TestGenerator.CreateStudent1(payer.Id);
-            var lesson = TestGenerator.CreateLesson1();
+            var lesson = TestGenerator.CreateLessonPaid();
 
             _context.Payers.Add(payer);
             _context.Students.Add(student);
@@ -213,6 +213,26 @@ namespace Apolo.Tests.Data
                 await _repository.UpdateAsync(Guid.NewGuid(), 
                     "New Name", "New Last Name", "New Address", "New Zip", "New City", "New Tax");
             });
+        }
+
+        [TestMethod]
+        public async Task GetPayerOptionsAsync_ReturnsAlphabeticalPayers()
+        {
+            // Arrange
+            _context.Payers.AddRange(
+                new Payer { Id = Guid.NewGuid(), FirstName = "B", LastName = "User" },
+                new Payer { Id = Guid.NewGuid(), FirstName = "A", LastName = "User" },
+                new Payer { Id = Guid.NewGuid(), FirstName = "Z", LastName = "User" }
+            );
+            await _context.SaveChangesAsync();
+
+            // Act
+            var options = (await _repository.GetPayerOptionsAsync()).ToList();
+
+            // Assert
+            Assert.AreEqual("A User", options[0].FullName);
+            Assert.AreEqual("B User", options[1].FullName);
+            Assert.AreEqual("Z User", options[2].FullName);
         }
     }
 }

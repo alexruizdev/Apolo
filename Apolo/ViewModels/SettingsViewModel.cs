@@ -208,10 +208,7 @@ namespace Apolo.ViewModels
             }
 
             // Lessons
-            foreach (var lesson in reader.Lessons)
-            {
-                await _lessonRepository.UpsertAsync(lesson);
-            }
+            await _lessonRepository.AddLessonsAsync(reader.Lessons);
 
             // Invoices
             foreach (var invoice in reader.Invoices)

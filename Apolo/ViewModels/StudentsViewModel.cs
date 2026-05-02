@@ -37,7 +37,7 @@ namespace Apolo.ViewModels
             try
             {
                 // Payer options
-                var payerItems = await _repository.GetPayerOptionsAsync();
+                var payerItems = await _payerRepository.GetPayerOptionsAsync();
 
                 Payers.Clear();
                 foreach (var p in payerItems) Payers.Add(p);

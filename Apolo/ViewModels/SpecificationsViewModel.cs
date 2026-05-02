@@ -1,6 +1,7 @@
 ﻿using Apolo.Service;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DocumentFormat.OpenXml.Office2010.ExcelAc;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
@@ -13,7 +14,10 @@ namespace Apolo.ViewModels
 {
     public partial class SpecificationsViewModel : ObservableObject
     {
-        SpecificationRepository _repository;
+        SpecificationRepository _specificationRepository;
+        StudentRepository _studentRepository;
+        ServiceRepository _serviceRepository;
+        LessonRepository _lessonRepository;
         UserProfileService _userProfileService;
         UserProfile _userProfile;
 
@@ -27,9 +31,16 @@ namespace Apolo.ViewModels
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private string? errorMessage;
 
-        public SpecificationsViewModel(SpecificationRepository repository, UserProfileService userProfileService)
+        public SpecificationsViewModel(SpecificationRepository specificationRepository, 
+            StudentRepository studentRepository,
+            ServiceRepository serviceRepository,
+            LessonRepository lessonRepository,
+            UserProfileService userProfileService)
         {
-            _repository = repository;
+            _specificationRepository = specificationRepository;
+            _studentRepository = studentRepository;
+            _serviceRepository = serviceRepository;
+            _lessonRepository = lessonRepository;
             _userProfileService = userProfileService;
             _userProfile = userProfileService.LoadProfileAsync().Result;
         }
@@ -49,17 +60,17 @@ namespace Apolo.ViewModels
             try
             {
                 // Student options
-                var studentItems = await _repository.GetStudentOptionsAsync();
+                var studentItems = await _studentRepository.GetStudentOptionsAsync();
 
                 Students.Clear();
                 foreach (var s in studentItems) Students.Add(s);
 
-                var serviceItems = await _repository.GetServicesAsync();
+                var serviceItems = await _serviceRepository.GetServicesAsync();
 
                 Services.Clear();
                 foreach (var s in serviceItems) Services.Add(s);
 
-                var items = await _repository.GetSpecificationsAsync();
+                var items = await _specificationRepository.GetSpecificationsAsync();
 
                 Specifications.Clear();
                 foreach (var item in items)
@@ -121,7 +132,7 @@ namespace Apolo.ViewModels
                     IsOnline = online,
                     IsWeekenOrHoliday = weekend
                 };
-                await _repository.AddSpecificationAsync(specification);
+                await _specificationRepository.AddSpecificationAsync(specification);
 
                 var studentName = Students.First(s => s.Id == specification.StudentId).FullName;
                 var serviceName = Services.First(s => s.Id == specification.ServiceId).Name;
@@ -152,7 +163,7 @@ namespace Apolo.ViewModels
 
             try
             {
-                await _repository.DeleteAsync(item.Id);
+                await _specificationRepository.DeleteAsync(item.Id);
 
                 var toRemove = Specifications.FirstOrDefault(s => s.Id == item.Id);
                 if (toRemove != null) Specifications.Remove(toRemove);
@@ -189,7 +200,7 @@ namespace Apolo.ViewModels
 
             try
             {
-                await _repository.UpdateAsync(id, serviceId, name, durationMinutes, (decimal?)price, isOnline, isWeekend);
+                await _specificationRepository.UpdateAsync(id, serviceId, name, durationMinutes, (decimal?)price, isOnline, isWeekend);
 
                 // Update item in UI list
                 var idx = Specifications.Select((s, i) => (s, i)).FirstOrDefault(t => t.s.Id == id).i;
@@ -230,26 +241,11 @@ namespace Apolo.ViewModels
 
             try
             {
-                var instance = new Lesson
-                {
-                    Name = specification.ServiceName,
-                    Date = date,
-                    IsPricePerHour = service.IsPricePerHour,
-                    DurationMinutes = specification.DurationMinutes,
-                    PricePerAttendance = (decimal)(specification.Price ?? service.Price),
-                    IsOnline = specification.IsOnline,
-                    TravelAllowance = travelAllowance,
-                    IsWeekenOrHoliday = specification.IsWeekenOrHoliday,
-                    WeekendFee = weekendFee
-                };
-                instance.Attendaces.Add(new Attendance
-                {
-                    LessonId = instance.Id,
-                    StudentId = specification.StudentId,
-                    IsPaid = false,
-                });
-
-                await _repository.AddLessonFromSpecificationAsync(instance);
+                await _lessonRepository.AddLessonAsync(
+                    date, specification.ServiceName,
+                    service.IsPricePerHour, specification.DurationMinutes, (decimal)(specification.Price ?? service.Price),
+                    specification.IsOnline, travelAllowance, specification.IsWeekenOrHoliday, weekendFee,
+                    null, [ specification.StudentId ] );
             }
             catch (Exception ex)
             {

@@ -48,7 +48,8 @@ namespace Apolo.ViewModels
     }
     public partial class InvoicesViewModel : ObservableObject
     {
-        InvoiceRepository _repository;
+        InvoiceRepository _invoiceRepository;
+        PayerRepository _payerRepository;
 
         public ObservableCollection<PayerOption> Payers { get; } = new();
         public ObservableCollection<InvoiceAttendanceSummary> Attendances { get; } = new();
@@ -57,9 +58,10 @@ namespace Apolo.ViewModels
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private string? errorMessage;
 
-        public InvoicesViewModel(InvoiceRepository repository)
+        public InvoicesViewModel(InvoiceRepository invoiceRepository, PayerRepository payerRepository)
         {
-            _repository = repository;
+            _invoiceRepository = invoiceRepository;
+            _payerRepository = payerRepository;
 
             Attendances.CollectionChanged += (_, __) => RecomputeTotals();
         }
@@ -100,7 +102,7 @@ namespace Apolo.ViewModels
 
             try
             {
-                var payers = await _repository.GetPayerOptionsAsync();
+                var payers = await _payerRepository.GetPayerOptionsAsync();
 
                 Payers.Clear();
                 foreach (var payer in payers) Payers.Add(payer);
@@ -122,7 +124,7 @@ namespace Apolo.ViewModels
 
             try
             {
-                var data = await _repository.GetInvoiceAttendancesAsync(SelectedPayerId.Value);
+                var data = await _invoiceRepository.GetInvoiceAttendancesAsync(SelectedPayerId.Value);
 
                 Attendances.Clear();
                 foreach (var x in data)
@@ -171,7 +173,7 @@ namespace Apolo.ViewModels
 
             try
             {
-                await _repository.UpdateAttendancesAsync(ids);
+                await _invoiceRepository.UpdateAttendancesAsync(ids);
 
                 // Remove paid attendances from the UI
                 for (int i = Attendances.Count - 1; i >= 0; i--)
@@ -353,7 +355,7 @@ namespace Apolo.ViewModels
 
             try
             {
-                var data = await _repository.GetInvoiceAttendancesAsync(invoiceName);
+                var data = await _invoiceRepository.GetInvoiceAttendancesAsync(invoiceName);
 
                 Attendances.Clear();
                 foreach (var x in data)
@@ -382,10 +384,10 @@ namespace Apolo.ViewModels
 
         public async Task<(int invoiceId, string InvoiceName)> CreateAndPersistInvoiceAsync(
             Guid payerId, IEnumerable<Guid> attendanceIds, string? requestedName)
-            => await _repository.CreateInvoiceAsync(payerId, attendanceIds, requestedName);
+            => await _invoiceRepository.CreateInvoiceAsync(payerId, attendanceIds, requestedName);
 
         public async Task<PayerSummary> GetPayer(Guid payerId)
-            => await _repository.GetPayerSummaryAsync(payerId);
+            => await _invoiceRepository.GetPayerSummaryAsync(payerId);
 
     }
 }

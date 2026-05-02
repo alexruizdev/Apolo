@@ -67,6 +67,18 @@ namespace Repository
             return payers.OrderBy(x => x.FullName).ToList();
         }
 
+        public async Task<IEnumerable<PayerOption>> GetPayerOptionsAsync()
+        {
+            return await _db.Payers
+                 .AsNoTracking()
+                 .OrderBy(s => s.FirstName)
+                 .ThenBy(s => s.LastName)
+                 .Select(p => new PayerOption(
+                     p.Id,
+                     p.FullName))
+                 .ToListAsync();
+        }
+
         public async Task UpsertAsync(Payer payer)
         {
             var existingPayer = await _db.Payers.FindAsync(payer.Id);

@@ -14,7 +14,10 @@ namespace Apolo.ViewModels
 {
     public partial class LessonsViewModel : ObservableObject
     {
-        LessonRepository _repository;
+        LessonRepository _lessonRepository;
+        StudentRepository _studentRepository;
+        ServiceRepository _serviceRepository;
+        SpecificationRepository _specificationRepository;
         UserProfileService _userProfileService;
         UserProfile _userProfile;
 
@@ -29,9 +32,13 @@ namespace Apolo.ViewModels
         public decimal TravelAllowance => (decimal)_userProfile.TravelAllowance;
         public decimal WeekendFee => (decimal)_userProfile.WeekendFee;
 
-        public LessonsViewModel(LessonRepository repository, UserProfileService userProfile)
+        public LessonsViewModel(LessonRepository lessonRepository, StudentRepository studentRepository, 
+            ServiceRepository serviceRepository, SpecificationRepository specificationRepository, UserProfileService userProfile)
         {
-            _repository = repository;
+            _lessonRepository = lessonRepository;
+            _studentRepository = studentRepository;
+            _serviceRepository = serviceRepository;
+            _specificationRepository = specificationRepository;
             _userProfileService = userProfile;
             _userProfile = userProfile.LoadProfileAsync().Result;
         }
@@ -55,17 +62,17 @@ namespace Apolo.ViewModels
 
             try
             {
-                var studentsItem = await _repository.GetStudentOptionsAsync();
+                var studentsItem = await _studentRepository.GetStudentOptionsAsync();
 
                 Students.Clear();
                 foreach (var item in studentsItem) Students.Add(item);
 
-                var serviceItems = await _repository.GetServicesAsync();
+                var serviceItems = await _serviceRepository.GetServicesAsync();
 
                 Services.Clear();
                 foreach (var s in serviceItems) Services.Add(s);
 
-                var items = await _repository.GetLessonsAsync(ShownOnlyUnpaid, 1); // TODO
+                var items = await _lessonRepository.GetLessonsAsync(ShownOnlyUnpaid, 1); // TODO
 
                 Lessons.Clear();
                 foreach (var item in items) Lessons.Add(item);
@@ -127,9 +134,10 @@ namespace Apolo.ViewModels
 
             try
             {
-                var lesson = await _repository.CreateLesson(date, name, service, duration,
+                var lesson = await _lessonRepository.AddLessonAsync(date, name, 
+                    service.IsPricePerHour, duration, pricePerAttendance,
                     isOnline, TravelAllowance, isWeekendOrHoliday, WeekendFee, 
-                    service.IsPricePerHour, pricePerAttendance, note, studentIds);
+                    note, studentIds);
 
                 // Add to UI
                 var attendanceRows = new List<AttendanceSummary>();
@@ -180,7 +188,7 @@ namespace Apolo.ViewModels
 
             try
             {
-                var entity = await _repository.UpdateLesson(id, date, name, 
+                var entity = await _lessonRepository.UpdateLesson(id, date, name, 
                     isPricePerHour, duration, pricePerAttendance,
                     isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, note);
 
@@ -225,7 +233,7 @@ namespace Apolo.ViewModels
                 note = null; // Normalize to null for easier handling in the database and UI
             try
             {
-                var entity = await _repository.UpdateLessonNoteAsync(id, note);
+                var entity = await _lessonRepository.UpdateLessonNoteAsync(id, note);
                 // Update item in UI list
                 var idx = Lessons.Select((s, i) => (s, i)).FirstOrDefault(t => t.s.Id == id).i;
                 if (idx >= 0)
@@ -255,7 +263,7 @@ namespace Apolo.ViewModels
 
             try
             {
-                var lesson = await _repository.AddAttendanceAsync(lessonId, studentIds);
+                var lesson = await _lessonRepository.AddAttendanceAsync(lessonId, studentIds);
 
                 // Update UI
                 var idx = Lessons.Select((s, i) => (s, i)).FirstOrDefault(t => t.s.Id == lessonId).i;
@@ -293,7 +301,7 @@ namespace Apolo.ViewModels
 
             try
             {
-                var lesson = await _repository.RemoveAttendanceAsync(lessonId, attendanceId);
+                var lesson = await _lessonRepository.RemoveAttendanceAsync(lessonId, attendanceId);
 
                 // Delete lesson
                 if (lesson.Attendaces.Count == 0)
@@ -342,7 +350,7 @@ namespace Apolo.ViewModels
 
             try
             {
-                var lesson = await _repository.UpdateAttendanceAsync(lessonId, attendanceId, isPaid);
+                var lesson = await _lessonRepository.UpdateAttendanceAsync(lessonId, attendanceId, isPaid);
 
                 // Update UI
                 var idx = Lessons.Select((s, i) => (s, i)).FirstOrDefault(t => t.s.Id == lessonId).i;
@@ -374,7 +382,7 @@ namespace Apolo.ViewModels
 
         public async Task<IEnumerable<SpecificationOption>> GetSpecificationOptionsAsync(List<Guid> studentsIds)
         {
-            return await _repository.GetSpecificationsForStudentAsync(studentsIds);
+            return await _specificationRepository.GetSpecificationsForStudentAsync(studentsIds);
         }
     }
 }

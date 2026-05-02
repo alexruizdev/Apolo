@@ -60,6 +60,40 @@ namespace Apolo.Tests.Data
         }
 
         [TestMethod]
+        public async Task GetSpecificationsForStudentAsync()
+        {
+            // Arrange
+            var service = TestGenerator.CreateService1();
+            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
+            var student1 = TestGenerator.CreateStudent1(payer.Id);
+            var student2 = TestGenerator.CreateStudent2(payer.Id);
+
+            var spec1 = TestGenerator.CreateSpecification1(student1.Id, service.Id);
+            var spec2 = TestGenerator.CreateSpecification2(student2.Id, service.Id);
+
+            _context.Services.Add(service);
+            _context.Payers.Add(payer);
+            _context.Students.Add(student1);
+            _context.Students.Add(student2);
+            _context.Specifications.Add(spec1);
+            _context.Specifications.Add(spec2);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var results = (await _repository.GetSpecificationsForStudentAsync([student1.Id])).ToList();
+
+            // Assert
+            Assert.HasCount(1, results);
+
+            Assert.AreEqual($"{TestGenerator.SpecificationName1} - {student1.FullName}", results[0].Display);
+            Assert.AreEqual(service.Id, results[0].ServiceId);
+            Assert.AreEqual((double)TestGenerator.ServicePrice2, results[0].Price!.Value);
+            Assert.AreEqual(TestGenerator.LongDuration, results[0].DurationMinutes);
+            Assert.IsFalse(results[0].IsOnline);
+            Assert.IsTrue(results[0].IsWeekend);
+        }
+
+        [TestMethod]
         public async Task UpdateAsync_ModifiesAllFieldsSuccessfully()
         {
             // Arrange
@@ -180,97 +214,6 @@ namespace Apolo.Tests.Data
 
             // Assert
             Assert.HasCount(1, _context.Specifications);
-        }
-
-        [TestMethod]
-        public async Task GetServicesAsync()
-        {
-            // Arrange
-            var service1 = TestGenerator.CreateService1();
-            var service2 = TestGenerator.CreateService2();
-
-            _context.Services.Add(service1);
-            _context.Services.Add(service2);
-            await _context.SaveChangesAsync();
-
-            // Act
-            var results = (await _repository.GetServicesAsync()).ToList();
-
-            Assert.HasCount(2, results);
-
-            Assert.AreEqual(TestGenerator.ServiceName2, results[0].Name);
-            Assert.IsFalse(results[0].IsPricePerHour);
-            Assert.AreEqual((double)TestGenerator.ServicePrice2, results[0].Price);
-
-            Assert.AreEqual(TestGenerator.ServiceName1, results[1].Name);
-            Assert.IsTrue(results[1].IsPricePerHour);
-            Assert.AreEqual((double)TestGenerator.ServicePrice1, results[1].Price);
-        }
-
-        [TestMethod]
-        public async Task AddLessonFromSpecificationAsync()
-        {
-            // Arrange
-            var payer = TestGenerator.CreatePayer1(emptyInfo: false);
-            var student = TestGenerator.CreateStudent1(payer.Id);
-            var lesson = TestGenerator.CreateLesson1(student.Id);
-
-            _context.Payers.Add(payer);
-            _context.Students.Add(student);
-
-            await _repository.AddLessonFromSpecificationAsync(lesson);
-
-            // Assert
-            Assert.HasCount(1, _context.Lessons);
-        }
-
-        [TestMethod]
-        public async Task AddLessonFromSpecificationAsync_EmptyAttendace()
-        {
-            var lesson = TestGenerator.CreateLesson1();
-
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            {
-                await _repository.AddLessonFromSpecificationAsync(lesson);
-            });
-        }
-
-        [TestMethod]
-        public async Task GetStudentOptionsAsync_ReturnsAllStudents_InAlphabeticalOrder()
-        {
-            // Arrange: Create a Payer (required for students) and three students out of order
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            _context.Payers.Add(payer);
-
-            _context.Students.AddRange(
-                new Student { Id = Guid.NewGuid(), PayerId = payer.Id, FirstName = "Zoe", LastName = "Adams" },
-                new Student { Id = Guid.NewGuid(), PayerId = payer.Id, FirstName = "Aaron", LastName = "Zebra" },
-                new Student { Id = Guid.NewGuid(), PayerId = payer.Id, FirstName = "Ben", LastName = "Adams" }
-            );
-            await _context.SaveChangesAsync();
-
-            // Act
-            var results = (await _repository.GetStudentOptionsAsync()).ToList();
-
-            // Assert
-            Assert.HasCount(3, results);
-
-            // Order should be: Adams, Ben -> Adams, Zoe -> Zebra, Aaron
-            Assert.AreEqual("Aaron Zebra", results[0].FullName);
-            Assert.AreEqual("Ben Adams", results[1].FullName);
-            Assert.AreEqual("Zoe Adams", results[2].FullName);
-        }
-
-        [TestMethod]
-        public async Task GetStudentOptionsAsync_EmptyDatabase_ReturnsEmptyList()
-        {
-            // Act
-            var results = await _repository.GetStudentOptionsAsync();
-
-            // Assert
-            Assert.IsNotNull(results);
-            Assert.AreEqual(0, results.Count());
         }
     }
 }

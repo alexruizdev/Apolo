@@ -33,17 +33,6 @@ namespace Repository
             );
         }
 
-        public async Task<IEnumerable<PayerOption>> GetPayerOptionsAsync()
-        {
-            var result = await _db.Payers
-                 .AsNoTracking()
-                 .Select(p => new PayerOption(
-                     p.Id,
-                     p.FullName))
-                 .ToListAsync();
-            return result.OrderBy(x => x.FullName).ToList();
-        }
-
         public async Task<IEnumerable<InvoiceAttendanceSummary>> GetInvoiceAttendancesAsync(Guid payerId)
         {
             var result = await _db.Attendances

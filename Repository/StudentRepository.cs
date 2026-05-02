@@ -12,17 +12,6 @@ namespace Repository
             _db = db;
         }
 
-        public async Task<IEnumerable<PayerOption>> GetPayerOptionsAsync()
-        {
-            var result = await _db.Payers
-                 .AsNoTracking()
-                 .Select(p => new PayerOption(
-                     p.Id,
-                     p.FullName))
-                 .ToListAsync();
-            return result.OrderBy(x => x.FullName).ToList();
-        }
-
         public async Task<IEnumerable<StudentSummary>> GetSudentsAsync()
         {
             return await _db.Students
@@ -87,6 +76,18 @@ namespace Repository
             entity.PayerId = payerId;
 
             await _db.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<StudentOption>> GetStudentOptionsAsync()
+        {
+            return await _db.Students
+                 .AsNoTracking()
+                 .OrderBy(s => s.FirstName)
+                 .ThenBy(s => s.LastName)
+                 .Select(p => new StudentOption(
+                     p.Id,
+                     p.FullName))
+                 .ToListAsync();
         }
     }
 }

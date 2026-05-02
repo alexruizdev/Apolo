@@ -12,35 +12,10 @@ namespace Repository
             _db = db;
         }
 
-        public async Task<IEnumerable<StudentOption>> GetStudentOptionsAsync()
-        {
-            return await _db.Students
-                 .AsNoTracking()
-                 .OrderBy(s => s.FirstName)
-                 .ThenBy(s => s.LastName)
-                 .Select(p => new StudentOption(
-                     p.Id,
-                     p.FullName))
-                 .ToListAsync();
-        }
-
         public async Task AddSpecificationAsync(Specification specification)
         {
             _db.Specifications.Add(specification);
             await _db.SaveChangesAsync();
-        }
-
-        public async Task<IEnumerable<ServiceSummary>> GetServicesAsync()
-        {
-            var result = await _db.Services
-                .AsNoTracking()
-                .Select(s => new ServiceSummary(
-                    s.Id,
-                    s.Name,
-                    s.IsPricePerHour,
-                    (double)s.Price))
-                .ToListAsync();
-            return result.OrderBy(x => x.Name).ToList();
         }
 
         public async Task<IEnumerable<SpecificationSummary>> GetSpecificationsAsync()
@@ -62,6 +37,26 @@ namespace Repository
                     sp.IsWeekenOrHoliday
                 ))
                 .ToListAsync();
+        }
+
+        public async Task<IEnumerable<SpecificationOption>> GetSpecificationsForStudentAsync(IEnumerable<Guid> studentsIds)
+        {
+            var ids = studentsIds.Distinct().ToList();
+            if (ids.Count == 0) return new List<SpecificationOption>();
+
+            return await _db.Specifications
+                .AsNoTracking()
+                .Where(sp => ids.Contains(sp.StudentId))
+                .Select(sp => new SpecificationOption(
+                    sp.Id,
+                    $"{sp.Name} - {sp.Student.FullName}".Trim(),
+                    sp.ServiceId,
+                    (double?)sp.Price,
+                    sp.DurationMinutes,
+                    sp.IsOnline,
+                    sp.IsWeekenOrHoliday))
+                .ToListAsync();
+
         }
 
         public async Task DeleteAsync(Guid id)
@@ -93,17 +88,6 @@ namespace Repository
             entity.IsOnline = isOnline;
             entity.IsWeekenOrHoliday = isWeekend;
 
-            await _db.SaveChangesAsync();
-        }
-
-        public async Task AddLessonFromSpecificationAsync(Lesson lesson)
-        {
-            if (!lesson.Attendaces.Any())
-            {
-                throw new InvalidOperationException("Cannot create a lesson without any attendances.");
-            }
-
-            _db.Lessons.Add(lesson);
             await _db.SaveChangesAsync();
         }
     }

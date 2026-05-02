@@ -25,8 +25,10 @@ namespace Apolo.Tests.Data
         public const string StudentLastName2 = "Johnson";
 
         // Lesson const
-        public static readonly DateOnly LessonDate1 = DateOnly.Parse("08/19/2012");
-        public const string LessonName1 = "Lesson 1";
+        public static readonly DateOnly LessonOldDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(-6));
+        public static readonly DateOnly LessonNewDate = DateOnly.FromDateTime(DateTime.Now);
+        public const string LessonNamePaid = "Lesson paid";
+        public const string LessonNameUnpaid = "Lesson unpaid";
         public const int NormalDuration = 60;
         public const int LongDuration = 180;
         public const int ShortDuration = 25;
@@ -105,11 +107,11 @@ namespace Apolo.Tests.Data
         };
 
         // Lesson constructors
-        public static Lesson CreateLesson1() => new Lesson
+        public static Lesson CreateLessonPaid() => new Lesson
         {
             Id = Guid.NewGuid(),
-            Name = LessonName1,
-            Date = LessonDate1,
+            Name = LessonNamePaid,
+            Date = LessonOldDate,
             IsPricePerHour = true,
             DurationMinutes = NormalDuration,
             PricePerAttendance = LessonPricePerAttendance,
@@ -119,17 +121,32 @@ namespace Apolo.Tests.Data
             WeekendFee = LessonWeekendFee,
             Notes = LessonNotes
         };
-
-        public static Lesson CreateLesson1(Guid studentId)
+        public static Lesson CreateLessonUnpaid(bool paid = false) => new Lesson
         {
-            var lesson = CreateLesson1();
+            Id = Guid.NewGuid(),
+            Name = paid ? LessonNamePaid : LessonNameUnpaid,
+            Date = LessonNewDate,
+            IsPricePerHour = false,
+            DurationMinutes = LongDuration,
+            PricePerAttendance = LessonPricePerAttendance,
+            IsOnline = true,
+            TravelAllowance = LessonTravelAllowance,
+            IsWeekenOrHoliday = false,
+            WeekendFee = LessonWeekendFee,
+            Notes = null
+        };
+
+        public static Lesson CreateLesson(Guid studentId, bool paid = false)
+        {
+            var lesson = paid ? CreateLessonPaid() : CreateLessonUnpaid();
             lesson.Attendaces = new List<Attendance>
             {
                 new Attendance
                 {
                     Id = Guid.NewGuid(),
                     LessonId = lesson.Id,
-                    StudentId = studentId
+                    StudentId = studentId,
+                    IsPaid = paid,
                 }
             };
             return lesson;

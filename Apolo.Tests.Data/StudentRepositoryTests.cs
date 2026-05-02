@@ -38,26 +38,6 @@ namespace Apolo.Tests.Data
         }
 
         [TestMethod]
-        public async Task GetPayerOptionsAsync_ReturnsAlphabeticalPayers()
-        {
-            // Arrange
-            _context.Payers.AddRange(
-                new Payer { Id = Guid.NewGuid(), FirstName = "B", LastName = "User" },
-                new Payer { Id = Guid.NewGuid(), FirstName = "A", LastName = "User" },
-                new Payer { Id = Guid.NewGuid(), FirstName = "Z", LastName = "User" }
-            );
-            await _context.SaveChangesAsync();
-
-            // Act
-            var options = (await _repository.GetPayerOptionsAsync()).ToList();
-
-            // Assert
-            Assert.AreEqual("A User", options[0].FullName);
-            Assert.AreEqual("B User", options[1].FullName);
-            Assert.AreEqual("Z User", options[2].FullName);
-        }
-
-        [TestMethod]
         public async Task UpdateAsync_ChangesPayerLink()
         {
             // Arrange
@@ -235,6 +215,42 @@ namespace Apolo.Tests.Data
             // Assert
             var result = await _context.Students.FindAsync(studentId);
             Assert.AreEqual(p2.Id, result!.PayerId, "Student should have been reassigned to Payer 2.");
+        }
+        [TestMethod]
+        public async Task GetStudentOptionsAsync_ReturnsAllStudents_InAlphabeticalOrder()
+        {
+            // Arrange: Create a Payer (required for students) and three students out of order
+            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
+            _context.Payers.Add(payer);
+
+            _context.Students.AddRange(
+                new Student { Id = Guid.NewGuid(), PayerId = payer.Id, FirstName = "Zoe", LastName = "Adams" },
+                new Student { Id = Guid.NewGuid(), PayerId = payer.Id, FirstName = "Aaron", LastName = "Zebra" },
+                new Student { Id = Guid.NewGuid(), PayerId = payer.Id, FirstName = "Ben", LastName = "Adams" }
+            );
+            await _context.SaveChangesAsync();
+
+            // Act
+            var results = (await _repository.GetStudentOptionsAsync()).ToList();
+
+            // Assert
+            Assert.HasCount(3, results);
+
+            // Order should be: Adams, Ben -> Adams, Zoe -> Zebra, Aaron
+            Assert.AreEqual("Aaron Zebra", results[0].FullName);
+            Assert.AreEqual("Ben Adams", results[1].FullName);
+            Assert.AreEqual("Zoe Adams", results[2].FullName);
+        }
+
+        [TestMethod]
+        public async Task GetStudentOptionsAsync_EmptyDatabase_ReturnsEmptyList()
+        {
+            // Act
+            var results = await _repository.GetStudentOptionsAsync();
+
+            // Assert
+            Assert.IsNotNull(results);
+            Assert.AreEqual(0, results.Count());
         }
     }
 }
