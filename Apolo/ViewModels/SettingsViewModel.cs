@@ -213,7 +213,7 @@ namespace Apolo.ViewModels
             // Invoices
             foreach (var invoice in reader.Invoices)
             {
-                await _invoiceRepository.UpsertAsync(invoice);
+                await _invoiceRepository.AddAsync(invoice);
             }
 
             // TODO : display entries added

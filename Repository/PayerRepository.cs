@@ -13,6 +13,25 @@ namespace Repository
             _db = db;
         }
 
+        public async Task<PayerSummary> GetPayerSummaryNoOutstandingAsync(Guid payerId)
+        {
+            var payer = await _db.Payers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Id == payerId)
+                ?? throw new InvalidDataException("Payer not found.");
+
+            return new PayerSummary(
+                payerId,
+                payer.FirstName,
+                payer.LastName,
+                0m,
+                payer.Address,
+                payer.ZipCode,
+                payer.City,
+                payer.TaxId
+            );
+        }
+
         public async Task<IEnumerable<PayerSummary>> GetPayersAsync()
         {
             // 1. Fetch only the 'ingredients' needed for the calculation

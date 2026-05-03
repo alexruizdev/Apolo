@@ -68,6 +68,38 @@ namespace Apolo.Tests.Data
         }
 
         [TestMethod]
+        public async Task GetPayerSummaryNoOutstandingAsync()
+        {
+            // Arrange
+            var payer = TestGenerator.CreatePayer1(emptyInfo: false);
+
+            _context.Payers.Add(payer);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var payerSummary = await _repository.GetPayerSummaryNoOutstandingAsync(payer.Id);
+
+            // Assert
+            // Verify the debt is calculated (assuming 50 is the price)
+            Assert.AreEqual(TestGenerator.PayerName1, payerSummary.FirstName);
+            Assert.AreEqual(TestGenerator.PayerLastName1, payerSummary.LastName);
+            Assert.AreEqual(0, payerSummary.Outstanding);
+            Assert.AreEqual(TestGenerator.Address1, payerSummary.Address);
+            Assert.AreEqual(TestGenerator.ZipCode1, payerSummary.Zip);
+            Assert.AreEqual(TestGenerator.City1, payerSummary.City);
+            Assert.AreEqual(TestGenerator.TaxId1, payerSummary.TaxId);
+        }
+
+        [TestMethod]
+        public async Task GetPayerSummaryNoOutstandingAsync_InvalidPayer()
+        {
+            await Assert.ThrowsAsync<InvalidDataException>(async () =>
+            {
+                await _repository.GetPayerSummaryNoOutstandingAsync(Guid.NewGuid());
+            });
+        }
+
+        [TestMethod]
         public async Task GetPayersAsync_MissingDuration_ThrowsArgumentException()
         {
             // Arrange

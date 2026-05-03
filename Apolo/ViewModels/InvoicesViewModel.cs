@@ -387,7 +387,7 @@ namespace Apolo.ViewModels
             => await _invoiceRepository.CreateInvoiceAsync(payerId, attendanceIds, requestedName);
 
         public async Task<PayerSummary> GetPayer(Guid payerId)
-            => await _invoiceRepository.GetPayerSummaryAsync(payerId);
+            => await _payerRepository.GetPayerSummaryNoOutstandingAsync(payerId);
 
     }
 }

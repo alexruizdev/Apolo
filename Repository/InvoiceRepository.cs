@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Migrations.Operations;
-using Microsoft.EntityFrameworkCore.Query;
 using Models;
 using System.Data;
 
@@ -15,133 +13,202 @@ namespace Repository
             _db = db;
         }
 
-        public async Task<PayerSummary> GetPayerSummaryAsync(Guid payerId)
-        {
-            var payer = await _db.Payers
-                .AsNoTracking()
-                .FirstAsync();
-
-            return new PayerSummary(
-                payerId,
-                payer.FirstName,
-                payer.LastName,
-                0m,
-                payer.Address,
-                payer.ZipCode,
-                payer.City,
-                payer.TaxId
-            );
-        }
-
         public async Task<IEnumerable<InvoiceAttendanceSummary>> GetInvoiceAttendancesAsync(Guid payerId)
         {
-            var result = await _db.Attendances
+            // 1. Fetch only the raw 'ingredients' from SQL
+            var rawData = await _db.Attendances
                 .AsNoTracking()
                 .Where(a => !a.IsPaid && a.Student.PayerId == payerId)
-                .Select(a => new InvoiceAttendanceSummary
-                (
+                .OrderBy(a => a.Lesson.Date)
+                .Select(a => new
+                {
                     a.Id,
                     a.LessonId,
                     a.Lesson.Date,
                     a.Lesson.Name,
                     a.StudentId,
-                    a.Student.FullName,
-                    a.Lesson.GetFinalPricePerStudent()
-                ))
+                    // Access properties directly so EF can build the JOINs
+                    StudentFirstName = a.Student.FirstName,
+                    StudentLastName = a.Student.LastName,
+                    // Pricing ingredients
+                    a.Lesson.IsPricePerHour,
+                    a.Lesson.DurationMinutes,
+                    a.Lesson.PricePerAttendance,
+                    a.Lesson.IsOnline,
+                    a.Lesson.TravelAllowance,
+                    a.Lesson.IsWeekenOrHoliday,
+                    a.Lesson.WeekendFee
+                })
                 .ToListAsync();
-            return result.OrderBy(x => x.Date);
+
+            // 2. Perform the complex C# math in memory (fast and safe)
+            return rawData.Select(r => new InvoiceAttendanceSummary(
+                r.Id,
+                r.LessonId,
+                r.Date,
+                r.Name,
+                r.StudentId,
+                Student.GetFullName(r.StudentFirstName, r.StudentLastName),
+                Lesson.GetPrice( 
+                    1,
+                    r.IsPricePerHour,
+                    r.DurationMinutes,
+                    r.PricePerAttendance,
+                    r.IsOnline,
+                    r.TravelAllowance,
+                    r.IsWeekenOrHoliday,
+                    r.WeekendFee)
+            ));
         }
 
         public async Task<IEnumerable<InvoiceAttendanceSummary>> GetInvoiceAttendancesAsync(string invoiceName)
         {
-            var result = await _db.InvoiceAttendances
-                .AsNoTracking()
-                .Where(x => x.Invoice.Name == invoiceName.Trim())
-                .Select(x => x.Attendance)
-                .Where(a => !a.IsPaid)
-                .Select(a => new InvoiceAttendanceSummary
-                (
-                    a.Id,
-                    a.LessonId,
-                    a.Lesson.Date,
-                    a.Lesson.Name,
-                    a.StudentId,
-                    a.Student.FullName,
-                    a.Lesson.GetFinalPricePerStudent() // TODO: add price to invoice
-                ))
-                .ToListAsync();
-            return result.OrderBy(x => x.Date);
-        }
+            var cleanName = invoiceName?.Trim() ?? string.Empty;
 
+            var rawData = await _db.InvoiceAttendances
+                .AsNoTracking()
+                .Where(x => x.Invoice.Name == cleanName)
+                .Select(x => new
+                {
+                    x.Attendance.Id,
+                    x.Attendance.LessonId,
+                    x.Attendance.Lesson.Date,
+                    x.Attendance.Lesson.Name,
+                    x.Attendance.StudentId,
+                    StudentFirstName = x.Attendance.Student.FirstName,
+                    StudentLastName = x.Attendance.Student.LastName,
+                    // Pricing ingredients
+                    x.Attendance.Lesson.IsPricePerHour,
+                    x.Attendance.Lesson.DurationMinutes,
+                    x.Attendance.Lesson.PricePerAttendance,
+                    x.Attendance.Lesson.IsOnline,
+                    x.Attendance.Lesson.TravelAllowance,
+                    x.Attendance.Lesson.IsWeekenOrHoliday,
+                    x.Attendance.Lesson.WeekendFee
+                })
+                .OrderBy(x => x.Date)
+                .ToListAsync();
+
+            return rawData.Select(r => new InvoiceAttendanceSummary(
+                r.Id,
+                r.LessonId,
+                r.Date,
+                r.Name,
+                r.StudentId,
+                $"{r.StudentFirstName} {r.StudentLastName}",
+                Lesson.GetPrice(
+                    1,
+                    r.IsPricePerHour,
+                    r.DurationMinutes,
+                    r.PricePerAttendance,
+                    r.IsOnline,
+                    r.TravelAllowance,
+                    r.IsWeekenOrHoliday,
+                    r.WeekendFee)
+            ));
+        }
 
         public async Task UpdateAttendancesAsync(IEnumerable<Guid> attendancesIds)
         {
-            var toUpdate = await _db.Attendances
+            if (!attendancesIds.Any()) return;
+
+            await _db.Attendances
                 .Where(a => attendancesIds.Contains(a.Id))
-                .ToListAsync();
-
-            foreach (var a in toUpdate) a.IsPaid = true;
-
-            await _db.SaveChangesAsync();
+                .ExecuteUpdateAsync(s => s.SetProperty(a => a.IsPaid, true));
 
         }
 
-        public async Task UpsertAsync(Invoice invoice)
+        public async Task AddAsync(Invoice invoice)
         {
             _db.Invoices.Add(invoice);
             await _db.SaveChangesAsync();
         }
 
-        public async Task<(int invoiceId, string InvoiceName)> CreateInvoiceAsync(Guid payerId, 
-            IEnumerable<Guid> attendanceIds, string? requestedName)
+        //public async Task<IEnumerable<int>> AddInvoicesAsync(IEnumerable<Invoice> invoices)
+        //{
+        //    if (invoices == null || !invoices.Any())
+        //        return Enumerable.Empty<int>();
+
+        //    // 1. Add the entire collection to the change tracker in one go
+        //    _db.Invoices.AddRange(invoices);
+
+        //    // 2. Save everything in a single database transaction
+        //    await _db.SaveChangesAsync();
+
+        //    // 3. Return the newly generated IDs
+        //    return invoices.Select(i => i.Id);
+        //}
+
+        public async Task<(int invoiceId, string InvoiceName)> CreateInvoiceAsync(Guid payerId,
+    IEnumerable<Guid> attendanceIds, string? requestedName)
         {
-            var now = DateTime.UtcNow;
-            var invoice = new Invoice
+            // 1. Transaction ensures "All or Nothing"
+            using var transaction = await _db.Database.BeginTransactionAsync();
+
+            try
             {
-                PayerId = payerId,
-                CreatedUTC = now,
-                Name = string.IsNullOrWhiteSpace(requestedName)
-                    ? string.Empty : requestedName.Trim()
-            };
-            foreach (var attendance in attendanceIds)
-            {
-                invoice.Lines.Add(new InvoiceAttendance
+                var now = DateTime.UtcNow;
+                var invoice = new Invoice
                 {
-                    AttendanceId = attendance
-                });
-            }
-            _db.Invoices.Add(invoice);
-            await _db.SaveChangesAsync();
+                    PayerId = payerId,
+                    CreatedUTC = now,
+                    // Use a temporary placeholder if name is missing
+                    Name = string.IsNullOrWhiteSpace(requestedName) ? "PENDING" : requestedName.Trim()
+                };
 
-            // name rule: user input OR fallback "yyyy-MM-E-{Id}
-            if (string.IsNullOrWhiteSpace(invoice.Name))
+                if (!attendanceIds.Any()) 
+                    throw new ArgumentException("Cannot create an invoice with no attendances.");
+
+                foreach (var attendanceId in attendanceIds)
+                {
+                    invoice.Lines.Add(new InvoiceAttendance { AttendanceId = attendanceId });
+                }
+
+                _db.Invoices.Add(invoice);
+                await _db.SaveChangesAsync(); // First save to get the ID
+
+                // 2. Apply Fallback Name Rule
+                if (invoice.Name == "PENDING")
+                {
+                    // Consistent use of 'now' for the name
+                    invoice.Name = $"{now:yyyy-MM}-E-{invoice.Id}";
+                    await _db.SaveChangesAsync(); // Second save to persist the name
+                }
+
+                await transaction.CommitAsync();
+                return (invoice.Id, invoice.Name);
+            }
+            catch
             {
-                invoice.Name = $"{DateTime.Now:yyyy-MM}-E-{invoice.Id}";
-                await _db.SaveChangesAsync();
+                // If anything fails, the invoice is never created
+                await transaction.RollbackAsync();
+                throw;
             }
-
-            return (invoice.Id, invoice.Name);
         }
 
         public async Task DeleteInvoiceAsync(int invoiceId)
         {
-            var invoice = await _db.Invoices.FirstOrDefaultAsync(i => i.Id == invoiceId);
-            if (invoice == null) return;
+            int deletedRows = await _db.Invoices
+                .Where(i => i.Id == invoiceId)
+                .ExecuteDeleteAsync();
 
-            _db.Invoices.Remove(invoice);
-            await _db.SaveChangesAsync();
+            if (deletedRows == 0)
+            {
+                throw new InvalidDataException($"Invoice {invoiceId} not found.");
+            }
         }
 
         public async Task<IEnumerable<Invoice>> GetInvoicesAsync()
         {
-            var result = await _db.Invoices
+            return await _db.Invoices
                 .AsNoTracking()
+                .OrderBy(x => x.CreatedUTC)
+                .AsSplitQuery()
                 .Include(x => x.Payer)
                 .Include(x => x.Lines)
                     .ThenInclude(x => x.Attendance)
                         .ThenInclude(x => x.Student)
                 .ToListAsync();
-            return result.OrderBy(x => x.CreatedUTC);
         }
     }
 }

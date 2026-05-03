@@ -1,4 +1,5 @@
 ﻿using Models;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Apolo.Tests.Data
 {
@@ -41,6 +42,10 @@ namespace Apolo.Tests.Data
         // Specification const
         public const string SpecificationName1 = "Specification 1";
         public const string SpecificationName2 = "Specification 2";
+
+        // Invoice const
+        public const int InvoiceId1 = 1;
+        public const string InvoiceName1 = "Invoice 1";
 
         // Service constructors
         public static Service CreateService1() => new Service
@@ -136,6 +141,34 @@ namespace Apolo.Tests.Data
             Notes = null
         };
 
+        private static DateOnly GetRandomDateLastNMonths(int months)
+        {
+            var random = new Random();
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            var start = today.AddMonths(-months);
+
+            // Calculate the range in days
+            int range = today.DayNumber - start.DayNumber;
+
+            // Pick a random number of days within that range and add to start
+            return start.AddDays(random.Next(range));
+        }
+
+        private static bool RandomBool = Random.Shared.Next(2) == 0;
+
+        public static Lesson CreateRandomLesson(string name, bool paid, int months) => new Lesson
+        {
+            Id = Guid.NewGuid(),
+            Name = name,
+            Date = GetRandomDateLastNMonths(months),
+            IsPricePerHour = false,
+            PricePerAttendance = LessonPricePerAttendance,
+            IsOnline = RandomBool,
+            TravelAllowance = LessonTravelAllowance,
+            IsWeekenOrHoliday = RandomBool,
+            WeekendFee = LessonWeekendFee
+        };
+
         public static Lesson CreateLesson(Guid studentId, bool paid = false)
         {
             var lesson = paid ? CreateLessonPaid() : CreateLessonUnpaid();
@@ -147,6 +180,24 @@ namespace Apolo.Tests.Data
                     LessonId = lesson.Id,
                     StudentId = studentId,
                     IsPaid = paid,
+                    Price = lesson.GetFinalPricePerStudent()
+                }
+            };
+            return lesson;
+        }
+
+        public static Lesson CreateRandomLesson(Guid studentId, string name, bool paid, int months)
+        {
+            var lesson = CreateRandomLesson(name, paid, months);
+            lesson.Attendaces = new List<Attendance>    
+            {
+                new Attendance
+                {
+                    Id = Guid.NewGuid(),
+                    LessonId = lesson.Id,
+                    StudentId = studentId,
+                    IsPaid = paid,
+                    Price = lesson.GetFinalPricePerStudent()
                 }
             };
             return lesson;
@@ -175,5 +226,25 @@ namespace Apolo.Tests.Data
             IsOnline = true,
             IsWeekenOrHoliday = false
         };
+
+        public static Invoice CreateInvoice(List<Lesson> lessons, Guid payerId)
+        {
+            var invoice = new Invoice
+            {
+                Id = InvoiceId1,
+                Name = InvoiceName1,
+                CreatedUTC = DateTime.UtcNow,
+                PayerId = payerId
+            };
+
+            invoice.Lines = lessons.SelectMany(l => l.Attendaces.Select(a => new InvoiceAttendance
+            {
+                Id = Guid.NewGuid(),
+                InvoiceId = invoice.Id,
+                AttendanceId = a.Id
+            })).ToList();
+
+            return invoice;
+        }
     }
 }
