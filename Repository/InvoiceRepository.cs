@@ -4,7 +4,7 @@ using System.Data;
 
 namespace Repository
 {
-    public sealed class InvoiceRepository
+    public sealed class InvoiceRepository : IInvoiceRepository
     {
         private readonly ApoloContext _db;
 

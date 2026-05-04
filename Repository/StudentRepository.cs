@@ -3,7 +3,7 @@ using Models;
 
 namespace Repository
 {
-    public sealed class StudentRepository
+    public sealed class StudentRepository : IStudentRepository
     {
         private readonly ApoloContext _db;
 

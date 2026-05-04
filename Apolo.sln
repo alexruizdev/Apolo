@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Excel", "Excel\Excel.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Apolo.Tests.Data", "Apolo.Tests.Data\Apolo.Tests.Data.csproj", "{F236391A-5186-4378-8FCA-F8803639E7BE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Apolo.Tests.Models", "Apolo.Tests.Models\Apolo.Tests.Models.csproj", "{B9FE03A3-0D79-49BA-BFCB-B372EBA5C18D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -89,6 +91,18 @@ Global
 		{F236391A-5186-4378-8FCA-F8803639E7BE}.Release|x64.Build.0 = Release|Any CPU
 		{F236391A-5186-4378-8FCA-F8803639E7BE}.Release|x86.ActiveCfg = Release|Any CPU
 		{F236391A-5186-4378-8FCA-F8803639E7BE}.Release|x86.Build.0 = Release|Any CPU
+		{B9FE03A3-0D79-49BA-BFCB-B372EBA5C18D}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{B9FE03A3-0D79-49BA-BFCB-B372EBA5C18D}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{B9FE03A3-0D79-49BA-BFCB-B372EBA5C18D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B9FE03A3-0D79-49BA-BFCB-B372EBA5C18D}.Debug|x64.Build.0 = Debug|Any CPU
+		{B9FE03A3-0D79-49BA-BFCB-B372EBA5C18D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B9FE03A3-0D79-49BA-BFCB-B372EBA5C18D}.Debug|x86.Build.0 = Debug|Any CPU
+		{B9FE03A3-0D79-49BA-BFCB-B372EBA5C18D}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{B9FE03A3-0D79-49BA-BFCB-B372EBA5C18D}.Release|ARM64.Build.0 = Release|Any CPU
+		{B9FE03A3-0D79-49BA-BFCB-B372EBA5C18D}.Release|x64.ActiveCfg = Release|Any CPU
+		{B9FE03A3-0D79-49BA-BFCB-B372EBA5C18D}.Release|x64.Build.0 = Release|Any CPU
+		{B9FE03A3-0D79-49BA-BFCB-B372EBA5C18D}.Release|x86.ActiveCfg = Release|Any CPU
+		{B9FE03A3-0D79-49BA-BFCB-B372EBA5C18D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

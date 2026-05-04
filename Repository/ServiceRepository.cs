@@ -3,7 +3,7 @@ using Models;
 
 namespace Repository
 {
-    public sealed class ServiceRepository
+    public sealed class ServiceRepository : IServiceRepository
     {
         private readonly ApoloContext _db;
 

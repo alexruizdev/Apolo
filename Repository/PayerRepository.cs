@@ -4,7 +4,7 @@ using Models;
 
 namespace Repository
 {
-    public sealed class PayerRepository
+    public sealed class PayerRepository : IPayerRepository
     {
         private readonly ApoloContext _db;
 
