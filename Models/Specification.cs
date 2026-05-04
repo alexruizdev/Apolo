@@ -32,7 +32,7 @@
         public Guid ServiceId { get; set; }
         public Service Service { get; set; } = null!;
 
-        public int DurationMinutes { get; set; }
+        public int DurationMinutes { get; set; } // TODO: null
         public decimal? Price { get; set; } // when null, we use service price
         public bool IsOnline { get; set; }
         public bool IsWeekenOrHoliday { get; set; }

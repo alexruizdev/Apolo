@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Models
+﻿namespace Models
 {
     public sealed record PayerSummary(Guid Id, 
         string FirstName, 
@@ -11,7 +9,7 @@ namespace Models
         string? City, 
         string? TaxId)
     {
-        public string FullName => $"{FirstName} {LastName}";
+        public string FullName => Helper.GetFullName(FirstName, LastName);
     }
 
     public sealed record PayerOption(Guid Id, string FullName);
@@ -24,7 +22,7 @@ namespace Models
 
         public string FullName
         {
-            get => $"{FirstName} {LastName}";
+            get => Helper.GetFullName(FirstName, LastName);
         }
 
         public override string ToString() => FullName;

@@ -46,6 +46,8 @@ namespace Models
 
         public static decimal GetPrice(int attendants, bool isPricePerHour, int? duration, decimal price, bool isOnline, decimal travelAllowance, bool isWeekenOrHoliday, decimal weekendFee)
         {
+            if (attendants <= 0)
+                throw new ArgumentException("Attendants must be greater than zero.");
             decimal travel = isOnline ? 0 : travelAllowance;
             price = isWeekenOrHoliday ? weekendFee + price : price;
             decimal pricePerStudent = price;

@@ -48,7 +48,7 @@ namespace Repository
                 r.Date,
                 r.Name,
                 r.StudentId,
-                Student.GetFullName(r.StudentFirstName, r.StudentLastName),
+                Helper.GetFullName(r.StudentFirstName, r.StudentLastName),
                 Lesson.GetPrice( 
                     1,
                     r.IsPricePerHour,
