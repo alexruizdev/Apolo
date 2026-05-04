@@ -1,4 +1,4 @@
-using Apolo.Service;
+using Apolo.Services;
 using Apolo.ViewModels;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.UI.Xaml;

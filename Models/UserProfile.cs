@@ -1,4 +1,6 @@
-﻿namespace Models
+﻿using Models;
+
+namespace Models
 {
     public sealed class UserProfile
     {
@@ -16,4 +18,14 @@
         public double TravelAllowance { get; set; } = 0;
         public double WeekendFee { get; set; } = 0;
     }
+}
+
+namespace Apolo.Services
+{
+    public interface IUserProfileService
+    {
+        Task<UserProfile> LoadProfileAsync();
+        Task SaveAsync(UserProfile profile);
+    }
+
 }

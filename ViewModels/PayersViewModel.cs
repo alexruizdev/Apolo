@@ -1,19 +1,15 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using DocumentFormat.OpenXml.Vml.Office;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
-using System;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Apolo.ViewModels
 {
     public partial class PayersViewModel : ObservableObject
     {
-        PayerRepository _payerRepository;
+        IPayerRepository _payerRepository;
 
         public ObservableCollection<PayerSummary> Payers { get; } = new();
 
@@ -22,7 +18,7 @@ namespace Apolo.ViewModels
         [ObservableProperty]
         private string? errorMessage;
 
-        public PayersViewModel(PayerRepository payerRepository)
+        public PayersViewModel(IPayerRepository payerRepository)
         {
             _payerRepository = payerRepository;
         }

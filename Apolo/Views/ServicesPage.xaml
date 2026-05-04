@@ -4,7 +4,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:local="using:Apolo.Views"
       xmlns:vm="using:Apolo.ViewModels"
-      xmlns:loc="using:Apolo.Service"
+      xmlns:loc="using:Apolo.Services"
       xmlns:m="using:Models"
       x:Name="PageRoot"
       Loaded="Page_Loaded">

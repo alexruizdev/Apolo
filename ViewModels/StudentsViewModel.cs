@@ -3,17 +3,14 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
-using System;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Apolo.ViewModels
 {
     public partial class StudentsViewModel : ObservableObject
     {
-        StudentRepository _repository;
-        PayerRepository _payerRepository;
+        IStudentRepository _repository;
+        IPayerRepository _payerRepository;
 
         public ObservableCollection<StudentSummary> Students { get; } = new();
         public ObservableCollection<PayerOption> Payers { get; } = new();
@@ -21,7 +18,7 @@ namespace Apolo.ViewModels
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private string? errorMessage;
 
-        public StudentsViewModel(StudentRepository studentRepository, PayerRepository payerRepository)
+        public StudentsViewModel(IStudentRepository studentRepository, IPayerRepository payerRepository)
         {
             _repository = studentRepository;
             _payerRepository = payerRepository;

@@ -1,24 +1,20 @@
-﻿using Apolo.Service;
+﻿using Apolo.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using DocumentFormat.OpenXml.Office2010.ExcelAc;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
-using System;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Apolo.ViewModels
 {
     public partial class SpecificationsViewModel : ObservableObject
     {
-        SpecificationRepository _specificationRepository;
-        StudentRepository _studentRepository;
-        ServiceRepository _serviceRepository;
-        LessonRepository _lessonRepository;
-        UserProfileService _userProfileService;
+        ISpecificationRepository _specificationRepository;
+        IStudentRepository _studentRepository;
+        IServiceRepository _serviceRepository;
+        ILessonRepository _lessonRepository;
+        IUserProfileService _userProfileService;
         UserProfile _userProfile;
 
         public ObservableCollection<SpecificationSummary> Specifications { get; } = new();
@@ -31,11 +27,11 @@ namespace Apolo.ViewModels
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private string? errorMessage;
 
-        public SpecificationsViewModel(SpecificationRepository specificationRepository, 
-            StudentRepository studentRepository,
-            ServiceRepository serviceRepository,
-            LessonRepository lessonRepository,
-            UserProfileService userProfileService)
+        public SpecificationsViewModel(ISpecificationRepository specificationRepository, 
+            IStudentRepository studentRepository,
+            IServiceRepository serviceRepository,
+            ILessonRepository lessonRepository,
+            IUserProfileService userProfileService)
         {
             _specificationRepository = specificationRepository;
             _studentRepository = studentRepository;

@@ -1,24 +1,20 @@
-﻿using Apolo.Service;
+﻿using Apolo.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Apolo.ViewModels
 {
     public partial class LessonsViewModel : ObservableObject
     {
-        LessonRepository _lessonRepository;
-        StudentRepository _studentRepository;
-        ServiceRepository _serviceRepository;
-        SpecificationRepository _specificationRepository;
-        UserProfileService _userProfileService;
+        ILessonRepository _lessonRepository;
+        IStudentRepository _studentRepository;
+        IServiceRepository _serviceRepository;
+        ISpecificationRepository _specificationRepository;
+        IUserProfileService _userProfileService;
         UserProfile _userProfile;
 
         public ObservableCollection<LessonSummary> Lessons { get; } = new();
@@ -32,8 +28,8 @@ namespace Apolo.ViewModels
         public decimal TravelAllowance => (decimal)_userProfile.TravelAllowance;
         public decimal WeekendFee => (decimal)_userProfile.WeekendFee;
 
-        public LessonsViewModel(LessonRepository lessonRepository, StudentRepository studentRepository, 
-            ServiceRepository serviceRepository, SpecificationRepository specificationRepository, UserProfileService userProfile)
+        public LessonsViewModel(ILessonRepository lessonRepository, IStudentRepository studentRepository, 
+            IServiceRepository serviceRepository, ISpecificationRepository specificationRepository, IUserProfileService userProfile)
         {
             _lessonRepository = lessonRepository;
             _studentRepository = studentRepository;

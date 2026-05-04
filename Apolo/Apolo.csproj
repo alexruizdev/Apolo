@@ -17,7 +17,6 @@
 	<ItemGroup>
 		<None Remove="CurstomersPage.xaml" />
 		<None Remove="HomePage.xaml" />
-		<None Remove="ViewModels\StudentsPage.xaml" />
 		<None Remove="Views\InvoicesPage.xaml" />
 		<None Remove="Views\LessonsPage.xaml" />
 		<None Remove="Views\PayersPage.xaml" />
@@ -59,6 +58,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Excel\Excel.csproj" />
 		<ProjectReference Include="..\Repository\Repository.csproj" />
+		<ProjectReference Include="..\ViewModels\ViewModels.csproj" />
 	</ItemGroup>
 	
 	<ItemGroup>
@@ -98,11 +98,6 @@
 	</ItemGroup>
 	<ItemGroup>
 		<Page Update="Views\ServicesPage.xaml">
-			<Generator>MSBuild:Compile</Generator>
-		</Page>
-	</ItemGroup>
-	<ItemGroup>
-		<Page Update="ViewModels\StudentsPage.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</Page>
 	</ItemGroup>

@@ -3,23 +3,20 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
-using System;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Apolo.ViewModels
 {
     public partial class ServicesViewModel : ObservableObject
     {
-        ServiceRepository _repository;
+        IServiceRepository _repository;
 
         public ObservableCollection<ServiceSummary> Services { get; } = new();
 
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private string? errorMessage;
 
-        public ServicesViewModel(ServiceRepository serviceRepository)
+        public ServicesViewModel(IServiceRepository serviceRepository)
         {
             _repository = serviceRepository;
         }

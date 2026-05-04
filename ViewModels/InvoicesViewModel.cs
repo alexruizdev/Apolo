@@ -4,13 +4,9 @@ using Models;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using Repository;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Apolo.ViewModels
 {
@@ -48,8 +44,8 @@ namespace Apolo.ViewModels
     }
     public partial class InvoicesViewModel : ObservableObject
     {
-        InvoiceRepository _invoiceRepository;
-        PayerRepository _payerRepository;
+        IInvoiceRepository _invoiceRepository;
+        IPayerRepository _payerRepository;
 
         public ObservableCollection<PayerOption> Payers { get; } = new();
         public ObservableCollection<InvoiceAttendanceSummary> Attendances { get; } = new();
@@ -58,7 +54,7 @@ namespace Apolo.ViewModels
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private string? errorMessage;
 
-        public InvoicesViewModel(InvoiceRepository invoiceRepository, PayerRepository payerRepository)
+        public InvoicesViewModel(IInvoiceRepository invoiceRepository, IPayerRepository payerRepository)
         {
             _invoiceRepository = invoiceRepository;
             _payerRepository = payerRepository;

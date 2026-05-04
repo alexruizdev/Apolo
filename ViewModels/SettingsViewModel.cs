@@ -1,29 +1,25 @@
-﻿using Apolo.Service;
+﻿using Apolo.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
 using Models;
 using Repository;
-using System;
-using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Apolo.ViewModels
 {
     public partial class SettingsViewModel : ObservableObject
     {
-        private readonly UserProfileService _service;
+        private readonly IUserProfileService _service;
 
         private ApoloContext? _context;
 
-        ServiceRepository _serviceRepository;
-        PayerRepository _payerRepository;
-        StudentRepository _studentRepository;
-        SpecificationRepository _specificationRepository;
-        LessonRepository _lessonRepository;
-        InvoiceRepository _invoiceRepository;
-
+        IServiceRepository _serviceRepository;
+        IPayerRepository _payerRepository;
+        IStudentRepository _studentRepository;
+        ISpecificationRepository _specificationRepository;
+        ILessonRepository _lessonRepository;
+        IInvoiceRepository _invoiceRepository;
         [ObservableProperty] private string fullName = string.Empty;
         [ObservableProperty] private string address = string.Empty;
         [ObservableProperty] private string zipCode = string.Empty;
@@ -41,13 +37,13 @@ namespace Apolo.ViewModels
         [ObservableProperty] private string? statusMessage;
 
         public SettingsViewModel(
-            UserProfileService service, 
-            ServiceRepository serviceRepository, 
-            PayerRepository payerRepository,
-            StudentRepository studentRepository,
-            SpecificationRepository specificationRepository,
-            LessonRepository lessonRepository,
-            InvoiceRepository invoiceRepository)
+            IUserProfileService service, 
+            IServiceRepository serviceRepository, 
+            IPayerRepository payerRepository,
+            IStudentRepository studentRepository,
+            ISpecificationRepository specificationRepository,
+            ILessonRepository lessonRepository,
+            IInvoiceRepository invoiceRepository)
         {
             _service = service;
             _context = Ioc.Default.GetService<ApoloContext>();
@@ -237,8 +233,11 @@ namespace Apolo.ViewModels
                 throw new ArgumentException("No folder selected.");
             if (!Directory.Exists(folder))
                 throw new ArgumentException($"Folder {folder} does not exist.");
+            
+            string installedPath = string.Empty; // TODO
+            // Windows.ApplicationModel.Package.Current.InstalledPath
 
-            string templatePath = Path.Combine(Windows.ApplicationModel.Package.Current.InstalledPath,
+            string templatePath = Path.Combine(installedPath, 
                 "Assets", "Excel", "Template.xlsx");
 
 

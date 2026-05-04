@@ -8,7 +8,7 @@ using Microsoft.Windows.Storage.Pickers;
 using System;
 using System.Linq;
 using WinRT.Interop;
-using Apolo.Service;
+using Apolo.Services;
 
 namespace Apolo.Views
 {

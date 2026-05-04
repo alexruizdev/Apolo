@@ -2,9 +2,9 @@
 using Models;
 using System.Threading.Tasks;
 
-namespace Apolo.Service
+namespace Apolo.Services
 {
-    public sealed class UserProfileService
+    public sealed class UserProfileService : IUserProfileService
     {
         private readonly ApplicationDataContainer _ls = ApplicationData.GetDefault().LocalSettings;
         public Task<UserProfile> LoadProfileAsync()
