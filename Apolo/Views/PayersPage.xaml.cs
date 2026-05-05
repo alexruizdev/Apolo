@@ -42,7 +42,7 @@ namespace Apolo.Pages
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Primary)
             {
-                await ViewModel.DeletePayerAsync(item);
+                await ViewModel.DeletePayerAsync(item.Id);
             }
         }
 

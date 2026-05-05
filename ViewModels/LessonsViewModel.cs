@@ -5,46 +5,44 @@ using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
 using System.Collections.ObjectModel;
+using ViewModels;
 
 namespace Apolo.ViewModels
 {
-    public partial class LessonsViewModel : ObservableObject
+    public partial class LessonsViewModel : UserProfileViewModel
     {
         ILessonRepository _lessonRepository;
         IStudentRepository _studentRepository;
         IServiceRepository _serviceRepository;
         ISpecificationRepository _specificationRepository;
-        IUserProfileService _userProfileService;
-        UserProfile _userProfile;
 
         public ObservableCollection<LessonSummary> Lessons { get; } = new();
         public ObservableCollection<StudentOption> Students { get; } = new();
         public ObservableCollection<ServiceSummary> Services { get; } = new();
 
-        [ObservableProperty] private bool shownOnlyUnpaid; // UI filter
-        [ObservableProperty] private bool isBusy;
-        [ObservableProperty] private string? errorMessage;
+        [ObservableProperty] private bool shownOnlyUnpaid;
+        [ObservableProperty] private int showLastNMonths;
 
-        public decimal TravelAllowance => (decimal)_userProfile.TravelAllowance;
-        public decimal WeekendFee => (decimal)_userProfile.WeekendFee;
 
         public LessonsViewModel(ILessonRepository lessonRepository, IStudentRepository studentRepository, 
             IServiceRepository serviceRepository, ISpecificationRepository specificationRepository, IUserProfileService userProfile)
+            : base(userProfile)
         {
             _lessonRepository = lessonRepository;
             _studentRepository = studentRepository;
             _serviceRepository = serviceRepository;
             _specificationRepository = specificationRepository;
             _userProfileService = userProfile;
-            _userProfile = userProfile.LoadProfileAsync().Result;
+            profile = userProfile.LoadProfileAsync().Result;
         }
 
-        public async Task RefreshProfileAsync()
-        {
-            _userProfile = await _userProfileService.LoadProfileAsync();
-        }
-
+        // TODO: This is a bit hacky, but it works for now. Consider a more elegant solution if more filters are added in the future.
         partial void OnShownOnlyUnpaidChanged(bool value)
+        {
+            _ = LoadAsync();
+        }
+
+        partial void OnShowLastNMonthsChanged(int value)
         {
             _ = LoadAsync();
         }
@@ -52,40 +50,61 @@ namespace Apolo.ViewModels
         [RelayCommand]
         public async Task LoadAsync()
         {
-            if (IsBusy) return;
-            IsBusy = true;
-            ErrorMessage = null;
-
-            try
+            if (IsBusy)
             {
-                var studentsItem = await _studentRepository.GetStudentOptionsAsync();
-
-                Students.Clear();
-                foreach (var item in studentsItem) Students.Add(item);
-
-                var serviceItems = await _serviceRepository.GetServicesAsync();
-
-                Services.Clear();
-                foreach (var s in serviceItems) Services.Add(s);
-
-                var items = await _lessonRepository.GetLessonsAsync(ShownOnlyUnpaid, 1); // TODO
-
-                Lessons.Clear();
-                foreach (var item in items) Lessons.Add(item);
+                SetExitFunction("Can't load lessons while busy.", InfoBarType.Warning, false);
+                return;
             }
-            catch (Exception ex)
-            {
-                ErrorMessage = ex.Message;
-            }
-            finally { IsBusy = false; }
+
+            SetEnterFunction();
+
+            var studentsItem = await _studentRepository.GetStudentOptionsAsync();
+
+            Students.Clear();
+            foreach (var item in studentsItem) Students.Add(item);
+
+            var serviceItems = await _serviceRepository.GetServicesAsync();
+
+            Services.Clear();
+            foreach (var s in serviceItems) Services.Add(s);
+
+            int months = ShowLastNMonths > 0 ? ShowLastNMonths : 1; // Default to last 1 month if invalid value
+            var items = await _lessonRepository.GetLessonsAsync(ShownOnlyUnpaid, months);
+
+            Lessons.Clear();
+            foreach (var item in items) Lessons.Add(item);
+
+            SetExitFunction();
         }
 
-        public bool ValidateLessonInput(string name, int? duration, bool isPricePerHour, decimal pricePerAttendance)
+        public bool ValidateStudentIds(IReadOnlyCollection<Guid> studentIds)
+        {
+            var uniqueReceivedIds = new HashSet<Guid>(studentIds);
+            if (uniqueReceivedIds.Count != studentIds.Count)
+            {
+                SetExitFunction();
+                throw new InvalidDataException("Duplicate student IDs found in the attendance list.");
+            }
+            var existintIds = Students.Select(s => s.Id).ToHashSet();
+            if (uniqueReceivedIds.All(id => existintIds.Contains(id)) == false)
+            {
+                SetExitFunction();
+                throw new InvalidDataException("One or more student IDs in the attendance list do not exist.");
+            }
+            if (studentIds.Count == 0)
+            {
+                SetExitFunction("No student IDs provided.", InfoBarType.Warning);
+                return false;
+            }
+            return true;
+        }
+
+        public bool ValidateLessonInput(ref string name, ref int? duration, bool isPricePerHour, decimal pricePerAttendance)
         {
             name = (name ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(name))
             {
-                ErrorMessage = "Service name is required.";
+                SetExitFunction("Lesson name is required.", InfoBarType.Warning);
                 return false;
             }
 
@@ -93,40 +112,57 @@ namespace Apolo.ViewModels
             {
                 if (duration is null)
                 {
-                    ErrorMessage = "Duration is required when the lesson is priced per hour.";
-                    return false;   
+                    SetExitFunction("Duration is required when the lesson is priced per hour.", InfoBarType.Warning);
+                    return false;
                 }
                 if (duration <= 0)
                 {
-                    ErrorMessage = "Enter a valid non-negative duration (e.g., 60).";
+                    SetExitFunction("Enter a valid non-negative duration (e.g., 60).", InfoBarType.Warning);
                     return false;
                 }
+            }
+            else
+            {
+                duration = null; // Normalize to null for easier handling in the database and UI
             }
 
             if (pricePerAttendance <= 0)
             {
-                ErrorMessage = "Enter a valid non-negative price per student (e.g., 42.5).";
+                SetExitFunction("Enter a valid non-negative price per student (e.g., 42.5).", InfoBarType.Warning);
                 return false;
             }
+
             return true;
         }
 
-        public async Task CreateLessonAsync(
-            DateOnly date, string name, ServiceSummary service,
-            int? duration, decimal pricePerAttendance,
-            bool isOnline, bool isWeekendOrHoliday,
-            string? note,
-            IReadOnlyList<Guid> studentIds)
+        public (LessonSummary lesson, int index) GetLesson(Guid id) 
         {
-            if (IsBusy) return;
-            IsBusy = true;
-            ErrorMessage = null;
-
-            if (!ValidateLessonInput(name, duration, service.IsPricePerHour, pricePerAttendance))
+            var lesson = Lessons.FirstOrDefault(l => l.Id == id);
+            if (lesson is null)
             {
-                IsBusy = false;
-                return; 
+                SetExitFunction();
+                throw new InvalidDataException("Lesson not loaded.");
             }
+            return (lesson, Lessons.IndexOf(lesson));
+        }
+
+        public async Task AddLessonAsync(DateOnly date, string name, ServiceSummary service,
+            int? duration, decimal pricePerAttendance, bool isOnline, bool isWeekendOrHoliday,
+            string? note, IReadOnlyList<Guid> studentIds)
+        {
+            if (IsBusy)
+            {
+                SetExitFunction("Can't add lesson while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            SetEnterFunction();
+
+            if (!ValidateStudentIds(studentIds))
+                return;
+
+            if (!ValidateLessonInput(ref name, ref duration, service.IsPricePerHour, pricePerAttendance))
+                return; 
 
             try
             {
@@ -136,17 +172,6 @@ namespace Apolo.ViewModels
                     note, studentIds);
 
                 // Add to UI
-                var attendanceRows = new List<AttendanceSummary>();
-                var namesById = Students.ToDictionary(x => x.Id, x => x.FullName);
-                for (int i = 0; i < lesson.Attendaces.Count; i++)
-                {
-                    var a = lesson.Attendaces.ElementAt(i);
-                    attendanceRows.Add(new AttendanceSummary(
-                        a.Id,
-                        a.StudentId,
-                        namesById.TryGetValue(a.StudentId, out var nm) ? nm : $"#{a.StudentId}",
-                        a.IsPaid));
-                }
                 Lessons.Insert(0, new LessonSummary(
                     lesson.Id,
                     lesson.Name,
@@ -159,28 +184,32 @@ namespace Apolo.ViewModels
                     lesson.IsWeekenOrHoliday,
                     lesson.WeekendFee,
                     lesson.Notes,
-                    attendanceRows));
+                    lesson.AttendancesSummary(Students)));
+                
+                SetExitFunction($"Lesson '{lesson.Name}' added successfully.", InfoBarType.Success);
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex)
             {
-                ErrorMessage = ex.Message;
+                SetExitFunction(ex.Message, InfoBarType.Error);
             }
-            finally { IsBusy = false; }
         }
 
         public async Task UpdateLessonAsync(Guid id, DateOnly date, string name,
             bool isPricePerHour, int? duration, decimal pricePerAttendance,
             bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, string? note)
         {
-            if (IsBusy) return;
-            IsBusy = true;
-            ErrorMessage = null;
-
-            if (!ValidateLessonInput(name, duration, isPricePerHour, pricePerAttendance))
+            if (IsBusy)
             {
-                IsBusy = false;
+                SetExitFunction("Can't update lesson while busy.", InfoBarType.Warning, false);
                 return;
             }
+
+            SetEnterFunction();
+
+            if (!ValidateLessonInput(ref name, ref duration, isPricePerHour, pricePerAttendance))
+                return;
+
+            var (oldItem, idx) = GetLesson(id);
 
             try
             {
@@ -189,191 +218,158 @@ namespace Apolo.ViewModels
                     isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, note);
 
                 // Update item in UI list
-                var idx = Lessons.Select((s, i) => (s, i)).FirstOrDefault(t => t.s.Id == id).i;
-                if (idx >= 0)
+                Lessons[idx] = oldItem with
                 {
-                    var attendances = Lessons[idx].Attendances;
-                    Lessons[idx] = new LessonSummary(
-                        id,
-                        entity.Name,
-                        entity.Date,
-                        entity.IsPricePerHour,
-                        entity.DurationMinutes,
-                        entity.PricePerAttendance,
-                        entity.IsOnline,
-                        entity.TravelAllowance,
-                        entity.IsWeekenOrHoliday,
-                        entity.WeekendFee,
-                        note,
-                        Lessons[idx].Attendances);
-                }
+                    Name = entity.Name,
+                    Date = entity.Date,
+                    IsPricePerHour = entity.IsPricePerHour,
+                    DurationMinutes = entity.DurationMinutes,
+                    PricePerAttendance = entity.PricePerAttendance,
+                    IsOnline = entity.IsOnline,
+                    TravelAllowance = entity.TravelAllowance,
+                    IsWeekenOrHoliday = entity.IsWeekenOrHoliday,
+                    WeekendFee = entity.WeekendFee,
+                    Notes = entity.Notes,
+                };
+                SetExitFunction($"Lesson '{entity.Name}' updated successfully.", InfoBarType.Success);
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
-                ErrorMessage = "Save failed due to related data. Check constraints.";
+                SetExitFunction(ex.Message, InfoBarType.Error);
             }
-            catch (Exception ex)
-            {
-                ErrorMessage = ex.Message;
-            }
-            finally { IsBusy = false; }
         }
 
         public async Task UpdateLessonNoteAsync(Guid id, string? note)
         {
-            if (IsBusy) return;
-            IsBusy = true;
-            ErrorMessage = null;
+            if (IsBusy)
+            {
+                SetExitFunction("Can't update lesson note while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            SetEnterFunction();
+
+            var (oldItem, idx) = GetLesson(id);
 
             if (string.IsNullOrWhiteSpace(note))
                 note = null; // Normalize to null for easier handling in the database and UI
+
             try
             {
                 var entity = await _lessonRepository.UpdateLessonNoteAsync(id, note);
+
                 // Update item in UI list
-                var idx = Lessons.Select((s, i) => (s, i)).FirstOrDefault(t => t.s.Id == id).i;
-                if (idx >= 0)
+                Lessons[idx] = oldItem with
                 {
-                    Lessons[idx] = Lessons[idx] with
-                    {
-                        Notes = entity.Notes
-                    };
-                }
+                    Notes = entity.Notes,
+                };
+                SetExitFunction($"Lesson '{entity.Name}' note updated successfully.", InfoBarType.Success);
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
-                ErrorMessage = "Save failed due to related data. Check constraints.";
+                SetExitFunction(ex.Message, InfoBarType.Error);
             }
-            catch (Exception ex)
-            {
-                ErrorMessage = ex.Message;
-            }
-            finally { IsBusy = false; }
         }
 
         public async Task AddAttendanceAsync(Guid lessonId, IReadOnlyCollection<Guid> studentIds)
         {
-            if (IsBusy || studentIds.Count == 0) return;
-            IsBusy = true;
-            ErrorMessage = null;
+            if (IsBusy)
+            {
+                SetExitFunction("Can't add attendance while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            SetEnterFunction();
+
+            if (!ValidateStudentIds(studentIds))
+                return;
+
+
+
+            var (oldItem, idx) = GetLesson(lessonId);
 
             try
             {
                 var lesson = await _lessonRepository.AddAttendanceAsync(lessonId, studentIds);
 
                 // Update UI
-                var idx = Lessons.Select((s, i) => (s, i)).FirstOrDefault(t => t.s.Id == lessonId).i;
-                if (idx >= 0)
+                Lessons[idx] = oldItem with
                 {
-                    var namesById = Students.ToDictionary(x => x.Id, x => x.FullName);
-                    var attendances = lesson.Attendaces
-                        .Select(a => new AttendanceSummary(
-                            a.Id,
-                            a.StudentId,
-                            namesById.TryGetValue(a.StudentId, out var nm) ? nm : $"#{a.StudentId}",
-                            a.IsPaid))
-                        .OrderBy(x => x.StudentName)
-                        .ToList();
-
-                    var current = Lessons[idx];
-                    Lessons[idx] = current with
-                    {
-                        Attendances = attendances
-                    };
-                }
+                    Attendances = lesson.AttendancesSummary(Students)
+                };
+                SetExitFunction($"{studentIds.Count} student(s) were added to Lesson '{lesson.Name}' successfully.", InfoBarType.Success);
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex)
             {
-                ErrorMessage = ex.Message;
+                SetExitFunction(ex.Message, InfoBarType.Error);
             }
-            finally { IsBusy = false; }
         }
 
         public async Task RemoveAttendanceAsync(Guid lessonId, Guid attendanceId)
         {
-            if (IsBusy) return;
-            IsBusy = true;
-            ErrorMessage = null;
+            if (IsBusy)
+            {
+                SetExitFunction("Can't remove attendance while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            SetEnterFunction();
+
+            var (oldItem, idx) = GetLesson(lessonId);
 
             try
             {
                 var lesson = await _lessonRepository.RemoveAttendanceAsync(lessonId, attendanceId);
 
                 // Delete lesson
-                if (lesson.Attendaces.Count == 0)
+                if (lesson.Attendances.Count == 0)
                 {
-                    var toRemove = Lessons.FirstOrDefault(l => l.Id == lesson.Id);
-                    if (toRemove != null) Lessons.Remove(toRemove);
+                    Lessons.Remove(oldItem);
+                    SetExitFunction($"Lesson '{lesson.Name}' was deleted after removing last attendant.", InfoBarType.Success);
                 }
                 // Update UI
                 else
                 {
-                    var idx = Lessons.Select((s, i) => (s, i)).FirstOrDefault(t => t.s.Id == lessonId).i;
-                    if (idx >= 0)
+                    Lessons[idx] = oldItem with
                     {
-                        var namesById = Students.ToDictionary(x => x.Id, x => x.FullName);
-                        var attendances = lesson.Attendaces
-                            .Select(a => new AttendanceSummary(
-                                a.Id,
-                                a.StudentId,
-                                namesById.TryGetValue(a.StudentId, out var nm) ? nm : $"#{a.StudentId}",
-                                a.IsPaid))
-                            .OrderBy(x => x.StudentName)
-                            .ToList();
-
-                        var current = Lessons[idx];
-                        Lessons[idx] = current with
-                        {
-                            Attendances = attendances
-                        };
-                    }
+                        Attendances = lesson.AttendancesSummary(Students)
+                    };
+                    SetExitFunction($"Student was removed from lesson '{lesson.Name}' successfully.", InfoBarType.Success);
                 }
-
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex)
             {
-                ErrorMessage = ex.Message;
+                SetExitFunction(ex.Message, InfoBarType.Error);
             }
-            finally { IsBusy = false; }
         }
 
         public async Task UpdateAttendanceAsync(Guid lessonId, Guid attendanceId, bool isPaid)
         {
-            if (IsBusy) return;
+            if (IsBusy)
+            {
+                SetExitFunction("Can't update attendance while busy.", InfoBarType.Warning, false);
+                return;
+            }
 
-            IsBusy = true;
-            ErrorMessage = null;
+            SetEnterFunction();
+
+            var (oldItem, idx) = GetLesson(lessonId);
 
             try
             {
                 var lesson = await _lessonRepository.UpdateAttendanceAsync(lessonId, attendanceId, isPaid);
 
-                // Update UI
-                var idx = Lessons.Select((s, i) => (s, i)).FirstOrDefault(t => t.s.Id == lessonId).i;
-                if (idx >= 0)
+                Lessons[idx] = oldItem with
                 {
-                    var namesById = Students.ToDictionary(x => x.Id, x => x.FullName);
-                    var attendances = lesson.Attendaces
-                        .Select(a => new AttendanceSummary(
-                            a.Id,
-                            a.StudentId,
-                            namesById.TryGetValue(a.StudentId, out var nm) ? nm : $"#{a.StudentId}",
-                            a.IsPaid))
-                        .OrderBy(x => x.StudentName)
-                        .ToList();
+                    Attendances = lesson.AttendancesSummary(Students)
+                };
 
-                    var current = Lessons[idx];
-                    Lessons[idx] = current with
-                    {
-                        Attendances = attendances
-                    };
-                }
+                SetExitFunction($"Lesson '{lesson.Name}' attendant was updated successfully.", InfoBarType.Success);
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex)
             {
-                ErrorMessage = ex.Message;
+                SetExitFunction(ex.Message, InfoBarType.Error);
             }
-            finally { IsBusy = false; }
         }
 
         public async Task<IEnumerable<SpecificationOption>> GetSpecificationOptionsAsync(List<Guid> studentsIds)

@@ -1,4 +1,5 @@
-﻿using Models;
+﻿using Microsoft.EntityFrameworkCore;
+using Models;
 using Repository;
 
 namespace Apolo.Tests.Data
@@ -14,6 +15,8 @@ namespace Apolo.Tests.Data
             base.Setup();
             _repository = new StudentRepository(_context);
         }
+
+        // --- GetStudentsAsync Tests ---
 
         [TestMethod]
         public async Task GetStudentsAsync_IncludesPayerFullName()
@@ -37,6 +40,108 @@ namespace Apolo.Tests.Data
             Assert.AreEqual(payer.FullName, results[0].PayerName);
         }
 
+        // --- AddAsync Tests ---
+
+        [TestMethod]
+        public async Task AddAsync_ShouldActuallyBeAdd_GivenCurrentImplementation()
+        {
+            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
+            _context.Payers.Add(payer);
+            await _context.SaveChangesAsync();
+
+            var student = TestGenerator.CreateStudent1(payer.Id);
+
+            await _repository.AddAsync(student);
+
+            Assert.HasCount(1, _context.Students);
+        }
+
+        [TestMethod]
+        public async Task AddAsync_WithoutValidPayer_ThrowsInvalidOperationException()
+        {
+            var orphanStudent = new Student
+            {
+                Id = Guid.NewGuid(),
+                PayerId = Guid.NewGuid(), // ID that doesn't exist in DB
+                FirstName = "Orphan",
+                LastName = "Student"
+            };
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                await _repository.AddAsync(orphanStudent);
+            });
+
+            StringAssert.Contains(ex.Message, "Payer with ID");
+        }
+
+        [TestMethod]
+        public async Task AddAsync_ExistingStudent_UpdatesExistingRecord()
+        {
+            var p1 = new Payer { Id = Guid.NewGuid(), FirstName = "Original", LastName = "Payer" };
+            var p2 = new Payer { Id = Guid.NewGuid(), FirstName = "Original", LastName = "Payer" };
+            var student = new Student
+            {
+                Id = Guid.NewGuid(),
+                PayerId = p1.Id,
+                FirstName = "OldName",
+                LastName = "OldLastName"
+            };
+
+            _context.Payers.AddRange(p1, p2);
+            _context.Students.Add(student);
+            await _context.SaveChangesAsync();
+
+            student.PayerId = p2.Id;
+
+            var ex = await Assert.ThrowsAsync<InvalidDataException>(async () =>
+            {
+                await _repository.AddAsync(student);
+            });
+
+            StringAssert.Contains(ex.Message, "This student already exists");
+
+            var studentInDb = await _context.Students.FindAsync(student.Id);
+
+            Assert.HasCount(1, _context.Students, "Database should still only have one student record.");
+            Assert.IsNotNull(studentInDb);
+        }
+
+        // --- DeleteAsync Tests ---
+
+        [TestMethod]
+        public async Task DeleteAsync_NonExistentId_ThrowsArgumentNullException()
+        {
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            {
+                await _repository.DeleteAsync(Guid.NewGuid());
+            });
+
+            // Verify the message contains the specific text we expect
+            StringAssert.Contains(exception.Message, "Student not found");
+        }
+
+        [TestMethod]
+        public async Task DeleteAsync()
+        {
+            // Arrange: Create a Payer first because Student depends on PayerId
+            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
+            var student = TestGenerator.CreateStudent1(payer.Id);
+
+            _context.Payers.Add(payer);
+            _context.Students.Add(student);
+            await _context.SaveChangesAsync();
+
+            // Act
+            await _repository.DeleteAsync(student.Id);
+
+            // Assert
+            Assert.HasCount(0, _context.Students);
+        }
+
+        // --- UpdateAsync Tests ---
+
         [TestMethod]
         public async Task UpdateAsync_ChangesPayerLink()
         {
@@ -59,36 +164,6 @@ namespace Apolo.Tests.Data
         }
 
         [TestMethod]
-        public async Task UpsertAsync_ShouldActuallyBeAdd_GivenCurrentImplementation()
-        {
-            // Arrange
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            _context.Payers.Add(payer);
-            await _context.SaveChangesAsync();
-
-            var student = TestGenerator.CreateStudent1(payer.Id);
-
-            // Act
-            await _repository.UpsertAsync(student);
-
-            // Assert
-            Assert.HasCount(1, _context.Students);
-        }
-
-        [TestMethod]
-        public async Task DeleteAsync_NonExistentId_ThrowsArgumentNullException()
-        {
-            // Act & Assert
-            var exception = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
-            {
-                await _repository.DeleteAsync(Guid.NewGuid());
-            });
-
-            // Verify the message contains the specific text we expect
-            StringAssert.Contains(exception.Message, "Student not found");
-        }
-
-        [TestMethod]
         public async Task UpdateAsync_NonExistentId_ThrowsArgumentNullException()
         {
             // Act & Assert
@@ -96,24 +171,6 @@ namespace Apolo.Tests.Data
             {
                 await _repository.UpdateAsync(Guid.NewGuid(), Guid.NewGuid(), "John", "Doe");
             });
-        }
-
-        [TestMethod]
-        public async Task DeleteAsync()
-        {
-            // Arrange: Create a Payer first because Student depends on PayerId
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student = TestGenerator.CreateStudent1(payer.Id);
-
-            _context.Payers.Add(payer);
-            _context.Students.Add(student);
-            await _context.SaveChangesAsync();
-
-            // Act
-            await _repository.DeleteAsync(student.Id);
-
-            // Assert
-            Assert.HasCount(0, _context.Students);
         }
 
         [TestMethod]
@@ -135,87 +192,20 @@ namespace Apolo.Tests.Data
             });
         }
 
-        [TestMethod]
-        public async Task UpsertAsync_WithoutValidPayer_ThrowsInvalidOperationException()
-        {
-            // Arrange
-            var orphanStudent = new Student
-            {
-                Id = Guid.NewGuid(),
-                PayerId = Guid.NewGuid(), // ID that doesn't exist in DB
-                FirstName = "Orphan",
-                LastName = "Student"
-            };
 
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            {
-                await _repository.UpsertAsync(orphanStudent);
-            });
-
-            StringAssert.Contains(ex.Message, "Payer with ID");
-        }
+        // --- GetStudentOptionsAsync Tests ---
 
         [TestMethod]
-        public async Task UpsertAsync_ExistingStudent_UpdatesExistingRecord()
+        public async Task GetStudentOptionsAsync_EmptyDatabase_ReturnsEmptyList()
         {
-            // Arrange: 1. Create a Payer and a Student
-            var payer = new Payer { Id = Guid.NewGuid(), FirstName = "Original", LastName = "Payer" };
-            var studentId = Guid.NewGuid();
-            var originalStudent = new Student
-            {
-                Id = studentId,
-                PayerId = payer.Id,
-                FirstName = "OldName",
-                LastName = "OldLastName"
-            };
-
-            _context.Payers.Add(payer);
-            _context.Students.Add(originalStudent);
-            await _context.SaveChangesAsync();
-
-            // 2. Prepare a student object with the SAME ID but NEW data
-            var updatedData = new Student
-            {
-                Id = studentId,
-                PayerId = payer.Id,
-                FirstName = "NewName",
-                LastName = "NewLastName"
-            };
-
             // Act
-            await _repository.UpsertAsync(updatedData);
-
-            // Assert: Check that the database still has only 1 student and the names are updated
-            var studentInDb = await _context.Students.FindAsync(studentId);
-
-            Assert.HasCount(1, _context.Students, "Database should still only have one student record.");
-            Assert.IsNotNull(studentInDb);
-            Assert.AreEqual("NewName", studentInDb.FirstName);
-            Assert.AreEqual("NewLastName", studentInDb.LastName);
-        }
-
-        [TestMethod]
-        public async Task UpsertAsync_ChangePayer_UpdatesForeignKey()
-        {
-            // Arrange
-            var p1 = new Payer { Id = Guid.NewGuid(), FirstName = "Payer 1" };
-            var p2 = new Payer { Id = Guid.NewGuid(), FirstName = "Payer 2" };
-            var studentId = Guid.NewGuid();
-            var student = new Student { Id = studentId, PayerId = p1.Id, FirstName = "Kid" };
-
-            _context.Payers.AddRange(p1, p2);
-            _context.Students.Add(student);
-            await _context.SaveChangesAsync();
-
-            // Act: Create an object with the same Student ID but the second Payer ID
-            var modifiedStudent = new Student { Id = studentId, PayerId = p2.Id, FirstName = "Kid" };
-            await _repository.UpsertAsync(modifiedStudent);
+            var results = await _repository.GetStudentOptionsAsync();
 
             // Assert
-            var result = await _context.Students.FindAsync(studentId);
-            Assert.AreEqual(p2.Id, result!.PayerId, "Student should have been reassigned to Payer 2.");
+            Assert.IsNotNull(results);
+            Assert.AreEqual(0, results.Count());
         }
+
         [TestMethod]
         public async Task GetStudentOptionsAsync_ReturnsAllStudents_InAlphabeticalOrder()
         {
@@ -230,27 +220,14 @@ namespace Apolo.Tests.Data
             );
             await _context.SaveChangesAsync();
 
-            // Act
             var results = (await _repository.GetStudentOptionsAsync()).ToList();
 
-            // Assert
             Assert.HasCount(3, results);
 
-            // Order should be: Adams, Ben -> Adams, Zoe -> Zebra, Aaron
             Assert.AreEqual("Aaron Zebra", results[0].FullName);
             Assert.AreEqual("Ben Adams", results[1].FullName);
             Assert.AreEqual("Zoe Adams", results[2].FullName);
         }
 
-        [TestMethod]
-        public async Task GetStudentOptionsAsync_EmptyDatabase_ReturnsEmptyList()
-        {
-            // Act
-            var results = await _repository.GetStudentOptionsAsync();
-
-            // Assert
-            Assert.IsNotNull(results);
-            Assert.AreEqual(0, results.Count());
-        }
     }
 }

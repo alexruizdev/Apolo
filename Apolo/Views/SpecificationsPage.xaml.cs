@@ -42,7 +42,7 @@ public sealed partial class SpecificationsPage : Page
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
         {
-            await ViewModel.DeleteSpecificationAsync(item);
+            await ViewModel.DeleteSpecificationAsync(item.Id);
         }
     }
 
@@ -106,8 +106,6 @@ public sealed partial class SpecificationsPage : Page
         if (btn.DataContext is not SpecificationSummary item)
             return;
 
-        var service = ViewModel.Services.First(s => s.Id == item.ServiceId);
-
         var datePicker = new CalendarDatePicker { Header = "Date", IsTodayHighlighted = true };
         var noteBox = new TextBox
         {
@@ -145,8 +143,8 @@ public sealed partial class SpecificationsPage : Page
         {
             var dto = datePicker.Date ?? DateTimeOffset.Now;
             var date = DateOnly.FromDateTime(dto.Date);
-            await ViewModel.CreateLessonFromSpecificationAsync(item, date, service, 
-                ViewModel.TravelAllowance, ViewModel.WeekendFee);
+            var notes = string.IsNullOrWhiteSpace(noteBox.Text) ? null : noteBox.Text;
+            await ViewModel.CreateLessonFromSpecificationAsync(item.Id, date, notes);
         }
     }
 
@@ -172,7 +170,17 @@ public sealed partial class SpecificationsPage : Page
         var onlineBox = new CheckBox { Content = "Online" };
         var weekendBox = new CheckBox { Content = "Weekend or Holiday" };
 
+        var errorBar = new InfoBar
+        {
+            Severity = InfoBarSeverity.Error,
+            Title = "Missing Information",
+            Message = "Please select both a student and a service before creating.",
+            IsOpen = false,
+            Margin = new Thickness(0, 0, 0, 10)
+        };
+
         var panel = new StackPanel { Spacing = 8 };
+        panel.Children.Add(errorBar);
         panel.Children.Add(nameBox);
         panel.Children.Add(studentBox);
         panel.Children.Add(serviceBox);
@@ -191,6 +199,25 @@ public sealed partial class SpecificationsPage : Page
             XamlRoot = Content.XamlRoot
         };
 
+        // This event fires BEFORE the dialog closes
+        dialog.PrimaryButtonClick += (s, args) =>
+        {
+            bool isInvalid = studentBox.SelectedValue == null || serviceBox.SelectedValue == null;
+
+            if (isInvalid)
+            {
+                // 1. Stop the dialog from closing
+                args.Cancel = true;
+
+                // 2. Show the error message
+                errorBar.IsOpen = true;
+
+                // Optional: Visually highlight the missing fields
+                if (studentBox.SelectedValue == null) studentBox.Header = "Student (Required)";
+                if (serviceBox.SelectedValue == null) serviceBox.Header = "Service (Required)";
+            }
+        };
+
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
         {
@@ -200,8 +227,8 @@ public sealed partial class SpecificationsPage : Page
                 priceBox.Value == double.NaN ? null : priceBox.Value,
                 onlineBox.IsChecked == true,
                 weekendBox.IsChecked == true,
-                (Guid?)studentBox.SelectedValue,
-                (Guid?)serviceBox.SelectedValue);
+                (Guid)studentBox.SelectedValue,
+                (Guid)serviceBox.SelectedValue);
         }
     }
 

@@ -2,11 +2,9 @@ using Apolo.ViewModels;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.Storage.Pickers;
 using System;
-using System.IO;
-using WinRT.Interop;
-
 
 namespace Apolo.Views
 {
@@ -19,15 +17,9 @@ namespace Apolo.Views
             DataContext = Ioc.Default.GetService<SettingsViewModel>();
         }
 
-        private async void Page_Loaded(object sender, RoutedEventArgs e) =>
-            await ViewModel.LoadAsync();
-
         private async void DeleteDatabaseButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not Button button) return;
-
-            //disable the button to avoid double-clicking
-            button.IsEnabled = false;
 
             var dialog = new ContentDialog
             {
@@ -40,43 +32,15 @@ namespace Apolo.Views
 
             var result = await dialog.ShowAsync();
 
-            if (result == ContentDialogResult.Primary)
-            {
-                try
-                {
-                    await ViewModel.ClearDatabaseAsync();
-                    var successDialog = new ContentDialog
-                    {
-                        Title = "Success",
-                        Content = "Database deleted successfully.",
-                        CloseButtonText = "OK",
-                        XamlRoot = this.XamlRoot
-                    };
-                    await successDialog.ShowAsync();
-                }
-                catch (Exception ex)
-                {
-                    var errorDialog = new ContentDialog
-                    {
-                        Title = "Error",
-                        Content = $"Failed to delete database: {ex.Message}",
-                        CloseButtonText = "OK",
-                        XamlRoot = this.XamlRoot
-                    };
-                    await errorDialog.ShowAsync();
-                }
-            }
-
-            // re-enable the button
-            button.IsEnabled = true;
+            if (result != ContentDialogResult.Primary)
+                return;
+            
+            await ViewModel.ClearDatabaseAsync();
         }
 
         private async void ExportExcelButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not Button button) return;
-
-            //disable the button to avoid double-clicking
-            button.IsEnabled = false;
 
             var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
 
@@ -84,47 +48,18 @@ namespace Apolo.Views
             picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
             picker.ViewMode = PickerViewMode.List;
 
-
             var folder = await picker.PickSingleFolderAsync();
 
             if (folder == null) return;
 
-            try
-            {
-                await ViewModel.ExportDatabaseToExcel(folder.Path);
+            var installedPath = Windows.ApplicationModel.Package.Current.InstalledPath;
 
-                var successDialog = new ContentDialog
-                {
-                    Title = "Success",
-                    Content = $"Database exported to {folder.Path}",
-                    CloseButtonText = "OK",
-                    XamlRoot = this.XamlRoot
-                };
-                await successDialog.ShowAsync();
-            }
-            catch (Exception ex)
-            {
-                var errorDialog = new ContentDialog
-                {
-                    Title = "Error",
-                    Content = $"Failed to export database: {ex.Message}",
-                    CloseButtonText = "OK",
-                    XamlRoot = this.XamlRoot
-                };
-                await errorDialog.ShowAsync();
-            }
-
-            // re-enable the button
-            button.IsEnabled = true;
-
+            await ViewModel.ExportDatabaseToExcel(folder.Path, installedPath);
         }
 
         private async void ImportExcelButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not Button button) return;
-
-            //disable the button to avoid double-clicking
-            button.IsEnabled = false;
 
             var picker = new FileOpenPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
             picker.FileTypeFilter.Add(".xlsx");
@@ -137,33 +72,18 @@ namespace Apolo.Views
             var file = await picker.PickSingleFileAsync();
             if (file == null) return;
 
-            try
-            {
-                string result = await ViewModel.ImportDatabaseFromExcel(file.Path);
+            await ViewModel.ImportDatabaseFromExcel(file.Path);
+        }
 
-                var successDialog = new ContentDialog
-                {
-                    Title = "Success",
-                    Content = $"Database imported from {file.Path}\nSummary saved to {result}",
-                    CloseButtonText = "OK",
-                    XamlRoot = this.XamlRoot
-                };
-                await successDialog.ShowAsync();
-            }
-            catch (Exception ex)
-            {
-                var errorDialog = new ContentDialog
-                {
-                    Title = "Error",
-                    Content = $"Failed to import database: {ex.Message}",
-                    CloseButtonText = "OK",
-                    XamlRoot = this.XamlRoot
-                };
-                await errorDialog.ShowAsync();
-            }
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
 
-            // re-enable the button
-            button.IsEnabled = true;
+            // Call the refresh method on your ViewModel
+            if (ViewModel != null)
+            {
+                await ViewModel.RefreshProfileAsync();
+            }
         }
     }
 }

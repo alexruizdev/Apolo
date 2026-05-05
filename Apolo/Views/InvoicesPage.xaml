@@ -28,15 +28,15 @@
                           SelectedValue="{x:Bind ViewModel.SelectedPayerId, Mode=TwoWay}" />
                 <Button Content="Load"
                         Click="LoadForPayer_Click"
-                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+                        IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
                         VerticalAlignment="Bottom"/>
                 <CheckBox Content="Select all"
                           IsThreeState="True"
-                          IsChecked="{x:Bind ViewModel.AllSelected, Mode=TwoWay}"
+                          IsChecked="{x:Bind ViewModel.SelectionState, Mode=TwoWay}"
                           VerticalAlignment="Bottom" />
                 <Button Content="Mark selected as paid"
                         Click="MarkPaid_Click"
-                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+                        IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
                         VerticalAlignment="Bottom" />
             </StackPanel>
 
@@ -46,7 +46,7 @@
                          Width="260" />
                 <Button Content="Generate PDF..."
                         Click="ExportPdf_Click"
-                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+                        IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
                         VerticalAlignment="Bottom" />
             </StackPanel>
 
@@ -56,7 +56,7 @@
                          Width="260" />
                 <Button Content="Load by invoice name"
                         Click="LoadByName_Click"
-                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+                        IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
                         VerticalAlignment="Bottom" />
             </StackPanel>
 
@@ -73,18 +73,16 @@
             </StackPanel>
 
             <StackPanel>
-                <TextBlock Text="Loading..."
-                           Foreground="Gray"
-                           Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                <TextBlock Text="{Binding ErrorMessage}"
-                           Foreground="Tomato"
-                           TextWrapping="Wrap"
-                           Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibilityConverter}}" />
+                <ProgressBar IsIndeterminate="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
+                <InfoBar
+                    IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}"
+                    Severity="{x:Bind ViewModel.InfoBarType, Converter={StaticResource InfoBarTypeConverter}, Mode=TwoWay}"
+                    Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}" />
             </StackPanel>
 
             <ListView ItemsSource="{Binding Attendances}">
                 <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="vm:InvoiceAttendanceSummary">
+                    <DataTemplate x:DataType="vm:InvoiceLine">
                         <StackPanel Spacing="8"
                                     Padding="8"
                                     Orientation="Horizontal">

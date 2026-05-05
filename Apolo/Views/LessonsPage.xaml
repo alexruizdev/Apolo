@@ -22,19 +22,18 @@
                             IsOn="{x:Bind ViewModel.ShownOnlyUnpaid, Mode=TwoWay}" />
             <Button Content="New lesson"
                     Click="NewLesson_Click"
-                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                    IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
 
         </StackPanel>
 
         <StackPanel>
-            <TextBlock Text="Loading..."
-                        Foreground="Gray"
-                        Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
-            <TextBlock Text="{Binding ErrorMessage}"
-                        Foreground="Tomato"
-                        TextWrapping="Wrap"
-                        Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibilityConverter}}" />
+            <ProgressBar IsIndeterminate="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
+            <InfoBar
+                IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}"
+                Severity="{x:Bind ViewModel.InfoBarType, Converter={StaticResource InfoBarTypeConverter}, Mode=TwoWay}"
+                Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}" />
         </StackPanel>
+        
         <ScrollView MaxHeight="500">
             <ListView ItemsSource="{x:Bind ViewModel.Lessons, Mode=OneWay}"
                         SelectionMode="None">

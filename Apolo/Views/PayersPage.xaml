@@ -18,17 +18,15 @@
 
         <Button Content="New payer"
                 Click="NewPayer_Click"
-                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
 
         <!--Status / errors-->
         <StackPanel>
-            <TextBlock Text="Loading..."
-                        Foreground="Gray"
-                        Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
-            <TextBlock Text="{Binding ErrorMessage}"
-                        Foreground="Tomato"
-                        TextWrapping="Wrap"
-                        Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibilityConverter}}" />
+            <ProgressBar IsIndeterminate="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
+            <InfoBar
+                IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}"
+                Severity="{x:Bind ViewModel.InfoBarType, Converter={StaticResource InfoBarTypeConverter}, Mode=TwoWay}"
+                Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}" />
         </StackPanel>
 
         <!--List of payers-->

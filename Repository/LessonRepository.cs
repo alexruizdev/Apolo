@@ -12,7 +12,6 @@ namespace Repository
             _db = db;
         }
 
-        // TODO: add threshold as input
         public async Task<IEnumerable<LessonSummary>> GetLessonsAsync(bool showOnlyUnpaid, int? months)
         {
             // 2. Start the query with AsNoTracking (crucial for read-only performance)
@@ -21,7 +20,7 @@ namespace Repository
             // 3. Apply Filters
             if (showOnlyUnpaid)
             {
-                query = query.Where(l => l.Attendaces.Any(a => !a.IsPaid));
+                query = query.Where(l => l.Attendances.Any(a => !a.IsPaid));
             }
 
             if (months is not null)
@@ -44,7 +43,7 @@ namespace Repository
                     l.IsWeekenOrHoliday,
                     l.WeekendFee,
                     l.Notes,
-                    l.Attendaces.Select(a => new AttendanceSummary(
+                    l.Attendances.Select(a => new AttendanceSummary(
                         a.Id,
                         a.StudentId,
                         a.Student.FullName, // EF handles the join automatically here
@@ -81,7 +80,7 @@ namespace Repository
 
             for (int i = 0; i < studentIds.Count; i++)
             {
-                lesson.Attendaces.Add(new Attendance
+                lesson.Attendances.Add(new Attendance
                 {
                     LessonId = lesson.Id,
                     StudentId = studentIds[i],
@@ -110,7 +109,7 @@ namespace Repository
             bool isPricePerHour, int? duration, decimal pricePerStudent,
             bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, string? note)
         {
-            var entity = await _db.Lessons.Include(l => l.Attendaces).FirstOrDefaultAsync(i => i.Id == id);
+            var entity = await _db.Lessons.Include(l => l.Attendances).FirstOrDefaultAsync(i => i.Id == id);
 
             if (entity is null)
                 throw new InvalidDataException("Lesson not found.");
@@ -134,13 +133,13 @@ namespace Repository
         public async Task<Lesson> AddAttendanceAsync(Guid lessonId, IReadOnlyCollection<Guid> studentIds)
         {
             var lesson = await _db.Lessons
-                .Include(l => l.Attendaces)
+                .Include(l => l.Attendances)
                 .FirstOrDefaultAsync(l => l.Id == lessonId);
             if (lesson is null)
                 throw new InvalidDataException("Lesson not found.");
 
             // Exclude students already present
-            var existing = lesson.Attendaces.Select(a => a.StudentId).ToHashSet();
+            var existing = lesson.Attendances.Select(a => a.StudentId).ToHashSet();
             var newIds = studentIds.Where(id => !existing.Contains(id)).ToList();
             if (newIds.Count == 0)
                 throw new InvalidOperationException("No new students to be added.");
@@ -165,17 +164,17 @@ namespace Repository
 
         public async Task<Lesson> RemoveAttendanceAsync(Guid lessonId, Guid attendanceId)
         {
-            var lesson = await _db.Lessons.Include(l => l.Attendaces).FirstOrDefaultAsync(l => l.Id == lessonId)
+            var lesson = await _db.Lessons.Include(l => l.Attendances).FirstOrDefaultAsync(l => l.Id == lessonId)
                          ?? throw new InvalidDataException("Lesson not found.");
 
-            var attendance = lesson.Attendaces.FirstOrDefault(a => a.Id == attendanceId)
+            var attendance = lesson.Attendances.FirstOrDefault(a => a.Id == attendanceId)
                              ?? throw new InvalidDataException("Attendance not found.");
 
-            lesson.Attendaces.Remove(attendance);
+            lesson.Attendances.Remove(attendance);
 
             _db.Attendances.Remove(attendance);
 
-            if (lesson.Attendaces.Count == 0)
+            if (lesson.Attendances.Count == 0)
             {
                 _db.Lessons.Remove(lesson);
             }
@@ -192,7 +191,7 @@ namespace Repository
 
             attendance.IsPaid = isPaid;
 
-            var lesson = await _db.Lessons.Include(l => l.Attendaces).FirstAsync(l => l.Id == lessonId);
+            var lesson = await _db.Lessons.Include(l => l.Attendances).FirstAsync(l => l.Id == lessonId);
 
             await _db.SaveChangesAsync();
 

@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Apolo.Tests.Models", "Apolo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ViewModels", "ViewModels\ViewModels.csproj", "{A3196998-A6B8-4DB2-89F1-6BA8FDE6AD47}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Apolo.Tests.ViewModels", "Apolo.Tests.ViewModels\Apolo.Tests.ViewModels.csproj", "{0A4B79C5-F613-4EB7-B1E3-AFAEE84ECE86}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -117,6 +119,18 @@ Global
 		{A3196998-A6B8-4DB2-89F1-6BA8FDE6AD47}.Release|x64.Build.0 = Release|Any CPU
 		{A3196998-A6B8-4DB2-89F1-6BA8FDE6AD47}.Release|x86.ActiveCfg = Release|Any CPU
 		{A3196998-A6B8-4DB2-89F1-6BA8FDE6AD47}.Release|x86.Build.0 = Release|Any CPU
+		{0A4B79C5-F613-4EB7-B1E3-AFAEE84ECE86}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{0A4B79C5-F613-4EB7-B1E3-AFAEE84ECE86}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{0A4B79C5-F613-4EB7-B1E3-AFAEE84ECE86}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0A4B79C5-F613-4EB7-B1E3-AFAEE84ECE86}.Debug|x64.Build.0 = Debug|Any CPU
+		{0A4B79C5-F613-4EB7-B1E3-AFAEE84ECE86}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0A4B79C5-F613-4EB7-B1E3-AFAEE84ECE86}.Debug|x86.Build.0 = Debug|Any CPU
+		{0A4B79C5-F613-4EB7-B1E3-AFAEE84ECE86}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{0A4B79C5-F613-4EB7-B1E3-AFAEE84ECE86}.Release|ARM64.Build.0 = Release|Any CPU
+		{0A4B79C5-F613-4EB7-B1E3-AFAEE84ECE86}.Release|x64.ActiveCfg = Release|Any CPU
+		{0A4B79C5-F613-4EB7-B1E3-AFAEE84ECE86}.Release|x64.Build.0 = Release|Any CPU
+		{0A4B79C5-F613-4EB7-B1E3-AFAEE84ECE86}.Release|x86.ActiveCfg = Release|Any CPU
+		{0A4B79C5-F613-4EB7-B1E3-AFAEE84ECE86}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

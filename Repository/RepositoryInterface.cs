@@ -15,7 +15,7 @@ namespace Repository
         Task<PayerSummary> GetPayerSummaryNoOutstandingAsync(Guid payerId);
         Task<IEnumerable<PayerSummary>> GetPayersAsync();
         Task<IEnumerable<PayerOption>> GetPayerOptionsAsync();
-        Task UpsertAsync(Payer payer);
+        Task AddAsync(Payer payer);
         Task DeleteAsync(Guid id);
         Task UpdateAsync(Guid payerId, string firstName, string lastName, 
             string address, string zipCode, string city, string taxId);
@@ -24,7 +24,7 @@ namespace Repository
     public interface IStudentRepository
     {
         Task<IEnumerable<StudentSummary>> GetSudentsAsync();
-        Task UpsertAsync(Student student);
+        Task AddAsync(Student student);
         Task DeleteAsync(Guid id);
         Task UpdateAsync(Guid studentId, Guid payerId, string firstName, string lastName);
         Task<IEnumerable<StudentOption>> GetStudentOptionsAsync();
@@ -42,7 +42,6 @@ namespace Repository
     public interface ILessonRepository
     {
         Task<IEnumerable<LessonSummary>> GetLessonsAsync(bool showOnlyUnpaid, int? months);
-        Task AddLessonsAsync(List<Lesson> lessons);
         Task<Lesson> AddLessonAsync(DateOnly date, string name,
             bool isPricePerHour, int? duration, decimal pricePerStudent,
             bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee,
@@ -66,5 +65,20 @@ namespace Repository
             IEnumerable<Guid> attendanceIds, string? requestedName);
         Task DeleteInvoiceAsync(int invoiceId);
         Task<IEnumerable<Invoice>> GetInvoicesAsync();
+    }
+
+    public interface IGeneralRepository
+    {
+        Task ClearDatabaseAsync();
+        Task ImportAllDataAsync(
+            List<Service> services,
+            List<Payer> payers,
+            List<Student> students,
+            List<Specification> specifications,
+            List<Lesson> lessons,
+            List<Invoice> invoices);
+
+        Task<(List<Service> Services, List<Payer> Payers, List<Student> Students,
+            List<Specification> Specifications, List<Lesson> Lessons, List<Invoice> Invoices)> GetAllDataAsync();
     }
 }

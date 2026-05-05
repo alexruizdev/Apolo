@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Models;
 using System;
+using System.Threading.Tasks;
 
 namespace Apolo.Views;
 
@@ -41,7 +42,7 @@ public sealed partial class ServicesPage : Page
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
         {
-            await ViewModel.DeleteServiceAsync(item);
+            await ViewModel.DeleteServiceAsync(item.Id);
         }
     }
 
@@ -105,12 +106,10 @@ public sealed partial class ServicesPage : Page
         };
 
         var result = await dialog.ShowAsync();
-        if (result == ContentDialogResult.Primary)
-        {
-            await ViewModel.AddServiceAsync(
-                nameBox.Text,
-                isPricePerHourCheck.IsChecked == true,
-                (decimal)priceBox.Value);
-        }
+        if (result != ContentDialogResult.Primary)
+            return;
+
+        await ViewModel.AddServiceAsync(nameBox.Text, isPricePerHourCheck.IsChecked == true,
+            (decimal)priceBox.Value);
     }
 }

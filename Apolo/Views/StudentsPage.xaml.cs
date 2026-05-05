@@ -41,7 +41,7 @@ namespace Apolo.ViewModels
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Primary)
             {
-                await ViewModel.DeleteStudentAsync(item);
+                await ViewModel.DeleteStudentAsync(item.Id);
             }
         }
 

@@ -1,129 +1,120 @@
 ﻿using Apolo.Services;
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
 using System.Collections.ObjectModel;
+using ViewModels;
 
 namespace Apolo.ViewModels
 {
-    public partial class SpecificationsViewModel : ObservableObject
+    public partial class SpecificationsViewModel : UserProfileViewModel
     {
         ISpecificationRepository _specificationRepository;
         IStudentRepository _studentRepository;
         IServiceRepository _serviceRepository;
         ILessonRepository _lessonRepository;
-        IUserProfileService _userProfileService;
-        UserProfile _userProfile;
 
         public ObservableCollection<SpecificationSummary> Specifications { get; } = new();
         public ObservableCollection<StudentOption> Students { get; } = new();
         public ObservableCollection<ServiceSummary> Services { get; } = new();
 
-        public decimal TravelAllowance => (decimal)_userProfile.TravelAllowance;
-        public decimal WeekendFee => (decimal)_userProfile.WeekendFee;
-
-        [ObservableProperty] private bool isBusy;
-        [ObservableProperty] private string? errorMessage;
-
-        public SpecificationsViewModel(ISpecificationRepository specificationRepository, 
+        public SpecificationsViewModel(ISpecificationRepository specificationRepository,
             IStudentRepository studentRepository,
             IServiceRepository serviceRepository,
             ILessonRepository lessonRepository,
             IUserProfileService userProfileService)
+            : base(userProfileService)
         {
             _specificationRepository = specificationRepository;
             _studentRepository = studentRepository;
             _serviceRepository = serviceRepository;
             _lessonRepository = lessonRepository;
             _userProfileService = userProfileService;
-            _userProfile = userProfileService.LoadProfileAsync().Result;
+            profile = userProfileService.LoadProfileAsync().Result;
         }
 
-        public async Task RefreshProfileAsync()
+        public (SpecificationSummary value, int index) GetSpecification(Guid id)
         {
-            _userProfile = await _userProfileService.LoadProfileAsync();
+            var spec = Specifications.FirstOrDefault(s => s.Id == id);
+            if (spec is null)
+            {
+                SetExitFunction();
+                throw new InvalidDataException("Specification not loaded.");
+            }
+            return (spec, Specifications.IndexOf(spec));
+        }
+
+        public (ServiceSummary value, int index) GetService(Guid id)
+        {
+            var service = Services.FirstOrDefault(s => s.Id == id);
+            if (service is null)
+            {
+                SetExitFunction();
+                throw new InvalidDataException("Service not loaded.");
+            }
+            return (service, Services.IndexOf(service));
         }
 
         [RelayCommand]
         public async Task LoadAsync()
         {
-            if (IsBusy) return;
-            IsBusy = true;
-            ErrorMessage = null;
-
-            try
+            if (IsBusy)
             {
-                // Student options
-                var studentItems = await _studentRepository.GetStudentOptionsAsync();
-
-                Students.Clear();
-                foreach (var s in studentItems) Students.Add(s);
-
-                var serviceItems = await _serviceRepository.GetServicesAsync();
-
-                Services.Clear();
-                foreach (var s in serviceItems) Services.Add(s);
-
-                var items = await _specificationRepository.GetSpecificationsAsync();
-
-                Specifications.Clear();
-                foreach (var item in items)
-                {
-                    Specifications.Add(item);
-                }
+                SetExitFunction("Can't load specifications while busy.", InfoBarType.Warning, false);
+                return;
             }
-            catch (Exception ex)
-            {
-                ErrorMessage = ex.Message;
-            }
-            finally { IsBusy = false; }
+
+            SetEnterFunction();
+
+            var studentItems = await _studentRepository.GetStudentOptionsAsync();
+
+            Students.Clear();
+            foreach (var s in studentItems) Students.Add(s);
+
+            var serviceItems = await _serviceRepository.GetServicesAsync();
+
+            Services.Clear();
+            foreach (var s in serviceItems) Services.Add(s);
+
+            var items = await _specificationRepository.GetSpecificationsAsync();
+
+            Specifications.Clear();
+            foreach (var item in items) Specifications.Add(item);
+
+            SetExitFunction();
         }
 
-        public async Task AddSpecificationAsync(
-            string name,
-            int duration,
-            double? price,
-            bool online,
-            bool weekend,
-            Guid? studentId,
-            Guid? serviceId)
+        public async Task AddSpecificationAsync(string name, int durationMinutes, double? price,
+            bool online, bool weekend,
+            Guid studentId, Guid serviceId)
         {
-            if (IsBusy) return;
-
-            name = (name ?? string.Empty).Trim();
-            if (string.IsNullOrWhiteSpace(name))
+            if (IsBusy)
             {
-                ErrorMessage = "Specification name is required.";
-                return;
-            }
-            if (duration <= 0)
-            {
-                ErrorMessage = "Enter a valid non-negative price (e.g., 60).";
-                return;
-            }
-            if (serviceId is null)
-            {
-                ErrorMessage = "Select a service.";
-                return;
-            }
-            if (studentId is null)
-            {
-                ErrorMessage = "Select a student.";
+                SetExitFunction("Can't add specification while busy.", InfoBarType.Warning, false);
                 return;
             }
 
-            IsBusy = true;
-            ErrorMessage = null;
+            SetEnterFunction();
+
+            if (!ValidateSpecificationInput(ref name, durationMinutes))
+                return;
+
+            if (!Services.Any(s => s.Id == serviceId))
+                throw new InvalidDataException("Service ID is not recognize.");
+            
+            if (!Students.Any(s => s.Id == studentId))
+                throw new InvalidDataException("Student ID is not recognize.");
+            
+
             try
             {
                 var specification = new Specification
                 {
                     Name = name,
-                    StudentId = studentId.Value,
-                    ServiceId = serviceId.Value,
-                    DurationMinutes = duration,
+                    StudentId = studentId,
+                    ServiceId = serviceId,
+                    DurationMinutes = durationMinutes,
                     Price = (decimal?)price,
                     IsOnline = online,
                     IsWeekenOrHoliday = weekend
@@ -137,117 +128,130 @@ namespace Apolo.ViewModels
                     specification.Id, specification.Name, specification.StudentId, studentName,
                     specification.ServiceId, serviceName, specification.DurationMinutes, (double?)specification.Price,
                     specification.IsOnline, specification.IsWeekenOrHoliday));
+
+                SetExitFunction($"Specification '{name}' added for {studentName}.", InfoBarType.Success);
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
-                ErrorMessage = "Could not create the specification (constraints or duplicates).";
+                SetExitFunction(ex.Message, InfoBarType.Error);
             }
-            catch (Exception ex)
-            {
-                ErrorMessage = ex.Message;
-            }
-            finally { IsBusy = false; }
         }
 
         [RelayCommand]
-        public async Task DeleteSpecificationAsync(SpecificationSummary? item)
+        public async Task DeleteSpecificationAsync(Guid id)
         {
-            if (item is null || IsBusy) { return; }
+            if (IsBusy)
+            {
+                SetExitFunction("Can't delete specification while busy.", InfoBarType.Warning, false);
+                return;
+            }
 
-            IsBusy = true;
-            ErrorMessage = null;
+            SetEnterFunction();
+
+            var oldSpec = GetSpecification(id);
 
             try
             {
-                await _specificationRepository.DeleteAsync(item.Id);
+                await _specificationRepository.DeleteAsync(id);
 
-                var toRemove = Specifications.FirstOrDefault(s => s.Id == item.Id);
-                if (toRemove != null) Specifications.Remove(toRemove);
+                Specifications.Remove(oldSpec.value);
+                SetExitFunction($"Specification '{oldSpec.value.SpecificationName}' deleted for {oldSpec.value.StudentName}.",
+                    InfoBarType.Success);
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
-                ErrorMessage = "Delete failed due to related data. Check constraints.";
+                SetExitFunction(ex.Message, InfoBarType.Error);
             }
-            catch (Exception ex)
+        }
+
+        public bool ValidateSpecificationInput(ref string name, int durationMinutes)
+        {
+            name = (name ?? "").Trim();
+            if (string.IsNullOrEmpty(name))
             {
-                ErrorMessage = ex.Message;
+                SetExitFunction("Specification name is required.", InfoBarType.Warning);
+                return false;
             }
-            finally { IsBusy = false; }
+            if (durationMinutes <= 0)
+            {
+                SetExitFunction("Enter a valid non-negative duration (e.g., 60).", InfoBarType.Warning);
+                return false;
+            }
+            return true;
         }
 
         public async Task UpdateSpecificationAsync(Guid id, string name, int durationMinutes, double? price,
             bool isOnline, bool isWeekend, Guid serviceId)
         {
-            if (IsBusy) return;
-            name = (name ?? "").Trim();
-
-            if (string.IsNullOrEmpty(name))
+            if (IsBusy)
             {
-                ErrorMessage = "Name is required";
-            }
-            if (durationMinutes <= 0)
-            {
-                ErrorMessage = "Enter a valid non-negative duration (e.g., 60).";
+                SetExitFunction("Can't update specification while busy.", InfoBarType.Warning, false);
                 return;
             }
 
-            IsBusy = true;
-            ErrorMessage = null;
+            SetEnterFunction();
+
+            if (!ValidateSpecificationInput(ref name, durationMinutes))
+            {
+                return;
+            }
+
+            var oldSpec = GetSpecification(id);
 
             try
             {
                 await _specificationRepository.UpdateAsync(id, serviceId, name, durationMinutes, (decimal?)price, isOnline, isWeekend);
 
-                // Update item in UI list
-                var idx = Specifications.Select((s, i) => (s, i)).FirstOrDefault(t => t.s.Id == id).i;
-                if (idx >= 0)
+
+                var serviceName = Services.First(s => s.Id == serviceId).Name;
+                Specifications[oldSpec.index] = oldSpec.value with
                 {
-                    var serviceName = Services.First(s => s.Id == serviceId).Name;
-                    var current = Specifications[idx];
-                    Specifications[idx] = current with
-                    {
-                        SpecificationName = name,
-                        DurationMinutes = durationMinutes,
-                        Price = price,
-                        IsOnline = isOnline,
-                        IsWeekenOrHoliday = isWeekend,
-                        ServiceId = serviceId,
-                        ServiceName = serviceName
-                    };
-                }
+                    SpecificationName = name,
+                    DurationMinutes = durationMinutes,
+                    Price = price,
+                    IsOnline = isOnline,
+                    IsWeekenOrHoliday = isWeekend,
+                    ServiceId = serviceId,
+                    ServiceName = serviceName
+                };
+                SetExitFunction($"Specification '{oldSpec.value.SpecificationName}' updated for {oldSpec.value.StudentName}.",
+                    InfoBarType.Success);
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
-                ErrorMessage = "Save failed due to related data. Check constraints.";
+                SetExitFunction(ex.Message, InfoBarType.Error);
             }
-            catch (Exception ex)
-            {
-                ErrorMessage = ex.Message;
-            }
-            finally { IsBusy = false; }
         }
 
-        public async Task CreateLessonFromSpecificationAsync(SpecificationSummary specification, 
-            DateOnly date, ServiceSummary service, decimal travelAllowance, decimal weekendFee)
+        public async Task CreateLessonFromSpecificationAsync(Guid id, DateOnly date, string? notes)
         {
-            if (IsBusy) return;
+            if (IsBusy)
+            {
+                SetExitFunction("Can't create lesson while busy.", InfoBarType.Warning, false);
+                return;
+            }
 
-            IsBusy = true;
-            ErrorMessage = null;
+            SetEnterFunction();
+
+            var spec = GetSpecification(id);
+
+            var (service, _) = GetService(spec.value.ServiceId);
 
             try
             {
                 await _lessonRepository.AddLessonAsync(
-                    date, specification.ServiceName,
-                    service.IsPricePerHour, specification.DurationMinutes, (decimal)(specification.Price ?? service.Price),
-                    specification.IsOnline, travelAllowance, specification.IsWeekenOrHoliday, weekendFee,
-                    null, [ specification.StudentId ] );
+                    date, spec.value.ServiceName,
+                    service.IsPricePerHour, spec.value.DurationMinutes, (decimal)(spec.value.Price ?? service.Price),
+                    spec.value.IsOnline, TravelAllowance, spec.value.IsWeekenOrHoliday, WeekendFee,
+                    notes, [spec.value.StudentId]);
+
+                SetExitFunction($"Lesson '{spec.value.ServiceName}' created for {spec.value.StudentName}.",
+                    InfoBarType.Success); ;
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex)
             {
-                ErrorMessage = ex.Message;
+                SetExitFunction(ex.Message, InfoBarType.Error);
             }
-            finally { IsBusy = false; }
         }
     }
 }

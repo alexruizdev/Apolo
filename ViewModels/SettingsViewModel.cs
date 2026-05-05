@@ -1,134 +1,59 @@
 ﻿using Apolo.Services;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
-using Models;
 using Repository;
+using System.Diagnostics;
 using System.Text;
+using ViewModels;
 
 namespace Apolo.ViewModels
 {
-    public partial class SettingsViewModel : ObservableObject
+    public partial class SettingsViewModel : UserProfileViewModel
     {
-        private readonly IUserProfileService _service;
+        IGeneralRepository _repository;
+        Excel.IReader _excelReader;
+        Excel.IWriter _excelWriter;
 
-        private ApoloContext? _context;
-
-        IServiceRepository _serviceRepository;
-        IPayerRepository _payerRepository;
-        IStudentRepository _studentRepository;
-        ISpecificationRepository _specificationRepository;
-        ILessonRepository _lessonRepository;
-        IInvoiceRepository _invoiceRepository;
-        [ObservableProperty] private string fullName = string.Empty;
-        [ObservableProperty] private string address = string.Empty;
-        [ObservableProperty] private string zipCode = string.Empty;
-        [ObservableProperty] private string city = string.Empty;
-        [ObservableProperty] private string phone = string.Empty;
-        [ObservableProperty] private string taxId = string.Empty;
-        [ObservableProperty] private string email = string.Empty;
-        [ObservableProperty] private string bankName = string.Empty;
-        [ObservableProperty] private string bankAccount = string.Empty;
-        [ObservableProperty] private double ivaPercent = 0;
-        [ObservableProperty] private double weekendFee = 0;
-        [ObservableProperty] private double travelAllowance = 0;
-
-        [ObservableProperty] private bool isBusy;
-        [ObservableProperty] private string? statusMessage;
-
-        public SettingsViewModel(
-            IUserProfileService service, 
-            IServiceRepository serviceRepository, 
-            IPayerRepository payerRepository,
-            IStudentRepository studentRepository,
-            ISpecificationRepository specificationRepository,
-            ILessonRepository lessonRepository,
-            IInvoiceRepository invoiceRepository)
+        public SettingsViewModel(IGeneralRepository repository, IUserProfileService userProfile, 
+            Excel.IReader excelReader, Excel.IWriter excelWriter)
+            : base(userProfile)
         {
-            _service = service;
-            _context = Ioc.Default.GetService<ApoloContext>();
-            _serviceRepository = serviceRepository;
-            _payerRepository = payerRepository;
-            _studentRepository = studentRepository;
-            _specificationRepository = specificationRepository;
-            _lessonRepository = lessonRepository;
-            _invoiceRepository = invoiceRepository;
-        }
-
-        [RelayCommand]
-        public async Task LoadAsync()
-        {
-            if (IsBusy) return;
-            IsBusy = true;
-            StatusMessage = null;
-
-            try
-            {
-                var p = await _service.LoadProfileAsync();
-                FullName = p.FullName;
-                Address = p.Address;
-                ZipCode = p.ZipCode;
-                City = p.City;
-                Phone = p.Phone;
-                TaxId = p.TaxId;
-                Email = p.Email;
-                BankName = p.BankName;
-                BankAccount = p.BankAccount;
-                IvaPercent = p.IvaPercent;
-                WeekendFee = p.WeekendFee;
-                TravelAllowance = p.TravelAllowance;
-                StatusMessage = "Settings loaded.";
-            }
-            finally { IsBusy = false; }
+            _repository = repository;
+            _excelReader = excelReader;
+            _excelWriter = excelWriter;
         }
 
         [RelayCommand]
         public async Task SaveAsync()
         {
-            if (IsBusy) return;
-            IsBusy = true;
-            StatusMessage = null;
-
-            try
+            if (IsBusy)
             {
-                var p = new UserProfile
-                {
-                    FullName = FullName?.Trim() ?? string.Empty,
-                    Address = Address?.Trim() ?? string.Empty,
-                    ZipCode = ZipCode?.Trim() ?? string.Empty,
-                    City = City?.Trim() ?? string.Empty,
-                    Phone = Phone?.Trim() ?? string.Empty,
-                    TaxId = TaxId?.Trim() ?? string.Empty,
-                    Email = Email?.Trim() ?? string.Empty,
-                    BankAccount = BankAccount?.Trim() ?? string.Empty,
-                    BankName = BankName?.Trim() ?? string.Empty,
-                    IvaPercent = IvaPercent,
-                    WeekendFee = WeekendFee,
-                    TravelAllowance = TravelAllowance
-                };
-                await _service.SaveAsync(p);
-                StatusMessage = "Saved.";
+                SetExitFunction("Can't save settings while busy.", InfoBarType.Warning, false);
+                return;
             }
-            finally { IsBusy = false; }
+
+            SetEnterFunction();
+
+            await _userProfileService.SaveAsync(Profile);
+
+            SetExitFunction("User profile saved successfully.", InfoBarType.Success);
         }
 
-        [RelayCommand]
         public async Task ClearDatabaseAsync()
         {
-            if (IsBusy) return;
-            if (_context == null) return;
-            IsBusy = true;
-            StatusMessage = null;
+            if (IsBusy)
+            {
+                SetExitFunction("Can't clear database while busy.", InfoBarType.Warning, false);
+                return;
+            }
 
+            SetEnterFunction();
 
-            await _context.Database.EnsureDeletedAsync();
-            await _context.Database.EnsureCreatedAsync();
-            _context.SaveChanges();
+            await _repository.ClearDatabaseAsync();
 
-            IsBusy = false;
+            SetExitFunction("Database has been clear successfully.", InfoBarType.Success);
         }
 
-        public async Task<string> GenerateExportSummary(string folderPath, 
+        public async Task<string> GenerateExportSummary(string folderPath,
             int serviceCount, int payerCount,
             int studentCount, int specificationCount,
             int lessonCount, int invoiceCount)
@@ -162,94 +87,87 @@ namespace Apolo.ViewModels
             return fullPath;
         }
 
-        [RelayCommand]
-        public async Task<string> ImportDatabaseFromExcel(string file)
+        public async Task ImportDatabaseFromExcel(string file)
         {
             if (IsBusy)
-                throw new Exception("System is busy.");
-            if (_context == null)
-                throw new Exception("Can't access database.");
-            if (string.IsNullOrEmpty(file))
-                throw new ArgumentException("No file selected.");
+            {
+                SetExitFunction("Can't import database from Excel while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            SetEnterFunction();
+
+            if (string.IsNullOrWhiteSpace(file))
+            {
+                SetExitFunction("No file selected.", InfoBarType.Warning);
+                return;
+            }
+
             var root = Path.GetDirectoryName(file);
             if (!Directory.Exists(root))
-                throw new ArgumentException($"Directory {root} does not exist.");
+            {
+                SetExitFunction($"Directory '{root}' does not exist.", InfoBarType.Error);
+                return;
+            }
 
-            var reader = new Excel.Reader();
-            reader.ReadExcelAndStore(file);
+            var watch = Stopwatch.StartNew();
+
+            await Task.Run(async () => await _excelReader.ReadExcel(file));
 
             // Insert data into database
-            // Services
-            foreach (var service in reader.Services)
-            {
-                await _serviceRepository.AddAsync(service);
-            }
+            await _repository.ImportAllDataAsync(
+                _excelReader.Services,
+                _excelReader.Payers,
+                _excelReader.Students,
+                _excelReader.Specifications,
+                _excelReader.Lessons,
+                _excelReader.Invoices);
 
-            // Payers
-            foreach (var payer in reader.Payers)
-            {
-                await _payerRepository.UpsertAsync(payer);
-            }
+            string path = await GenerateExportSummary(root,
+                _excelReader.Services.Count,
+                _excelReader.Payers.Count,
+                _excelReader.Students.Count,
+                _excelReader.Specifications.Count,
+                _excelReader.Lessons.Count,
+                _excelReader.Invoices.Count);
 
-            // Students
-            foreach (var student in reader.Students)
-            {
-                await _studentRepository.UpsertAsync(student);
-            }
+            watch.Stop();
+            TimeSpan ts = watch.Elapsed;
+            string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}",
+                ts.Hours, ts.Minutes, ts.Seconds);
 
-            // Specifications
-            foreach (var specification in reader.Specifications)
-            {
-                await _specificationRepository.AddSpecificationAsync(specification);
-            }
-
-            // Lessons
-            await _lessonRepository.AddLessonsAsync(reader.Lessons);
-
-            // Invoices
-            foreach (var invoice in reader.Invoices)
-            {
-                await _invoiceRepository.AddAsync(invoice);
-            }
-
-            // TODO : display entries added
-            return await GenerateExportSummary(root, 
-                reader.Services.Count,
-                reader.Payers.Count,
-                reader.Students.Count,
-                reader.Specifications.Count,
-                reader.Lessons.Count,
-                reader.Invoices.Count);
+            SetExitFunction($"Import completed ({elapsedTime}). Summary saved to {path}", InfoBarType.Success);
         }
 
-        [RelayCommand]
-        public async Task ExportDatabaseToExcel(string folder)
+        public async Task ExportDatabaseToExcel(string folder, string installedPath)
         {
             if (IsBusy)
-                throw new Exception("System is busy.");
-            if (_context == null)
-                throw new Exception("Can't access database.");
-            if (string.IsNullOrEmpty(folder))
-                throw new ArgumentException("No folder selected.");
+            {
+                SetExitFunction("Can't export database while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            SetEnterFunction();
+
             if (!Directory.Exists(folder))
-                throw new ArgumentException($"Folder {folder} does not exist.");
-            
-            string installedPath = string.Empty; // TODO
-            // Windows.ApplicationModel.Package.Current.InstalledPath
+            {
+                SetExitFunction($"Directory {folder} does not exist.", InfoBarType.Error);
+                return;
+            }
 
-            string templatePath = Path.Combine(installedPath, 
-                "Assets", "Excel", "Template.xlsx");
+            var watch = Stopwatch.StartNew();
 
+            string templatePath = Path.Combine(installedPath, "Assets", "Excel", "Template.xlsx");
 
-            var writer = new Excel.Writer();
-            writer.Services.AddRange(await _serviceRepository.GetServicesAsync());
-            writer.Payers.AddRange(await _payerRepository.GetPayersAsync());
-            writer.Students.AddRange(await _studentRepository.GetSudentsAsync());
-            writer.Specifications.AddRange(await _specificationRepository.GetSpecificationsAsync());
-            writer.Lessons.AddRange(await _lessonRepository.GetLessonsAsync(false, null));
-            writer.Invoices.AddRange(await _invoiceRepository.GetInvoicesAsync());
+            var data = await _repository.GetAllDataAsync();
+            _excelWriter.WriteExcel(templatePath, folder, in data);
 
-            writer.WriteExcel(templatePath, folder);
+            watch.Stop();
+            TimeSpan ts = watch.Elapsed;
+            string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}",
+                ts.Hours, ts.Minutes, ts.Seconds);
+
+            SetExitFunction($"Export completed ({elapsedTime}). File saved to {folder}", InfoBarType.Success);
         }
     }
 }

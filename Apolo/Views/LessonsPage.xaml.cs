@@ -222,7 +222,7 @@ namespace Apolo.Views
                 var date = DateOnly.FromDateTime(dto.Date);
                 bool isOnline = onlineBox.IsChecked == true;
                 bool isWeekend = weekendBox.IsChecked == true;
-                await ViewModel.CreateLessonAsync(date, nameBox.Text, (ServiceSummary)serviceBox.SelectedItem, 
+                await ViewModel.AddLessonAsync(date, nameBox.Text, (ServiceSummary)serviceBox.SelectedItem, 
                     (int?)durationBox.Value, (decimal)priceBox.Value,
                     isOnline, isWeekend, noteBox.Text, selectedIds);
             }

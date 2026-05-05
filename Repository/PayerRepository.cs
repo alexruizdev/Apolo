@@ -98,21 +98,17 @@ namespace Repository
                  .ToListAsync();
         }
 
-        public async Task UpsertAsync(Payer payer)
+        public async Task AddAsync(Payer payer)
         {
-            var existingPayer = await _db.Payers.FindAsync(payer.Id);
-
-            if (existingPayer == null)
+            try
             {
                 _db.Payers.Add(payer);
+                await _db.SaveChangesAsync();
             }
-            else
+            catch (DbUpdateException ex)
             {
-                // Update only the values, keeping the entity tracked
-                _db.Entry(existingPayer).CurrentValues.SetValues(payer);
+                throw new InvalidDataException($"This payer already exists: {payer.FullName}.", ex);
             }
-
-            await _db.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(Guid id)

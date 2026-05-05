@@ -3,7 +3,17 @@ using Models;
 
 namespace Excel
 {
-    public class Reader
+    public interface IReader
+    {
+        public List<Service> Services { get; } 
+        public List<Payer> Payers { get; } 
+        public List<Student> Students { get; } 
+        public List<Specification> Specifications { get; } 
+        public List<Lesson> Lessons { get; } 
+        public List<Invoice> Invoices { get; }
+        Task ReadExcel(string filePath);
+    }
+    public class Reader : IReader
     {
         public List<Service> Services { get; } = new List<Service>();
         public List<Payer> Payers { get; } = new List<Payer>();
@@ -12,7 +22,7 @@ namespace Excel
         public List<Lesson> Lessons { get; } = new List<Lesson>();
         public List<Invoice> Invoices { get; } = new List<Invoice>();
 
-        public void ReadExcelAndStore(in string filePath)
+        public async Task ReadExcel(string filePath)
         {
             try
             {
@@ -60,6 +70,8 @@ namespace Excel
             var worksheet = workbook.Worksheet("Students");
             var table = workbook.Table("Students");
             var rows = table.DataRange.RowsUsed();
+
+            var serviceLookup = Services.ToDictionary(s => s.Name, s => s);
 
             // Add Astex Online
             Payers.Add(new Payer()
@@ -135,8 +147,7 @@ namespace Excel
                 // Add specification
                 if (!string.IsNullOrEmpty(serviceName))
                 {
-                    var service = Services.FirstOrDefault(s => s.Name == serviceName);
-                    if (service is null)
+                    if (!serviceLookup.TryGetValue(serviceName, out var service))
                     {
                         throw new ArgumentException($"{serviceName} is not defined in Service tab.");
                     }
@@ -257,7 +268,7 @@ namespace Excel
                 };
 
                 // Attendance
-                lesson.Attendaces.Add(new Attendance()
+                lesson.Attendances.Add(new Attendance()
                 {
                     StudentId = student.Id,
                     LessonId = lesson.Id,
@@ -313,7 +324,7 @@ namespace Excel
 
                 // Get lessons to pay
                 var lessons = Lessons
-                    .Where(l => l.Attendaces
+                    .Where(l => l.Attendances
                     .Any(a => a.StudentId == student.Id &&  !a.IsPaid))
                     .OrderBy(l => l.Date).ToList();
 
@@ -340,7 +351,7 @@ namespace Excel
                 {
                     var lesson = lessons[i];
                     payment -= lesson.PricePerAttendance;
-                    var attendance = lesson.Attendaces.First(a => a.StudentId == student.Id);
+                    var attendance = lesson.Attendances.First(a => a.StudentId == student.Id);
                     attendance.IsPaid = true;
                     invoice.Lines.Add(new InvoiceAttendance()
                     {

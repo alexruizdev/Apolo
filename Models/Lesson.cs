@@ -40,7 +40,7 @@ namespace Models
 
         public string? Notes { get; set; }
         
-        public ICollection<Attendance> Attendaces { get; set; } = new List<Attendance>();
+        public ICollection<Attendance> Attendances { get; set; } = new List<Attendance>();
 
         public decimal GetFinalPricePerStudent() => GetPrice(1, IsPricePerHour, DurationMinutes, PricePerAttendance, IsOnline, TravelAllowance, IsWeekenOrHoliday, WeekendFee);
 
@@ -67,6 +67,23 @@ namespace Models
             return input.Length <= maxLength
                 ? input
                 : $"{input[..maxLength]}...";
+        }
+
+        public List<AttendanceSummary> AttendancesSummary(ICollection<StudentOption> students)
+        {
+            return Attendances.Select(a =>
+            {
+                var student = students.First(s => s.Id == a.StudentId);
+
+                return new AttendanceSummary(
+                    a.Id,
+                    a.StudentId,
+                    student.FullName,
+                    a.IsPaid
+                );
+            })
+            .OrderBy(summary => summary.StudentName)
+            .ToList();
         }
     }
 }

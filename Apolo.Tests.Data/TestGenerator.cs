@@ -172,7 +172,7 @@ namespace Apolo.Tests.Data
         public static Lesson CreateLesson(Guid studentId, bool paid = false)
         {
             var lesson = paid ? CreateLessonPaid() : CreateLessonUnpaid();
-            lesson.Attendaces = new List<Attendance>
+            lesson.Attendances = new List<Attendance>
             {
                 new Attendance
                 {
@@ -189,7 +189,7 @@ namespace Apolo.Tests.Data
         public static Lesson CreateRandomLesson(Guid studentId, string name, bool paid, int months)
         {
             var lesson = CreateRandomLesson(name, paid, months);
-            lesson.Attendaces = new List<Attendance>    
+            lesson.Attendances = new List<Attendance>    
             {
                 new Attendance
                 {
@@ -237,7 +237,7 @@ namespace Apolo.Tests.Data
                 PayerId = payerId
             };
 
-            invoice.Lines = lessons.SelectMany(l => l.Attendaces.Select(a => new InvoiceAttendance
+            invoice.Lines = lessons.SelectMany(l => l.Attendances.Select(a => new InvoiceAttendance
             {
                 Id = Guid.NewGuid(),
                 InvoiceId = invoice.Id,

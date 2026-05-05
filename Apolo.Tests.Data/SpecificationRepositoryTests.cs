@@ -143,7 +143,7 @@ namespace Apolo.Tests.Data
             // Act & Assert
             await Assert.ThrowsAsync<Microsoft.EntityFrameworkCore.DbUpdateException>(async () =>
             {
-                await _repository.UpdateAsync(spec.Id, new Guid(), "New Name", 90, 75.5m, true, false);
+                await _repository.UpdateAsync(spec.Id, Guid.NewGuid(), "New Name", 90, 75.5m, true, false);
             });
         }
 
@@ -153,7 +153,7 @@ namespace Apolo.Tests.Data
             // Act & Assert
             var exception = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
             {
-                await _repository.UpdateAsync(new Guid(), new Guid(), "New Name", 90, 75.5m, true, false);
+                await _repository.UpdateAsync(Guid.NewGuid(), Guid.NewGuid(), "New Name", 90, 75.5m, true, false);
             });
 
             // Verify the message contains the specific text we expect

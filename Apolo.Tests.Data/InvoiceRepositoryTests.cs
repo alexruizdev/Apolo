@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
-using System.Collections.Frozen;
 
 namespace Apolo.Tests.Data
 {
@@ -66,7 +65,7 @@ namespace Apolo.Tests.Data
             _context.Invoices.Add(invoice);
             await _context.SaveChangesAsync();
 
-            var attendanceIds = lessons.SelectMany(l => l.Attendaces.Select(a => a.Id)).ToList();
+            var attendanceIds = lessons.SelectMany(l => l.Attendances.Select(a => a.Id)).ToList();
 
             await _repository.UpdateAttendancesAsync(attendanceIds);
 
@@ -144,7 +143,7 @@ namespace Apolo.Tests.Data
             Assert.AreEqual(invoice.CreatedUTC, dbInvoice.CreatedUTC);
             Assert.AreEqual(payer.Id, dbInvoice.PayerId);
             Assert.AreEqual(invoice.Id, dbInvoice.Lines.ElementAt(0).InvoiceId);
-            Assert.AreEqual(lesson1.Attendaces.First().Id, dbInvoice.Lines.ElementAt(0).AttendanceId);
+            Assert.AreEqual(lesson1.Attendances.First().Id, dbInvoice.Lines.ElementAt(0).AttendanceId);
         }
 
         [TestMethod]
@@ -180,7 +179,7 @@ namespace Apolo.Tests.Data
             _context.Lessons.AddRange(lessons);
             await _context.SaveChangesAsync();
 
-            var attendanceIds = lessons.SelectMany(l => l.Attendaces.Select(a => a.Id)).ToList();
+            var attendanceIds = lessons.SelectMany(l => l.Attendances.Select(a => a.Id)).ToList();
 
             var (invoiceId, invoiceName) = await _repository.CreateInvoiceAsync(payer.Id, attendanceIds, null);
 
@@ -207,7 +206,7 @@ namespace Apolo.Tests.Data
             _context.Lessons.AddRange(lessons);
             await _context.SaveChangesAsync();
 
-            var attendanceIds = lessons.SelectMany(l => l.Attendaces.Select(a => a.Id)).ToList();
+            var attendanceIds = lessons.SelectMany(l => l.Attendances.Select(a => a.Id)).ToList();
 
             var (invoiceId, invoiceName) = await _repository.CreateInvoiceAsync(payer.Id, attendanceIds, "TestName");
 

@@ -1,186 +1,186 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
 using System.Collections.ObjectModel;
+using ViewModels;
 
 namespace Apolo.ViewModels
 {
-    public partial class StudentsViewModel : ObservableObject
+    public partial class StudentsViewModel : BaseViewModel
     {
-        IStudentRepository _repository;
+        IStudentRepository _studentRepository;
         IPayerRepository _payerRepository;
 
         public ObservableCollection<StudentSummary> Students { get; } = new();
         public ObservableCollection<PayerOption> Payers { get; } = new();
 
-        [ObservableProperty] private bool isBusy;
-        [ObservableProperty] private string? errorMessage;
-
         public StudentsViewModel(IStudentRepository studentRepository, IPayerRepository payerRepository)
         {
-            _repository = studentRepository;
+            _studentRepository = studentRepository;
             _payerRepository = payerRepository;
+        }
+
+        public bool ValidateStudentInput(ref string firstName, ref string lastName)
+        {
+            firstName = (firstName ?? "").Trim();
+            lastName = (lastName ?? "").Trim();
+
+            if (string.IsNullOrWhiteSpace(firstName) && string.IsNullOrWhiteSpace(lastName))
+            {
+                SetExitFunction("Enter at least a first or last name.", InfoBarType.Warning);
+                return false;
+            }
+
+            return true;
+        }
+
+        public (StudentSummary value, int index) GetStudent(Guid id)
+        {
+            var student = Students.FirstOrDefault(s => s.Id == id);
+            if (student is null)
+            {
+                SetExitFunction();
+                throw new InvalidDataException("Student not loaded.");
+            }
+            return (student, Students.IndexOf(student));
         }
 
         [RelayCommand]
         public async Task LoadAsync()
         {
-            if (IsBusy) return;
-            IsBusy = true;
-            ErrorMessage = null;
-
-            try
+            if (IsBusy)
             {
-                // Payer options
-                var payerItems = await _payerRepository.GetPayerOptionsAsync();
-
-                Payers.Clear();
-                foreach (var p in payerItems) Payers.Add(p);
-
-                // Students
-                var studentItems = await _repository.GetSudentsAsync();
-                Students.Clear();
-                foreach (var s in studentItems) Students.Add(s);
+                SetExitFunction("Can't load students while busy.", InfoBarType.Warning, false);
+                return;
             }
-            catch (Exception ex)
-            {
-                ErrorMessage = ex.Message;
-            }
-            finally { IsBusy = false; }
+
+            SetEnterFunction();
+
+            // Payer options
+            var payerItems = await _payerRepository.GetPayerOptionsAsync();
+
+            Payers.Clear();
+            foreach (var p in payerItems) Payers.Add(p);
+
+            // Students
+            var studentItems = await _studentRepository.GetSudentsAsync();
+            Students.Clear();
+            foreach (var s in studentItems) Students.Add(s);
+
+            SetExitFunction();
         }
 
         public async Task AddStudentAsync(string firstName, string lastName, Guid? payerId)
         {
-            if (IsBusy) return;
-
-            var first = (firstName ?? "").Trim();
-            var last = (lastName ?? "").Trim();
-
-            if (string.IsNullOrWhiteSpace(first) && string.IsNullOrWhiteSpace(last))
+            if (IsBusy)
             {
-                ErrorMessage = "Enter at least a first or last name.";
+                SetExitFunction("Can't add student while busy.", InfoBarType.Warning, false);
                 return;
             }
 
-            var entity = new Student
-            {
-                FirstName = first,
-                LastName = last
-            };
+            SetEnterFunction();
 
-            // Check student name
-            if (Students.Any(s => s.FullName == entity.FullName))
-            {
-                ErrorMessage = $"Student name already exists {entity.FullName}.";
+            if (!ValidateStudentInput(ref firstName, ref lastName))
                 return;
-            }
 
-            if (!payerId.HasValue) {
-                if (Payers.Any(p => p.FullName == entity.FullName))
-                {
-                    ErrorMessage = $"Payers is not selected and there is already a payer with that name: {entity.FullName}.";
-                    return;
-                }
-                IsBusy = true;
-                ErrorMessage = null;
-                try
+            try
+            {
+                string additionalMessage = string.Empty;
+                // Create a payer if not selected
+                if (!payerId.HasValue)
                 {
                     var payer = new Payer
                     {
-                        FirstName = first,
-                        LastName = last
+                        FirstName = firstName,
+                        LastName = lastName
                     };
 
-                    await _payerRepository.UpsertAsync(payer);
+                    await _payerRepository.AddAsync(payer);
                     Payers.Add(new PayerOption(payer.Id, payer.FullName));
                     payerId = payer.Id;
-
+                    additionalMessage = " Created payer with same name.";
                 }
-                catch (Exception ex)
+
+                // Create student
+                var entity = new Student
                 {
-                    ErrorMessage = ex.Message;
-                    IsBusy = false;
-                    return;
-                }
-            }
+                    FirstName = firstName,
+                    LastName = lastName
+                };
 
-            IsBusy = true;
-            ErrorMessage = null;
-            try
-            {
                 entity.PayerId = payerId.Value;
-                await _repository.UpsertAsync(entity);
+                await _studentRepository.AddAsync(entity);
 
                 var payerName = Payers.First(p => p.Id == payerId.Value).FullName;
-                Students.Add(new StudentSummary(entity.Id, first, last, payerId.Value, payerName));
+                Students.Add(new StudentSummary(entity.Id, firstName, lastName, payerId.Value, payerName));
+                SetExitFunction($"Student '{entity.FullName}' added successfully.{additionalMessage}", InfoBarType.Success);
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex)
             {
-                ErrorMessage = ex.Message;
+                SetExitFunction(ex.Message, InfoBarType.Error);
             }
-            finally { IsBusy = false; }
         }
 
         [RelayCommand]
-        public async Task DeleteStudentAsync(StudentSummary? item)
+        public async Task DeleteStudentAsync(Guid id)
         {
-            if (item is null || IsBusy) { return; }
+            if (IsBusy)
+            {
+                SetExitFunction("Can't delete student while busy.", InfoBarType.Warning, false);
+                return;
+            }
 
-            IsBusy = true;
-            ErrorMessage = null;
+            SetEnterFunction();
+
+            var (oldStudent, index) = GetStudent(id);
 
             try
             {
-                await _repository.DeleteAsync(item.Id);
+                await _studentRepository.DeleteAsync(id);
 
-                var toRemove = Students.FirstOrDefault(s => s.Id == item.Id);
-                if (toRemove != null) Students.Remove(toRemove);
+                Students.Remove(oldStudent);
+                SetExitFunction($"Student '{oldStudent.FullName}' deleted successfully.", InfoBarType.Success);
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
-                ErrorMessage = "Delete failed due to related data. Check constraints.";
+                SetExitFunction(ex.Message, InfoBarType.Error);
             }
-            catch (Exception ex)
-            {
-                ErrorMessage = ex.Message;
-            }
-            finally { IsBusy = false; }
         }
 
         public async Task UpdateStudentAsync (Guid id, string firstName,  string lastName, Guid newPayerId)
         {
-            if (IsBusy) return;
-            var first = (firstName ?? "").Trim();
-            var last = (lastName ?? "").Trim();
-
-            if (string.IsNullOrWhiteSpace(first) && string.IsNullOrEmpty(last))
+            if (IsBusy)
             {
-                ErrorMessage = "Enter at least a first or last name.";
+                SetExitFunction("Can't update student while busy.", InfoBarType.Warning, false);
                 return;
             }
 
-            IsBusy = true;
-            ErrorMessage = null;
+            SetEnterFunction();
+
+            if (!ValidateStudentInput(ref firstName, ref lastName))
+                return;
+
+            var (oldStudent, index) = GetStudent(id);
 
             try
             {
-                await _repository.UpdateAsync(id, newPayerId, first, last);
+                await _studentRepository.UpdateAsync(id, newPayerId, firstName, lastName);
 
-                // Update item in UI list
-                var idx = Students.Select((s, i) => (s, i)).FirstOrDefault(t => t.s.Id == id).i;
-                if (idx >= 0)
+                var payerName = Payers.First(p => p.Id == newPayerId).FullName;
+                Students[index] = oldStudent with
                 {
-                    var payerName = Payers.First(p => p.Id == newPayerId).FullName;
-                    Students[idx] = new StudentSummary(id, first, last, newPayerId, payerName);
-                }
+                    FirstName = firstName,
+                    LastName = lastName,
+                    PayerId = newPayerId,
+                    PayerName = payerName
+                }; 
+                SetExitFunction($"Student '{oldStudent.FullName}' updated successfully.", InfoBarType.Success);
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex)
             {
-                ErrorMessage = ex.Message;
+                SetExitFunction(ex.Message, InfoBarType.Error);
             }
-            finally { IsBusy = false; }
         }
     }
 }

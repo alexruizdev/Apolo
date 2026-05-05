@@ -40,6 +40,12 @@ namespace Apolo
             builder.AddSingleton<ISpecificationRepository, SpecificationRepository>();
             builder.AddSingleton<ILessonRepository, LessonRepository>();
             builder.AddSingleton<IInvoiceRepository, InvoiceRepository>();
+            builder.AddSingleton<IGeneralRepository, GeneralRepository>();
+
+            // Utilities
+            builder.AddSingleton<PDF.IWriter, PDF.Writer>();
+            builder.AddSingleton<Excel.IReader, Excel.Reader>();
+            builder.AddSingleton<Excel.IWriter, Excel.Writer>();
 
             // ViewModels
             builder.AddTransient<PayersViewModel>();

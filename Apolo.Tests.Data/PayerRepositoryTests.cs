@@ -127,13 +127,13 @@ namespace Apolo.Tests.Data
         }
 
         [TestMethod]
-        public async Task UpsertAsync_ValidPayer_SavesSuccessfully()
+        public async Task AddAsync_ValidPayer_SavesSuccessfully()
         {
             // Arrange
             var payer = TestGenerator.CreatePayer1(emptyInfo: true);
 
             // Act
-            await _repository.UpsertAsync(payer);
+            await _repository.AddAsync(payer);
 
             // Assert
             var saved = _context.Payers.FirstOrDefault(p => p.FirstName == TestGenerator.PayerName1);
@@ -147,7 +147,7 @@ namespace Apolo.Tests.Data
         }
 
         [TestMethod]
-        public async Task UpsertAsync_UpdatePayer()
+        public async Task AddAsync_ExistingPayer()
         {
             // Arrange
             var payer = TestGenerator.CreatePayer1(emptyInfo: true);
@@ -155,13 +155,16 @@ namespace Apolo.Tests.Data
             _context.Payers.Add(payer);
             await _context.SaveChangesAsync();
 
-            payer.Address = TestGenerator.Address1;
-            payer.ZipCode = TestGenerator.ZipCode1;
-            payer.City = TestGenerator.City1;
-            payer.TaxId = TestGenerator.TaxId1;
-
             // Act
-            await _repository.UpsertAsync(payer);
+            await Assert.ThrowsAsync<InvalidDataException>(async () =>
+            {
+                await _repository.AddAsync(payer);
+            });
+
+            var payerInDb = await _context.Payers.FindAsync(payer.Id);
+
+            Assert.HasCount(1, _context.Payers, "Database should still only have one payer record.");
+            Assert.IsNotNull(payerInDb);
         }
 
         // --- DELETE TESTS ---

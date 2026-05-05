@@ -1,77 +1,89 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
 using System.Collections.ObjectModel;
+using ViewModels;
 
 namespace Apolo.ViewModels
 {
-    public partial class PayersViewModel : ObservableObject
+    public partial class PayersViewModel : BaseViewModel
     {
         IPayerRepository _payerRepository;
 
         public ObservableCollection<PayerSummary> Payers { get; } = new();
-
-        [ObservableProperty]
-        private bool isBusy;
-        [ObservableProperty]
-        private string? errorMessage;
 
         public PayersViewModel(IPayerRepository payerRepository)
         {
             _payerRepository = payerRepository;
         }
 
-        [RelayCommand]
-        public async Task LoadAsync()
+        public bool ValidatePayerInput(ref string firstName, ref string lastName, 
+            ref string address, ref string zipCode, ref string city, ref string taxId)
         {
-            if (IsBusy)
-                return;
-
-            IsBusy = true;
-            ErrorMessage = null;
-
-            try
-            {
-                var list = await _payerRepository.GetPayersAsync();
-
-                Payers.Clear();
-                foreach (var item in list)
-                {
-                    Payers.Add(item);
-                }
-            }
-            catch (Exception ex)
-            {
-                ErrorMessage = ex.Message;
-            }
-            finally
-            {
-                IsBusy = false;
-            }
-        }
-
-
-        public async Task AddPayerAsync(
-            string firstName,
-            string lastName,
-            string addressCode,
-            string zipCode,
-            string city,
-            string taxId)
-        {
-            if (IsBusy) return;
             firstName = (firstName ?? "").Trim();
             lastName = (lastName ?? "").Trim();
-            addressCode = (addressCode ?? "").Trim();
+            address = (address ?? "").Trim();
             zipCode = (zipCode ?? "").Trim();
             city = (city ?? "").Trim();
             taxId = (taxId ?? "").Trim();
 
             if (string.IsNullOrWhiteSpace(firstName) && string.IsNullOrWhiteSpace(lastName))
             {
-                ErrorMessage = "Enter at least a first or last name.";
+                SetExitFunction("Enter at least a first or last name.", InfoBarType.Warning);
+                return false;
+            }
+
+            return true;
+        }
+
+        public (PayerSummary payer, int index) GetPayer(Guid id)
+        {
+            var payer = Payers.FirstOrDefault(s => s.Id == id);
+            if (payer is null)
+            {
+                SetExitFunction();
+                throw new InvalidDataException("Payer not loaded.");
+            }
+            return (payer, Payers.IndexOf(payer));
+        }
+
+        [RelayCommand]
+        public async Task LoadAsync()
+        {
+            if (IsBusy)
+            {
+                SetExitFunction("Can't load payers while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            SetEnterFunction();
+
+            var items = await _payerRepository.GetPayersAsync();
+            Payers.Clear();
+            foreach (var item in items) Payers.Add(item);
+            SetExitFunction();
+        }
+
+
+        public async Task AddPayerAsync(
+            string firstName,
+            string lastName,
+            string address,
+            string zipCode,
+            string city,
+            string taxId)
+        {
+            if (IsBusy)
+            {
+                SetExitFunction("Can't add payer while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            SetEnterFunction();
+
+            if (!ValidatePayerInput(ref firstName, ref lastName, ref address, ref zipCode, ref city, ref taxId))
+            {
                 return;
             }
 
@@ -79,25 +91,15 @@ namespace Apolo.ViewModels
             {
                 FirstName = firstName,
                 LastName = lastName,
-                Address = addressCode,
+                Address = address,
                 ZipCode = zipCode,
                 City = city,
                 TaxId = taxId,
             };
 
-            // Check student name
-            if (Payers.Any(p => p.FullName == payer.FullName))
-            {
-                ErrorMessage = $"Payer name already exists {payer.FullName}.";
-                return;
-            }
-
-            IsBusy = true;
-            ErrorMessage = null;
-
             try
             {
-                await _payerRepository.UpsertAsync(payer);
+                await _payerRepository.AddAsync(payer);
 
                 // Append to UI (no unpaid items yet)
                 Payers.Add(new PayerSummary(
@@ -109,85 +111,78 @@ namespace Apolo.ViewModels
                     payer.ZipCode, 
                     payer.City, 
                     payer.TaxId));
+                SetExitFunction($"Payer '{payer.FullName}' added successfully.", InfoBarType.Success);
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex)
             {
-                ErrorMessage = ex.Message;
-            }
-            finally
-            {
-                IsBusy = false;
+                SetExitFunction(ex.Message, InfoBarType.Error);
             }
         }
 
         [RelayCommand]
-        public async Task DeletePayerAsync(PayerSummary? payer)
+        public async Task DeletePayerAsync(Guid id)
         {
-            if (payer is null)
-                return;
             if (IsBusy)
+            {
+                SetExitFunction("Can't delete payer while busy.", InfoBarType.Warning, false);
                 return;
+            }
 
-            IsBusy = true;
-            ErrorMessage = null;
+            SetEnterFunction();
+
+            var (oldPayer, index) = GetPayer(id);
 
             try
             {
-                await _payerRepository.DeleteAsync(payer.Id);
+                await _payerRepository.DeleteAsync(id);
 
-                var toRemove = Payers.FirstOrDefault(x => x.Id == payer.Id);
-                if (toRemove != null) 
-                    Payers.Remove(toRemove);
+                Payers.Remove(oldPayer);
+                SetExitFunction($"Payer '{oldPayer.FullName}' deleted successfully.", InfoBarType.Success);
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
-                ErrorMessage = "Delete failed due to database constraints.";
+                SetExitFunction(ex.Message, InfoBarType.Error);
             }
-            catch (Exception ex)
-            {
-                ErrorMessage = ex.Message;
-            }
-            finally { IsBusy = false; }
         }
 
-        public async Task UpdatePayerAsync (Guid payerId, string firstName, string lastName, string address, string zipCode, string city, string taxId)
+        public async Task UpdatePayerAsync (Guid payerId, string firstName, string lastName, 
+            string address, string zipCode, string city, string taxId)
         {
-            if (IsBusy) return;
-            var first = (firstName ?? "").Trim();
-            var last = (lastName ?? "").Trim();
-            address = (address ?? "").Trim();
-            zipCode = (zipCode ?? "").Trim();
-            city = (city ?? "").Trim();
-            taxId = (taxId ?? "").Trim();
-            if (string.IsNullOrWhiteSpace(first) && string.IsNullOrWhiteSpace(last))
+            if (IsBusy)
             {
-                ErrorMessage = "Enter at least a first or last name.";
+                SetExitFunction("Can't update payer while busy.", InfoBarType.Warning, false);
                 return;
             }
 
-            IsBusy = true;
-            ErrorMessage = null;
+            SetEnterFunction();
+
+            if (!ValidatePayerInput(ref firstName, ref lastName, ref address, ref zipCode, ref city, ref taxId))
+            {
+                return;
+            }
+
+            var (oldPayer, index) = GetPayer(payerId);
 
             try
             {
-                await _payerRepository.UpdateAsync(payerId, first, last, address, zipCode, city, taxId);
+                await _payerRepository.UpdateAsync(payerId, firstName, lastName, address, zipCode, city, taxId);
 
-                // Update the UI item by replacing it in the collection
-                var index = Payers.Select((item, i) => (item, i))
-                    .FirstOrDefault(t => t.item.Id == payerId).i;
-                if (index >= 0)
+
+                Payers[index] = oldPayer with
                 {
-                    var current = Payers[index];
-                    var updated = new PayerSummary(current.Id, first, last, current.Outstanding, address, zipCode, city, taxId);
-                    Payers[index] = updated;
-                }
+                    FirstName = firstName, 
+                    LastName = lastName,
+                    Address = address,
+                    Zip = zipCode,
+                    City = city,
+                    TaxId = taxId
+                }; 
+                SetExitFunction($"Payer '{oldPayer.FullName}' updated successfully.", InfoBarType.Success);
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex)
             {
-                ErrorMessage = ex.Message; ;
+                SetExitFunction(ex.Message, InfoBarType.Error);
             }
-            finally { IsBusy = false; }
         }
-
     }
 }

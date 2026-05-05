@@ -62,7 +62,7 @@ namespace Repository
             // Attendance (join: Lesson x Customer, unique per pair)
             modelBuilder.Entity<Attendance>()
                 .HasOne(a => a.Lesson)
-                .WithMany(l => l.Attendaces)
+                .WithMany(l => l.Attendances)
                 .HasForeignKey(a => a.LessonId)
                 .OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<Attendance>()
@@ -102,8 +102,8 @@ namespace Repository
 
             foreach (var e in newOrModInstances)
             {
-                if (Entry(e.Entity).Collection(i => i.Attendaces).IsLoaded &&
-                    e.Entity.Attendaces.Count == 0)
+                if (Entry(e.Entity).Collection(i => i.Attendances).IsLoaded &&
+                    e.Entity.Attendances.Count == 0)
                 {
                     throw new InvalidOperationException("A lesson must have at least one Attendance.");
                 }

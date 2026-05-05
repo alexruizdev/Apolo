@@ -27,7 +27,7 @@ namespace Repository
                 .ToListAsync();
         }
 
-        public async Task UpsertAsync(Student student)
+        public async Task AddAsync(Student student)
         {
             // A student must have a valid Payer
             var payerExists = await _db.Payers.AnyAsync(p => p.Id == student.PayerId);
@@ -36,17 +36,16 @@ namespace Repository
                 throw new InvalidOperationException($"Cannot save student: Payer with ID {student.PayerId} does not exist.");
             }
 
-            var existing = await _db.Students.FindAsync(student.Id);
-            if (existing == null)
+            try
             {
                 _db.Students.Add(student);
+                await _db.SaveChangesAsync();
             }
-            else
+            catch (DbUpdateException ex)
             {
-                _db.Entry(existing).CurrentValues.SetValues(student);
+                // SQLite Error 19 is "Constraint Violation"
+                throw new InvalidDataException($"This student already exists: {student.FullName}.", ex);
             }
-
-            await _db.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(Guid id)

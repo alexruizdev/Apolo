@@ -15,6 +15,9 @@ namespace Apolo.Tests.Data
             _repository = new LessonRepository(_context);
         }
 
+        
+
+
         // --- GET TESTS (Filtering & Projections) ---
 
         [TestMethod]
@@ -118,9 +121,9 @@ namespace Apolo.Tests.Data
             Assert.IsFalse(lesson.IsWeekenOrHoliday);
             Assert.AreEqual(0, lesson.WeekendFee);
             Assert.AreEqual("Note", lesson.Notes);
-            var dbLesson = await _context.Lessons.Include(l => l.Attendaces).FirstAsync(l => l.Id == lesson.Id);
-            Assert.HasCount(1, dbLesson.Attendaces);
-            Assert.AreEqual(student.Id, dbLesson.Attendaces.First().StudentId);
+            var dbLesson = await _context.Lessons.Include(l => l.Attendances).FirstAsync(l => l.Id == lesson.Id);
+            Assert.HasCount(1, dbLesson.Attendances);
+            Assert.AreEqual(student.Id, dbLesson.Attendances.First().StudentId);
         }
 
         // --- UPDATE TESTS ---
@@ -236,7 +239,7 @@ namespace Apolo.Tests.Data
             // Act & Assert (Try adding the same student again)
             await Assert.ThrowsAsync<InvalidDataException>(async () =>
             {
-                await _repository.AddAttendanceAsync(new Guid(), [student.Id]);
+                await _repository.AddAttendanceAsync(Guid.NewGuid(), [student.Id]);
             });
         }
 
@@ -276,7 +279,7 @@ namespace Apolo.Tests.Data
             await _context.SaveChangesAsync();
 
             // Act
-            await _repository.RemoveAttendanceAsync(lesson.Id, lesson.Attendaces.First().Id);
+            await _repository.RemoveAttendanceAsync(lesson.Id, lesson.Attendances.First().Id);
 
             // Assert
             Assert.HasCount(0, _context.Lessons);
@@ -288,7 +291,7 @@ namespace Apolo.Tests.Data
             // Act
             await Assert.ThrowsAsync<InvalidDataException>(async () =>
             {
-                await _repository.RemoveAttendanceAsync(new Guid(), new Guid());
+                await _repository.RemoveAttendanceAsync(Guid.NewGuid(), Guid.NewGuid());
             });
         }
 
@@ -307,7 +310,7 @@ namespace Apolo.Tests.Data
             // Act
             await Assert.ThrowsAsync<InvalidDataException>(async () =>
             {
-                await _repository.RemoveAttendanceAsync(lesson.Id, new Guid());
+                await _repository.RemoveAttendanceAsync(lesson.Id, Guid.NewGuid());
             });
         }
 
@@ -324,10 +327,10 @@ namespace Apolo.Tests.Data
             await _context.SaveChangesAsync();
 
             // Act
-            await _repository.UpdateAttendanceAsync(lesson.Id, lesson.Attendaces.First().Id, true);
+            await _repository.UpdateAttendanceAsync(lesson.Id, lesson.Attendances.First().Id, true);
 
             // Assert
-            var updated = await _context.Attendances.FindAsync(lesson.Attendaces.First().Id);
+            var updated = await _context.Attendances.FindAsync(lesson.Attendances.First().Id);
             Assert.IsTrue(updated!.IsPaid);
         }
     }

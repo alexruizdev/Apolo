@@ -1,67 +1,83 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
 using System.Collections.ObjectModel;
+using ViewModels;
 
 namespace Apolo.ViewModels
 {
-    public partial class ServicesViewModel : ObservableObject
+    public partial class ServicesViewModel : BaseViewModel
     {
         IServiceRepository _repository;
 
         public ObservableCollection<ServiceSummary> Services { get; } = new();
-
-        [ObservableProperty] private bool isBusy;
-        [ObservableProperty] private string? errorMessage;
 
         public ServicesViewModel(IServiceRepository serviceRepository)
         {
             _repository = serviceRepository;
         }
 
+        public bool ValidateServiceInput(ref string name, decimal price)
+        {
+            name = (name ?? "").Trim();
+            if (string.IsNullOrEmpty(name))
+            {
+                SetExitFunction("Name is required.", InfoBarType.Warning);
+                return false;
+            }
+            if (price < 0)
+            {
+                SetExitFunction("Enter a valid non-negative price (e.g., 42.50).", InfoBarType.Warning);
+                return false;
+            }
+            return true;
+        }
+
+        public (ServiceSummary service, int index) GetService(Guid id)
+        {
+            var service = Services.FirstOrDefault(s => s.Id == id);
+            if (service is null)
+            {
+                SetExitFunction();
+                throw new InvalidDataException("Service not loaded.");
+            }
+            return (service, Services.IndexOf(service));
+        }
+
         [RelayCommand]
         public async Task LoadAsync()
         {
-            if (IsBusy) return;
-            IsBusy = true;
-            ErrorMessage = null;
+            if (IsBusy)
+            {
+                SetExitFunction("Can't load services while busy.", InfoBarType.Warning, false);
+                return;
+            }
 
-            try
-            {
-                var items = await _repository.GetServicesAsync();
-                Services.Clear();
-                foreach (var item in items) Services.Add(item);
-            }
-            catch (Exception ex)
-            {
-                ErrorMessage = ex.Message;
-            }
-            finally { IsBusy = false; }
+            SetEnterFunction();
+
+            var items = await _repository.GetServicesAsync();
+            Services.Clear();
+            foreach (var item in items) Services.Add(item);
+            SetExitFunction();
         }
 
         public async Task AddServiceAsync(string name, bool isPricePerHour, decimal price)
         {
-            if (IsBusy) return;
-
-            name = (name ?? "").Trim();
-            if (string.IsNullOrEmpty(name))
+            if (IsBusy)
             {
-                ErrorMessage = "Name is required.";
-                return;
-            }
-            if (price < 0)
-            {
-                ErrorMessage = "Enter a valid non-negative price (e.g., 42.50).";
+                SetExitFunction("Can't add service while busy.", InfoBarType.Warning, false);
                 return;
             }
 
-            IsBusy = true;
-            ErrorMessage = null;
+            SetEnterFunction();
+
+            if (!ValidateServiceInput(ref name, price))
+                return;
+
             try
             {
-                var entity = new Models.Service
+                var entity = new Service
                 {
                     Name = name,
                     IsPricePerHour = isPricePerHour,
@@ -70,79 +86,74 @@ namespace Apolo.ViewModels
                 await _repository.AddAsync(entity);
 
                 Services.Add(new ServiceSummary(entity.Id, entity.Name, entity.IsPricePerHour, (double)entity.Price));
+                SetExitFunction($"Service '{name}' added successfully.", InfoBarType.Success);
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex)
             {
-                ErrorMessage = ex.Message;
+                SetExitFunction(ex.Message, InfoBarType.Error);
             }
-            finally { IsBusy = false; }
         }
 
         [RelayCommand]
-        public async Task DeleteServiceAsync(ServiceSummary? item)
+        public async Task DeleteServiceAsync(Guid id)
         {
-            if (item is null || IsBusy) { return; }
+            if (IsBusy)
+            {
+                SetExitFunction("Can't delete service while busy.", InfoBarType.Warning, false);
+                return;
+            }
 
-            IsBusy = true;
-            ErrorMessage = null;
+            SetEnterFunction();
+
+            var (oldItem, idx) = GetService(id);
 
             try
             {
-                await _repository.DeleteAsync(item.Id);
+                await _repository.DeleteAsync(id);
 
-                var toRemove = Services.FirstOrDefault(s => s.Id == item.Id);
-                if (toRemove != null) Services.Remove(toRemove);
+                Services.Remove(oldItem);
+                SetExitFunction($"Service '{oldItem.Name}' deleted successfully.", InfoBarType.Success);
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
-                ErrorMessage = "Delete failed due to related data. Check constraints.";
+                SetExitFunction(ex.Message, InfoBarType.Error);
             }
-            catch (Exception ex)
-            {
-                ErrorMessage = ex.Message;
-            }
-            finally { IsBusy = false; }
         }
 
         public async Task UpdateServiceAsync (Guid id, string name, bool isPricePerHour, decimal price)
         {
-            if (IsBusy) return;
-
-            name = (name ?? "").Trim();
-            if (string.IsNullOrWhiteSpace(name))
+            if (IsBusy)
             {
-                ErrorMessage = "Name is required.";
-                return;
-            }
-            if (price <= 0)
-            {
-                ErrorMessage = "Enter a valid non-negative price (e.g., 42.50).";
+                SetExitFunction("Can't update service while busy.", InfoBarType.Warning, false);
                 return;
             }
 
-            IsBusy = true;
-            ErrorMessage = null;
+            SetEnterFunction();
+
+            if (!ValidateServiceInput(ref name, price))
+                return;
+
+            var (oldItem, idx) = GetService(id);
 
             try
             {
                 await _repository.UpdateAsync(id, name, isPricePerHour, price);
 
                 // Update item in UI list
-                var idx = Services.Select((s, i) => (s, i)).FirstOrDefault(t => t.s.Id == id).i;
-                if (idx >= 0)
+               
+                var index = Services.IndexOf(oldItem);
+                Services[index] = oldItem with
                 {
-                    Services[idx] = new ServiceSummary(id, name, isPricePerHour, (double)price);
-                }
+                    Name = name,
+                    IsPricePerHour = isPricePerHour,
+                    Price = (double)price
+                }; 
+                SetExitFunction($"Service '{name}' updated successfully.", InfoBarType.Success);
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
-                ErrorMessage = "Save failed due to related data. Check constraints.";
+                SetExitFunction(ex.Message, InfoBarType.Error);
             }
-            catch (Exception ex)
-            {
-                ErrorMessage = ex.Message;
-            }
-            finally { IsBusy = false; }
         }
     }
 }

@@ -56,11 +56,11 @@ namespace Apolo.Tests.Models
             var longNote = "This is a long note, more than 70 characters, enough to test the functionality.";
             var shortNote = "This is a long note, more than 70 characters, enough to test the funct...";
             var lesson = new LessonSummary(
-                new Guid(), "Lesson", DateOnly.FromDateTime(DateTime.Today),
+                Guid.NewGuid(), "Lesson", DateOnly.FromDateTime(DateTime.Today),
                 true, 60, 30,
                 false, 5, false, 5, longNote,
-                [ new AttendanceSummary(new Guid(), new Guid(), "Student 1", false),
-                new AttendanceSummary(new Guid(), new Guid(), "Student 2", false)]);
+                [ new AttendanceSummary(Guid.NewGuid(), Guid.NewGuid(), "Student 1", false),
+                new AttendanceSummary(Guid.NewGuid(), Guid.NewGuid(), "Student 2", false)]);
 
             Assert.AreEqual(65, lesson.GrandTotal);
             Assert.AreEqual(shortNote, lesson.ShortNote);
@@ -69,6 +69,14 @@ namespace Apolo.Tests.Models
         [TestMethod]
         public void TestLesson()
         {
+            var student1Id = Guid.NewGuid();
+            var student2Id = Guid.NewGuid();
+            var students = new List<StudentOption>()
+            {
+                new StudentOption(student1Id, "Student 1"),
+                new StudentOption(student2Id, "Student 2")
+            };
+
             var shortNote = "This is a short note.";
             var lesson = new Lesson()
             {
@@ -83,8 +91,8 @@ namespace Apolo.Tests.Models
                 WeekendFee = 5,
                 Notes = shortNote
             };
-            lesson.Attendaces.Add(new Attendance() { Id = new Guid(), StudentId = new Guid(), IsPaid = false, Price = 95 });
-            lesson.Attendaces.Add(new Attendance() { Id = new Guid(), StudentId = new Guid(), IsPaid = false, Price = 95 });
+            lesson.Attendances.Add(new Attendance() { Id = Guid.NewGuid(), StudentId = student1Id, IsPaid = false, Price = 95 });
+            lesson.Attendances.Add(new Attendance() { Id = Guid.NewGuid(), StudentId = student2Id, IsPaid = false, Price = 95 });
             Assert.AreEqual(95, lesson.GetFinalPricePerStudent());
 
             Assert.Throws<ArgumentException>(() => Lesson.GetPrice(1, true, null, 90, true, 5, true, 5));
@@ -92,7 +100,13 @@ namespace Apolo.Tests.Models
 
             Assert.IsEmpty(Lesson.Truncate(null, 10));
             Assert.AreEqual(shortNote,Lesson.Truncate(shortNote, 70));
-        }
+
+            var attendanceSummaries = lesson.AttendancesSummary(students);
+            Assert.IsNotNull(attendanceSummaries);
+            Assert.HasCount(2, attendanceSummaries);
+            Assert.AreEqual("Student 1", attendanceSummaries[0].StudentName);
+            Assert.AreEqual("Student 2", attendanceSummaries[1].StudentName);
+        }   
 
         [TestMethod]
         public void TestUserProfile ()
