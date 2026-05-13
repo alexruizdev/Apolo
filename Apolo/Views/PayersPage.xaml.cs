@@ -4,7 +4,7 @@ using Apolo.ViewModels;
 using Microsoft.UI.Xaml;
 using Models;
 using System;
-using Apolo.Service;
+using Apolo.Services;
 
 namespace Apolo.Pages
 {
@@ -42,7 +42,7 @@ namespace Apolo.Pages
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Primary)
             {
-                await ViewModel.DeletePayerAsync(item);
+                await ViewModel.DeletePayerAsync(item.Id);
             }
         }
 

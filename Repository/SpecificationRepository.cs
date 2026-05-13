@@ -3,7 +3,7 @@ using Models;
 
 namespace Repository
 {
-    public sealed class SpecificationRepository
+    public sealed class SpecificationRepository : ISpecificationRepository
     {
         private readonly ApoloContext _db;
 
@@ -12,39 +12,18 @@ namespace Repository
             _db = db;
         }
 
-        public async Task<IEnumerable<StudentOption>> GetStudentOptionsAsync()
-        {
-            var result = await _db.Students
-                 .AsNoTracking()
-                 .Select(p => new StudentOption(
-                     p.Id,
-                     p.FullName))
-                 .ToListAsync();
-            return result.OrderBy(x => x.FullName).ToList();
-        }
-
         public async Task AddSpecificationAsync(Specification specification)
         {
             _db.Specifications.Add(specification);
             await _db.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<ServiceSummary>> GetServicesAsync()
-        {
-            var result = await _db.Services
-                .AsNoTracking()
-                .Select(s => new ServiceSummary(
-                    s.Id,
-                    s.Name,
-                    s.PricePerHour))
-                .ToListAsync();
-            return result.OrderBy(x => x.Name).ToList();
-        }
-
         public async Task<IEnumerable<SpecificationSummary>> GetSpecificationsAsync()
         {
-            var result = await _db.Specifications
+            return await _db.Specifications
                 .AsNoTracking()
+                .OrderBy(sp => sp.Student.FirstName)
+                .ThenBy(sp => sp.Name)
                 .Select(sp => new SpecificationSummary(
                     sp.Id,
                     sp.Name,
@@ -53,10 +32,31 @@ namespace Repository
                     sp.ServiceId,
                     sp.Service.Name,
                     sp.DurationMinutes,
-                    sp.IsOnline
+                    (double?)sp.Price,
+                    sp.IsOnline,
+                    sp.IsWeekenOrHoliday
                 ))
                 .ToListAsync();
-            return result.OrderBy(x => x.StudentName).ThenBy(x => x.SpecificationName).ToList();
+        }
+
+        public async Task<IEnumerable<SpecificationOption>> GetSpecificationsForStudentAsync(IEnumerable<Guid> studentsIds)
+        {
+            var ids = studentsIds.Distinct().ToList();
+            if (ids.Count == 0) return new List<SpecificationOption>();
+
+            return await _db.Specifications
+                .AsNoTracking()
+                .Where(sp => ids.Contains(sp.StudentId))
+                .Select(sp => new SpecificationOption(
+                    sp.Id,
+                    $"{sp.Name} - {sp.Student.FullName}".Trim(),
+                    sp.ServiceId,
+                    (double?)sp.Price,
+                    sp.DurationMinutes,
+                    sp.IsOnline,
+                    sp.IsWeekenOrHoliday))
+                .ToListAsync();
+
         }
 
         public async Task DeleteAsync(Guid id)
@@ -72,7 +72,7 @@ namespace Repository
             await _db.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(Guid id, Guid serviceId, string name, int duration, bool isOnline)
+        public async Task UpdateAsync(Guid id, Guid serviceId, string name, int duration, decimal? price, bool isOnline, bool isWeekend)
         {
             var entity = await _db.Specifications.FirstOrDefaultAsync(sp => sp.Id == id);
 
@@ -84,14 +84,10 @@ namespace Repository
             entity.ServiceId = serviceId;   
             entity.Name = name;
             entity.DurationMinutes = duration;
+            entity.Price = price;
             entity.IsOnline = isOnline;
+            entity.IsWeekenOrHoliday = isWeekend;
 
-            await _db.SaveChangesAsync();
-        }
-
-        public async Task AddLessonFromSpecificationAsync(Lesson lesson)
-        {
-            _db.Lessons.Add(lesson);
             await _db.SaveChangesAsync();
         }
     }

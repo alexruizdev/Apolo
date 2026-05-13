@@ -4,10 +4,9 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:local="using:Apolo.Views"
       xmlns:vm="using:Apolo.ViewModels"
-      xmlns:loc="using:Apolo.Service"
+      xmlns:loc="using:Apolo.Services"
       xmlns:m="using:Models"
-      x:Name="PageRoot"
-      Loaded="Page_Loaded">
+      x:Name="PageRoot">
 
     <ScrollView>
         <StackPanel Padding="24"
@@ -17,65 +16,79 @@
                        FontSize="28"
                        FontWeight="SemiBold" />
 
-            <TextBlock Text="{Binding StatusMessage}"
-                       Foreground="Gray"
-                       Visibility="{Binding StatusMessage, Converter={StaticResource NullToVisibilityConverter}}" />
-
-            <Grid ColumnSpacing="24"
-                  RowSpacing="12"
-                  ColumnDefinitions="*,*">
-
-                <!--left column-->
-                <StackPanel Grid.Column="0"
-                            Spacing="8">
-                    <TextBox Header="Full name"
-                             Text="{x:Bind ViewModel.FullName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <TextBox Header="Address"
-                             Text="{x:Bind ViewModel.Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <TextBox Header="ZIP"
-                             Text="{x:Bind ViewModel.ZipCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <TextBox Header="City"
-                             Text="{x:Bind ViewModel.City, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <TextBox Header="Phone"
-                             Text="{x:Bind ViewModel.Phone, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                </StackPanel>
-
-                <!-- right column-->
-                <StackPanel Grid.Column="1"
-                            Spacing="8">
-                    <TextBox Header="Email"
-                             Text="{x:Bind ViewModel.Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <TextBox Header="Bank name"
-                             Text="{x:Bind ViewModel.BankName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <TextBox Header="Bank account"
-                             Text="{x:Bind ViewModel.BankAccount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <TextBox Header="CIF"
-                             Text="{x:Bind ViewModel.TaxId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-
-                </StackPanel>
-
-            </Grid>
-
-            <StackPanel Orientation="Horizontal"
-                        Spacing="12">
-                <Button Content="Load"
-                        Command="{Binding LoadCommand}"
-                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
-                <Button Content="Save"
-                        Command="{Binding SaveCommand}"
-                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+            <StackPanel>
+                <ProgressBar IsIndeterminate="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
+                <InfoBar
+                    IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}"
+                    Severity="{x:Bind ViewModel.InfoBarType, Converter={StaticResource InfoBarTypeConverter}, Mode=TwoWay}"
+                    Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}" />
             </StackPanel>
 
-            <TextBlock Text="Database" />
+            <!-- 1. Main Information -->
+            <Expander Header="Main Information" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                <StackPanel Spacing="12" Margin="0,10,0,0" MinWidth="500">
+                    <Grid ColumnDefinitions="*, *">
+                        <TextBox Header="Full Name" Text="{x:Bind ViewModel.Profile.FullName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
+                        <TextBox Grid.Column="1" Header="Phone" Text="{x:Bind ViewModel.Profile.Phone, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="4,0,0,0"/>
+                    </Grid>
+                    <TextBox Header="Address" Text="{x:Bind ViewModel.Profile.Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <Grid ColumnDefinitions="*, *">
+                        <TextBox Header="Zip Code" Text="{x:Bind ViewModel.Profile.ZipCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
+                        <TextBox Grid.Column="1" Header="City" Text="{x:Bind ViewModel.Profile.City, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="4,0,0,0"/>
+                    </Grid>
+                    <TextBox  Header="Email" Text="{x:Bind ViewModel.Profile.Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  />
+                </StackPanel>
+            </Expander>
 
-            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left" Spacing="20">
-                <Button x:Name="DeleteDatabaseButton" Content="Delete Entire Database" Click="DeleteDatabaseButton_Click" Background="Red" Foreground="White"/>
-                <Button x:Name="ImportExcelButton" Content="Import from Excel" Click="ImportExcelButton_Click" Background="Green" Foreground="White"/>
-                <Button x:Name="ExportExcelButton" Content="Export to Excel" Click="ExportExcelButton_Click" Background="Blue" Foreground="White"/>
+            <!-- 2. Billing & Legal -->
+            <Expander Header="Billing &amp; Tax Details" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                <StackPanel Spacing="12" Margin="0,10,0,0">
+                    <Grid ColumnDefinitions="*, *">
+                        <TextBox Header="Tax ID" Text="{x:Bind ViewModel.Profile.TaxId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
+                        <TextBox Grid.Column="1" Header="Bank Name" Text="{x:Bind ViewModel.Profile.BankName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="4,0,0,0"/>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="*, *">
+                        <TextBox Header="Bank Account (IBAN)" Text="{x:Bind ViewModel.Profile.BankAccount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
+                        <NumberBox Grid.Column="1" Header="IVA (VAT) Percent" 
+                               Value="{x:Bind ViewModel.Profile.IvaPercent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                               SmallChange="1" LargeChange="5" SpinButtonPlacementMode="Inline" Margin="4,0,0,0"/>
+                    </Grid>
+                </StackPanel>
+            </Expander>
+
+            <!-- 3. Configuration & Fees -->
+            <Expander Header="Configuration &amp; Fees" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                <StackPanel Spacing="12" Margin="0,10,0,0">
+                    <Grid ColumnDefinitions="*, *">
+                        <NumberBox Header="Travel Allowance" 
+                               Value="{x:Bind ViewModel.Profile.TravelAllowance, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                               PlaceholderText="0.00" SpinButtonPlacementMode="Inline" Margin="0,0,4,0"/>
+                        <NumberBox Grid.Column="1" Header="Weekend Fee" 
+                               Value="{x:Bind ViewModel.Profile.WeekendFee, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                               PlaceholderText="0.00" SpinButtonPlacementMode="Inline" Margin="4,0,0,0"/>
+                    </Grid>
+                </StackPanel>
+            </Expander>
+
+            <!-- Action Bar (The Save Button) -->
+            <CommandBar DefaultLabelPosition="Right" HorizontalAlignment="Left" Background="Transparent">
+                <AppBarButton Icon="Save" Label="Save" Command="{Binding SaveCommand}"/>
+                <AppBarSeparator />
+                <AppBarButton Icon="Refresh" Label="Discard Changes"  Command="{Binding RefreshProfileCommand}"/>
+            </CommandBar>
+
+            <StackPanel>
+                <!-- Data Management Section -->
+                <TextBlock Text="Data Management" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,20,0,0"/>
+                
+                <CommandBar DefaultLabelPosition="Right"  HorizontalAlignment="Left"  Background="Transparent">
+                    <AppBarButton Label="Import from Excel" Icon="Import" Click="ImportExcelButton_Click"/>
+                    <AppBarButton Icon="Save" Label="Export Excel" Click="ExportExcelButton_Click"/>
+                    <AppBarSeparator />
+                    <AppBarButton Icon="Delete" Label="Nuke Database" Foreground="Red" Click="DeleteDatabaseButton_Click"/>
+                </CommandBar>
             </StackPanel>
-
         </StackPanel>
-
     </ScrollView>
-
 </Page>

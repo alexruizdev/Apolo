@@ -154,4 +154,7 @@
     <value>Payer</value>
     <comment>Header for TextBox</comment>
   </data>
+  <data name="Buttons/Notes" xml:space="preserve">
+    <value>Notes</value>
+  </data>
 </root>

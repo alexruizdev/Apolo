@@ -1,6 +1,6 @@
 ﻿using Microsoft.Windows.ApplicationModel.Resources;
 
-namespace Apolo.Service
+namespace Apolo.Services
 {
     public static class Loc
     {

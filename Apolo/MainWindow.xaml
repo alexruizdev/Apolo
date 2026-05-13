@@ -6,7 +6,7 @@
         xmlns:local="using:Apolo"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="using:Microsoft.UI.Xaml.Controls"
-        xmlns:loc="using:Apolo.Service"
+        xmlns:loc="using:Apolo.Services"
         Title="Apolo"
         Activated="Window_Activated"
         mc:Ignorable="d">

@@ -3,7 +3,7 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:local="using:Apolo.Views"
-      xmlns:loc="using:Apolo.Service"
+      xmlns:loc="using:Apolo.Services"
       xmlns:vm="using:Apolo.ViewModels"
       xmlns:m="using:Models"
       x:Name="PageRoot"
@@ -22,19 +22,18 @@
                             IsOn="{x:Bind ViewModel.ShownOnlyUnpaid, Mode=TwoWay}" />
             <Button Content="New lesson"
                     Click="NewLesson_Click"
-                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                    IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
 
         </StackPanel>
 
         <StackPanel>
-            <TextBlock Text="Loading..."
-                        Foreground="Gray"
-                        Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
-            <TextBlock Text="{Binding ErrorMessage}"
-                        Foreground="Tomato"
-                        TextWrapping="Wrap"
-                        Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibilityConverter}}" />
+            <ProgressBar IsIndeterminate="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
+            <InfoBar
+                IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}"
+                Severity="{x:Bind ViewModel.InfoBarType, Converter={StaticResource InfoBarTypeConverter}, Mode=TwoWay}"
+                Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}" />
         </StackPanel>
+        
         <ScrollView MaxHeight="500">
             <ListView ItemsSource="{x:Bind ViewModel.Lessons, Mode=OneWay}"
                         SelectionMode="None">
@@ -44,24 +43,28 @@
                                     Padding="8">
                             <!--Header line-->
                             <Grid ColumnDefinitions="*, Auto">
-                                <StackPanel Orientation="Horizontal"
-                                            Spacing="12"
-                                            VerticalAlignment="Center">
-                                    <TextBlock Text="{x:Bind Date, Converter={StaticResource DateFormatConverter}}"
-                                                FontWeight="SemiBold" />
-                                    <TextBlock Text="{x:Bind Name}"
-                                                FontWeight="SemiBold" />
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal"
+                                                Spacing="12"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="{x:Bind Date, Converter={StaticResource DateFormatConverter}}"
+                                                    FontWeight="SemiBold" />
+                                        <TextBlock Text="{x:Bind Name}"
+                                                    FontWeight="SemiBold" />
                                     
-                                    <StackPanel Orientation="Horizontal" Spacing="4">
-                                        <SymbolIcon Symbol="Clock" />
-                                        <TextBlock Text="{x:Bind DurationMinutes}" />
-                                        <TextBlock Text="min" />
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <SymbolIcon Symbol="Clock" />
+                                            <TextBlock Text="{x:Bind DurationMinutes}" />
+                                            <TextBlock Text="min" />
+                                        </StackPanel>
+                                    
+                                        <TextBlock>
+                                            <Run Text="Total: " />
+                                            <Run Text="{x:Bind GrandTotal, Converter={StaticResource DecimalToCurrencyConverter}}" />
+                                        </TextBlock>
+
                                     </StackPanel>
-                                    
-                                    <TextBlock>
-                                        <Run Text="Total: " />
-                                        <Run Text="{x:Bind GrandTotal, Converter={StaticResource DecimalToCurrencyConverter}}" />
-                                    </TextBlock>
+                                    <TextBlock Text="{x:Bind ShortNote}" HorizontalAlignment="Left"/>
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="1"
@@ -69,6 +72,9 @@
                                             Spacing="8">
                                     <Button Content="Edit lesson"
                                             Click="EditLesson_Click"
+                                            IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                                    <Button Content="Notes"
+                                            Click="Notes_Click"
                                             IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
                                     <Button Content="Add attendance"
                                             Click="AddAttendances_Click"
@@ -97,7 +103,8 @@
                                                         CommandParameter="{x:Bind}"/>
                                                 <Button Content="{x:Bind loc:Loc.Buttons_Delete}"
                                                         Click="RemoveAttendance_Click"
-                                                        IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                                                        IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" 
+                                                        CommandParameter="{x:Bind}"/>
                                             </StackPanel>
                                         </Grid>
                                     </DataTemplate>

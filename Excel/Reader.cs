@@ -3,7 +3,17 @@ using Models;
 
 namespace Excel
 {
-    public class Reader
+    public interface IReader
+    {
+        public List<Service> Services { get; } 
+        public List<Payer> Payers { get; } 
+        public List<Student> Students { get; } 
+        public List<Specification> Specifications { get; } 
+        public List<Lesson> Lessons { get; } 
+        public List<Invoice> Invoices { get; }
+        Task ReadExcel(string filePath);
+    }
+    public class Reader : IReader
     {
         public List<Service> Services { get; } = new List<Service>();
         public List<Payer> Payers { get; } = new List<Payer>();
@@ -12,7 +22,7 @@ namespace Excel
         public List<Lesson> Lessons { get; } = new List<Lesson>();
         public List<Invoice> Invoices { get; } = new List<Invoice>();
 
-        public void ReadExcelAndStore(in string filePath)
+        public async Task ReadExcel(string filePath)
         {
             try
             {
@@ -39,10 +49,9 @@ namespace Excel
             foreach (var row in rows)
             {
                 string name = row.Cell(1).GetValue<string>().Trim();
-                var cellPrice = row.Cell(3);
-                decimal pricePerHour = 0;
-                if (cellPrice.DataType == XLDataType.Number)
-                    pricePerHour = cellPrice.GetValue<decimal>();
+                decimal price = 0;
+                if (row.Cell(3).DataType == XLDataType.Number)
+                    price = row.Cell(3).GetValue<decimal>();
 
                 if (string.IsNullOrEmpty(name))
                     throw new InvalidDataException("Service name cannot be empty.");
@@ -50,7 +59,8 @@ namespace Excel
                 Services.Add(new Service()
                 {
                     Name = name,
-                    PricePerHour = pricePerHour
+                    IsPricePerHour = true,
+                    Price = price
                 });
             }
         }
@@ -61,6 +71,8 @@ namespace Excel
             var table = workbook.Table("Students");
             var rows = table.DataRange.RowsUsed();
 
+            var serviceLookup = Services.ToDictionary(s => s.Name, s => s);
+
             // Add Astex Online
             Payers.Add(new Payer()
             {
@@ -69,7 +81,6 @@ namespace Excel
             Students.Add(new Student()
             {
                 FirstName = "Astex Online Classes",
-                CommuteMinutes = 0,
                 PayerId = Payers.Last().Id,
             });
 
@@ -87,9 +98,6 @@ namespace Excel
                 int defaultTime = 0;
                 if (row.Field("Default Time").TryGetValue(out int defaultTimeResult))
                     defaultTime = defaultTimeResult;
-                int commutingTime = 0;
-                if (row.Field("Commuting Time").TryGetValue(out int commute))
-                    commutingTime = commute;
 
                 // TODO: remove after creating new Excel
                 if (name == "Pino")
@@ -131,7 +139,6 @@ namespace Excel
                     student = new Student()
                     {
                         FirstName = name,
-                        CommuteMinutes = commutingTime,
                         PayerId = payer.Id,
                     };
                     Students.Add(student);
@@ -140,8 +147,7 @@ namespace Excel
                 // Add specification
                 if (!string.IsNullOrEmpty(serviceName))
                 {
-                    var service = Services.FirstOrDefault(s => s.Name == serviceName);
-                    if (service is null)
+                    if (!serviceLookup.TryGetValue(serviceName, out var service))
                     {
                         throw new ArgumentException($"{serviceName} is not defined in Service tab.");
                     }
@@ -229,6 +235,9 @@ namespace Excel
                 if (row.Field("Price").TryGetValue(out decimal priceResul))
                     finalPrice = priceResul;
                 bool online = row.Field("Online").GetValue<bool>();
+                decimal travelAllowance = 0;
+                if (row.Field("Commuting").TryGetValue(out decimal travelAllowanceResult))
+                    travelAllowance = travelAllowanceResult;
 
                 // Old version fixes (delete)
                 if (string.IsNullOrWhiteSpace(studentName ))
@@ -245,22 +254,26 @@ namespace Excel
                         continue;
                 }
 
-                var lesson =new Lesson()
+                var lesson = new Lesson()
                 {
-                    Name = string.IsNullOrEmpty(serviceName) ? "Lesson" : serviceName,
                     Date = lessonDate,
+                    Name = string.IsNullOrEmpty(serviceName) ? "Lesson" : serviceName,
+                    IsPricePerHour = false,
                     DurationMinutes = durationMinutes,
+                    PricePerAttendance = finalPrice,
                     IsOnline = online,
-                    PricePerStudent = finalPrice,
-                    IsTotalPrice = true
+                    TravelAllowance = travelAllowance,
+                    IsWeekenOrHoliday = false,
+                    WeekendFee = 0,
                 };
 
                 // Attendance
-                lesson.Attendaces.Add(new Attendance()
+                lesson.Attendances.Add(new Attendance()
                 {
                     StudentId = student.Id,
                     LessonId = lesson.Id,
-                    IsPaid = false
+                    IsPaid = false,
+                    Price = finalPrice
                 });
                 Lessons.Add(lesson);
             }
@@ -311,7 +324,7 @@ namespace Excel
 
                 // Get lessons to pay
                 var lessons = Lessons
-                    .Where(l => l.Attendaces
+                    .Where(l => l.Attendances
                     .Any(a => a.StudentId == student.Id &&  !a.IsPaid))
                     .OrderBy(l => l.Date).ToList();
 
@@ -337,8 +350,8 @@ namespace Excel
                 for (int i = 0; i < lessons.Count && payment > 0; i++)
                 {
                     var lesson = lessons[i];
-                    payment -= lesson.PricePerStudent;
-                    var attendance = lesson.Attendaces.First(a => a.StudentId == student.Id);
+                    payment -= lesson.PricePerAttendance;
+                    var attendance = lesson.Attendances.First(a => a.StudentId == student.Id);
                     attendance.IsPaid = true;
                     invoice.Lines.Add(new InvoiceAttendance()
                     {

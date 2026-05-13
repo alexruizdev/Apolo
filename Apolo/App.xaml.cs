@@ -1,4 +1,4 @@
-﻿using Apolo.Service;
+﻿using Apolo.Services;
 using Apolo.ViewModels;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
@@ -29,21 +29,34 @@ namespace Apolo
             var builder = new ServiceCollection();
             var dbPath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "app.db");
             builder.AddDbContext<ApoloContext>(options => options.UseSqlite($"DataSource={dbPath}"));
-            builder.AddSingleton<PayerRepository>();
-            builder.AddSingleton<StudentRepository>();
-            builder.AddSingleton<ServiceRepository>();
-            builder.AddSingleton<SpecificationRepository>();
-            builder.AddSingleton<LessonRepository>();
-            builder.AddSingleton<InvoiceRepository>();
-            builder.AddSingleton<PayersViewModel>();
-            builder.AddSingleton<StudentsViewModel>();
-            builder.AddSingleton<ServicesViewModel>();
-            builder.AddSingleton<SpecificationsViewModel>();
-            builder.AddSingleton<LessonsViewModel>();
-            builder.AddSingleton<InvoicesViewModel>();
-            builder.AddSingleton<SettingsViewModel>();
+
+            // Services
+            builder.AddSingleton<IUserProfileService, UserProfileService>();
+
+            // Repositories
+            builder.AddSingleton<IPayerRepository, PayerRepository>();
+            builder.AddSingleton<IStudentRepository, StudentRepository>();
+            builder.AddSingleton<IServiceRepository, ServiceRepository>();
+            builder.AddSingleton<ISpecificationRepository, SpecificationRepository>();
+            builder.AddSingleton<ILessonRepository, LessonRepository>();
+            builder.AddSingleton<IInvoiceRepository, InvoiceRepository>();
+            builder.AddSingleton<IGeneralRepository, GeneralRepository>();
+
+            // Utilities
+            builder.AddSingleton<PDF.IWriter, PDF.Writer>();
+            builder.AddSingleton<Excel.IReader, Excel.Reader>();
+            builder.AddSingleton<Excel.IWriter, Excel.Writer>();
+
+            // ViewModels
+            builder.AddTransient<PayersViewModel>();
+            builder.AddTransient<StudentsViewModel>();
+            builder.AddTransient<ServicesViewModel>();
+            builder.AddTransient<SpecificationsViewModel>();
+            builder.AddTransient<LessonsViewModel>();
+            builder.AddTransient<InvoicesViewModel>();
+            builder.AddTransient<SettingsViewModel>();
+
             builder.AddSingleton<MainWindow>();
-            builder.AddSingleton<UserProfileService>();
 
             Ioc.Default.ConfigureServices(builder.BuildServiceProvider());
             return Ioc.Default;

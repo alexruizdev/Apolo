@@ -19,7 +19,10 @@ namespace Repository
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite("DataSource=app.db");
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseSqlite("DataSource=app.db");
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -40,6 +43,10 @@ namespace Repository
                 .HasIndex(s => s.Name)
                 .IsUnique();
 
+            modelBuilder.Entity<Service>()
+                .Property(s => s.Name)
+                .UseCollation("NOCASE"); // SQLite will now ignore case automatically
+
             // Specifications (N:1 to Customer, N:1 to Service)
             modelBuilder.Entity<Specification>()
                 .HasOne(sp => sp.Student)
@@ -55,7 +62,7 @@ namespace Repository
             // Attendance (join: Lesson x Customer, unique per pair)
             modelBuilder.Entity<Attendance>()
                 .HasOne(a => a.Lesson)
-                .WithMany(l => l.Attendaces)
+                .WithMany(l => l.Attendances)
                 .HasForeignKey(a => a.LessonId)
                 .OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<Attendance>()
@@ -86,18 +93,6 @@ namespace Repository
                 .WithMany()
                 .HasForeignKey(x => x.AttendanceId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            // Constraints
-            //modelBuilder.Entity<Payer>()
-            //    .ToTable(t => t.HasCheckConstraint("CK_Payer_Balance", "Balance => 0"));
-            //modelBuilder.Entity<Student>()
-            //    .ToTable(t => t.HasCheckConstraint("CK_Student_Commute", "CommuteMinutes IS NULL OR CommuteMinutes >= 0"));
-            //modelBuilder.Entity<Service>()
-            //    .ToTable(t => t.HasCheckConstraint("CK_Service_Price", "PricePerHour >= 0"));
-            //modelBuilder.Entity<Lesson>()
-            //    .ToTable(t => t.HasCheckConstraint("CK_Lesson_Duration", "DurationMinutes > 0"));
-            //modelBuilder.Entity<Attendance>()
-            //    .ToTable(t => t.HasCheckConstraint("CK_Attendance_Price", "Price >= 0"));
         }
 
         private void EnforceBusinessRules()
@@ -107,8 +102,8 @@ namespace Repository
 
             foreach (var e in newOrModInstances)
             {
-                if (Entry(e.Entity).Collection(i => i.Attendaces).IsLoaded &&
-                    e.Entity.Attendaces.Count == 0)
+                if (Entry(e.Entity).Collection(i => i.Attendances).IsLoaded &&
+                    e.Entity.Attendances.Count == 0)
                 {
                     throw new InvalidOperationException("A lesson must have at least one Attendance.");
                 }

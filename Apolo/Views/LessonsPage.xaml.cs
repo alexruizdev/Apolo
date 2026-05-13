@@ -1,8 +1,9 @@
-using Apolo.Service;
+using Apolo.Services;
 using Apolo.ViewModels;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 using Models;
 using System;
 using System.Linq;
@@ -54,8 +55,16 @@ namespace Apolo.Views
             var datePick = new CalendarDatePicker { Header = "Date", IsTodayHighlighted = true, Date = DateTimeOffset.Now };
             var durationBox = new NumberBox { Header = "Duration (minutes):", Value = 60, SmallChange = 15, LargeChange = 30 };
             var onlineBox = new CheckBox { Content = "Online" };
-            var totalPriceBox = new CheckBox { Content = "Total price" };
-            var priceBox = new NumberBox { Header = "Price per hour:", PlaceholderText = "0.00" };
+            var weekendBox = new CheckBox { Content = "Weekend or Holiday" };
+            var priceBox = new NumberBox { Header = "Price:", PlaceholderText = "0.00" };
+
+            var noteBox = new TextBox
+            {
+                Header = "Notes",
+                MinWidth = 400,
+                AcceptsReturn = true,
+                TextWrapping = TextWrapping.Wrap
+            };
 
             var error = new TextBlock
             {
@@ -71,15 +80,24 @@ namespace Apolo.Views
             panel.Children.Add(nameBox);
             panel.Children.Add(datePick);
             panel.Children.Add(durationBox);
-            panel.Children.Add(totalPriceBox);
             panel.Children.Add(onlineBox);
+            panel.Children.Add(weekendBox);
             panel.Children.Add(priceBox);
             panel.Children.Add(error);
+            panel.Children.Add(noteBox);
+
+            var viewer = new ScrollViewer
+            {
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                VerticalScrollMode = ScrollMode.Enabled,
+                MaxHeight = 500,
+                Content = panel
+            };
 
             var dialog = new ContentDialog()
             {
                 Title = "Create lesson",
-                Content = panel,
+                Content = viewer,
                 PrimaryButtonText = "Create",
                 CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
@@ -103,14 +121,15 @@ namespace Apolo.Views
                 specificationBox.IsEnabled = specifications.Any();
             }
 
-            void UpdateServiceDerivedFields()
+            void UpdateServiceDerivedFields(double? price)
             {
                 if (updating) return;
                 if (serviceBox.SelectedItem is ServiceSummary s)
                 {
                     updating = true;
                     nameBox.Text = s.Name;
-                    priceBox.Value = (double)s.PricePerHour;
+                    priceBox.Value =  price ?? s.Price;
+                    priceBox.Header = s.IsPricePerHour ? "Price/Hour:" : "Price:" ;
                     updating = false;
                 }
                 else
@@ -118,6 +137,7 @@ namespace Apolo.Views
                     updating = true;
                     nameBox.Text = string.Empty;
                     priceBox.Value = 0;
+                    priceBox.Header = "Price:";
                     updating = false;
                 }
             }
@@ -136,18 +156,19 @@ namespace Apolo.Views
                 // Override the form controls
                 durationBox.Value = sp.DurationMinutes;
                 onlineBox.IsChecked = sp.IsOnline;
+                weekendBox.IsChecked = sp.IsWeekend;
 
                 updating = false;
 
                 // Ensure name/price reflects the service choice
-                UpdateServiceDerivedFields();
+                UpdateServiceDerivedFields(sp.Price);
             };
 
             // If the user changes Service manually after picking a specification, keep their choice.
             serviceBox.SelectionChanged += (_, __) =>
             {
                 if (updating) return;
-                UpdateServiceDerivedFields();
+                UpdateServiceDerivedFields(null);
 
                 // Clear specification selection to avoid confusion
                 updating = true;
@@ -162,9 +183,6 @@ namespace Apolo.Views
             };
 
 
-            totalPriceBox.Checked += (_, __) => durationBox.IsEnabled = false;
-            totalPriceBox.Unchecked += (_, __) => durationBox.IsEnabled = true;
-
             void Validate()
             {
                 error.Text = string.Empty;
@@ -174,7 +192,7 @@ namespace Apolo.Views
                     error.Text = "Select at least one student.";
                 else if (serviceBox.SelectedItem is not ServiceSummary)
                     error.Text = "Select a service.";
-                else if (totalPriceBox.IsChecked == true &&
+                else if (((ServiceSummary)serviceBox.SelectedItem).IsPricePerHour &&
                     (double.IsNaN(durationBox.Value) || durationBox.Value <= 0))
                     error.Text = "Duration must be a positive integer.";
 
@@ -191,7 +209,7 @@ namespace Apolo.Views
             dialog.Loaded += async (_, __) =>
             {
                 if (ViewModel.Services.Count > 0) serviceBox.SelectedIndex = 0;
-                UpdateServiceDerivedFields();
+                UpdateServiceDerivedFields(null);
                 Validate();
                 await RefreshSpecificationsAsync();
             };
@@ -202,9 +220,11 @@ namespace Apolo.Views
                 var selectedIds = studentsList.SelectedItems.Cast<StudentOption>().Select(s => s.Id).ToList();
                 var dto = datePick.Date ?? DateTimeOffset.Now;
                 var date = DateOnly.FromDateTime(dto.Date);
-                bool isTotalPrice = totalPriceBox.IsChecked == true;
-                int duration = isTotalPrice ? 0 : (int)durationBox.Value;
-                await ViewModel.CreateLessonAsync(nameBox.Text, date, duration, onlineBox.IsChecked == true, isTotalPrice, (decimal)priceBox.Value, selectedIds);
+                bool isOnline = onlineBox.IsChecked == true;
+                bool isWeekend = weekendBox.IsChecked == true;
+                await ViewModel.AddLessonAsync(date, nameBox.Text, (ServiceSummary)serviceBox.SelectedItem, 
+                    (int?)durationBox.Value, (decimal)priceBox.Value,
+                    isOnline, isWeekend, noteBox.Text, selectedIds);
             }
         }
 
@@ -219,31 +239,60 @@ namespace Apolo.Views
                 IsTodayHighlighted = true,
                 Date = new DateTimeOffset(row.Date.ToDateTime(TimeOnly.MinValue))
             };
-            var durationBox = new NumberBox { Header = "Duration (minutes):", Value = row.DurationMinutes, SmallChange = 15, LargeChange = 30, IsEnabled = !row.IsTotalPrice };
+            var durationBox = new NumberBox { Header = "Duration (minutes):", Value = row.DurationMinutes ?? 0, SmallChange = 15, LargeChange = 30, IsEnabled = row.IsPricePerHour };
             var onlineBox = new CheckBox { Content = "Online", IsChecked = row.IsOnline };
-            var totalPriceBox = new CheckBox { Content = "Total price", IsChecked = row.IsTotalPrice };
+            var travelAllowanceBox = new NumberBox { Header = "Travel allowance:", Value = (double)row.TravelAllowance, IsEnabled = !row.IsOnline };
+            var weekenBox = new CheckBox { Content = "Weekend or Holiday", IsChecked = row.IsWeekenOrHoliday };
+            var weekendFeeBox = new NumberBox { Header = "Weekend or Holiday Fee:", Value = (double)row.TravelAllowance, IsEnabled = !row.IsOnline };
+            var isPricePerHourBox = new CheckBox { Content = "Price/hour", IsChecked = row.IsPricePerHour };
             var priceBox = new NumberBox
             {
-                Header = "Price per hour:",
-                Value = (double)row.PricePerHour,
+                Header = "Price:",
+                Value = (double)row.PricePerAttendance,
                 PlaceholderText = "0.00"
+            };
+            string note = row.Notes ?? string.Empty;
+
+            var noteBox = new TextBox
+            {
+                Header = "Notes",
+                Text = note,
+                MinWidth = 400,
+                AcceptsReturn = true,
+                TextWrapping = TextWrapping.Wrap
             };
 
             var panel = new StackPanel { Spacing = 8 };
             panel.Children.Add(nameBox);
             panel.Children.Add(datePick);
+            panel.Children.Add(isPricePerHourBox);
             panel.Children.Add(durationBox);
-            panel.Children.Add(onlineBox);
-            panel.Children.Add(totalPriceBox);
             panel.Children.Add(priceBox);
+            panel.Children.Add(onlineBox);
+            panel.Children.Add(travelAllowanceBox);
+            panel.Children.Add(weekenBox);
+            panel.Children.Add(weekendFeeBox);
+            panel.Children.Add(noteBox);
 
-            totalPriceBox.Checked += (_, __) => durationBox.IsEnabled = false;
-            totalPriceBox.Unchecked += (_, __) => durationBox.IsEnabled = true;
+            isPricePerHourBox.Checked += (_, __) => durationBox.IsEnabled = true;
+            isPricePerHourBox.Unchecked += (_, __) => durationBox.IsEnabled = false;
+            onlineBox.Checked += (_, __) => travelAllowanceBox.IsEnabled = false;
+            onlineBox.Unchecked += (_, __) => travelAllowanceBox.IsEnabled = true;
+            weekenBox.Checked += (_, __) => weekendFeeBox.IsEnabled = true;
+            weekenBox.Unchecked += (_, __) => weekendFeeBox.IsEnabled = false;
+
+            var viewer = new ScrollViewer
+            {
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                VerticalScrollMode = ScrollMode.Enabled,
+                MaxHeight = 500,
+                Content = panel
+            };
 
             var dialog = new ContentDialog()
             {
                 Title = "Edit lesson",
-                Content = panel,
+                Content = viewer,
                 PrimaryButtonText = "Save",
                 CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
@@ -254,16 +303,55 @@ namespace Apolo.Views
             {
                 var dto = datePick.Date ?? new DateTimeOffset(row.Date.ToDateTime(TimeOnly.MinValue));
                 var date = DateOnly.FromDateTime(dto.Date);
-                bool isTotalPrice = totalPriceBox.IsChecked == true;
-                int duration = isTotalPrice ? 0 : (int)durationBox.Value;
+                bool isPricePerHour = isPricePerHourBox.IsChecked == true;
+                int? duration = isPricePerHour ? null : (int)durationBox.Value;
                 await ViewModel.UpdateLessonAsync(
-                    row.Id, 
-                    nameBox.Text, 
-                    date,
-                    duration, 
-                    onlineBox.IsChecked == true,
-                    isTotalPrice,
-                    (decimal)priceBox.Value);
+                    row.Id, date, nameBox.Text, 
+                    isPricePerHour, duration, (decimal)priceBox.Value,
+                    onlineBox.IsChecked == true, (decimal)travelAllowanceBox.Value,
+                    weekenBox.IsChecked == true, (decimal)weekendFeeBox.Value,
+                    noteBox.Text);
+            }
+        }
+
+        private async void Notes_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button b || b.DataContext is not LessonSummary row) return;
+
+            var noteBox = new TextBox { 
+                Header = "Notes", 
+                MinWidth = 400, 
+                AcceptsReturn = true, 
+                TextWrapping = TextWrapping.Wrap 
+            };
+
+            noteBox.Text = row.Notes;
+
+            var panel = new StackPanel { Spacing = 8 };
+            panel.Children.Add(noteBox);
+
+            var viewer = new ScrollViewer
+            {
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                VerticalScrollMode = ScrollMode.Enabled,
+                MaxHeight = 500,
+                Content = panel
+            };
+
+            var dialog = new ContentDialog
+            {
+                Title = $"{row.Name} Notes",
+                Content = viewer,
+                PrimaryButtonText = "Save",
+                CloseButtonText = Loc.Buttons_Cancel,
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = Content.XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                await ViewModel.UpdateLessonNoteAsync(row.Id, noteBox.Text);
             }
         }
 
@@ -293,10 +381,18 @@ namespace Apolo.Views
             panel.Children.Add(list);
             panel.Children.Add(error);
 
+            var viewer = new ScrollViewer
+            {
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                VerticalScrollMode = ScrollMode.Enabled,
+                MaxHeight = 500,
+                Content = panel
+            };
+
             var dialog = new ContentDialog
             {
                 Title = "Add attendances",
-                Content = panel,
+                Content = viewer,
                 PrimaryButtonText = "Add",
                 CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
@@ -362,10 +458,12 @@ namespace Apolo.Views
 
         private async void RemoveAttendance_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not Button b || b.DataContext is not AttendanceSummary attendance)
+            if (sender is not Button b)
                 return;
-            var lesson = FindAncestorDataContext<LessonSummary>(b);
-            if (lesson is null) return;
+            if (b.CommandParameter is not AttendanceSummary attendance)
+                return;
+            if (b.DataContext is not LessonSummary lesson)
+                return;
 
             var dialog = new ContentDialog()
             {
@@ -384,17 +482,15 @@ namespace Apolo.Views
             }
         }
 
-        private static T? FindAncestorDataContext<T>(FrameworkElement child) where T : class
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
-            // Climb visual tree to find the ListViewItem for LEssonSummary
-            DependencyObject? current = child;
-            while (current is not null)
+            base.OnNavigatedTo(e);
+
+            // Call the refresh method on your ViewModel
+            if (ViewModel != null)
             {
-                if (current is FrameworkElement fe && fe.DataContext is T t)
-                    return t;
-                current = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(current);
+                await ViewModel.RefreshProfileAsync();
             }
-            return null;
         }
     }
 }

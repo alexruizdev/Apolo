@@ -4,7 +4,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:local="using:Apolo.Views"
       xmlns:vm="using:Apolo.ViewModels"
-      xmlns:loc="using:Apolo.Service"
+      xmlns:loc="using:Apolo.Services"
       xmlns:m="using:Models"
       x:Name="PageRoot"
       Loaded="Page_Loaded">
@@ -18,16 +18,14 @@
 
         <Button Content="New specification"
             Click="NewSpecification_Click"
-            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
-        
+            IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
+
         <StackPanel>
-            <TextBlock Text="Loading..."
-                        Foreground="Gray"
-                        Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
-            <TextBlock Text="{Binding ErrorMessage}"
-                        Foreground="Tomato"
-                        TextWrapping="Wrap"
-                        Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibilityConverter}}" />
+            <ProgressBar IsIndeterminate="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
+            <InfoBar
+                IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}"
+                Severity="{x:Bind ViewModel.InfoBarType, Converter={StaticResource InfoBarTypeConverter}, Mode=TwoWay}"
+                Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}" />
         </StackPanel>
 
         <ScrollView MaxHeight="500">
@@ -52,9 +50,16 @@
                                     <Run Text="{x:Bind DurationMinutes}" />
                                     <Run Text=" min" />
                                 </TextBlock>
+                                <TextBlock>
+                                    <Run Text="Price: " />
+                                    <Run Text="{x:Bind Price}" />
+                                </TextBlock>
                                 <CheckBox IsChecked="{x:Bind IsOnline}"
                                             IsHitTestVisible="False"
                                             Content="Online" />
+                                <CheckBox IsChecked="{x:Bind IsWeekenOrHoliday}"
+                                        IsHitTestVisible="False"
+                                        Content="Weekend or holiday" />
                             </StackPanel>
 
                             <StackPanel Grid.Column="1"

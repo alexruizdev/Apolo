@@ -1,10 +1,11 @@
-using Apolo.Service;
+using Apolo.Services;
 using Apolo.ViewModels;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Models;
 using System;
+using System.Threading.Tasks;
 
 namespace Apolo.Views;
 
@@ -41,7 +42,7 @@ public sealed partial class ServicesPage : Page
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
         {
-            await ViewModel.DeleteServiceAsync(item);
+            await ViewModel.DeleteServiceAsync(item.Id);
         }
     }
 
@@ -56,14 +57,15 @@ public sealed partial class ServicesPage : Page
         var nameBox = new TextBox { Header = "Name", Text = item.Name, MinWidth = 320, MaxLength = 100 };
         var priceBox = new NumberBox {
             Header = "Price per hour:", 
-            Value = (double)item.PricePerHour, 
+            Value = (double)item.Price, 
             PlaceholderText = "0.00"
         };
+        var isPricePerHourCheck = new CheckBox { Content = "Is price per hour?", IsChecked = item.IsPricePerHour };
 
         var panel = new StackPanel { Spacing = 8 };
         panel.Children.Add(nameBox);
         panel.Children.Add(priceBox);
-
+        panel.Children.Add(isPricePerHourCheck);
         var dialog = new ContentDialog()
         {
             Title = "Edit service",
@@ -77,7 +79,8 @@ public sealed partial class ServicesPage : Page
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
         {
-            await ViewModel.UpdateServiceAsync(item.Id, nameBox.Text, (decimal)priceBox.Value);
+            await ViewModel.UpdateServiceAsync(item.Id, nameBox.Text, 
+                isPricePerHourCheck.IsChecked == true, (decimal)priceBox.Value);
         }
 
     }
@@ -86,11 +89,12 @@ public sealed partial class ServicesPage : Page
     {
         var nameBox = new TextBox { Header = "Name", MinWidth = 320, MaxLength = 120 };
         var priceBox = new NumberBox { Header = "Price per hour", MinWidth = 320, PlaceholderText = "0.00", Value = 0 };
+        var isPricePerHourCheck = new CheckBox { Content = "Is price per hour?", IsChecked = true };
 
         var panel = new StackPanel { Spacing = 8 };
         panel.Children.Add(nameBox);
         panel.Children.Add(priceBox);
-
+        panel.Children.Add(isPricePerHourCheck);
         var dialog = new ContentDialog()
         {
             Title = "Create service",
@@ -102,11 +106,10 @@ public sealed partial class ServicesPage : Page
         };
 
         var result = await dialog.ShowAsync();
-        if (result == ContentDialogResult.Primary)
-        {
-            await ViewModel.AddServiceAsync(
-                nameBox.Text,
-                (decimal)priceBox.Value);
-        }
+        if (result != ContentDialogResult.Primary)
+            return;
+
+        await ViewModel.AddServiceAsync(nameBox.Text, isPricePerHourCheck.IsChecked == true,
+            (decimal)priceBox.Value);
     }
 }

@@ -4,7 +4,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:local="using:Apolo.Views"
       xmlns:vm="using:Apolo.ViewModels"
-      xmlns:loc="using:Apolo.Service"
+      xmlns:loc="using:Apolo.Services"
       xmlns:m="using:Models"
       x:Name="PageRoot"
       Loaded="Page_Loaded">
@@ -18,15 +18,13 @@
 
         <Button Content="New service"
                 Click="NewService_Click"
-                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
         <StackPanel>
-            <TextBlock Text="Loading..."
-                        Foreground="Gray"
-                        Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
-            <TextBlock Text="{Binding ErrorMessage}"
-                        Foreground="Tomato"
-                        TextWrapping="Wrap"
-                        Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibilityConverter}}" />
+            <ProgressBar IsIndeterminate="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
+            <InfoBar
+                IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}"
+                Severity="{x:Bind ViewModel.InfoBarType, Converter={StaticResource InfoBarTypeConverter}, Mode=TwoWay}"
+                Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}" />
         </StackPanel>
 
         <ScrollView MaxHeight="500">
@@ -38,12 +36,17 @@
                             <StackPanel Orientation="Horizontal"
                                         Spacing="4">
                                 <TextBlock Text="{x:Bind Name}"
-                                            FontWeight="SemiBold" />
-                                <TextBlock Text="-" />
-                                <TextBlock>
+                                            FontWeight="SemiBold" 
+                                        VerticalAlignment="Center"/>
+                                <TextBlock Text="-" 
+                                        VerticalAlignment="Center"/>
+                                <TextBlock VerticalAlignment="Center">
                                     <Run Text="Price:" />
-                                    <Run Text="{x:Bind PricePerHour, Converter={StaticResource DecimalToCurrencyConverter}}" />
+                                    <Run Text="{x:Bind Price, Converter={StaticResource DecimalToCurrencyConverter}}" />
                                 </TextBlock>
+                                <CheckBox IsChecked="{x:Bind IsPricePerHour}"
+                                          Content="Price/hour"
+                                          IsEnabled="False" />
 
                             </StackPanel>
 

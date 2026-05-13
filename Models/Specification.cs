@@ -4,19 +4,21 @@
         Guid Id,
         string Display,
         Guid ServiceId,
-        string ServiceName,
-        decimal PricePerHour,
+        double? Price,
         int DurationMinutes,
-        bool IsOnline);
+        bool IsOnline,
+        bool IsWeekend);
     public sealed record SpecificationSummary(
         Guid Id,
         string SpecificationName,
-        Guid studentId,
+        Guid StudentId,
         string StudentName,
         Guid ServiceId,
         string ServiceName,
         int DurationMinutes,
-        bool IsOnline
+        double? Price,
+        bool IsOnline,
+        bool IsWeekenOrHoliday
         );
     public sealed class Specification
     {
@@ -30,7 +32,9 @@
         public Guid ServiceId { get; set; }
         public Service Service { get; set; } = null!;
 
-        public int DurationMinutes { get; set; }
+        public int DurationMinutes { get; set; } // TODO: null
+        public decimal? Price { get; set; } // when null, we use service price
         public bool IsOnline { get; set; }
+        public bool IsWeekenOrHoliday { get; set; }
     }
 }

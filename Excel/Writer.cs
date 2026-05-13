@@ -3,16 +3,17 @@ using Models;
 
 namespace Excel
 {
-    public class Writer
+    public interface IWriter
     {
-        public List<ServiceSummary> Services { get; set; } = new List<ServiceSummary>();
-        public List<PayerSummary> Payers { get; set; } = new List<PayerSummary>();
-        public List<StudentSummary> Students { get; set; } = new List<StudentSummary>();
-        public List<SpecificationSummary> Specifications { get; set; } = new List<SpecificationSummary>();
-        public List<LessonSummary> Lessons { get; set; } = new List<LessonSummary>();
-        public List<Invoice> Invoices { get; set; } = new List<Invoice>();
-
-        public void WriteExcel(in string templatePath, in string folder)
+        void WriteExcel(in string templatePath, in string folder, in (List<Service> services, List<Payer> payers,
+            List<Student> students, List<Specification> specifications, List<Lesson> lessons, 
+            List<Invoice> invoices) data);
+    }
+    public class Writer : IWriter
+    {
+        public void WriteExcel(in string templatePath, in string folder, in (List<Service> services, 
+            List<Payer> payers, List<Student> students, List<Specification> specifications,
+            List<Lesson> lessons, List<Invoice> invoices) data)
         {
             string destinationPath = Path.Combine(folder, $"Apolo_Export_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
             try
@@ -25,12 +26,12 @@ namespace Excel
 
                 using (var workbook = new XLWorkbook(templatePath))
                 {
-                    WriteServices(workbook);
-                    WritePayers(workbook);
-                    WriteStudents(workbook);
-                    WriteSpecifications(workbook);
-                    WriteLessons(workbook);
-                    WriteInvoices(workbook);
+                    WriteServices(workbook, in data.services);
+                    WritePayers(workbook, in data.payers);
+                    WriteStudents(workbook, in data.students);
+                    WriteSpecifications(workbook, in data.specifications);
+                    WriteLessons(workbook, in data.lessons);
+                    WriteInvoices(workbook, in data.invoices);
 
                     workbook.SaveAs(destinationPath);
                 }
@@ -60,159 +61,119 @@ namespace Excel
                 table.DataRange.Cell(rowCount, table.ColumnCount()).Address));
         }
 
-
-
-        private void WriteServices(XLWorkbook workbook)
+        private void WriteServices(XLWorkbook workbook, in List<Service> services)
         {
             var table = GetTable(workbook, "Services");
+            int row = 1;
 
-            int nameCol = table.Field("Name").Index + 1;
-            int priceCol = table.Field("Price / h").Index + 1;
-
-            for (int i = 0; i < Services.Count; i++)
+            foreach (var service in services)
             {
-                var service = Services[i];
-                int row = i + 1;
+                table.DataRange.Cell(row, 1).Value = service.Name;
+                table.DataRange.Cell(row, 2).Value = service.Price;
+                table.DataRange.Cell(row, 3).Value = service.Id.ToString();
 
-                table.DataRange.Cell(row, nameCol).Value = service.Name;
-                table.DataRange.Cell(row, priceCol).Value = service.PricePerHour;
+                row++;
             }
 
-            ResizeTable(table, Services.Count);
+            ResizeTable(table, services.Count());
         }
 
-        private void WritePayers(XLWorkbook workbook)
+        private void WritePayers(XLWorkbook workbook, in List<Payer> payers)
         {
             var table = GetTable(workbook, "Payers");
+            int row = 1;
 
-            int firstNameCol = table.Field("First name").Index + 1;
-            int lastNameCol = table.Field("Last name").Index + 1;
-            int addressCol = table.Field("Address").Index + 1;
-            int zipCodeCol = table.Field("Zip code").Index + 1;
-            int cityCol = table.Field("City").Index + 1;
-            int nifCifCol = table.Field("NIF/CIF").Index + 1;
-            int idCol = table.Field("ID").Index + 1;
-
-            for (int i = 0; i < Payers.Count; i++)
+            foreach (var payer in payers)
             {
-                var payer = Payers[i];
-                int row = i + 1;
+                table.DataRange.Cell(row, 1).Value = payer.FirstName;
+                table.DataRange.Cell(row, 2).Value = payer.LastName;
+                table.DataRange.Cell(row, 3).Value = payer.Address;
+                table.DataRange.Cell(row, 4).Value = payer.ZipCode;
+                table.DataRange.Cell(row, 5).Value = payer.City;
+                table.DataRange.Cell(row, 6).Value = payer.TaxId;
+                table.DataRange.Cell(row, 7).Value = payer.Id.ToString();
 
-                table.DataRange.Cell(row, firstNameCol).Value = payer.FirstName;
-                table.DataRange.Cell(row, lastNameCol).Value = payer.LastName;
-                table.DataRange.Cell(row, addressCol).Value = payer.Address;
-                table.DataRange.Cell(row, zipCodeCol).Value = payer.Zip;
-                table.DataRange.Cell(row, cityCol).Value = payer.City;
-                table.DataRange.Cell(row, nifCifCol).Value = payer.TaxId;
-                table.DataRange.Cell(row, idCol).Value = payer.Id.ToString();
+                row++;
             }
 
-            ResizeTable(table, Payers.Count);
+            ResizeTable(table, payers.Count());
         }
 
-        private void WriteStudents(XLWorkbook workbook)
+        private void WriteStudents(XLWorkbook workbook, in List<Student> students)
         {
-            var worksheet = workbook.Worksheet("Students");
-            var table = workbook.Table("Students");
-            table.DataRange.Clear(XLClearOptions.Contents); // Just to make sure we start with an empty table
+            var table = GetTable(workbook, "Students");
+            int row = 1;
 
-            int firstNameCol = table.Field("First name").Index + 1;
-            int lastNameCol = table.Field("Last name").Index + 1;
-            int addressCol = table.Field("Payer name").Index + 1;
-            int zipCodeCol = table.Field("Commute").Index + 1;
-            int idCol = table.Field("ID").Index + 1;
-            int payerIdCol = table.Field("PayerId").Index + 1;
-
-            for (int i = 0; i < Students.Count; i++)
+            foreach (var student in students)
             {
-                var student = Students[i];
-                int row = i + 1;
+                table.DataRange.Cell(row, 1).Value = student.FirstName;
+                table.DataRange.Cell(row, 2).Value = student.LastName;
+                //table.DataRange.Cell(row, 3).Value = student.PayerName;
+                table.DataRange.Cell(row, 4).Value = student.Id.ToString();
+                table.DataRange.Cell(row, 5).Value = student.PayerId.ToString();
 
-                table.DataRange.Cell(row, firstNameCol).Value = student.FirstName;
-                table.DataRange.Cell(row, lastNameCol).Value = student.LastName;
-                table.DataRange.Cell(row, addressCol).Value = student.PayerName;
-                table.DataRange.Cell(row, zipCodeCol).Value = student.CommuteMinutes;
-                table.DataRange.Cell(row, idCol).Value = student.Id.ToString();
-                table.DataRange.Cell(row, idCol).Value = student.PayerId.ToString();
+                row++;
             }
 
-            table.Resize(worksheet.Range(
-                table.FirstCell().Address,
-                table.DataRange.Cell(Students.Count, table.ColumnCount()).Address));
+            ResizeTable(table, students.Count());
         }
 
-        private void WriteSpecifications(XLWorkbook workbook)
+        private void WriteSpecifications(XLWorkbook workbook, in List<Specification> specifications)
         {
             var table = GetTable(workbook, "Specifications");
 
-            int nameCol = table.Field("Name").Index + 1;
-            int studentNameCol = table.Field("Student name").Index + 1;
-            int serviceCol = table.Field("Service").Index + 1;
-            int durationCol = table.Field("Duration").Index + 1;
-            int priceCol = table.Field("Price").Index + 1;
-            int onlineCol = table.Field("Online").Index + 1;
-
-            for (int i = 0; i < Specifications.Count; i++)
+            for (int i = 0; i < specifications.Count(); i++)
             {
-                var specification = Specifications[i];
+                var specification = specifications.ElementAt(i);
                 int row = i + 1;
 
-                table.DataRange.Cell(row, nameCol).Value = specification.SpecificationName;
-                table.DataRange.Cell(row, studentNameCol).Value = specification.StudentName;
-                table.DataRange.Cell(row, serviceCol).Value = specification.ServiceName;
-                table.DataRange.Cell(row, durationCol).Value = specification.DurationMinutes;
-                table.DataRange.Cell(row, onlineCol).Value = specification.IsOnline;
+                table.DataRange.Cell(row, 1).Value = specification.Name;
+                //table.DataRange.Cell(row, 2).Value = specification.StudentName;
+                //table.DataRange.Cell(row, 3).Value = specification.ServiceName;
+                table.DataRange.Cell(row, 4).Value = specification.DurationMinutes;
+                table.DataRange.Cell(row, 5).Value = specification.Price; 
+                table.DataRange.Cell(row, 5).Value = specification.IsOnline;
             }
 
-            ResizeTable(table, Specifications.Count);
+            ResizeTable(table, specifications.Count());
         }
 
-        private void WriteLessons(XLWorkbook workbook)
+        private void WriteLessons(XLWorkbook workbook, in List<Lesson> lessons)
         {
             var table = GetTable(workbook, "Lessons");
-
-            int dateCol = table.Field("Date").Index + 1;
-            int studentCol = table.Field("Student").Index + 1;
-            int serviceCol = table.Field("Service").Index + 1;
-            int durationCol = table.Field("Duration (min)").Index + 1;
-            int onlineCol = table.Field("Online").Index + 1;
-            int isTotalPriceCol = table.Field("Is total price").Index + 1;
-            int pricePerStudentCol = table.Field("Price per student").Index + 1;
-            int paidCol = table.Field("Paid").Index + 1;
-            int lessonIdCol = table.Field("Lesson ID").Index + 1;
-            int attendanceIdCol = table.Field("Attendance ID").Index + 1;
-            int studentIdCol = table.Field("Student ID").Index + 1;
-
             int row = 1;
-            foreach (var lesson in Lessons)
+
+            foreach (var lesson in lessons)
             {
                 foreach (var attendance in lesson.Attendances)
                 {
-                    table.DataRange.Cell(row, dateCol).Value = lesson.Date.ToString("yyyy-MM-dd");
-                    table.DataRange.Cell(row, studentCol).Value = attendance.StudentName;
-                    table.DataRange.Cell(row, serviceCol).Value = lesson.Name;
-                    table.DataRange.Cell(row, durationCol).Value = lesson.DurationMinutes;
-                    table.DataRange.Cell(row, onlineCol).Value = lesson.IsOnline;
-                    table.DataRange.Cell(row, isTotalPriceCol).Value = lesson.IsTotalPrice;
-                    table.DataRange.Cell(row, pricePerStudentCol).Value = lesson.GrandTotal;
-                    table.DataRange.Cell(row, paidCol).Value = attendance.IsPaid;
-                    table.DataRange.Cell(row, lessonIdCol).Value = lesson.Id.ToString();
-                    table.DataRange.Cell(row, attendanceIdCol).Value = attendance.Id.ToString();
-                    table.DataRange.Cell(row, studentIdCol).Value = attendance.StudentId.ToString();
+                    table.DataRange.Cell(row, 1).Value = lesson.Date.ToString("yyyy-MM-dd");
+                    //table.DataRange.Cell(row, 2).Value = attendance.StudentName;
+                    table.DataRange.Cell(row, 3).Value = lesson.Name;
+                    table.DataRange.Cell(row, 4).Value = lesson.DurationMinutes;
+                    table.DataRange.Cell(row, 5).Value = lesson.IsOnline;
+                    table.DataRange.Cell(row, 6).Value = lesson.PricePerAttendance;
+                    table.DataRange.Cell(row, 7).Value = lesson.GetFinalPricePerStudent();
+                    table.DataRange.Cell(row, 8).Value = attendance.IsPaid;
+                    table.DataRange.Cell(row, 9).Value = lesson.Id.ToString();
+                    table.DataRange.Cell(row, 10).Value = attendance.Id.ToString();
+                    table.DataRange.Cell(row, 11).Value = attendance.StudentId.ToString();
+                    //table.DataRange.Cell(row, 12).Value = lesson.id.ToString(); &&
+
                     row++;
                 }
             }
 
-            ResizeTable(table, Lessons.Count);
+            ResizeTable(table, lessons.Count());
         }
 
-        private void WriteInvoices(XLWorkbook workbook)
+        private void WriteInvoices(XLWorkbook workbook, in List<Invoice> invoices)
         {
             var table = GetTable(workbook, "Invoices");
 
             int row = 1;
 
-            foreach (var invoice in Invoices)
+            foreach (var invoice in invoices)
             {
                 foreach  (var line in invoice.Lines)
                 {
@@ -229,7 +190,7 @@ namespace Excel
                 row++;
             }
 
-            ResizeTable(table, Invoices.Count);
+            ResizeTable(table, invoices.Count());
         }
     }
 }

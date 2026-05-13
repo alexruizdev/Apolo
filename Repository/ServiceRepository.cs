@@ -1,10 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Models;
 
 namespace Repository
 {
-    public sealed class ServiceRepository
+    public sealed class ServiceRepository : IServiceRepository
     {
         private readonly ApoloContext _db;
 
@@ -15,25 +14,29 @@ namespace Repository
 
         public async Task<IEnumerable<ServiceSummary>> GetServicesAsync()
         {
-            var result = await _db.Services
+            return await _db.Services
                 .AsNoTracking()
+                .OrderBy(s => s.Name)
                 .Select(s => new ServiceSummary(
                     s.Id,
                     s.Name,
-                    s.PricePerHour))
+                    s.IsPricePerHour,
+                    (double)s.Price))
                 .ToListAsync();
-            return result.OrderBy(x => x.Name).ToList();
         }
 
         public async Task AddAsync(Service service)
         {
-            var exists = await _db.Services.AnyAsync(s => s.Name.ToLower() == service.Name.ToLower());
-            if (exists)
+            try
             {
-                throw new InvalidDataException($"A service with this name already exists: {service.Name}.");
+                _db.Services.Add(service);
+                await _db.SaveChangesAsync();
             }
-            _db.Services.Add(service);
-            await _db.SaveChangesAsync();
+            catch (DbUpdateException ex)
+            {
+                // SQLite Error 19 is "Constraint Violation"
+                throw new InvalidDataException($"A service with this name already exists: {service.Name}.", ex);
+            }
         }
 
         public async Task DeleteAsync(Guid id)
@@ -49,24 +52,21 @@ namespace Repository
             await _db.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync (Guid id, string name, decimal price)
+        public async Task UpdateAsync (Guid id, string name, bool isPricePerHour, decimal price)
         {
-            var entity = await _db.Services.FirstOrDefaultAsync(s => s.Id == id);
+            var entity = await _db.Services.FirstOrDefaultAsync(s => s.Id == id)
+                 ?? throw new ArgumentNullException("Service not found.");
 
-            if (entity is null)
+            // Only check uniqueness if the name is DIFFERENT from the current one
+            if (!string.Equals(entity.Name, name, StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentNullException("Service not found.");
-            }
-
-            // Uniqueness pre-check (ignore self)
-            var nameTaken = await _db.Services.AnyAsync( s => s.Id != id && s.Name.ToLower() == name.ToLower());
-            if (nameTaken)
-            {
-                throw new InvalidDataException("Another service already uses that name.");
+                var nameTaken = await _db.Services.AnyAsync(s => s.Name.ToLower() == name.ToLower());
+                if (nameTaken) throw new InvalidDataException($"Another service already uses: {name}.");
             }
 
             entity.Name = name;
-            entity.PricePerHour = price;
+            entity.IsPricePerHour = isPricePerHour;
+            entity.Price = price;
 
             await _db.SaveChangesAsync();
         }

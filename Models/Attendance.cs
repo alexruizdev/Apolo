@@ -14,7 +14,8 @@ namespace Models
         public Guid StudentId { get; set; }
         public Student Student { get; set; } = null!;
 
-        [Precision(18, 2)]
         public bool IsPaid { get; set; }
+        [Precision(18, 2)]
+        public decimal Price { get; set; }
     }
 }
