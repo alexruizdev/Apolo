@@ -85,6 +85,7 @@
                 <CommandBar DefaultLabelPosition="Right"  HorizontalAlignment="Left"  Background="Transparent">
                     <AppBarButton Label="Import from Excel" Icon="Import" Click="ImportExcelButton_Click"/>
                     <AppBarButton Icon="Save" Label="Export Excel" Click="ExportExcelButton_Click"/>
+                    <AppBarButton Icon="Library" Label="Archive" Click="ArchiveButton_Click"/>
                     <AppBarSeparator />
                     <AppBarButton Icon="Delete" Label="Nuke Database" Foreground="Red" Click="DeleteDatabaseButton_Click"/>
                 </CommandBar>

@@ -80,5 +80,7 @@ namespace Repository
 
         Task<(List<Service> Services, List<Payer> Payers, List<Student> Students,
             List<Specification> Specifications, List<Lesson> Lessons, List<Invoice> Invoices)> GetAllDataAsync();
+        Task<List<PayerActivityInfo>> GetPayersWithActivityAsync();
+        Task ArchiveOldDataAsync(List<Guid> payerIds);
     }
 }

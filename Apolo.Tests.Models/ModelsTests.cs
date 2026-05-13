@@ -125,5 +125,22 @@ namespace Apolo.Tests.Models
             Assert.AreEqual(0, profile.TravelAllowance);
             Assert.AreEqual(0, profile.WeekendFee);
         }
+
+        [TestMethod]
+        public void TestPayerActivityInfo()
+        {
+            var payer = new PayerActivityInfo()
+            {
+                PayerId = Guid.NewGuid(),
+                PayerName = "Payer 1",
+                LastLessonDate = new DateOnly(2024, 1, 17)
+            };
+
+            Assert.AreEqual("Payer 1 - Last activity: 17/01/2024", payer.Display);
+
+            payer.LastLessonDate = null;
+
+            Assert.AreEqual("Payer 1 - No recorded activity", payer.Display);
+        }
     }
 }

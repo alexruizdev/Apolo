@@ -1,10 +1,13 @@
+using Apolo.Services;
 using Apolo.ViewModels;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.Storage.Pickers;
+using Models;
 using System;
+using System.Linq;
 
 namespace Apolo.Views
 {
@@ -73,6 +76,50 @@ namespace Apolo.Views
             if (file == null) return;
 
             await ViewModel.ImportDatabaseFromExcel(file.Path);
+        }
+
+        private async void ArchiveButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button) return;
+
+            var payers = await ViewModel.GetPayersActivity();
+
+            var payersList = new ListView
+            {
+                Header = "Payers",
+                SelectionMode = ListViewSelectionMode.Multiple,
+                ItemsSource = payers,
+                MaxHeight = 240
+            };
+            payersList.DisplayMemberPath = "Display";
+
+            var panel = new StackPanel { Spacing = 8 };
+            panel.Children.Add(payersList);
+
+            var viewer = new ScrollViewer
+            {
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                VerticalScrollMode = ScrollMode.Enabled,
+                MaxHeight = 500,
+                Content = panel
+            };
+
+            var dialog = new ContentDialog()
+            {
+                Title = "Archive old data",
+                Content = viewer,
+                PrimaryButtonText = "Archive",
+                CloseButtonText = Loc.Buttons_Cancel,
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = Content.XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result != ContentDialogResult.Primary)
+                return;
+
+            var ids = payersList.SelectedItems.Cast<PayerActivityInfo>().Select(s => s.PayerId).ToList();
+            await ViewModel.ArchiveOldData(ids);
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)

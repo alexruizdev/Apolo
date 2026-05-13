@@ -8,7 +8,9 @@ namespace Apolo.Tests.Data
     public abstract class RepositoryTests
     {
         private SqliteConnection _connection = null!;
+        private SqliteConnection _archiveConnection = null!;
         protected ApoloContext _context = null!;
+        protected ApoloArchiveContext _archiveContext = null!;
 
         [TestInitialize]
         public virtual void Setup()
@@ -24,6 +26,17 @@ namespace Apolo.Tests.Data
 
             _context = new ApoloContext(options);
             _context.Database.EnsureCreated(); // Creates tables based on your models
+
+            // --- Archive Database Setup ---
+            _archiveConnection = new SqliteConnection("DataSource=:memory:");
+            _archiveConnection.Open();
+            var archiveOptions = new DbContextOptionsBuilder<ApoloArchiveContext>()
+                .UseSqlite(_archiveConnection)
+                .Options;
+
+            // Initialize using your marker class
+            _archiveContext = new ApoloArchiveContext(archiveOptions);
+            _archiveContext.Database.EnsureCreated();
         }
 
         [TestCleanup]
@@ -33,6 +46,10 @@ namespace Apolo.Tests.Data
             _context?.Dispose();
             _connection?.Close();
             _connection?.Dispose();
+
+            _archiveContext?.Dispose();
+            _archiveConnection?.Close();
+            _archiveConnection?.Dispose();
         }
     }
 }

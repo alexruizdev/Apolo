@@ -1,5 +1,6 @@
 ﻿using Apolo.Services;
 using Apolo.ViewModels;
+using Microsoft.EntityFrameworkCore;
 using Models;
 using Moq;
 using Repository;
@@ -208,6 +209,66 @@ namespace Apolo.Tests.ViewModels
             _repositoryMock.Verify(r => r.GetAllDataAsync(), Times.Once);
 
             VerifyAction($"Export completed", InfoBarType.Success, isOpen: true, contains: true);
+        }
+
+        [TestMethod]
+        public async Task GetPayersActivity()
+        {
+            await _viewModel.GetPayersActivity();
+
+            Assert.IsFalse(_viewModel.OpenInfoBar);
+            Assert.IsFalse(_viewModel.IsBusy);
+
+            _repositoryMock.Verify(r => r.GetPayersWithActivityAsync(), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task Archive_WhileBusy()
+        {
+            _viewModel.IsBusy = true;
+
+            await _viewModel.ArchiveOldData([Guid.NewGuid()]);
+
+            VerifyAction("Can't archive data while busy.", InfoBarType.Warning, isOpen: true, isBusy: true);
+
+            _repositoryMock.Verify(r => r.ArchiveOldDataAsync(It.IsAny<List<Guid>>()), Times.Never);
+        }
+
+        [TestMethod]
+        public async Task Archive_NoPayersSelected()
+        {
+            await _viewModel.ArchiveOldData([]);
+
+            VerifyAction("No payers were selected.", InfoBarType.Info, isOpen: true);
+
+            _repositoryMock.Verify(r => r.ArchiveOldDataAsync(It.IsAny<List<Guid>>()), Times.Never);
+        }
+
+        [TestMethod]
+        public async Task Archive_Exception()
+        {
+            List<Guid> ids = [Guid.NewGuid()];
+
+            _repositoryMock.Setup(r => r.ArchiveOldDataAsync(ids))
+                .ThrowsAsync(new DbUpdateException("Database connection lost."));
+
+            await _viewModel.ArchiveOldData(ids);
+
+            VerifyAction("Database connection lost.", InfoBarType.Error, isOpen: true);
+
+            _repositoryMock.Verify(r => r.ArchiveOldDataAsync(ids), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task Archive()
+        {
+            List<Guid> ids = [Guid.NewGuid()];
+
+            await _viewModel.ArchiveOldData(ids);
+
+            VerifyAction("Archived data successfully.", InfoBarType.Success, isOpen: true);
+
+            _repositoryMock.Verify(r => r.ArchiveOldDataAsync(ids), Times.Once);
         }
     }
 }

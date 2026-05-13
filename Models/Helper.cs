@@ -37,12 +37,12 @@
                 WeekendFee = 5, Notes = "small note" });
             lessons[0].Attendances.Add(new Attendance() { LessonId = lessons[0].Id, StudentId = students[0].Id, IsPaid = false, 
                 Price = 30 });
-            lessons.Add(new Lesson() { Date = new DateOnly(2024, 1, 1), Name = "Lesson 2", IsPricePerHour = true, 
+            lessons.Add(new Lesson() { Date = new DateOnly(2025, 1, 1), Name = "Lesson 2", IsPricePerHour = true, 
                 DurationMinutes = 0, PricePerAttendance = 15, IsOnline = false, TravelAllowance = 15, IsWeekenOrHoliday = true,
                 WeekendFee = 5, Notes = "long note" });
             lessons[1].Attendances.Add(new Attendance() { LessonId = lessons[1].Id, StudentId = students[1].Id, IsPaid = false, 
                 Price = 15 });
-            lessons.Add(new Lesson() { Date = new DateOnly(2024, 1, 1), Name = "Lesson 3", IsPricePerHour = false, 
+            lessons.Add(new Lesson() { Date = new DateOnly(2026, 1, 1), Name = "Lesson 3", IsPricePerHour = false, 
                 DurationMinutes = 45, PricePerAttendance = 45, IsOnline = true, TravelAllowance = 10, IsWeekenOrHoliday = false,
                 WeekendFee = 10, Notes = null });
             lessons[2].Attendances.Add(new Attendance() { LessonId = lessons[2].Id, StudentId = students[2].Id, IsPaid = true, 

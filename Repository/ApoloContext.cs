@@ -4,6 +4,61 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Repository
 {
+    public class ApoloArchiveContext : DbContext
+    {
+        public ApoloArchiveContext(DbContextOptions<ApoloArchiveContext> options) : base(options) { }
+
+        public DbSet<Payer> Payers { get; set; }
+        public DbSet<Student> Students { get; set; }
+        public DbSet<Lesson> Lessons { get; set; }
+        public DbSet<Attendance> Attendances { get; set; }
+        public DbSet<InvoiceAttendance> InvoiceAttendances { get; set; }
+        public DbSet<Invoice> Invoices { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            // Payer
+            modelBuilder.Entity<Payer>()
+                .HasMany(p => p.Students)
+                .WithOne(s => s.Payer)
+                .HasForeignKey(s => s.PayerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Attendance (join: Lesson x Customer, unique per pair)
+            modelBuilder.Entity<Attendance>()
+                .HasOne(a => a.Lesson)
+                .WithMany(l => l.Attendances)
+                .HasForeignKey(a => a.LessonId)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Attendance>()
+                .HasOne(a => a.Student)
+                .WithMany(s => s.Attendances)
+                .HasForeignKey(a => a.StudentId)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Attendance>()
+                .HasIndex(a => new { a.LessonId, a.StudentId })
+                .IsUnique();
+
+            // Invoice 
+            modelBuilder.Entity<Invoice>(invoice =>
+            {
+                invoice.HasKey(i => i.Id);
+                invoice.HasIndex(i => i.Name).IsUnique();
+            });
+
+            modelBuilder.Entity<InvoiceAttendance>()
+                .HasOne(x => x.Invoice)
+                .WithMany(i => i.Lines)
+                .HasForeignKey(x => x.InvoiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<InvoiceAttendance>()
+                .HasOne(x => x.Attendance)
+                .WithMany()
+                .HasForeignKey(x => x.AttendanceId)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
+    }
     public class ApoloContext : DbContext
     {
         public ApoloContext(DbContextOptions<ApoloContext> options) : base(options) { }
@@ -16,14 +71,6 @@ namespace Repository
         public DbSet<Attendance> Attendances { get; set; }
         public DbSet<InvoiceAttendance> InvoiceAttendances { get; set; }
         public DbSet<Invoice> Invoices { get; set; }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlite("DataSource=app.db");
-            }
-        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -93,33 +140,6 @@ namespace Repository
                 .WithMany()
                 .HasForeignKey(x => x.AttendanceId)
                 .OnDelete(DeleteBehavior.Restrict);
-        }
-
-        private void EnforceBusinessRules()
-        {
-            var newOrModInstances = ChangeTracker.Entries<Lesson>()
-                .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
-
-            foreach (var e in newOrModInstances)
-            {
-                if (Entry(e.Entity).Collection(i => i.Attendances).IsLoaded &&
-                    e.Entity.Attendances.Count == 0)
-                {
-                    throw new InvalidOperationException("A lesson must have at least one Attendance.");
-                }
-            }
-        }
-
-        public override int SaveChanges()
-        {
-            EnforceBusinessRules();
-            return base.SaveChanges();
-        }
-
-        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            EnforceBusinessRules();
-            return await base.SaveChangesAsync(cancellationToken);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Apolo.Services;
 using CommunityToolkit.Mvvm.Input;
+using Models;
 using Repository;
 using System.Diagnostics;
 using System.Text;
@@ -168,6 +169,35 @@ namespace Apolo.ViewModels
                 ts.Hours, ts.Minutes, ts.Seconds);
 
             SetExitFunction($"Export completed ({elapsedTime}). File saved to {folder}", InfoBarType.Success);
+        }
+
+        public async Task<List<PayerActivityInfo>> GetPayersActivity() => await _repository.GetPayersWithActivityAsync();
+
+        public async Task ArchiveOldData(List<Guid> payersIds)
+        {
+            if (IsBusy)
+            {
+                SetExitFunction("Can't archive data while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            SetEnterFunction();
+
+            if (payersIds.Count == 0)
+            {
+                SetExitFunction("No payers were selected.", InfoBarType.Info);
+                return;
+            }
+
+            try
+            {
+                await _repository.ArchiveOldDataAsync(payersIds);
+                SetExitFunction("Archived data successfully.", InfoBarType.Success);
+            }
+            catch (Exception ex) 
+            {
+                SetExitFunction(ex.Message, InfoBarType.Error);
+            }
         }
     }
 }
