@@ -41,6 +41,27 @@ namespace Apolo.Views
             await ViewModel.ClearDatabaseAsync();
         }
 
+        private async void DeleteArchiveButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button) return;
+
+            var dialog = new ContentDialog
+            {
+                Title = "Confirm Deletion",
+                Content = "Are you sure you want to delete the entire archive? This action cannot be undone.",
+                PrimaryButtonText = "Delete",
+                CloseButtonText = "Cancel",
+                XamlRoot = this.XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+
+            if (result != ContentDialogResult.Primary)
+                return;
+
+            await ViewModel.ClearArchiveAsync();
+        }
+
         private async void ExportExcelButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not Button button) return;

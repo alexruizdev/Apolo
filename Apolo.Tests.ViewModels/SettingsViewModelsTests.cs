@@ -99,6 +99,22 @@ namespace Apolo.Tests.ViewModels
             VerifyAction("Database has been clear successfully.", InfoBarType.Success, isOpen: true);
         }
 
+        // Clear archive
+        [TestMethod]
+        public async Task ClearArchive_WhenBusy()
+        {
+            _viewModel.IsBusy = true;
+            await _viewModel.ClearArchiveAsync();
+            VerifyAction("Can't clear archive while busy.", InfoBarType.Warning, isOpen: true, isBusy: true);
+        }
+
+        [TestMethod]
+        public async Task ClearArchive()
+        {
+            await _viewModel.ClearArchiveAsync();
+            VerifyAction("Archive has been clear successfully.", InfoBarType.Success, isOpen: true);
+        }
+
         // Import database from excel
         [TestMethod]
         public async Task ImportFromExcel_WhenBusy()

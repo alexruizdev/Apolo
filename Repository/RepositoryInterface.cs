@@ -70,6 +70,7 @@ namespace Repository
     public interface IGeneralRepository
     {
         Task ClearDatabaseAsync();
+        Task ClearArchiveAsync();
         Task ImportAllDataAsync(
             List<Service> services,
             List<Payer> payers,

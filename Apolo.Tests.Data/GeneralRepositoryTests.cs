@@ -50,6 +50,33 @@ namespace Apolo.Tests.Data
         }
 
         [TestMethod]
+        public async Task ClearArchiveAsync()
+        {
+            var data = Helper.GetData();
+            _archiveContext.Payers.AddRange(data.Payers);
+            _archiveContext.Students.AddRange(data.Students);
+            _archiveContext.Lessons.AddRange(data.Lessons);
+            _archiveContext.Invoices.AddRange(data.Invoices);
+            await _archiveContext.SaveChangesAsync();
+
+            Assert.HasCount(3, _archiveContext.Payers);
+            Assert.HasCount(3, _archiveContext.Students);
+            Assert.HasCount(3, _archiveContext.Lessons);
+            Assert.HasCount(3, _archiveContext.Invoices);
+            Assert.HasCount(3, _archiveContext.Attendances);
+            Assert.HasCount(3, _archiveContext.InvoiceAttendances);
+
+            await _repository.ClearArchiveAsync();
+
+            Assert.HasCount(0, _archiveContext.Payers);
+            Assert.HasCount(0, _archiveContext.Students);
+            Assert.HasCount(0, _archiveContext.Lessons);
+            Assert.HasCount(0, _archiveContext.Invoices);
+            Assert.HasCount(0, _archiveContext.Attendances);
+            Assert.HasCount(0, _archiveContext.InvoiceAttendances);
+        }
+
+        [TestMethod]
         public async Task Import()
         {
             var data = Helper.GetData();

@@ -61,6 +61,12 @@ namespace Repository
             await _db.Database.EnsureCreatedAsync();
         }
 
+        public async Task ClearArchiveAsync()
+        {
+            await _archiveDb.Database.EnsureDeletedAsync();
+            await _archiveDb.Database.EnsureCreatedAsync();
+        }
+
         public async Task<List<PayerActivityInfo>> GetPayersWithActivityAsync()
         {
             return await _db.Payers

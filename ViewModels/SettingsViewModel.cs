@@ -54,6 +54,21 @@ namespace Apolo.ViewModels
             SetExitFunction("Database has been clear successfully.", InfoBarType.Success);
         }
 
+        public async Task ClearArchiveAsync()
+        {
+            if (IsBusy)
+            {
+                SetExitFunction("Can't clear archive while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            SetEnterFunction();
+
+            await _repository.ClearArchiveAsync();
+
+            SetExitFunction("Archive has been clear successfully.", InfoBarType.Success);
+        }
+
         public async Task<string> GenerateExportSummary(string folderPath,
             int serviceCount, int payerCount,
             int studentCount, int specificationCount,

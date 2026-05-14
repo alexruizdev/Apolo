@@ -88,6 +88,7 @@
                     <AppBarButton Icon="Library" Label="Archive" Click="ArchiveButton_Click"/>
                     <AppBarSeparator />
                     <AppBarButton Icon="Delete" Label="Nuke Database" Foreground="Red" Click="DeleteDatabaseButton_Click"/>
+                    <AppBarButton Icon="Delete" Label="Nuke Archive" Foreground="Red" Click="DeleteArchiveButton_Click"/>
                 </CommandBar>
             </StackPanel>
         </StackPanel>
