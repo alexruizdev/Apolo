@@ -530,10 +530,10 @@ namespace Apolo.Tests.ViewModels
             var date = DateOnly.FromDateTime(new DateTime(1993, 8, 17));
             string notes = "Some notes";
             List<Guid> ids = [studentId];
-            _mockLessonRepo.Setup(r => r.AddLessonAsync(date, "Service",
+            _mockLessonRepo.Setup(r => r.AddLessonAsync(date, "Service", false, studentId, null, 
                     true, 60, hasPrice ? 60 : 50,
                     false, 10, false, 20,
-                    notes, ids))
+                    notes))
                      .ThrowsAsync(new DbUpdateException("Constraint failed."));
         }
 
@@ -547,17 +547,18 @@ namespace Apolo.Tests.ViewModels
             // 1. Verify Repo call
             if (success)
             {
-                _mockLessonRepo.Verify(r => r.AddLessonAsync(date, "Service",
+                _mockLessonRepo.Verify(r => r.AddLessonAsync(date, "Service", false, studentId, null,
                     true, 60, hasPrice ? 60 : 50,
                     false, 10, false, 20,
-                    notes, ids), Times.Once);
+                    notes), Times.Once);
             }
             else
             {
-                _mockLessonRepo.Verify(r => r.AddLessonAsync(It.IsAny<DateOnly>(), It.IsAny<string>(),
+                _mockLessonRepo.Verify(r => r.AddLessonAsync(It.IsAny<DateOnly>(), It.IsAny<string>(), It.IsAny<bool>(),
+                    It.IsAny<Guid>(), It.IsAny<Guid?>(),
                     It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<decimal>(),
                     It.IsAny<bool>(), It.IsAny<decimal>(), It.IsAny<bool>(), It.IsAny<decimal>(),
-                    It.IsAny<string?>(), It.IsAny<IReadOnlyList<Guid>>()), Times.Never);
+                    It.IsAny<string?>()), Times.Never);
             }
 
             // 2. Verify UI Update

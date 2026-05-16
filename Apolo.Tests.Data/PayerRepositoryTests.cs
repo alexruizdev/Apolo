@@ -39,17 +39,13 @@ namespace Apolo.Tests.Data
             // Arrange
             var payer = TestGenerator.CreatePayer1(emptyInfo: false);
             var student = TestGenerator.CreateStudent1(payer.Id);
-            var lesson = TestGenerator.CreateLessonPaid();
+            var lesson1 = TestGenerator.CreateLessonPaid(student.Id);
+            var lesson2 = TestGenerator.CreateLessonUnpaid(student.Id);
 
             _context.Payers.Add(payer);
             _context.Students.Add(student);
-            _context.Lessons.Add(lesson);
-            _context.Attendances.Add(new Attendance
-            {
-                LessonId = lesson.Id,
-                StudentId = student.Id,
-                IsPaid = false
-            });
+            _context.Lessons.Add(lesson1);
+            _context.Lessons.Add(lesson2);
             await _context.SaveChangesAsync();
 
             // Act
@@ -60,7 +56,7 @@ namespace Apolo.Tests.Data
             // Verify the debt is calculated (assuming 50 is the price)
             Assert.AreEqual(TestGenerator.PayerName1, payerSummary.FirstName);
             Assert.AreEqual(TestGenerator.PayerLastName1, payerSummary.LastName);
-            Assert.AreEqual(TestGenerator.LessonTotalPrice, payerSummary.Outstanding);
+            Assert.AreEqual(50, payerSummary.Outstanding);
             Assert.AreEqual(TestGenerator.Address1, payerSummary.Address);
             Assert.AreEqual(TestGenerator.ZipCode1, payerSummary.Zip);
             Assert.AreEqual(TestGenerator.City1, payerSummary.City);
@@ -97,33 +93,6 @@ namespace Apolo.Tests.Data
             {
                 await _repository.GetPayerSummaryNoOutstandingAsync(Guid.NewGuid());
             });
-        }
-
-        [TestMethod]
-        public async Task GetPayersAsync_MissingDuration_ThrowsArgumentException()
-        {
-            // Arrange
-            var payer = new Payer { Id = Guid.NewGuid(), FirstName = "Test", LastName = "Payer" };
-            var student = new Student { Id = Guid.NewGuid(), PayerId = payer.Id };
-
-            // Lesson set to 'PricePerHour' but Duration is NULL
-            var invalidLesson = new Lesson
-            {
-                Id = Guid.NewGuid(),
-                IsPricePerHour = true,
-                DurationMinutes = null,
-                PricePerAttendance = 50
-            };
-
-            _context.Payers.Add(payer);
-            _context.Students.Add(student);
-            _context.Lessons.Add(invalidLesson);
-            _context.Attendances.Add(new Attendance { StudentId = student.Id, LessonId = invalidLesson.Id, IsPaid = false });
-            await _context.SaveChangesAsync();
-
-            // Act & Assert
-            // This confirms that your repository correctly propagates the Model's business rules
-            await Assert.ThrowsAsync<ArgumentException>(_repository.GetPayersAsync);
         }
 
         [TestMethod]

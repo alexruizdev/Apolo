@@ -1,5 +1,6 @@
 ﻿using Apolo.Services;
 using Apolo.ViewModels;
+using Microsoft.EntityFrameworkCore;
 using Models;
 using Moq;
 using Repository;
@@ -98,6 +99,22 @@ namespace Apolo.Tests.ViewModels
             VerifyAction("Database has been clear successfully.", InfoBarType.Success, isOpen: true);
         }
 
+        // Clear archive
+        [TestMethod]
+        public async Task ClearArchive_WhenBusy()
+        {
+            _viewModel.IsBusy = true;
+            await _viewModel.ClearArchiveAsync();
+            VerifyAction("Can't clear archive while busy.", InfoBarType.Warning, isOpen: true, isBusy: true);
+        }
+
+        [TestMethod]
+        public async Task ClearArchive()
+        {
+            await _viewModel.ClearArchiveAsync();
+            VerifyAction("Archive has been clear successfully.", InfoBarType.Success, isOpen: true);
+        }
+
         // Import database from excel
         [TestMethod]
         public async Task ImportFromExcel_WhenBusy()
@@ -160,7 +177,7 @@ namespace Apolo.Tests.ViewModels
                 // 3. Verify specific data points are inside the string
                 StringAssert.Contains(fileContent, "APOLO APP - IMPORT SUMMARY");
                 StringAssert.Contains(fileContent, $"- Services Imported: 3");
-                StringAssert.Contains(fileContent, $"- Invoices Processed: 3");
+                StringAssert.Contains(fileContent, $"- Invoices Processed: 2");
                 StringAssert.Contains(fileContent, "STATUS: Success");
             }
             finally
@@ -208,6 +225,126 @@ namespace Apolo.Tests.ViewModels
             _repositoryMock.Verify(r => r.GetAllDataAsync(), Times.Once);
 
             VerifyAction($"Export completed", InfoBarType.Success, isOpen: true, contains: true);
+        }
+
+        [TestMethod]
+        public async Task GetPayersActivity()
+        {
+            await _viewModel.GetPayersActivity();
+
+            Assert.IsFalse(_viewModel.OpenInfoBar);
+            Assert.IsFalse(_viewModel.IsBusy);
+
+            _repositoryMock.Verify(r => r.GetPayersWithActivityAsync(), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task Archive_WhileBusy()
+        {
+            _viewModel.IsBusy = true;
+
+            await _viewModel.ArchiveOldData([Guid.NewGuid()]);
+
+            VerifyAction("Can't archive data while busy.", InfoBarType.Warning, isOpen: true, isBusy: true);
+
+            _repositoryMock.Verify(r => r.ArchiveOldDataAsync(It.IsAny<List<Guid>>()), Times.Never);
+        }
+
+        [TestMethod]
+        public async Task Archive_NoPayersSelected()
+        {
+            await _viewModel.ArchiveOldData([]);
+
+            VerifyAction("No payers were selected.", InfoBarType.Info, isOpen: true);
+
+            _repositoryMock.Verify(r => r.ArchiveOldDataAsync(It.IsAny<List<Guid>>()), Times.Never);
+        }
+
+        [TestMethod]
+        public async Task Archive_Exception()
+        {
+            List<Guid> ids = [Guid.NewGuid()];
+
+            _repositoryMock.Setup(r => r.ArchiveOldDataAsync(ids))
+                .ThrowsAsync(new DbUpdateException("Database connection lost."));
+
+            await _viewModel.ArchiveOldData(ids);
+
+            VerifyAction("Database connection lost.", InfoBarType.Error, isOpen: true);
+
+            _repositoryMock.Verify(r => r.ArchiveOldDataAsync(ids), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task Archive()
+        {
+            List<Guid> ids = [Guid.NewGuid()];
+
+            await _viewModel.ArchiveOldData(ids);
+
+            VerifyAction("Archived data successfully.", InfoBarType.Success, isOpen: true);
+
+            _repositoryMock.Verify(r => r.ArchiveOldDataAsync(ids), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task GetPayersFromArchive()
+        {
+            await _viewModel.GetPayersFromArchive();
+
+            Assert.IsFalse(_viewModel.OpenInfoBar);
+            Assert.IsFalse(_viewModel.IsBusy);
+
+            _repositoryMock.Verify(r => r.GetPayersFromArchiveAsync(), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task RetrieveFromArchive_WhileBusy()
+        {
+            _viewModel.IsBusy = true;
+
+            await _viewModel.RetrieveDataFromArchive([Guid.NewGuid()]);
+
+            VerifyAction("Can't retrieve data from archive while busy.", InfoBarType.Warning, isOpen: true, isBusy: true);
+
+            _repositoryMock.Verify(r => r.RetrieveDataFromArchiveAsync(It.IsAny<List<Guid>>()), Times.Never);
+        }
+
+        [TestMethod]
+        public async Task RetrieveFromArchive_NoPayersSelected()
+        {
+            await _viewModel.RetrieveDataFromArchive([]);
+
+            VerifyAction("No payers were selected.", InfoBarType.Info, isOpen: true);
+
+            _repositoryMock.Verify(r => r.RetrieveDataFromArchiveAsync(It.IsAny<List<Guid>>()), Times.Never);
+        }
+
+        [TestMethod]
+        public async Task RetrieveFromArchive_Exception()
+        {
+            List<Guid> ids = [Guid.NewGuid()];
+
+            _repositoryMock.Setup(r => r.RetrieveDataFromArchiveAsync(ids))
+                .ThrowsAsync(new DbUpdateException("Database connection lost."));
+
+            await _viewModel.RetrieveDataFromArchive(ids);
+
+            VerifyAction("Database connection lost.", InfoBarType.Error, isOpen: true);
+
+            _repositoryMock.Verify(r => r.RetrieveDataFromArchiveAsync(ids), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task RetrieveFromArchive()
+        {
+            List<Guid> ids = [Guid.NewGuid()];
+
+            await _viewModel.RetrieveDataFromArchive(ids);
+
+            VerifyAction("Data retrieved successfully from archive.", InfoBarType.Success, isOpen: true);
+
+            _repositoryMock.Verify(r => r.RetrieveDataFromArchiveAsync(ids), Times.Once);
         }
     }
 }

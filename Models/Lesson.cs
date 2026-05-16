@@ -3,21 +3,35 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Models
 {
+    public sealed record LessonLine(
+        Guid Id,
+        Guid StudentId,
+        DateOnly Date,
+        string Name,
+        string StudentName,
+        decimal FinalPrice,
+        bool IsPaid)
+    { }
+
     public sealed record LessonSummary(
         Guid Id,
-        string Name,
         DateOnly Date,
+        string Name,
+        decimal FinalPrice,
+        bool IsPaid,
+        Guid StudentId,
+        string StudentName,
+        Guid? BillingDocumentId,
+        string BillingName,
         bool IsPricePerHour,
         int? DurationMinutes,
-        decimal PricePerAttendance,
+        decimal BasePrice,
         bool IsOnline,
         decimal TravelAllowance,
         bool IsWeekenOrHoliday,
         decimal WeekendFee,
-        string? Notes,
-        IReadOnlyList<AttendanceSummary> Attendances)
+        string? Notes)
     {
-        public decimal GrandTotal => Lesson.GetPrice(Attendances.Count(), IsPricePerHour, DurationMinutes, PricePerAttendance, IsOnline, TravelAllowance, IsWeekenOrHoliday, WeekendFee);
         public string ShortNote => Lesson.Truncate(Notes, 70);
     }
     public sealed class Lesson
@@ -29,35 +43,70 @@ namespace Models
         [Required]
         public string Name { get; set; } = string.Empty;
 
-        public bool IsPricePerHour { get; set; } // When true, pricePerHour is the total price for the lesson, regardless of duration
-        public int? DurationMinutes { get; set; }
+        public decimal FinalPrice { get; private set; }
+        public bool IsPaid { get; set; }
         [Precision(18, 2)]
-        public decimal PricePerAttendance { get; set; }
-        public bool IsOnline { get; set; }
-        public decimal TravelAllowance { get; set; }
-        public bool IsWeekenOrHoliday{ get; set; }
-        public decimal WeekendFee { get; set; }
-
+        public Guid StudentId { get; set; }
+        public Student Student { get; set; } = null!;
+        public Guid? BillingDocumentId { get; set; }
+        public BillingDocument? BillingDocument { get; set; }
+        public bool IsPricePerHour { get; private set; } // When true, pricePerHour is the total price for the lesson, regardless of duration
+        public int? DurationMinutes { get; private set; }
+        [Precision(18, 2)]
+        public decimal BasePrice { get; private set; }
+        public bool IsOnline { get; private set; }
+        public decimal TravelAllowance { get; private set; }
+        public bool IsWeekenOrHoliday{ get; private set; }
+        public decimal WeekendFee { get; private set; }
         public string? Notes { get; set; }
-        
-        public ICollection<Attendance> Attendances { get; set; } = new List<Attendance>();
 
-        public decimal GetFinalPricePerStudent() => GetPrice(1, IsPricePerHour, DurationMinutes, PricePerAttendance, IsOnline, TravelAllowance, IsWeekenOrHoliday, WeekendFee);
-
-        public static decimal GetPrice(int attendants, bool isPricePerHour, int? duration, decimal price, bool isOnline, decimal travelAllowance, bool isWeekenOrHoliday, decimal weekendFee)
+        public Lesson(DateOnly date, string name, bool isPaid, Guid studentId, Guid? billingDocumentId, 
+            bool isPricePerHour, int? durationMinutes, decimal basePrice, 
+            bool isOnline, decimal travelAllowance, bool isWeekenOrHoliday, decimal weekendFee, string? notes)
         {
-            if (attendants <= 0)
-                throw new ArgumentException("Attendants must be greater than zero.");
-            decimal travel = isOnline ? 0 : travelAllowance;
-            price = isWeekenOrHoliday ? weekendFee + price : price;
-            decimal pricePerStudent = price;
-            if (isPricePerHour)
+            Date = date;
+            Name = name;
+            IsPaid = isPaid;
+            StudentId = studentId;
+            BillingDocumentId = billingDocumentId;
+            IsPricePerHour = isPricePerHour;
+            DurationMinutes = durationMinutes;
+            BasePrice = basePrice;
+            IsOnline = isOnline;
+            TravelAllowance = travelAllowance;
+            IsWeekenOrHoliday = isWeekenOrHoliday;
+            WeekendFee = weekendFee;
+            Notes = notes;
+            FinalPrice = GetPrice();
+        }
+
+        // We allow to update lesson core information when is not paid
+        public bool Set(bool isPricePerHour, int? duration, decimal price, bool online, decimal travel, bool weekend, decimal fee)
+        {
+            if (IsPaid || BillingDocumentId is not null)
+                return false;
+            IsPricePerHour = isPricePerHour;
+            DurationMinutes = duration;
+            BasePrice = price;
+            IsOnline = online;
+            TravelAllowance = travel;
+            IsWeekenOrHoliday = weekend;
+            WeekendFee = fee;
+            FinalPrice = GetPrice();
+            return true;
+        }
+
+        private decimal GetPrice()
+        {
+            decimal travel = IsOnline ? 0 : TravelAllowance;
+            decimal price = IsWeekenOrHoliday ? WeekendFee + BasePrice : BasePrice;
+            if (IsPricePerHour)
             {
-                if (duration is null) 
+                if (DurationMinutes is null) 
                     throw new ArgumentException("Duration is required when price is per hour.");
-                pricePerStudent = Math.Round(price * (duration.Value / 60m), 2, MidpointRounding.AwayFromZero);
+                price = Math.Round(price * (DurationMinutes.Value / 60m), 2, MidpointRounding.AwayFromZero);
             }
-            return travel + (pricePerStudent * attendants);
+            return travel + price;
         }
 
         public static string Truncate(string? input, int maxLength)
@@ -67,23 +116,6 @@ namespace Models
             return input.Length <= maxLength
                 ? input
                 : $"{input[..maxLength]}...";
-        }
-
-        public List<AttendanceSummary> AttendancesSummary(ICollection<StudentOption> students)
-        {
-            return Attendances.Select(a =>
-            {
-                var student = students.First(s => s.Id == a.StudentId);
-
-                return new AttendanceSummary(
-                    a.Id,
-                    a.StudentId,
-                    student.FullName,
-                    a.IsPaid
-                );
-            })
-            .OrderBy(summary => summary.StudentName)
-            .ToList();
         }
     }
 }

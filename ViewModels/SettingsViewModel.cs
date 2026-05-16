@@ -1,5 +1,6 @@
 ﻿using Apolo.Services;
 using CommunityToolkit.Mvvm.Input;
+using Models;
 using Repository;
 using System.Diagnostics;
 using System.Text;
@@ -51,6 +52,21 @@ namespace Apolo.ViewModels
             await _repository.ClearDatabaseAsync();
 
             SetExitFunction("Database has been clear successfully.", InfoBarType.Success);
+        }
+
+        public async Task ClearArchiveAsync()
+        {
+            if (IsBusy)
+            {
+                SetExitFunction("Can't clear archive while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            SetEnterFunction();
+
+            await _repository.ClearArchiveAsync();
+
+            SetExitFunction("Archive has been clear successfully.", InfoBarType.Success);
         }
 
         public async Task<string> GenerateExportSummary(string folderPath,
@@ -168,6 +184,64 @@ namespace Apolo.ViewModels
                 ts.Hours, ts.Minutes, ts.Seconds);
 
             SetExitFunction($"Export completed ({elapsedTime}). File saved to {folder}", InfoBarType.Success);
+        }
+
+        public async Task<List<PayerActivityInfo>> GetPayersActivity() => await _repository.GetPayersWithActivityAsync();
+
+        public async Task<List<PayerOption>> GetPayersFromArchive() => await _repository.GetPayersFromArchiveAsync();
+
+        public async Task ArchiveOldData(List<Guid> payersIds)
+        {
+            if (IsBusy)
+            {
+                SetExitFunction("Can't archive data while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            SetEnterFunction();
+
+            if (payersIds.Count == 0)
+            {
+                SetExitFunction("No payers were selected.", InfoBarType.Info);
+                return;
+            }
+
+            try
+            {
+                await _repository.ArchiveOldDataAsync(payersIds);
+                SetExitFunction("Archived data successfully.", InfoBarType.Success);
+            }
+            catch (Exception ex) 
+            {
+                SetExitFunction(ex.Message, InfoBarType.Error);
+            }
+        }
+
+        public async Task RetrieveDataFromArchive(List<Guid> payersIds)
+        {
+            if (IsBusy)
+            {
+                SetExitFunction("Can't retrieve data from archive while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            SetEnterFunction();
+
+            if (payersIds.Count == 0)
+            {
+                SetExitFunction("No payers were selected.", InfoBarType.Info);
+                return;
+            }
+
+            try
+            {
+                await _repository.RetrieveDataFromArchiveAsync(payersIds);
+                SetExitFunction("Data retrieved successfully from archive.", InfoBarType.Success);
+            }
+            catch (Exception ex)
+            {
+                SetExitFunction(ex.Message, InfoBarType.Error);
+            }
         }
     }
 }

@@ -10,7 +10,7 @@ namespace Excel
         public List<Student> Students { get; } 
         public List<Specification> Specifications { get; } 
         public List<Lesson> Lessons { get; } 
-        public List<Invoice> Invoices { get; }
+        public List<BillingDocument> Invoices { get; }
         Task ReadExcel(string filePath);
     }
     public class Reader : IReader
@@ -20,7 +20,7 @@ namespace Excel
         public List<Student> Students { get; } = new List<Student>();
         public List<Specification> Specifications { get; } = new List<Specification>();
         public List<Lesson> Lessons { get; } = new List<Lesson>();
-        public List<Invoice> Invoices { get; } = new List<Invoice>();
+        public List<BillingDocument> Invoices { get; } = new List<BillingDocument>();
 
         public async Task ReadExcel(string filePath)
         {
@@ -254,27 +254,13 @@ namespace Excel
                         continue;
                 }
 
-                var lesson = new Lesson()
-                {
-                    Date = lessonDate,
-                    Name = string.IsNullOrEmpty(serviceName) ? "Lesson" : serviceName,
-                    IsPricePerHour = false,
-                    DurationMinutes = durationMinutes,
-                    PricePerAttendance = finalPrice,
-                    IsOnline = online,
-                    TravelAllowance = travelAllowance,
-                    IsWeekenOrHoliday = false,
-                    WeekendFee = 0,
-                };
-
-                // Attendance
-                lesson.Attendances.Add(new Attendance()
-                {
-                    StudentId = student.Id,
-                    LessonId = lesson.Id,
-                    IsPaid = false,
-                    Price = finalPrice
-                });
+                var lesson = new Lesson(lessonDate, 
+                    string.IsNullOrEmpty(serviceName) ? "Lesson" : serviceName,
+                    isPaid: false, student.Id, null,
+                    isPricePerHour: false, durationMinutes: durationMinutes, basePrice: finalPrice, 
+                    isOnline: online, travelAllowance: 0,
+                    isWeekenOrHoliday: false, weekendFee: 0, notes: null);
+                
                 Lessons.Add(lesson);
             }
         }
@@ -324,8 +310,7 @@ namespace Excel
 
                 // Get lessons to pay
                 var lessons = Lessons
-                    .Where(l => l.Attendances
-                    .Any(a => a.StudentId == student.Id &&  !a.IsPaid))
+                    .Where(l => l.StudentId == student.Id &&  !l.IsPaid)
                     .OrderBy(l => l.Date).ToList();
 
                 if (!lessons.Any()) 
@@ -336,11 +321,10 @@ namespace Excel
                     payment += leftoverPayments[student.FirstName];
 
                 // Create invoice
-                var invoice = new Invoice()
+                var invoice = new BillingDocument(paymentDate.ToDateTime(TimeOnly.MinValue))
                 {
-                    Id = invoiceCounter,
-                    Name = $"{paymentDate:yyyy-MM}-E-{invoiceCounter}",
-                    CreatedUTC = paymentDate.ToDateTime(TimeOnly.MinValue),
+                    SequenceNumber = invoiceCounter,
+                    Type = DocumentType.Ticket,
                     PayerId = student.PayerId,
                 };
                 Invoices.Add(invoice);
@@ -350,14 +334,8 @@ namespace Excel
                 for (int i = 0; i < lessons.Count && payment > 0; i++)
                 {
                     var lesson = lessons[i];
-                    payment -= lesson.PricePerAttendance;
-                    var attendance = lesson.Attendances.First(a => a.StudentId == student.Id);
-                    attendance.IsPaid = true;
-                    invoice.Lines.Add(new InvoiceAttendance()
-                    {
-                        InvoiceId = invoice.Id,
-                        AttendanceId = attendance.Id
-                    });
+                    payment -= lesson.FinalPrice;
+                    lesson.IsPaid = true;
                 }
 
                 // Save leftovers

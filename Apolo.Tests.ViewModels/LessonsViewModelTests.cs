@@ -1,5 +1,7 @@
 ﻿using Apolo.Services;
 using Apolo.ViewModels;
+using DocumentFormat.OpenXml.Office2010.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Moq;
@@ -73,6 +75,7 @@ namespace Apolo.Tests.ViewModels
         [TestMethod]
         public async Task LoadAsync_ValidInput_PopulatesCollection()
         {
+            var date = new DateOnly(2025, 12, 13);
             var firstStudentLoad = new List<StudentOption>();
             firstStudentLoad.Add(new StudentOption(Guid.NewGuid(), "Old Man"));
             firstStudentLoad.Add(new StudentOption(Guid.NewGuid(), "Old Kid"));
@@ -86,15 +89,11 @@ namespace Apolo.Tests.ViewModels
             secondServiceLoad.Add(new ServiceSummary(Guid.NewGuid(), "New Service", true, 50));
             secondServiceLoad.Add(new ServiceSummary(Guid.NewGuid(), "New Contract", true, 50));
             var firstLessonLoad = new List<LessonSummary>();
-            var firstAttendanceSummary1 = new AttendanceSummary(Guid.NewGuid(), firstStudentLoad[0].Id, firstStudentLoad[0].FullName, false);
-            var firstAttendanceSummary2 = new AttendanceSummary(Guid.NewGuid(), firstStudentLoad[1].Id, firstStudentLoad[1].FullName, false);
-            firstLessonLoad.Add(new LessonSummary(Guid.NewGuid(), "Old Lesson 1", DateOnly.FromDateTime(DateTime.Today), false, null, 30, false, 5, false, 5, null, [firstAttendanceSummary1]));
-            firstLessonLoad.Add(new LessonSummary(Guid.NewGuid(), "Old Lesson 2", DateOnly.FromDateTime(DateTime.Today), false, null, 30, false, 5, false, 5, null, [firstAttendanceSummary2]));
-            var secondAttendanceSummary1 = new List<AttendanceSummary> { new AttendanceSummary(Guid.NewGuid(), secondStudentLoad[0].Id, secondStudentLoad[0].FullName, false) };
-            var secondAttendanceSummary2 = new List<AttendanceSummary> { new AttendanceSummary(Guid.NewGuid(), secondStudentLoad[1].Id, secondStudentLoad[1].FullName, false) };
+            firstLessonLoad.Add(new LessonSummary(Guid.NewGuid(), date, "Old Lesson 1", 30, false, firstStudentLoad[0].Id, firstStudentLoad[0].FullName, null, string.Empty, false, null, 30, false, 5, false, 5, null));
+            firstLessonLoad.Add(new LessonSummary(Guid.NewGuid(), date, "Old Lesson 2", 30, false, firstStudentLoad[1].Id, firstStudentLoad[1].FullName, null, string.Empty, false, null, 30, false, 5, false, 5, null));
             var secondLessonLoad = new List<LessonSummary>();
-            secondLessonLoad.Add(new LessonSummary(Guid.NewGuid(), "New Lesson 1", DateOnly.FromDateTime(DateTime.Today), true, 60, 30, true, 5, true, 5, null, secondAttendanceSummary1));
-            secondLessonLoad.Add(new LessonSummary(Guid.NewGuid(), "New Lesson 2", DateOnly.FromDateTime(DateTime.Today), true, 60, 30, true, 5, true, 5, null, secondAttendanceSummary2));
+            secondLessonLoad.Add(new LessonSummary(Guid.NewGuid(), date, "New Lesson 1", 40, false, secondStudentLoad[0].Id, secondStudentLoad[0].FullName, null, string.Empty, true, 60, 30, true, 5, true, 5, null));
+            secondLessonLoad.Add(new LessonSummary(Guid.NewGuid(), date, "New Lesson 2", 40, false, secondStudentLoad[1].Id, secondStudentLoad[1].FullName, null, string.Empty, true, 60, 30, true, 5, true, 5, null));
             _mockStudentRepo.SetupSequence(r => r.GetStudentOptionsAsync())
              .ReturnsAsync(firstStudentLoad)
              .ReturnsAsync(secondStudentLoad);
@@ -106,6 +105,8 @@ namespace Apolo.Tests.ViewModels
             _mockLessonRepo.SetupSequence(r => r.GetLessonsAsync(false, 1))
              .ReturnsAsync(firstLessonLoad)
              .ReturnsAsync(secondLessonLoad);
+
+            _viewModel.DateFiler = DateTimeOffset.Now.AddMonths(-1);
 
             await _viewModel.LoadAsync(); // test that Specifications.Clear() is working
             await _viewModel.LoadAsync(); // If LoadAsync is called twice, you should not have duplicate items in your list
@@ -135,6 +136,7 @@ namespace Apolo.Tests.ViewModels
             _mockLessonRepo.SetupSequence(r => r.GetLessonsAsync(false, 1))
                 .ReturnsAsync(new List<LessonSummary>());
 
+            _viewModel.DateFiler = DateTimeOffset.Now.AddMonths(-1);
 
             await _viewModel.LoadAsync();
 
@@ -160,62 +162,40 @@ namespace Apolo.Tests.ViewModels
 
 
             _viewModel.ShownOnlyUnpaid = true;
-            _viewModel.ShowLastNMonths = 3;
+            _viewModel.DateFiler = DateTimeOffset.Now.AddMonths(-13);
+            await _viewModel.LoadAsync();
+            _viewModel.DateFiler = DateTimeOffset.Now.AddMonths(3);
+            await _viewModel.LoadAsync();
 
             _mockStudentRepo.Verify(r => r.GetStudentOptionsAsync(), Times.Exactly(2));
             _mockServiceRepo.Verify(r => r.GetServicesAsync(), Times.Exactly(2));
-            _mockLessonRepo.Verify(r => r.GetLessonsAsync(true, 1), Times.Once);
-            _mockLessonRepo.Verify(r => r.GetLessonsAsync(true, 3), Times.Once);
+            _mockLessonRepo.Verify(r => r.GetLessonsAsync(true, 13), Times.Once);
+            _mockLessonRepo.Verify(r => r.GetLessonsAsync(true, null), Times.Once);
 
             VerifyAction(null, InfoBarType.Success, isOpen: false, lessonCount: 0, studentsCount: 0, servicesCount: 0);
         }
 
-        // Validate student IDS
-
-        [TestMethod]
-        public void ValidateStudents_DuplicateStudentIds()
-        {
-            var studentId = Guid.NewGuid();
-            var studentIds = new List<Guid> { studentId, studentId };
-            var exception = Assert.Throws<InvalidDataException>(() => _viewModel.ValidateStudentIds(studentIds));
-            Assert.AreEqual("Duplicate student IDs found in the attendance list.", exception.Message);
-            Assert.IsFalse(_viewModel.IsBusy);
-            Assert.IsNull(_viewModel.InfoMessage);
-            Assert.IsFalse(_viewModel.OpenInfoBar);
-        }
+        // Get student ID
 
         [TestMethod]
         public void ValidateStudents_InvalidStudentIds()
         {
-            var studentIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
-            var exception = Assert.Throws<InvalidDataException>(() => _viewModel.ValidateStudentIds(studentIds));
-            Assert.AreEqual("One or more student IDs in the attendance list do not exist.", exception.Message);
+            var exception = Assert.Throws<InvalidDataException>(() => _viewModel.GetStudent(Guid.NewGuid()));
+            Assert.AreEqual("Student not loaded.", exception.Message);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.IsNull(_viewModel.InfoMessage);
             Assert.IsFalse(_viewModel.OpenInfoBar);
-        }
-
-        [TestMethod]
-        public void ValidateStudents_EmptyStudentIds()
-        {
-            var studentIds = new List<Guid>();
-            var result = _viewModel.ValidateStudentIds(studentIds);
-            Assert.IsFalse(result);
-            Assert.IsFalse(_viewModel.IsBusy);
-            Assert.AreEqual("No student IDs provided.", _viewModel.InfoMessage);
-            Assert.IsTrue(_viewModel.OpenInfoBar);
-            Assert.AreEqual(InfoBarType.Warning, _viewModel.InfoBarType);
         }
 
         [TestMethod]
         public void ValidateStudents()
         {
             var studentId = Guid.NewGuid();
-            var studentIds = new List<Guid> { studentId };
             _viewModel.Students.Add(new StudentOption(studentId, "Old Student"));
             _viewModel.Students.Add(new StudentOption(Guid.NewGuid(), "New Student"));
-            var result = _viewModel.ValidateStudentIds(studentIds);
-            Assert.IsTrue(result);
+            var result = _viewModel.GetStudent(studentId);
+            Assert.AreEqual(0, result.index);
+            Assert.AreEqual("Old Student", result.item.FullName);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.IsNull(_viewModel.InfoMessage);
         }
@@ -228,7 +208,7 @@ namespace Apolo.Tests.ViewModels
         public void ValidateLesson_InvalidLessonName(string invalidName)
         {
             int? duration = 60;
-            var result = _viewModel.ValidateLessonInput(ref invalidName, ref duration, isPricePerHour: true, pricePerAttendance: 30);
+            var result = _viewModel.ValidateLessonInput(ref invalidName, ref duration, isPricePerHour: true, basePrice: 30);
             Assert.IsFalse(result);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.AreEqual("Lesson name is required.", _viewModel.InfoMessage);
@@ -241,7 +221,7 @@ namespace Apolo.Tests.ViewModels
         {
             var name = "Lesson";
             int? duration = null;
-            var result = _viewModel.ValidateLessonInput(ref name, ref duration, isPricePerHour: true, pricePerAttendance: 30);
+            var result = _viewModel.ValidateLessonInput(ref name, ref duration, isPricePerHour: true, basePrice: 30);
             Assert.IsFalse(result);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.AreEqual("Duration is required when the lesson is priced per hour.", _viewModel.InfoMessage);
@@ -254,7 +234,7 @@ namespace Apolo.Tests.ViewModels
         {
             var name = "Lesson";
             int? duration = -30;
-            var result = _viewModel.ValidateLessonInput(ref name, ref duration, isPricePerHour: true, pricePerAttendance: 30);
+            var result = _viewModel.ValidateLessonInput(ref name, ref duration, isPricePerHour: true, basePrice: 30);
             Assert.IsFalse(result);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.AreEqual("Enter a valid non-negative duration (e.g., 60).", _viewModel.InfoMessage);
@@ -267,7 +247,7 @@ namespace Apolo.Tests.ViewModels
         {
             int? duration = 30;
             var name = "Lesson";
-            var result = _viewModel.ValidateLessonInput(ref name, ref duration, isPricePerHour: true, pricePerAttendance: -30);
+            var result = _viewModel.ValidateLessonInput(ref name, ref duration, isPricePerHour: true, basePrice: -30);
             Assert.IsFalse(result);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.AreEqual("Enter a valid non-negative price per student (e.g., 42.5).", _viewModel.InfoMessage);
@@ -280,7 +260,7 @@ namespace Apolo.Tests.ViewModels
         {
             int? duration = 30;
             var name = "Lesson";
-            var result = _viewModel.ValidateLessonInput(ref name, ref duration, isPricePerHour: false, pricePerAttendance: 30);
+            var result = _viewModel.ValidateLessonInput(ref name, ref duration, isPricePerHour: false, basePrice: 30);
             Assert.IsTrue(result);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.IsNull(_viewModel.InfoMessage);
@@ -305,8 +285,7 @@ namespace Apolo.Tests.ViewModels
         {
             var student = new StudentOption(Guid.NewGuid(), "Old Man");
             var service = new ServiceSummary(Guid.NewGuid(), "Old Service", false, 30);
-            var attendanceSummary = new AttendanceSummary(Guid.NewGuid(), student.Id, student.FullName, false);
-            var lesson = new LessonSummary(Guid.NewGuid(), "Old Lesson 1", DateOnly.FromDateTime(DateTime.Today), false, null, 30, false, 5, false, 5, null, [attendanceSummary]);
+            var lesson = new LessonSummary(Guid.NewGuid(), DateOnly.FromDateTime(DateTime.Today), "Old Lesson 1", 30, false, student.Id, student.FullName, null, string.Empty, false, null, 30, false, 5, false, 5, null);
             _viewModel.Lessons.Add(lesson);
             var result = _viewModel.GetLesson(lesson.Id);
             Assert.AreEqual(lesson.Name, result.lesson.Name);
@@ -316,82 +295,68 @@ namespace Apolo.Tests.ViewModels
         }
 
         // Add lesson
-        private void ArrangeForAddLessonTests()
+        private void ArrangeForAddLessonTests(Guid studentId)
         {
-            var student = new StudentOption(Guid.NewGuid(), "Old Man");
+            var student = new StudentOption(studentId, "Old Man");
             var service = new ServiceSummary(Guid.NewGuid(), "Old Service", false, 30);
             _viewModel.Students.Add(student);
             _viewModel.Services.Add(service);
         }
 
-        private async Task ActForAddLessonTests(Guid? studentId, ServiceSummary service, Guid lessonId,
-            bool invalidLesson = false, bool dbError = false)
+        private async Task ActForAddLessonTests(Guid studentId, ServiceSummary service, Guid lessonId,
+            bool invalidLesson = false, bool dbError = false, bool invalidStudent = false)
         {
             var date = DateOnly.FromDateTime(new DateTime(1993, 8, 17));
             var name = invalidLesson ? "" : "Lesson";
             string notes = "Some notes";
-            List<Guid> ids = studentId is null ? [] : [studentId.Value];
-            Lesson result = new Lesson()
-            {
-                Id = lessonId,
-                Date = date,
-                Name = name,
-                IsPricePerHour = service.IsPricePerHour,
-                DurationMinutes = null,
-                PricePerAttendance = 30,
-                IsOnline = true,
-                TravelAllowance = 10,
-                IsWeekenOrHoliday = false,
-                WeekendFee = 20,
-                Notes = notes
-            };
-            if (studentId is not null)
-            {
-                result.Attendances.Add(new Attendance()
-                { LessonId = lessonId, StudentId = studentId.Value, IsPaid = false, Price = 30 });
-            }
+            Lesson result = new Lesson(date, name, isPaid: false, studentId, null, service.IsPricePerHour, null, 30, true, 10, false, 20, notes);
+            if (invalidStudent)
+                studentId = Guid.NewGuid();
 
             //Mock
             if (dbError)
             {
                 _mockLessonRepo.Setup(r => r.AddLessonAsync(
-                    date, name, service.IsPricePerHour, null, 30, true, 10, false, 20, notes, ids))
+                    date, name, false, studentId, null, service.IsPricePerHour, null, 30, true, 10, false, 20, notes))
                 .ThrowsAsync(new DbUpdateException("Constraint failed."));
             }
             else
             {
                 _mockLessonRepo.Setup(r => r.AddLessonAsync(
-                    date, name, service.IsPricePerHour, null, 30, true, 10, false, 20, notes, ids))
+                    date, name, false, studentId, null, service.IsPricePerHour, null, 30, true, 10, false, 20, notes))
                  .ReturnsAsync(result);
             }
             // Act
-            await _viewModel.AddLessonAsync(date, name, service,
-                    60, 30, true, false, notes, ids);
+            if (invalidStudent)
+            {
+                await Assert.ThrowsAsync<InvalidDataException>(async () =>
+                    await _viewModel.AddLessonAsync(date, name, service, 60, 30, true, false, notes, studentId));
+            }
+            else 
+                await _viewModel.AddLessonAsync(date, name, service, 60, 30, true, false, notes, studentId);
         }
 
-        private void AssertForAddLessonTests(Guid? studentId, Guid lessonId, bool success, 
-            string? infoMessage, InfoBarType severity,  bool isBusy = false, bool dbError = false)
+        private void AssertForAddLessonTests(Guid studentId, Guid lessonId, bool success, 
+            string? infoMessage, InfoBarType severity,  bool isBusy = false, bool dbError = false, bool invalidStudent = false)
         {
             var date = DateOnly.FromDateTime(new DateTime(1993, 8, 17));
             string notes = "Some notes";
-            List<Guid> ids = studentId is null ? [] : [studentId.Value];
             Guid? lessonID = _viewModel.Lessons.Count > 0 ? _viewModel.Lessons[0].Id : null;
 
             if (success || dbError)
             {
-                _mockLessonRepo.Verify(r => r.AddLessonAsync(date, "Lesson",
-                    false, null, 30,
-                    true, 10, false, 20,
-                    notes, ids), Times.Once);
+                _mockLessonRepo.Verify(r => r.AddLessonAsync(date, "Lesson", false, studentId, null,
+                    false, null, 30, true, 10, false, 20, notes), Times.Once);
             }
             else
             {
-                _mockLessonRepo.Verify(r => r.AddLessonAsync(It.IsAny<DateOnly>(), It.IsAny<string>(),
+                _mockLessonRepo.Verify(r => r.AddLessonAsync(It.IsAny<DateOnly>(), It.IsAny<string>(), It.IsAny<bool>(),
+                    It.IsAny<Guid>(), It.IsAny<Guid?>(),
                     It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<decimal>(),
                     It.IsAny<bool>(), It.IsAny<decimal>(), It.IsAny<bool>(), It.IsAny<decimal>(),
-                    It.IsAny<string?>(), It.IsAny<IReadOnlyList<Guid>>()), Times.Never);
+                    It.IsAny<string?>()), Times.Never);
             }
-            VerifyAction(infoMessage, severity, isOpen: true, 
+            VerifyAction(infoMessage, severity, isOpen: !invalidStudent, 
                 studentsCount: 1, servicesCount: 1, lessonCount: success ? 1 : 0, isBusy: isBusy);
 
             if (success)
@@ -402,13 +367,12 @@ namespace Apolo.Tests.ViewModels
                 Assert.AreEqual(date, addedLesson.Date);
                 Assert.IsFalse(addedLesson.IsPricePerHour);
                 Assert.IsNull(addedLesson.DurationMinutes);
-                Assert.AreEqual(30, addedLesson.PricePerAttendance);
+                Assert.AreEqual(30, addedLesson.BasePrice);
                 Assert.IsTrue(addedLesson.IsOnline);
                 Assert.AreEqual(10, addedLesson.TravelAllowance);
                 Assert.IsFalse(addedLesson.IsWeekenOrHoliday);
                 Assert.AreEqual(20, addedLesson.WeekendFee);
                 Assert.AreEqual(notes, addedLesson.Notes);
-                Assert.HasCount(studentId is null ? 0 : 1, addedLesson.Attendances);
             }
         }
 
@@ -416,9 +380,10 @@ namespace Apolo.Tests.ViewModels
         public async Task AddLesson_WhenAlreadyBusy()
         {
             var lessonId = Guid.NewGuid();
-            ArrangeForAddLessonTests();
+            var studentId = Guid.NewGuid();
+            ArrangeForAddLessonTests(studentId);
             _viewModel.IsBusy = true;
-            await ActForAddLessonTests(_viewModel.Students[0].Id, _viewModel.Services[0], lessonId);
+            await ActForAddLessonTests(studentId, _viewModel.Services[0], lessonId);
             AssertForAddLessonTests(_viewModel.Students[0].Id, lessonId, success: false, 
                 infoMessage: "Can't add lesson while busy.", severity: InfoBarType.Warning, isBusy: true);
         }
@@ -427,28 +392,31 @@ namespace Apolo.Tests.ViewModels
         public async Task AddLesson_InvalidStudent()
         {
             var lessonId = Guid.NewGuid();
-            ArrangeForAddLessonTests();
-            await ActForAddLessonTests(null, _viewModel.Services[0], lessonId);
-            AssertForAddLessonTests(null, lessonId, success: false, infoMessage: "No student IDs provided.",
-                severity: InfoBarType.Warning);
+            var studentId = Guid.NewGuid();
+            ArrangeForAddLessonTests(studentId);
+            await ActForAddLessonTests(studentId, _viewModel.Services[0], lessonId, invalidStudent: true);
+            AssertForAddLessonTests(studentId, lessonId, success: false, infoMessage: null,
+                severity: InfoBarType.Success, invalidStudent: true);
         }
 
         [TestMethod]
         public async Task AddLesson_InvalidName()
         {
             var lessonId = Guid.NewGuid();
-            ArrangeForAddLessonTests();
-            await ActForAddLessonTests(_viewModel.Students[0].Id, _viewModel.Services[0], lessonId, invalidLesson: true);
-            AssertForAddLessonTests(_viewModel.Students[0].Id, lessonId, success: false, infoMessage: "Lesson name is required.",
+            var studentId = Guid.NewGuid();
+            ArrangeForAddLessonTests(studentId);
+            await ActForAddLessonTests(studentId, _viewModel.Services[0], lessonId, invalidLesson: true);
+            AssertForAddLessonTests(studentId, lessonId, success: false, infoMessage: "Lesson name is required.",
                 severity: InfoBarType.Warning);
         }
         [TestMethod]
         public async Task AddLesson_DBException()
         {
             var lessonId = Guid.NewGuid();
-            ArrangeForAddLessonTests();
-            await ActForAddLessonTests(_viewModel.Students[0].Id, _viewModel.Services[0], lessonId, dbError: true);
-            AssertForAddLessonTests(_viewModel.Students[0].Id, lessonId, success: false, dbError: true,
+            var studentId = Guid.NewGuid();
+            ArrangeForAddLessonTests(studentId);
+            await ActForAddLessonTests(studentId, _viewModel.Services[0], lessonId, dbError: true);
+            AssertForAddLessonTests(studentId, lessonId, success: false, dbError: true,
                 infoMessage: "Constraint failed.", severity: InfoBarType.Error);
         }
 
@@ -456,87 +424,72 @@ namespace Apolo.Tests.ViewModels
         public async Task AddLesson()
         {
             var lessonId = Guid.NewGuid();
-            ArrangeForAddLessonTests();
-            await ActForAddLessonTests(_viewModel.Students[0].Id, _viewModel.Services[0], lessonId);
-            AssertForAddLessonTests(_viewModel.Students[0].Id, lessonId, success: true, 
+            var studentId = Guid.NewGuid();
+            ArrangeForAddLessonTests(studentId);
+            await ActForAddLessonTests(studentId, _viewModel.Services[0], lessonId);
+            AssertForAddLessonTests(studentId, lessonId, success: true, 
                 infoMessage: "Lesson 'Lesson' added successfully.", severity: InfoBarType.Success);
         }
 
         // Update lesson
 
-        private void ArrangeForUpdateLessonTests(Guid lessonId, Guid attendanceId, Guid studentId)
+        private void ArrangeForUpdateLessonTests(Guid lessonId, Guid studentId)
         {
             var student = new StudentOption(studentId, "Student");
             var service = new ServiceSummary(Guid.NewGuid(), "Service", false, 30);
-            var attendance1 = new AttendanceSummary(attendanceId, studentId, "Student", false);
-            var attendance2 = new AttendanceSummary(Guid.NewGuid(), studentId, "Student", false);
             var date = DateOnly.FromDateTime(new DateTime(1993, 8, 17));
             var originalLesson = new LessonSummary
-            (lessonId, "Old lesson", date, false, 60, 25, false, 5, false, 10, null, [attendance1]);
+            (lessonId, date, "Old lesson", 25, false, studentId, student.FullName, null, string.Empty, false, 60, 25, false, 5, false, 10, null);
             var otherLesson = new LessonSummary
-            (Guid.NewGuid(), "Other lesson", date, false, 60, 25, false, 5, false, 10, null, [attendance2]);
+            (Guid.NewGuid(), date, "Other lesson", 25, false, studentId, student.FullName, null, string.Empty, false, 60, 25, false, 5, false, 10, null);
             _viewModel.Lessons.Add(otherLesson);
             _viewModel.Lessons.Add(originalLesson);
             _viewModel.Students.Add(student);
             _viewModel.Services.Add(service);
         }
 
-        private async Task ActForUpdateLessonTests(Guid lessonId, Guid attendanceId, Guid studentId,
+        private async Task ActForUpdateLessonTests(Guid lessonId, Guid studentId,
             bool invalidLesson = false, bool dbError = false)
         {
             var date = DateOnly.FromDateTime(new DateTime(1999, 8, 17));
             var name = invalidLesson ? "" : "Lesson";
             bool isPricePerHour = false;
             int? duration = null;
-            decimal pricePerAttendance = 30;
+            decimal basePrice = 30;
             bool isOnline = true;
             decimal travelAllowance = 10;
             bool isWeekendOrHoliday = true;
             decimal weekendFee = 20;
             string notes = "Some notes";
-            Lesson result = new Lesson()
-            {
-                Id = lessonId,
-                Date = date,
-                Name = name,
-                IsPricePerHour = isPricePerHour,
-                DurationMinutes = duration,
-                PricePerAttendance = pricePerAttendance,
-                IsOnline = isOnline,
-                TravelAllowance = travelAllowance,
-                IsWeekenOrHoliday = isWeekendOrHoliday,
-                WeekendFee = weekendFee,
-                Notes = notes
-            };
-            result.Attendances.Add(new Attendance()
-            { Id = attendanceId, LessonId = lessonId, StudentId = studentId, IsPaid = false, Price = 30 });
+            Lesson result = new Lesson(date, name, false, studentId, null, isPricePerHour, duration, basePrice, isOnline, 
+                travelAllowance, isWeekendOrHoliday, weekendFee, notes);
 
             //Mock
             if (dbError)
             {
-                _mockLessonRepo.Setup(r => r.UpdateLesson(lessonId, date, name, isPricePerHour, duration, pricePerAttendance,
+                _mockLessonRepo.Setup(r => r.UpdateLesson(lessonId, date, name, isPricePerHour, duration, basePrice,
                     isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, notes))
                 .ThrowsAsync(new DbUpdateException("Constraint failed."));
             }
             else
             {
-                _mockLessonRepo.Setup(r => r.UpdateLesson(lessonId, date, name, isPricePerHour, duration, pricePerAttendance,
+                _mockLessonRepo.Setup(r => r.UpdateLesson(lessonId, date, name, isPricePerHour, duration, basePrice,
                     isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, notes))
                  .ReturnsAsync(result);
             }
             // Act
-            await _viewModel.UpdateLessonAsync(lessonId, date, name, isPricePerHour, duration, pricePerAttendance, isOnline,
+            await _viewModel.UpdateLessonAsync(lessonId, date, name, isPricePerHour, duration, basePrice, isOnline,
                 travelAllowance, isWeekendOrHoliday, weekendFee, notes);
         }
 
-        private void AssertForUpdateLessonTests(Guid lessonId, Guid attendanceId, Guid studentId, bool success, 
+        private void AssertForUpdateLessonTests(Guid lessonId, Guid studentId, bool success, 
             string? infoMessage, InfoBarType severity, bool isBusy = false, bool dbError = false)
         {
             var date = DateOnly.FromDateTime(new DateTime(1999, 8, 17));
             var name = "Lesson";
             bool isPricePerHour = false;
             int? duration = null;
-            decimal pricePerAttendance = 30;
+            decimal basePrice = 30;
             bool isOnline = true;
             decimal travelAllowance = 10;
             bool isWeekendOrHoliday = true;
@@ -545,7 +498,7 @@ namespace Apolo.Tests.ViewModels
 
             if (success || dbError)
             {
-                _mockLessonRepo.Verify(r => r.UpdateLesson(lessonId, date, name, isPricePerHour, duration, pricePerAttendance,
+                _mockLessonRepo.Verify(r => r.UpdateLesson(lessonId, date, name, isPricePerHour, duration, basePrice,
                     isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, notes), Times.Once);
             }
             else
@@ -564,13 +517,12 @@ namespace Apolo.Tests.ViewModels
                 Assert.AreEqual(date, addedLesson.Date);
                 Assert.IsFalse(addedLesson.IsPricePerHour);
                 Assert.IsNull(addedLesson.DurationMinutes);
-                Assert.AreEqual(30, addedLesson.PricePerAttendance);
+                Assert.AreEqual(30, addedLesson.BasePrice);
                 Assert.IsTrue(addedLesson.IsOnline);
                 Assert.AreEqual(10, addedLesson.TravelAllowance);
                 Assert.IsTrue(addedLesson.IsWeekenOrHoliday);
                 Assert.AreEqual(20, addedLesson.WeekendFee);
                 Assert.AreEqual(notes, addedLesson.Notes);
-                Assert.HasCount(1, addedLesson.Attendances);
             }
         }
 
@@ -578,12 +530,12 @@ namespace Apolo.Tests.ViewModels
         public async Task UpdateLessonAsync_WhenAlreadyBusy()
         {
             var lessonId = Guid.NewGuid();
-            var attendanceId = Guid.NewGuid();
             var studentId = Guid.NewGuid();
-            ArrangeForUpdateLessonTests(lessonId, attendanceId, studentId);
+
+            ArrangeForUpdateLessonTests(lessonId, studentId);
             _viewModel.IsBusy = true;
-            await ActForUpdateLessonTests(lessonId, attendanceId, studentId);
-            AssertForUpdateLessonTests(lessonId, attendanceId, studentId, success: false, 
+            await ActForUpdateLessonTests(lessonId, studentId);
+            AssertForUpdateLessonTests(lessonId, studentId, success: false, 
                 infoMessage: "Can't update lesson while busy.", severity: InfoBarType.Warning, isBusy: true);
         }
 
@@ -591,11 +543,11 @@ namespace Apolo.Tests.ViewModels
         public async Task UpdateLessonAsync_InvalidLesson()
         {
             var lessonId = Guid.NewGuid();
-            var attendanceId = Guid.NewGuid();
             var studentId = Guid.NewGuid();
-            ArrangeForUpdateLessonTests(lessonId, attendanceId, studentId);
-            await ActForUpdateLessonTests(lessonId, attendanceId, studentId, invalidLesson: true);
-            AssertForUpdateLessonTests(lessonId, attendanceId, studentId, success: false, 
+
+            ArrangeForUpdateLessonTests(lessonId, studentId);
+            await ActForUpdateLessonTests(lessonId, studentId, invalidLesson: true);
+            AssertForUpdateLessonTests(lessonId, studentId, success: false, 
                 infoMessage: "Lesson name is required.", severity: InfoBarType.Warning);
         }
 
@@ -603,11 +555,11 @@ namespace Apolo.Tests.ViewModels
         public async Task UpdateLessonAsync_DBError()
         {
             var lessonId = Guid.NewGuid();
-            var attendanceId = Guid.NewGuid();
             var studentId = Guid.NewGuid();
-            ArrangeForUpdateLessonTests(lessonId, attendanceId, studentId);
-            await ActForUpdateLessonTests(lessonId, attendanceId, studentId, dbError: true);
-            AssertForUpdateLessonTests(lessonId, attendanceId, studentId, success: false, dbError: true, 
+
+            ArrangeForUpdateLessonTests(lessonId, studentId);
+            await ActForUpdateLessonTests(lessonId, studentId, dbError: true);
+            AssertForUpdateLessonTests(lessonId, studentId, success: false, dbError: true, 
                 infoMessage: "Constraint failed.", severity: InfoBarType.Error);
         }
 
@@ -615,482 +567,12 @@ namespace Apolo.Tests.ViewModels
         public async Task UpdateLessonAsync()
         {
             var lessonId = Guid.NewGuid();
-            var attendanceId = Guid.NewGuid();
             var studentId = Guid.NewGuid();
-            ArrangeForUpdateLessonTests(lessonId, attendanceId, studentId);
-            await ActForUpdateLessonTests(lessonId, attendanceId, studentId);
-            AssertForUpdateLessonTests(lessonId, attendanceId, studentId, success: true, 
+
+            ArrangeForUpdateLessonTests(lessonId, studentId);
+            await ActForUpdateLessonTests(lessonId, studentId);
+            AssertForUpdateLessonTests(lessonId, studentId, success: true, 
                 infoMessage: "Lesson 'Lesson' updated successfully.", severity: InfoBarType.Success);
-        }
-
-        // Update lesson note
-
-        private async Task ActForUpdateLessonNotesTests(Guid lessonId,
-            bool invalidLesson = false, bool dbError = false, bool emptyNote = false)
-        {
-            var lesson = _viewModel.Lessons.First(l => l.Id == lessonId);
-            string? notes = emptyNote ? null : "Some notes";
-            Lesson result = new Lesson()
-            {
-                Id = lessonId,
-                Date = lesson.Date,
-                Name = lesson.Name,
-                IsPricePerHour = lesson.IsPricePerHour,
-                DurationMinutes = lesson.DurationMinutes,
-                PricePerAttendance = lesson.PricePerAttendance,
-                IsOnline = lesson.IsOnline,
-                TravelAllowance = lesson.TravelAllowance,
-                IsWeekenOrHoliday = lesson.IsWeekenOrHoliday,
-                WeekendFee = lesson.WeekendFee,
-                Notes = notes
-            };
-            var attendance = lesson.Attendances.First();
-            result.Attendances.Add(new Attendance()
-            { Id = attendance.Id, LessonId = lessonId, StudentId = attendance.StudentId, IsPaid = attendance.IsPaid });
-
-            //Mock
-            if (dbError)
-            {
-                _mockLessonRepo.Setup(r => r.UpdateLessonNoteAsync(lessonId, notes))
-                .ThrowsAsync(new DbUpdateException("Constraint failed."));
-            }
-            else
-            {
-                _mockLessonRepo.Setup(r => r.UpdateLessonNoteAsync(lessonId, notes))
-                 .ReturnsAsync(result);
-            }
-            // Act
-            await _viewModel.UpdateLessonNoteAsync(lessonId, notes);
-        }
-
-        private void AssertForUpdateLessonNotesTests(Guid lessonId, bool success, string? infoMessage, InfoBarType severity,
-            bool isBusy = false, bool dbError = false, bool emptyNote = false)
-        {
-            var oldLesson = _viewModel.Lessons.First(l => l.Id == lessonId);
-            string? notes = emptyNote ? null : "Some notes";
-
-            if (success || dbError)
-            {
-                _mockLessonRepo.Verify(r => r.UpdateLessonNoteAsync(lessonId, notes), Times.Once);
-            }
-            else
-            {
-                _mockLessonRepo.Verify(r => r.UpdateLessonNoteAsync(It.IsAny<Guid>(), It.IsAny<string?>()), Times.Never);
-            }
-            VerifyAction(infoMessage, severity, isOpen: true, studentsCount: 1, servicesCount: 1, lessonCount: 2, isBusy: isBusy);
-
-            if (success)
-            {
-                var addedLesson = _viewModel.Lessons.First(l => l.Id == lessonId);
-                Assert.AreEqual("Old lesson", addedLesson.Name);
-                Assert.AreEqual(notes, addedLesson.Notes);
-                Assert.HasCount(1, addedLesson.Attendances);
-            }
-        }
-
-        [TestMethod]
-        public async Task UpdateLessonNote_IsBusy()
-        {
-            var lessonId = Guid.NewGuid();
-            var attendanceId = Guid.NewGuid();
-            var studentId = Guid.NewGuid();
-            ArrangeForUpdateLessonTests(lessonId, attendanceId, studentId);
-            _viewModel.IsBusy = true;
-            await ActForUpdateLessonNotesTests(lessonId);
-            AssertForUpdateLessonNotesTests(lessonId, success: false, infoMessage: "Can't update lesson note while busy.",
-                severity: InfoBarType.Warning, isBusy: true);
-        }
-
-        [TestMethod]
-        public async Task UpdateLessonNote_DBError()
-        {
-            var lessonId = Guid.NewGuid();
-            var attendanceId = Guid.NewGuid();
-            var studentId = Guid.NewGuid();
-            ArrangeForUpdateLessonTests(lessonId, attendanceId, studentId);
-            await ActForUpdateLessonNotesTests(lessonId, dbError: true);
-            AssertForUpdateLessonNotesTests(lessonId, success: false, dbError: true, infoMessage: "Constraint failed.",
-                severity: InfoBarType.Error);
-        }
-
-        [TestMethod]
-        public async Task UpdateLessonNote_EmptyNote()
-        {
-            var lessonId = Guid.NewGuid();
-            var attendanceId = Guid.NewGuid();
-            var studentId = Guid.NewGuid();
-            ArrangeForUpdateLessonTests(lessonId, attendanceId, studentId);
-            await ActForUpdateLessonNotesTests(lessonId, emptyNote: true);
-            AssertForUpdateLessonNotesTests(lessonId, success: true, emptyNote: true, 
-                infoMessage: "Lesson 'Old lesson' note updated successfully.", severity: InfoBarType.Success);
-        }
-
-        [TestMethod]
-        public async Task UpdateLessonNote()
-        {
-            var lessonId = Guid.NewGuid();
-            var attendanceId = Guid.NewGuid();
-            var studentId = Guid.NewGuid();
-            ArrangeForUpdateLessonTests(lessonId, attendanceId, studentId);
-            await ActForUpdateLessonNotesTests(lessonId);
-            AssertForUpdateLessonNotesTests(lessonId, success: true, 
-                infoMessage: "Lesson 'Old lesson' note updated successfully.", severity: InfoBarType.Success);
-        }
-
-        // Add attendance to lesson
-
-        private void ArrangeForAddAttendanceTests(Guid lessonId, Guid? studentId)
-        {
-            var student1 = new StudentOption(Guid.NewGuid(), "Student1");
-            var student2 = new StudentOption(studentId ?? Guid.NewGuid(), "Student2");
-            var service = new ServiceSummary(Guid.NewGuid(), "Service", false, 30);
-            var attendance = new AttendanceSummary(Guid.NewGuid(), student1.Id, student1.FullName, false);
-            var date = DateOnly.FromDateTime(new DateTime(1993, 8, 17));
-            var lesson = new LessonSummary
-            (lessonId, "Lesson", date, false, null, 25, false, 5, false, 10, null, [attendance]);
-            _viewModel.Lessons.Add(lesson);
-            _viewModel.Students.Add(student1);
-            _viewModel.Students.Add(student2);
-            _viewModel.Services.Add(service);
-        }
-
-        private async Task ActForAddAttendanceTests(Guid lessonId, Guid attendanceId, Guid? studentId, bool dbError = false)
-        {
-            var lesson = _viewModel.Lessons.First(l => l.Id == lessonId);
-            Lesson result = new Lesson()
-            {
-                Id = lessonId,
-                Date = lesson.Date,
-                Name = lesson.Name,
-                IsPricePerHour = lesson.IsPricePerHour,
-                DurationMinutes = lesson.DurationMinutes,
-                PricePerAttendance = lesson.PricePerAttendance,
-                IsOnline = lesson.IsOnline,
-                TravelAllowance = lesson.TravelAllowance,
-                IsWeekenOrHoliday = lesson.IsWeekenOrHoliday,
-                WeekendFee = lesson.WeekendFee,
-                Notes = lesson.Notes,
-            };
-            List<Guid> ids = studentId is null ? [] : [studentId.Value];
-            var attendance = lesson.Attendances.First();
-            result.Attendances.Add(new Attendance()
-            { Id = attendance.Id, LessonId = lessonId, StudentId = attendance.StudentId, IsPaid = attendance.IsPaid, Price = 30 });
-            if (studentId is not null)
-            {
-                result.Attendances.Add(new Attendance()
-                { Id = attendanceId, LessonId = lessonId, StudentId = studentId.Value, IsPaid = false, Price = 50 });
-            }
-
-            //Mock
-            if (dbError)
-            {
-                _mockLessonRepo.Setup(r => r.AddAttendanceAsync(lessonId, ids))
-                .ThrowsAsync(new DbUpdateException("Constraint failed."));
-            }
-            else
-            {
-                _mockLessonRepo.Setup(r => r.AddAttendanceAsync(lessonId, ids))
-                 .ReturnsAsync(result);
-            }
-            // Act
-            await _viewModel.AddAttendanceAsync(lessonId, ids);
-        }
-
-        private void AssertForAddAttendanceTests(Guid lessonId, Guid attendanceId, Guid? studentId, bool success, 
-            string? infoMessage, InfoBarType severity, bool isBusy = false, bool dbError = false)
-        {
-            List<Guid> ids = studentId is null ? [] : [studentId.Value];
-            if (success || dbError)
-            {
-                _mockLessonRepo.Verify(r => r.AddAttendanceAsync(lessonId, ids), Times.Once);
-            }
-            else
-            {
-                _mockLessonRepo.Verify(r => r.AddAttendanceAsync(It.IsAny<Guid>(), It.IsAny<IReadOnlyCollection<Guid>>()), Times.Never);
-            }
-            VerifyAction(infoMessage, severity, isOpen: true, studentsCount: 2, servicesCount: 1, lessonCount: 1, isBusy: isBusy);
-
-            if (success)
-            {
-                var modifiedLesson = _viewModel.Lessons.First(l => l.Id == lessonId);
-                var newAttendance = modifiedLesson.Attendances.First(a => a.Id == attendanceId);
-                Assert.AreEqual("Lesson", modifiedLesson.Name);
-                Assert.HasCount(2, modifiedLesson.Attendances);
-                Assert.AreEqual("Student2", newAttendance.StudentName);
-                Assert.IsFalse(newAttendance.IsPaid);
-            }
-        }
-
-        [TestMethod]
-        public async Task AddAttendanceAsync_IsBusy()
-        {
-            var lessonId = Guid.NewGuid();
-            var attendanceId = Guid.NewGuid();
-            var studentId = Guid.NewGuid();
-            ArrangeForAddAttendanceTests(lessonId, studentId);
-            _viewModel.IsBusy = true;
-            await ActForAddAttendanceTests(lessonId, attendanceId, studentId);
-            AssertForAddAttendanceTests(lessonId, attendanceId, studentId, success: false, 
-                infoMessage: "Can't add attendance while busy.", severity: InfoBarType.Warning, isBusy: true);
-        }
-
-        [TestMethod]
-        public async Task AddAttendanceAsync_InvalidStudents()
-        {
-            var lessonId = Guid.NewGuid();
-            var attendanceId = Guid.NewGuid();
-            ArrangeForAddAttendanceTests(lessonId, null);
-            await ActForAddAttendanceTests(lessonId, attendanceId, null);
-            AssertForAddAttendanceTests(lessonId, attendanceId, null, success: false, infoMessage: "No student IDs provided.",
-                severity: InfoBarType.Warning);
-        }
-
-        [TestMethod]
-        public async Task AddAttendanceAsync_DBError()
-        {
-            var lessonId = Guid.NewGuid();
-            var attendanceId = Guid.NewGuid();
-            var studentId = Guid.NewGuid();
-            ArrangeForAddAttendanceTests(lessonId, studentId);
-            await ActForAddAttendanceTests(lessonId, attendanceId, studentId, dbError: true);
-            AssertForAddAttendanceTests(lessonId, attendanceId, studentId, success: false, dbError: true, 
-                infoMessage: "Constraint failed.", severity: InfoBarType.Error);
-        }
-
-        [TestMethod]
-        public async Task AddAttendanceAsync()
-        {
-            var lessonId = Guid.NewGuid();
-            var attendanceId = Guid.NewGuid();
-            var studentId = Guid.NewGuid();
-            ArrangeForAddAttendanceTests(lessonId, studentId);
-            await ActForAddAttendanceTests(lessonId, attendanceId, studentId);
-            AssertForAddAttendanceTests(lessonId, attendanceId, studentId, success: true, 
-                infoMessage: "1 student(s) were added to Lesson 'Lesson' successfully.", severity: InfoBarType.Success);
-        }
-
-        // Remove attendance from lesson
-
-        private void ArrangeForAttendanceTests(Guid lessonId, Guid attendanceId, bool additionalAttendance = true)
-        {
-            var student = new StudentOption(Guid.NewGuid(), "Student");
-            var service = new ServiceSummary(Guid.NewGuid(), "Service", false, 30);
-            var attendance1 = new AttendanceSummary(attendanceId, student.Id, student.FullName, false);
-            var attendance2 = new AttendanceSummary(Guid.NewGuid(), student.Id, student.FullName, false);
-            var date = DateOnly.FromDateTime(new DateTime(1993, 8, 17));
-            var lesson = new LessonSummary
-            (lessonId, "Lesson", date, false, null, 25, false, 5, false, 10, null,
-            additionalAttendance ? [attendance1, attendance2] : [attendance1]);
-
-            _viewModel.Lessons.Add(lesson);
-            _viewModel.Students.Add(student);
-            _viewModel.Services.Add(service);
-        }
-
-        private async Task ActForRemoveAttendanceTests(Guid lessonId, Guid attendanceId, bool dbError = false)
-        {
-            var lesson = _viewModel.Lessons.First(l => l.Id == lessonId);
-            Lesson result = new Lesson()
-            {
-                Id = lessonId,
-                Date = lesson.Date,
-                Name = lesson.Name,
-                IsPricePerHour = lesson.IsPricePerHour,
-                DurationMinutes = lesson.DurationMinutes,
-                PricePerAttendance = lesson.PricePerAttendance,
-                IsOnline = lesson.IsOnline,
-                TravelAllowance = lesson.TravelAllowance,
-                IsWeekenOrHoliday = lesson.IsWeekenOrHoliday,
-                WeekendFee = lesson.WeekendFee,
-                Notes = lesson.Notes,
-            };
-            foreach (var attendance in lesson.Attendances)
-            {
-                if (attendance.Id == attendanceId)
-                    continue;
-                result.Attendances.Add(new Attendance()
-                { Id = attendance.Id, LessonId = lessonId, StudentId = attendance.StudentId, IsPaid = attendance.IsPaid, Price = 30 });
-            }
-            //Mock
-            if (dbError)
-            {
-                _mockLessonRepo.Setup(r => r.RemoveAttendanceAsync(lessonId, attendanceId))
-                .ThrowsAsync(new DbUpdateException("Constraint failed."));
-            }
-            else
-            {
-                _mockLessonRepo.Setup(r => r.RemoveAttendanceAsync(lessonId, attendanceId))
-                 .ReturnsAsync(result);
-            }
-            // Act
-            await _viewModel.RemoveAttendanceAsync(lessonId, attendanceId);
-        }
-
-        private void AssertForRemoveAttendanceTests(Guid lessonId, Guid attendanceId, bool success, string? infoMessage,
-            InfoBarType severity, bool isBusy = false, bool dbError = false, bool additionalAttendance = true)
-        {
-            if (success || dbError)
-            {
-                _mockLessonRepo.Verify(r => r.RemoveAttendanceAsync(lessonId, attendanceId), Times.Once);
-            }
-            else
-            {
-                _mockLessonRepo.Verify(r => r.RemoveAttendanceAsync(It.IsAny<Guid>(), It.IsAny<Guid>()), Times.Never);
-            }
-            VerifyAction(infoMessage, severity, isOpen: true, 
-                studentsCount: 1, servicesCount: 1, lessonCount: additionalAttendance ? 1 : 0, isBusy: isBusy);
-
-            if (success)
-            {
-                if (!additionalAttendance)
-                    return; // Lesson should be removed, so no need to check attendances
-                var modifiedLesson = _viewModel.Lessons.First(l => l.Id == lessonId);
-                Assert.AreEqual("Lesson", modifiedLesson.Name);
-                Assert.HasCount(additionalAttendance ? 1 : 0, modifiedLesson.Attendances);
-                Assert.AreNotEqual(attendanceId, modifiedLesson.Attendances.First().Id);
-            }
-        }
-
-        [TestMethod]
-        public async Task RemoveAttendanceAsync_IsBusy()
-        {
-            var lessonId = Guid.NewGuid();
-            var attendanceId = Guid.NewGuid();
-            ArrangeForAttendanceTests(lessonId, attendanceId);
-            _viewModel.IsBusy = true;
-            await ActForRemoveAttendanceTests(lessonId, attendanceId);
-            AssertForRemoveAttendanceTests(lessonId, attendanceId, success: false, 
-                infoMessage: "Can't remove attendance while busy.", severity: InfoBarType.Warning, isBusy: true);
-        }
-
-        [TestMethod]
-        public async Task RemoveAttendanceAsync_DBError()
-        {
-            var lessonId = Guid.NewGuid();
-            var attendanceId = Guid.NewGuid();
-            ArrangeForAttendanceTests(lessonId, attendanceId);
-            await ActForRemoveAttendanceTests(lessonId, attendanceId, dbError: true);
-            AssertForRemoveAttendanceTests(lessonId, attendanceId, success: false, dbError: true, 
-                infoMessage: "Constraint failed.", severity: InfoBarType.Error);
-        }
-
-        [TestMethod]
-        public async Task RemoveAttendanceAsync_RemoveLesson()
-        {
-            var lessonId = Guid.NewGuid();
-            var attendanceId = Guid.NewGuid();
-            ArrangeForAttendanceTests(lessonId, attendanceId, additionalAttendance: false);
-            await ActForRemoveAttendanceTests(lessonId, attendanceId);
-            AssertForRemoveAttendanceTests(lessonId, attendanceId, success: true, 
-                infoMessage: "Lesson 'Lesson' was deleted after removing last attendant.", severity: InfoBarType.Success, additionalAttendance: false);
-        }
-
-        [TestMethod]
-        public async Task RemoveAttendanceAsync()
-        {
-            var lessonId = Guid.NewGuid();
-            var attendanceId = Guid.NewGuid();
-            ArrangeForAttendanceTests(lessonId, attendanceId);
-            await ActForRemoveAttendanceTests(lessonId, attendanceId);
-            AssertForRemoveAttendanceTests(lessonId, attendanceId, success: true, 
-                infoMessage: "Student was removed from lesson 'Lesson' successfully.", severity: InfoBarType.Success);
-        }
-
-        // Update attendance
-
-        private async Task ActForUpdateAttendanceTests(Guid lessonId, Guid attendanceId, bool dbError = false)
-        {
-            var lesson = _viewModel.Lessons.First(l => l.Id == lessonId);
-            Lesson result = new Lesson()
-            {
-                Id = lessonId,
-                Date = lesson.Date,
-                Name = lesson.Name,
-                IsPricePerHour = lesson.IsPricePerHour,
-                DurationMinutes = lesson.DurationMinutes,
-                PricePerAttendance = lesson.PricePerAttendance,
-                IsOnline = lesson.IsOnline,
-                TravelAllowance = lesson.TravelAllowance,
-                IsWeekenOrHoliday = lesson.IsWeekenOrHoliday,
-                WeekendFee = lesson.WeekendFee,
-                Notes = lesson.Notes,
-            };
-            foreach (var attendance in lesson.Attendances)
-            {
-                result.Attendances.Add(new Attendance()
-                { Id = attendance.Id, LessonId = lessonId, StudentId = attendance.StudentId, IsPaid = attendance.IsPaid, Price = 30 });
-            }
-            result.Attendances.First(a => a.Id == attendanceId).IsPaid = true;
-
-            //Mock
-            if (dbError)
-            {
-                _mockLessonRepo.Setup(r => r.UpdateAttendanceAsync(lessonId, attendanceId, true))
-                .ThrowsAsync(new DbUpdateException("Constraint failed."));
-            }
-            else
-            {
-                _mockLessonRepo.Setup(r => r.UpdateAttendanceAsync(lessonId, attendanceId, true))
-                 .ReturnsAsync(result);
-            }
-            // Act
-            await _viewModel.UpdateAttendanceAsync(lessonId, attendanceId, true);
-        }
-
-        private void AssertForUpdateAttendanceTests(Guid lessonId, Guid attendanceId, bool success, string? infoMessage,
-            InfoBarType severity, bool isBusy = false, bool dbError = false)
-        {
-            if (success || dbError)
-            {
-                _mockLessonRepo.Verify(r => r.UpdateAttendanceAsync(lessonId, attendanceId, true), Times.Once);
-            }
-            else
-            {
-                _mockLessonRepo.Verify(r => r.UpdateAttendanceAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<bool>()), Times.Never);
-            }
-            VerifyAction(infoMessage, severity, isOpen: true, studentsCount: 1, servicesCount: 1, lessonCount: 1, isBusy: isBusy);
-            var modifiedLesson = _viewModel.Lessons.First();
-            Assert.AreEqual("Lesson", modifiedLesson.Name);
-            Assert.HasCount(2, modifiedLesson.Attendances);
-
-            if (success)
-            {
-                Assert.IsTrue(modifiedLesson.Attendances.First(a => a.Id == attendanceId).IsPaid);
-            }
-        }
-
-        [TestMethod]
-        public async Task UpdateAttendanceAsync_IsBusy()
-        {
-            var lessonId = Guid.NewGuid();
-            var attendanceId = Guid.NewGuid();
-            ArrangeForAttendanceTests(lessonId, attendanceId);
-            _viewModel.IsBusy = true;
-            await ActForUpdateAttendanceTests(lessonId, attendanceId);
-            AssertForUpdateAttendanceTests(lessonId, attendanceId, success: false, 
-                infoMessage: "Can't update attendance while busy.", severity: InfoBarType.Warning, isBusy: true);
-        }
-
-        [TestMethod]
-        public async Task UpdateAttendanceAsync_DBError()
-        {
-            var lessonId = Guid.NewGuid();
-            var attendanceId = Guid.NewGuid();
-            ArrangeForAttendanceTests(lessonId, attendanceId);
-            await ActForUpdateAttendanceTests(lessonId, attendanceId, dbError: true);
-            AssertForUpdateAttendanceTests(lessonId, attendanceId, success: false, dbError: true, 
-                infoMessage: "Constraint failed.", severity: InfoBarType.Error);
-        }
-
-        [TestMethod]
-        public async Task UpdateAttendanceAsync()
-        {
-            var lessonId = Guid.NewGuid();
-            var attendanceId = Guid.NewGuid();
-            ArrangeForAttendanceTests(lessonId, attendanceId);
-            await ActForUpdateAttendanceTests(lessonId, attendanceId);
-            AssertForUpdateAttendanceTests(lessonId, attendanceId, success: true, 
-                infoMessage: "Lesson 'Lesson' attendant was updated successfully.", severity: InfoBarType.Success);
         }
 
         // Get specification options
@@ -1112,5 +594,103 @@ namespace Apolo.Tests.ViewModels
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.IsFalse(_viewModel.OpenInfoBar);
         }
+
+        // Delete 
+
+        private void ArrangeForDeleteLessonTests(Guid lessonIdWithBill, Guid lessonIdWithoutBill)
+        {
+            var student = new StudentOption(Guid.NewGuid(), "Student");
+            var service = new ServiceSummary(Guid.NewGuid(), "Service", false, 30);
+            var date = DateOnly.FromDateTime(new DateTime(1993, 8, 17));
+            var lessonWithBill = new LessonSummary
+            (lessonIdWithBill, date, "Lesson with bill", 25, false, student.Id, student.FullName, Guid.NewGuid(), "Invoice_Name", false, 60, 25, false, 5, false, 10, null);
+            var lessonWithoutBill = new LessonSummary
+            (lessonIdWithoutBill, date, "Lesson without bill", 25, false, student.Id, student.FullName, null, string.Empty, false, 60, 25, false, 5, false, 10, null);
+            _viewModel.Lessons.Add(lessonWithBill);
+            _viewModel.Lessons.Add(lessonWithoutBill);
+            _viewModel.Students.Add(student);
+            _viewModel.Services.Add(service);
+        }
+
+        private async Task ActForDeleteLessonTests(Guid lessonId, bool dbError = false)
+        {
+            //Mock
+            if (dbError)
+            {
+                _mockLessonRepo.Setup(r => r.DeleteAsync(lessonId))
+                    .ThrowsAsync(new DbUpdateException("Constraint failed."));
+            }
+            // Act
+            await _viewModel.DeleteLessonAsync(lessonId);
+        }
+
+        private void AssertForDeleteLessonTests(Guid lessonId, bool success,
+            string? infoMessage, InfoBarType severity, bool isBusy = false, bool dbError = false)
+        {
+            if (success || dbError)
+            {
+                _mockLessonRepo.Verify(r => r.DeleteAsync(lessonId), Times.Once);
+            }
+            else
+            {
+                _mockLessonRepo.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Never);
+            }
+            VerifyAction(infoMessage, severity, isOpen: true, studentsCount: 1, servicesCount: 1, lessonCount: success ? 1 : 2, 
+                isBusy: isBusy);
+
+            if (success)
+            {
+                var addedLesson = _viewModel.Lessons[0];
+                Assert.AreEqual("Lesson with bill", addedLesson.Name);
+            }
+        }
+
+        [TestMethod]
+        public async Task DeleteLesson_IsBusy()
+        {
+            _viewModel.IsBusy = true;
+            var lessonIdWithBill = Guid.NewGuid();
+            var lessonIdWithoutBill = Guid.NewGuid();
+            ArrangeForDeleteLessonTests(lessonIdWithBill, lessonIdWithoutBill);
+            await ActForDeleteLessonTests(lessonIdWithoutBill);
+            AssertForDeleteLessonTests(lessonIdWithoutBill, success: false, infoMessage: "Can't delete lesson while busy.",
+                severity: InfoBarType.Warning, isBusy: true);
+        }
+
+        [TestMethod]
+        public async Task DeleteLesson_InvalidLesson()
+        {
+            var lessonIdWithBill = Guid.NewGuid();
+            var lessonIdWithoutBill = Guid.NewGuid();
+            ArrangeForDeleteLessonTests(lessonIdWithBill, lessonIdWithoutBill);
+            await ActForDeleteLessonTests(lessonIdWithBill);
+            AssertForDeleteLessonTests(lessonIdWithBill, success: false, 
+                infoMessage: "Can't delete lesson 'Lesson with bill' for 'Student' because it's associated to bill 'Invoice_Name'",
+                severity: InfoBarType.Error);
+        }
+
+        [TestMethod]
+        public async Task DeleteLesson_DbError()
+        {
+            var lessonIdWithBill = Guid.NewGuid();
+            var lessonIdWithoutBill = Guid.NewGuid();
+            ArrangeForDeleteLessonTests(lessonIdWithBill, lessonIdWithoutBill);
+            await ActForDeleteLessonTests(lessonIdWithoutBill, dbError: true);
+            AssertForDeleteLessonTests(lessonIdWithoutBill, success: false, dbError: true,
+                infoMessage: "Constraint failed.", severity: InfoBarType.Error);
+        }
+
+        [TestMethod]
+        public async Task DeleteLesson()
+        {
+            var lessonIdWithBill = Guid.NewGuid();
+            var lessonIdWithoutBill = Guid.NewGuid();
+            ArrangeForDeleteLessonTests(lessonIdWithBill, lessonIdWithoutBill);
+            await ActForDeleteLessonTests(lessonIdWithoutBill);
+            AssertForDeleteLessonTests(lessonIdWithoutBill, success: true,
+                infoMessage: $"Lesson 'Lesson without bill' deleted successfully for 'Student'",
+                severity: InfoBarType.Success);
+        }
+
     }
 }

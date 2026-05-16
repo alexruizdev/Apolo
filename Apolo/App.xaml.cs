@@ -1,6 +1,7 @@
 ﻿using Apolo.Services;
 using Apolo.ViewModels;
 using CommunityToolkit.Mvvm.DependencyInjection;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -27,20 +28,40 @@ namespace Apolo
         private static IServiceProvider ConfigureServices()
         {
             var builder = new ServiceCollection();
+
+            // Use a helper to build the connection string with proper flags
+            string GetConnectionString(string path)
+            {
+                var connectionStringBuilder = new SqliteConnectionStringBuilder
+                {
+                    DataSource = path,
+                    Mode = SqliteOpenMode.ReadWriteCreate,
+                    DefaultTimeout = 5, // This is the equivalent of Busy Timeout (in seconds)
+                    Cache = SqliteCacheMode.Shared
+                };
+                return connectionStringBuilder.ToString();
+            }
+
             var dbPath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "app.db");
-            builder.AddDbContext<ApoloContext>(options => options.UseSqlite($"DataSource={dbPath}"));
+            var archiveDbPath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "archive.db");
+
+            builder.AddDbContext<ApoloContext>(options =>
+                options.UseSqlite(GetConnectionString(dbPath)));
+
+            builder.AddDbContext<ApoloArchiveContext>(options =>
+                options.UseSqlite(GetConnectionString(archiveDbPath)));
 
             // Services
             builder.AddSingleton<IUserProfileService, UserProfileService>();
 
             // Repositories
-            builder.AddSingleton<IPayerRepository, PayerRepository>();
-            builder.AddSingleton<IStudentRepository, StudentRepository>();
-            builder.AddSingleton<IServiceRepository, ServiceRepository>();
-            builder.AddSingleton<ISpecificationRepository, SpecificationRepository>();
-            builder.AddSingleton<ILessonRepository, LessonRepository>();
-            builder.AddSingleton<IInvoiceRepository, InvoiceRepository>();
-            builder.AddSingleton<IGeneralRepository, GeneralRepository>();
+            builder.AddTransient<IPayerRepository, PayerRepository>();
+            builder.AddTransient<IStudentRepository, StudentRepository>();
+            builder.AddTransient<IServiceRepository, ServiceRepository>();
+            builder.AddTransient<ISpecificationRepository, SpecificationRepository>();
+            builder.AddTransient<ILessonRepository, LessonRepository>();
+            builder.AddTransient<IBillingRepository, BillingRepository>();
+            builder.AddTransient<IGeneralRepository, GeneralRepository>();
 
             // Utilities
             builder.AddSingleton<PDF.IWriter, PDF.Writer>();
@@ -53,23 +74,28 @@ namespace Apolo
             builder.AddTransient<ServicesViewModel>();
             builder.AddTransient<SpecificationsViewModel>();
             builder.AddTransient<LessonsViewModel>();
-            builder.AddTransient<InvoicesViewModel>();
+            builder.AddTransient<BillingViewModel>();
             builder.AddTransient<SettingsViewModel>();
 
             builder.AddSingleton<MainWindow>();
 
-            Ioc.Default.ConfigureServices(builder.BuildServiceProvider());
-            return Ioc.Default;
+            var provider = builder.BuildServiceProvider();
+            Ioc.Default.ConfigureServices(provider);
+            return provider;
         }
 
         private void InitializeDatabase()
         {
-            // Auto-create/update the DB schema
             using (var scope = Services.CreateScope())
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<ApoloContext>();
-                dbContext.Database.EnsureCreated();
-                dbContext.Database.Migrate();
+                var db = scope.ServiceProvider.GetRequiredService<ApoloContext>();
+                db.Database.EnsureCreated();
+
+                var archive = scope.ServiceProvider.GetRequiredService<ApoloArchiveContext>();
+                archive.Database.EnsureCreated();
+
+                db.Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL;");
+                archive.Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL;");
             }
         }
 

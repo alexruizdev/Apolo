@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
 using System.Collections.ObjectModel;
+using System.Security.AccessControl;
 using ViewModels;
 
 namespace Apolo.ViewModels
@@ -97,7 +98,7 @@ namespace Apolo.ViewModels
 
             SetEnterFunction();
 
-            if (!ValidateSpecificationInput(ref name, durationMinutes))
+            if (!ValidateSpecificationInput(ref name, durationMinutes, ref price))
                 return;
 
             if (!Services.Any(s => s.Id == serviceId))
@@ -164,7 +165,7 @@ namespace Apolo.ViewModels
             }
         }
 
-        public bool ValidateSpecificationInput(ref string name, int durationMinutes)
+        public bool ValidateSpecificationInput(ref string name, int durationMinutes, ref double? price)
         {
             name = (name ?? "").Trim();
             if (string.IsNullOrEmpty(name))
@@ -176,6 +177,10 @@ namespace Apolo.ViewModels
             {
                 SetExitFunction("Enter a valid non-negative duration (e.g., 60).", InfoBarType.Warning);
                 return false;
+            }
+            if (price is not null) // TODO: test
+            {
+                price =  double.IsNaN(price.Value) ? null : price;
             }
             return true;
         }
@@ -191,7 +196,7 @@ namespace Apolo.ViewModels
 
             SetEnterFunction();
 
-            if (!ValidateSpecificationInput(ref name, durationMinutes))
+            if (!ValidateSpecificationInput(ref name, durationMinutes, ref price))
             {
                 return;
             }
@@ -240,10 +245,10 @@ namespace Apolo.ViewModels
             try
             {
                 await _lessonRepository.AddLessonAsync(
-                    date, spec.value.ServiceName,
+                    date, spec.value.ServiceName, isPaid: false, spec.value.StudentId, null,
                     service.IsPricePerHour, spec.value.DurationMinutes, (decimal)(spec.value.Price ?? service.Price),
                     spec.value.IsOnline, TravelAllowance, spec.value.IsWeekenOrHoliday, WeekendFee,
-                    notes, [spec.value.StudentId]);
+                    notes);
 
                 SetExitFunction($"Lesson '{spec.value.ServiceName}' created for {spec.value.StudentName}.",
                     InfoBarType.Success); ;

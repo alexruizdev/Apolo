@@ -12,6 +12,18 @@
         public string FullName => Helper.GetFullName(FirstName, LastName);
     }
 
+    public class PayerActivityInfo
+    {
+        public Guid PayerId { get; set; }
+        public string PayerName { get; set; } = string.Empty;
+        public DateOnly? LastLessonDate { get; set; }
+
+        // Helper to show a friendly string in the UI
+        public string Display => PayerName + (LastLessonDate.HasValue
+            ? $" - Last activity: {LastLessonDate.Value:dd/MM/yyyy}"
+            : " - No recorded activity");
+    }
+
     public sealed record PayerOption(Guid Id, string FullName);
 
     public sealed class Payer
