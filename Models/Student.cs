@@ -21,7 +21,7 @@
         public Payer Payer { get; set; } = null!;
 
         public ICollection<Specification> Specifications { get; set; } = new List<Specification>();
-        public ICollection<Attendance> Attendances { get; set; } = new List<Attendance>();
+        public ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();
 
         
     }

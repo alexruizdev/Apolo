@@ -12,22 +12,22 @@ namespace Apolo.Views
 {
     public sealed partial class InvoicesPage : Page
     {
-        public InvoicesViewModel ViewModel => (InvoicesViewModel)DataContext;
+        public BillingViewModel ViewModel => (BillingViewModel)DataContext;
         public InvoicesPage()
         {
             InitializeComponent();
-            DataContext = Ioc.Default.GetService<InvoicesViewModel>();
+            DataContext = Ioc.Default.GetService<BillingViewModel>();
         }
 
         private async void Page_Loaded(object sender, RoutedEventArgs e)
             => await ViewModel.LoadAsync();
 
         private async void LoadForPayer_Click(object sender, RoutedEventArgs e)
-            => await ViewModel.LoadAttendancesAsync();
+            => await ViewModel.LoadLessonsAsync();
 
         private async void MarkPaid_Click(object sender, RoutedEventArgs e)
         {
-            var selectedCount = ViewModel.Attendances.Where(a => a.IsSelected).Count();
+            var selectedCount = ViewModel.Lessons.Where(a => a.IsSelected).Count();
 
             if (selectedCount == 0)
                 return;
@@ -35,7 +35,7 @@ namespace Apolo.Views
             var dialog = new ContentDialog
             {
                 Title = "Mark as paid?",
-                Content = $"Mark {selectedCount} attendance(s) as paid?",
+                Content = $"Mark {selectedCount} lesson(s) as paid?",
                 PrimaryButtonText = "Mark paid",
                 CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
@@ -47,11 +47,9 @@ namespace Apolo.Views
                 await ViewModel.MarkSelectedAsPaidAsync();
         }
 
-        private async void ExportPdf_Click(object sender, RoutedEventArgs e)
+        private async void CreateInvoice_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not Button button) return;
-
-            var requestedName = InvoiceNameBox.Text;
 
             // Ask where to save
             var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
@@ -60,16 +58,21 @@ namespace Apolo.Views
             var folder = await picker.PickSingleFolderAsync();
             if (folder == null) return;
 
-            await ViewModel.GenerateInvoice(folder.Path, requestedName);
+            await ViewModel.GenerateInvoice(folder.Path, isInvoice: true);
         }
 
-        private async void LoadByName_Click(object sender, RoutedEventArgs e)
+        private async void CreateTicket_Click(object sender, RoutedEventArgs e)
         {
-            var name = InvoiceNameSearchBox.Text?.Trim();
-            if (!string.IsNullOrEmpty(name))
-            {
-                await ViewModel.LoadByInvoiceAsync(name);
-            }
+            if (sender is not Button button) return;
+
+            // Ask where to save
+            var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
+            picker.CommitButtonText = "Pick a folder";
+
+            var folder = await picker.PickSingleFolderAsync();
+            if (folder == null) return;
+
+            await ViewModel.GenerateInvoice(folder.Path, isInvoice: false);
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)

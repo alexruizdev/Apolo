@@ -20,7 +20,7 @@ namespace Repository
             List<Student> students,
             List<Specification> specifications,
             List<Lesson> lessons,
-            List<Invoice> invoices)
+            List<BillingDocument> invoices)
         {
             using var transaction = await _db.Database.BeginTransactionAsync();
             try
@@ -30,7 +30,7 @@ namespace Repository
                 _db.Students.AddRange(students);
                 _db.Specifications.AddRange(specifications);
                 _db.Lessons.AddRange(lessons);
-                _db.Invoices.AddRange(invoices);
+                _db.BillingDocuments.AddRange(invoices);
                 await _db.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
@@ -42,7 +42,7 @@ namespace Repository
         }
 
         public async Task<(List<Service> Services, List<Payer> Payers, List<Student> Students,
-            List<Specification> Specifications, List<Lesson> Lessons, List<Invoice> Invoices)>
+            List<Specification> Specifications, List<Lesson> Lessons, List<BillingDocument> Invoices)>
             GetAllDataAsync()
         {
             return (
@@ -50,8 +50,8 @@ namespace Repository
                 await _db.Payers.AsNoTracking().ToListAsync(),
                 await _db.Students.AsNoTracking().ToListAsync(),
                 await _db.Specifications.AsNoTracking().ToListAsync(),
-                await _db.Lessons.Include(l => l.Attendances).AsNoTracking().ToListAsync(),
-                await _db.Invoices.Include(i => i.Lines).AsNoTracking().ToListAsync()
+                await _db.Lessons.AsNoTracking().ToListAsync(),
+                await _db.BillingDocuments.AsNoTracking().ToListAsync()
             );
         }
 
@@ -75,8 +75,8 @@ namespace Repository
                     PayerId = p.Id,
                     PayerName = p.FullName,
                     LastLessonDate = p.Students
-                        .SelectMany(s => s.Attendances)
-                        .Select(a => (DateOnly?)a.Lesson.Date)
+                        .SelectMany(s => s.Lessons)
+                        .Select(l => (DateOnly?)l.Date)
                         .Max()
                 })
                 .AsNoTracking()
@@ -103,16 +103,15 @@ namespace Repository
 
                 var studentIds = studentsToMove.Select(s => s.Id).ToList();
 
-                // 2. Identify Attendances and Invoices linked to these students
-                var attendancesToMove = await _db.Attendances
+                // 2. Identify Lessons and Invoices linked to these students
+                var lessonsToMove = await _db.Lessons
                     .AsNoTracking()
-                    .Where(a => studentIds.Contains(a.StudentId))
+                    .Where(l => studentIds.Contains(l.StudentId))
                     .ToListAsync();
 
-                var invoicesToMove = await _db.Invoices
+                var billsToMove = await _db.BillingDocuments
                     .AsNoTracking()
-                    .Include(i => i.Lines)
-                    .Where(i => payerIds.Contains(i.PayerId))
+                    .Where(b => payerIds.Contains(b.PayerId))
                     .ToListAsync();
 
                 var specsToRemove = await _db.Specifications
@@ -120,30 +119,16 @@ namespace Repository
                     .Where(s => studentIds.Contains(s.StudentId))
                     .ToListAsync();
 
-                // 3. ARCHIVE SIDE: Insert data
-                var lessonIds = attendancesToMove.Select(s => s.LessonId).ToHashSet();
-                var lessonsToCopy = await _db.Lessons
-                    .AsNoTracking()
-                    .Where(l => lessonIds.Contains(l.Id))
-                    .ToListAsync();
-
-                foreach (var lesson in lessonsToCopy)
-                {
-                    if (!await _archiveDb.Lessons.AnyAsync(l => l.Id == lesson.Id))
-                        _archiveDb.Lessons.Add(lesson);
-                }
-
                 _archiveDb.Payers.AddRange(payersToMove);
                 _archiveDb.Students.AddRange(studentsToMove);
-                _archiveDb.Attendances.AddRange(attendancesToMove);
-                _archiveDb.Invoices.AddRange(invoicesToMove);
+                _archiveDb.Lessons.AddRange(lessonsToMove);
+                _archiveDb.BillingDocuments.AddRange(billsToMove);
 
                 await _archiveDb.SaveChangesAsync();
 
                 // 4. MAIN SIDE: Clean up
-                await _db.Invoices.Where(i => payerIds.Contains(i.PayerId)).ExecuteDeleteAsync();
-                await _db.Attendances.Where(a => studentIds.Contains(a.StudentId)).ExecuteDeleteAsync();
-                await _db.Lessons.Where(l => !l.Attendances.Any()).ExecuteDeleteAsync();
+                await _db.BillingDocuments.Where(i => payerIds.Contains(i.PayerId)).ExecuteDeleteAsync();
+                await _db.Lessons.Where(l => studentIds.Contains(l.StudentId)).ExecuteDeleteAsync();
                 await _db.Students.Where(s => payerIds.Contains(s.PayerId)).ExecuteDeleteAsync();
                 await _db.Payers.Where(p => payerIds.Contains(p.Id)).ExecuteDeleteAsync();
 

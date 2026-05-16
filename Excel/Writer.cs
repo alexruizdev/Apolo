@@ -7,13 +7,13 @@ namespace Excel
     {
         void WriteExcel(in string templatePath, in string folder, in (List<Service> services, List<Payer> payers,
             List<Student> students, List<Specification> specifications, List<Lesson> lessons, 
-            List<Invoice> invoices) data);
+            List<BillingDocument> bills) data);
     }
     public class Writer : IWriter
     {
         public void WriteExcel(in string templatePath, in string folder, in (List<Service> services, 
             List<Payer> payers, List<Student> students, List<Specification> specifications,
-            List<Lesson> lessons, List<Invoice> invoices) data)
+            List<Lesson> lessons, List<BillingDocument> bills) data)
         {
             string destinationPath = Path.Combine(folder, $"Apolo_Export_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
             try
@@ -30,8 +30,8 @@ namespace Excel
                     WritePayers(workbook, in data.payers);
                     WriteStudents(workbook, in data.students, in data.payers);
                     WriteSpecifications(workbook, in data.specifications, in data.students, in data.services);
-                    WriteLessons(workbook, in data.lessons, in data.students);
-                    WriteInvoices(workbook, in data.invoices, in data.payers, in data.students);
+                    WriteLessons(workbook, in data.lessons, in data.students, in data.bills);
+                    WriteInvoices(workbook, in data.bills, in data.payers, in data.lessons);
 
                     workbook.SaveAs(destinationPath);
                 }
@@ -150,68 +150,77 @@ namespace Excel
             ResizeTable(table, specifications.Count());
         }
 
-        private void WriteLessons(XLWorkbook workbook, in List<Lesson> lessons, in List<Student> students)
+        private void WriteLessons(XLWorkbook workbook, in List<Lesson> lessons, in List<Student> students,
+            in List<BillingDocument> bills)
         {
             var table = GetTable(workbook, "Lessons");
             int row = 1;
 
             var studentLookup = students.ToDictionary(s => s.Id, s => s);
+            var billLookup = bills.ToDictionary(s => s.Id, b => b);
 
             foreach (var lesson in lessons)
             {
-                foreach (var attendance in lesson.Attendances)
+                var billName = string.Empty;
+                var billId = string.Empty;
+                if (lesson.BillingDocumentId is Guid id)
                 {
-                    table.DataRange.Cell(row, 1).Value = lesson.Date.ToString("yyyy-MM-dd");
-                    table.DataRange.Cell(row, 2).Value = studentLookup[attendance.StudentId].FullName;
-                    table.DataRange.Cell(row, 3).Value = lesson.Name;
-                    table.DataRange.Cell(row, 4).Value = attendance.Price;
-                    table.DataRange.Cell(row, 5).Value = attendance.IsPaid;
-                    table.DataRange.Cell(row, 6).Value = lesson.Notes;
-                    table.DataRange.Cell(row, 7).Value = lesson.IsPricePerHour;
-                    table.DataRange.Cell(row, 8).Value = lesson.DurationMinutes;
-                    table.DataRange.Cell(row, 9).Value = lesson.PricePerAttendance;
-                    table.DataRange.Cell(row, 10).Value = lesson.IsOnline;
-                    table.DataRange.Cell(row, 11).Value = lesson.TravelAllowance;
-                    table.DataRange.Cell(row, 12).Value = lesson.IsWeekenOrHoliday;
-                    table.DataRange.Cell(row, 13).Value = lesson.WeekendFee;
-                    table.DataRange.Cell(row, 14).Value = lesson.Id.ToString();
-                    table.DataRange.Cell(row, 15).Value = attendance.Id.ToString();
-                    table.DataRange.Cell(row, 16).Value = attendance.StudentId.ToString();
-
-                    row++;
+                    billName = billLookup[id].DocumentNumber;
+                    billId = id.ToString();
                 }
+                table.DataRange.Cell(row, 1).Value = lesson.Date.ToString("yyyy-MM-dd");
+                table.DataRange.Cell(row, 2).Value = lesson.Name;
+                table.DataRange.Cell(row, 3).Value = studentLookup[lesson.StudentId].FullName;
+                table.DataRange.Cell(row, 4).Value = lesson.FinalPrice;
+                table.DataRange.Cell(row, 5).Value = lesson.IsPaid;
+                table.DataRange.Cell(row, 6).Value = lesson.Notes;
+                table.DataRange.Cell(row, 7).Value = billName;
+                table.DataRange.Cell(row, 8).Value = lesson.IsPricePerHour;
+                table.DataRange.Cell(row, 9).Value = lesson.DurationMinutes;
+                table.DataRange.Cell(row, 10).Value = lesson.BasePrice;
+                table.DataRange.Cell(row, 11).Value = lesson.IsOnline;
+                table.DataRange.Cell(row, 12).Value = lesson.TravelAllowance;
+                table.DataRange.Cell(row, 14).Value = lesson.IsWeekenOrHoliday;
+                table.DataRange.Cell(row, 15).Value = lesson.WeekendFee;
+                table.DataRange.Cell(row, 15).Value = lesson.Id.ToString();
+                table.DataRange.Cell(row, 16).Value = lesson.StudentId.ToString();
+                table.DataRange.Cell(row, 17).Value = billId;
+
+                row++;
             }
 
             ResizeTable(table, lessons.Count());
         }
 
-        private void WriteInvoices(XLWorkbook workbook, in List<Invoice> invoices,
-            in List<Payer> payers, in List<Student> students)
+        private void WriteInvoices(XLWorkbook workbook, in List<BillingDocument> bills,
+            in List<Payer> payers, in List<Lesson> lessons)
         {
             var table = GetTable(workbook, "Invoices");
             int row = 1;
 
-            var studentLookup = students.ToDictionary(s => s.Id, s => s);
-            var payerLookup = payers.ToDictionary(p => p.Id, p => p);
+            var billLookup = lessons
+                .Where(l => l.BillingDocumentId.HasValue) // 1. Ignore lessons without a bill
+                .GroupBy(l => l.BillingDocumentId!.Value)  // 2. Group them by the actual Guid
+                .ToDictionary(
+                    group => group.Key,                   // 3. The Dictionary Key (BillingDocumentId)
+                    group => group.Sum(l => l.FinalPrice) // 4. The Dictionary Value (Sum of prices)
+                );
+            var payerLookup = payers.ToDictionary(p => p.Id, p => p.FullName);
 
-            foreach (var invoice in invoices)
+            foreach (var bill in bills)
             {
-                foreach  (var line in invoice.Lines)
-                {
-                    table.DataRange.Cell(row, 1).Value = invoice.Id;
-                    table.DataRange.Cell(row, 2).Value = invoice.Name;
-                    table.DataRange.Cell(row, 3).Value = invoice.CreatedUTC.ToString();
-                    table.DataRange.Cell(row, 4).Value = payerLookup[invoice.PayerId].FullName;
-                    //table.DataRange.Cell(row, 5).Value = studentLookup[line.];
-                    // TODO: Total
-                    // TODO: Paid
-                    table.DataRange.Cell(row, 8).Value = invoice.PayerId.ToString();
-                    table.DataRange.Cell(row, 9).Value = line.Attendance.StudentId.ToString();
-                }
+                table.DataRange.Cell(row, 1).Value = bill.DocumentNumber;
+                table.DataRange.Cell(row, 2).Value = bill.Type.ToString();
+                table.DataRange.Cell(row, 3).Value = bill.CreatedUTC.ToString();
+                table.DataRange.Cell(row, 4).Value = payerLookup[bill.PayerId];
+                table.DataRange.Cell(row, 5).Value = billLookup[bill.Id];
+                table.DataRange.Cell(row, 6).Value = bill.PayerId.ToString();
+                table.DataRange.Cell(row, 7).Value = bill.Id.ToString();
+
                 row++;
             }
 
-            ResizeTable(table, invoices.Count());
+            ResizeTable(table, bills.Count());
         }
     }
 }

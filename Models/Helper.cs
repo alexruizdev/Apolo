@@ -5,10 +5,10 @@
         public static string GetFullName(string firstName, string lastName) => $"{firstName} {lastName}".Trim();
 
         public static (List<Service> Services, List<Payer> Payers, List<Student> Students,
-            List<Specification> Specifications, List<Lesson> Lessons, List<Invoice> Invoices)
+            List<Specification> Specifications, List<Lesson> Lessons, List<BillingDocument> Invoices)
             GetData()
         {
-                        var services = new List<Service>();
+            var services = new List<Service>();
             services.Add(new Service() { Name= "Service 1", IsPricePerHour = true , Price= 10m});
             services.Add(new Service() { Name= "Service 2", IsPricePerHour = true, Price= 20m});
             services.Add(new Service() { Name= "Service 3", IsPricePerHour = false , Price= 30m});
@@ -31,32 +31,27 @@
             specifications.Add(new Specification() { Name = "Spec 3", StudentId = students[2].Id, ServiceId = services[2].Id, 
                 DurationMinutes = 0, Price = null, IsOnline = false, IsWeekenOrHoliday = true });
 
+            var bills = new List<BillingDocument>();
+            bills.Add(new BillingDocument(new DateTime(2025, 1, 1)) { Id = Guid.NewGuid(), Type = DocumentType.Invoice, SequenceNumber = 0, 
+                PayerId = payers[0].Id});
+            bills.Add(new BillingDocument(new DateTime(2024, 1, 1)) { Id = Guid.NewGuid(), Type = DocumentType.Ticket, SequenceNumber = 0, 
+                PayerId = payers[1].Id});
+
             var lessons = new List<Lesson>();
-            lessons.Add(new Lesson() { Date = new DateOnly(2024, 1, 1), Name = "Lesson 1", IsPricePerHour = true, 
-                DurationMinutes = 60, PricePerAttendance = 30, IsOnline = false, TravelAllowance = 10, IsWeekenOrHoliday = false,
-                WeekendFee = 5, Notes = "small note" });
-            lessons[0].Attendances.Add(new Attendance() { LessonId = lessons[0].Id, StudentId = students[0].Id, IsPaid = false, 
-                Price = 30 });
-            lessons.Add(new Lesson() { Date = new DateOnly(2025, 1, 1), Name = "Lesson 2", IsPricePerHour = true, 
-                DurationMinutes = 0, PricePerAttendance = 15, IsOnline = false, TravelAllowance = 15, IsWeekenOrHoliday = true,
-                WeekendFee = 5, Notes = "long note" });
-            lessons[1].Attendances.Add(new Attendance() { LessonId = lessons[1].Id, StudentId = students[1].Id, IsPaid = false, 
-                Price = 15 });
-            lessons.Add(new Lesson() { Date = new DateOnly(2026, 1, 1), Name = "Lesson 3", IsPricePerHour = false, 
-                DurationMinutes = 45, PricePerAttendance = 45, IsOnline = true, TravelAllowance = 10, IsWeekenOrHoliday = false,
-                WeekendFee = 10, Notes = null });
-            lessons[2].Attendances.Add(new Attendance() { LessonId = lessons[2].Id, StudentId = students[2].Id, IsPaid = true, 
-                Price = 60 });
+            lessons.Add(new Lesson(new DateOnly(2025, 1, 1), "Lesson 1", isPaid: false, students[0].Id, bills[0].Id, 
+                isPricePerHour: true, durationMinutes: 60, basePrice: 30, isOnline: false, travelAllowance: 10, 
+                isWeekenOrHoliday: false, weekendFee: 5, notes: "smalll note"));
+            lessons.Add(new Lesson(new DateOnly(2024, 1, 1), "Lesson 2", isPaid: true, students[1].Id, bills[1].Id,
+                isPricePerHour: false, durationMinutes: null, basePrice: 45, isOnline: true, travelAllowance: 10,
+                isWeekenOrHoliday: true, weekendFee: 5, notes: "long note"));
+            lessons.Add(new Lesson(new DateOnly(2026, 1, 1), "Lesson 3", isPaid: false, students[2].Id, null,
+                isPricePerHour: false, durationMinutes: null, basePrice: 45, isOnline: true, travelAllowance: 10,
+                isWeekenOrHoliday: true, weekendFee: 5, notes: null));
+            lessons.Add(new Lesson(new DateOnly(2026, 1, 1), "Lesson 4", isPaid: false, students[2].Id, null,
+                isPricePerHour: false, durationMinutes: null, basePrice: 60, isOnline: false, travelAllowance: 10,
+                isWeekenOrHoliday: false, weekendFee: 5, notes: null));
 
-            var invoices = new List<Invoice>();
-            invoices.Add(new Invoice() { Id = 1, Name = "Invoice_1", CreatedUTC = DateTime.Now, PayerId = payers[0].Id });
-            invoices[0].Lines.Add(new InvoiceAttendance() { InvoiceId = invoices[0].Id, AttendanceId = lessons[0].Attendances.First().Id });
-            invoices.Add(new Invoice() { Id = 2, Name = "Invoice_2", CreatedUTC = DateTime.Now, PayerId = payers[1].Id });
-            invoices[1].Lines.Add(new InvoiceAttendance() { InvoiceId = invoices[1].Id, AttendanceId = lessons[1].Attendances.First().Id });
-            invoices.Add(new Invoice() { Id = 3, Name = "Invoice_3", CreatedUTC = DateTime.Now, PayerId = payers[2].Id });
-            invoices[2].Lines.Add(new InvoiceAttendance() { InvoiceId = invoices[2].Id, AttendanceId = lessons[2].Attendances.First().Id });
-
-            return (services, payers, students, specifications, lessons, invoices);
+            return (services, payers, students, specifications, lessons, bills);
         }
     }
 }

@@ -31,7 +31,7 @@ namespace Apolo.ViewModels
             {
                 Title = "Delete student?",
                 Content = $"This will delete student '{item.FullName}'. \n"
-                 + $"Note: related specifications and attendances will also be removed.",
+                 + $"Note: related specifications and lessons will also be removed.",
                 PrimaryButtonText = Loc.Buttons_Delete,
                 CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Close,

@@ -7,20 +7,22 @@ namespace PDF
 {
     public interface IWriter
     {
-        public void GenerateInvoice(string invoiceName, PayerSummary payer, IEnumerable<InvoiceAttendanceSummary> attendances,
+        public void GenerateInvoice(string invoiceName, PayerSummary payer, IEnumerable<LessonLine> lessons,
+            UserProfile user, string filename);
+        public void GenerateTicket(string ticketName, PayerSummary payer, IEnumerable<LessonLine> lessons,
             UserProfile user, string filename);
     }
     public class Writer : IWriter
     {
-        public void GenerateInvoice(string invoiceName, PayerSummary payer, IEnumerable<InvoiceAttendanceSummary> attendances, 
+        public void GenerateInvoice(string invoiceName, PayerSummary payer, IEnumerable<LessonLine> lessons, 
             UserProfile user, string filename)
         {
             QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
             var culture = new CultureInfo("es-ES");
 
-            var list = attendances.ToArray();
-            decimal subTotal = list.Sum(a => a.Price);
+            var list = lessons.ToArray();
+            decimal subTotal = list.Sum(l => l.FinalPrice);
             decimal ivaPercent = (decimal)user.IvaPercent;
             decimal ivaAmount = Math.Round(subTotal * ivaPercent / 100m, 2, MidpointRounding.AwayFromZero);
             var total = subTotal + ivaAmount;
@@ -80,7 +82,7 @@ namespace PDF
 
                         col.Item().Height(15);
 
-                        // Attendances table
+                        // Lessons table
 
                         col.Item().Table(t =>
                         {
@@ -100,12 +102,12 @@ namespace PDF
                                 h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Price");
                             });
 
-                            foreach (var a in list)
+                            foreach (var l in list)
                             {
-                                t.Cell().PaddingVertical(4).Text(a.Date.ToString("dd-MM-yyyy"));
-                                t.Cell().PaddingVertical(4).Text(a.LessonName);
-                                t.Cell().PaddingVertical(4).Text(a.StudentName);
-                                t.Cell().PaddingVertical(4).AlignRight().Text(a.Price.ToString("C", culture));
+                                t.Cell().PaddingVertical(4).Text(l.Date.ToString("dd-MM-yyyy"));
+                                t.Cell().PaddingVertical(4).Text(l.Name);
+                                t.Cell().PaddingVertical(4).Text(l.StudentName);
+                                t.Cell().PaddingVertical(4).AlignRight().Text(l.FinalPrice.ToString("C", culture));
                             }
 
                         });
@@ -155,6 +157,102 @@ namespace PDF
 
                     page.Footer().PaddingTop(20).AlignCenter().Text($"In case of any clarification, please contact {user.Email}")
                     .FontSize(9).FontColor(Colors.Grey.Darken1);
+                });
+            });
+
+            doc.GeneratePdf(filename);
+        }
+
+        public void GenerateTicket(string ticketName, PayerSummary payer, IEnumerable<LessonLine> lessons,
+            UserProfile user, string filename)
+        {
+            QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
+            var culture = new CultureInfo("es-ES");
+
+            var list = lessons.ToArray();
+            decimal total = list.Sum(l => l.FinalPrice); // No taxes, just the direct sum
+
+            var dateText = DateTime.Now.ToString("dd'/'MM'/'yyyy");
+
+            var doc = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.ContinuousSize(PageSizes.A5.Width);
+                    page.Margin(50);
+                    page.DefaultTextStyle(x => x.FontSize(11));
+
+                    page.Header().PaddingBottom(20).Row(row =>
+                    {
+                        row.RelativeItem().Text("TICKET").SemiBold().FontSize(24).FontColor(Colors.Blue.Medium);
+
+                        row.ConstantItem(220).Column(col =>
+                        {
+                            col.Item().AlignRight().Text($"Date: {dateText}");
+                        });
+                    });
+
+                    page.Content().Column(col =>
+                    {
+                        // Simplified Payer block (No 'From' section)
+                        col.Item().Border(1).Padding(8).Column(c =>
+                        {
+                            c.Item().Text("Ticket for:").SemiBold();
+                            c.Item().Text(payer.FullName);
+                        });
+
+                        col.Item().Height(15);
+
+                        // Lessons table
+                        col.Item().Table(t =>
+                        {
+                            t.ColumnsDefinition(c =>
+                            {
+                                c.ConstantColumn(85); // Date
+                                c.RelativeColumn(); // Lesson
+                                c.RelativeColumn(); // Student
+                                c.ConstantColumn(95); // Price
+                            });
+
+                            t.Header(h =>
+                            {
+                                h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Date").SemiBold();
+                                h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Lesson");
+                                h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Student");
+                                h.Cell().AlignRight().Background(Colors.Grey.Lighten3).Padding(5).Text("Price").SemiBold();
+                            });
+
+                            foreach (var l in list)
+                            {
+                                t.Cell().PaddingVertical(4).Text(l.Date.ToString("dd-MM-yyyy"));
+                                t.Cell().PaddingVertical(4).Text(l.Name);
+                                t.Cell().PaddingVertical(4).Text(l.StudentName);
+                                t.Cell().PaddingVertical(4).AlignRight().Text(l.FinalPrice.ToString("C", culture));
+                            }
+                        });
+
+                        col.Item().Height(15);
+
+                        // Simplified Totals
+                        col.Item().Row(r =>
+                        {
+                            r.RelativeItem(); // left empty
+
+                            r.ConstantItem(200).Table(t =>
+                            {
+                                t.ColumnsDefinition(c =>
+                                {
+                                    c.RelativeColumn();
+                                    c.ConstantColumn(100);
+                                });
+
+                                // Made the total a bit larger to stand out since there are no subtotals
+                                t.Cell().AlignRight().PaddingBottom(8).Text($"TOTAL:").SemiBold().FontSize(14);
+                                t.Cell().AlignRight().Text(total.ToString("C", culture)).SemiBold().FontSize(14);
+                            });
+                        });
+                    });
                 });
             });
 

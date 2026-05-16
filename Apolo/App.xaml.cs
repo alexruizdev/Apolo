@@ -60,7 +60,7 @@ namespace Apolo
             builder.AddTransient<IServiceRepository, ServiceRepository>();
             builder.AddTransient<ISpecificationRepository, SpecificationRepository>();
             builder.AddTransient<ILessonRepository, LessonRepository>();
-            builder.AddTransient<IInvoiceRepository, InvoiceRepository>();
+            builder.AddTransient<IBillingRepository, BillingRepository>();
             builder.AddTransient<IGeneralRepository, GeneralRepository>();
 
             // Utilities
@@ -74,7 +74,7 @@ namespace Apolo
             builder.AddTransient<ServicesViewModel>();
             builder.AddTransient<SpecificationsViewModel>();
             builder.AddTransient<LessonsViewModel>();
-            builder.AddTransient<InvoicesViewModel>();
+            builder.AddTransient<BillingViewModel>();
             builder.AddTransient<SettingsViewModel>();
 
             builder.AddSingleton<MainWindow>();

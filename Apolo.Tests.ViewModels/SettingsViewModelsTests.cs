@@ -177,7 +177,7 @@ namespace Apolo.Tests.ViewModels
                 // 3. Verify specific data points are inside the string
                 StringAssert.Contains(fileContent, "APOLO APP - IMPORT SUMMARY");
                 StringAssert.Contains(fileContent, $"- Services Imported: 3");
-                StringAssert.Contains(fileContent, $"- Invoices Processed: 3");
+                StringAssert.Contains(fileContent, $"- Invoices Processed: 2");
                 StringAssert.Contains(fileContent, "STATUS: Success");
             }
             finally

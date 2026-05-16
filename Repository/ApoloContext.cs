@@ -1,6 +1,5 @@
 ﻿using Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Repository
 {
@@ -11,9 +10,7 @@ namespace Repository
         public DbSet<Payer> Payers { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Lesson> Lessons { get; set; }
-        public DbSet<Attendance> Attendances { get; set; }
-        public DbSet<InvoiceAttendance> InvoiceAttendances { get; set; }
-        public DbSet<Invoice> Invoices { get; set; }
+        public DbSet<BillingDocument> BillingDocuments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -24,39 +21,24 @@ namespace Repository
                 .HasForeignKey(s => s.PayerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Attendance (join: Lesson x Customer, unique per pair)
-            modelBuilder.Entity<Attendance>()
-                .HasOne(a => a.Lesson)
-                .WithMany(l => l.Attendances)
-                .HasForeignKey(a => a.LessonId)
-                .OnDelete(DeleteBehavior.Cascade);
-            modelBuilder.Entity<Attendance>()
-                .HasOne(a => a.Student)
-                .WithMany(s => s.Attendances)
+            modelBuilder.Entity<Lesson>()
+                .HasOne(l => l.Student)
+                .WithMany(s => s.Lessons)
                 .HasForeignKey(a => a.StudentId)
-                .OnDelete(DeleteBehavior.Cascade);
-            modelBuilder.Entity<Attendance>()
-                .HasIndex(a => new { a.LessonId, a.StudentId })
-                .IsUnique();
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Invoice 
-            modelBuilder.Entity<Invoice>(invoice =>
+            modelBuilder.Entity<BillingDocument>(doc =>
             {
-                invoice.HasKey(i => i.Id);
-                invoice.HasIndex(i => i.Name).IsUnique();
+                doc.HasKey(d => d.Id);
+                doc.HasIndex(d => new { d.Type, d.Year, d.SequenceNumber }).IsUnique();
             });
 
-            modelBuilder.Entity<InvoiceAttendance>()
-                .HasOne(x => x.Invoice)
+            modelBuilder.Entity<Lesson>()
+                .HasOne(l => l.BillingDocument)
                 .WithMany(i => i.Lines)
-                .HasForeignKey(x => x.InvoiceId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<InvoiceAttendance>()
-                .HasOne(x => x.Attendance)
-                .WithMany()
-                .HasForeignKey(x => x.AttendanceId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(a => a.BillingDocumentId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
     public class ApoloContext : DbContext
@@ -68,9 +50,7 @@ namespace Repository
         public DbSet<Service> Services { get; set; }
         public DbSet<Specification> Specifications { get; set; }
         public DbSet<Lesson> Lessons { get; set; }
-        public DbSet<Attendance> Attendances { get; set; }
-        public DbSet<InvoiceAttendance> InvoiceAttendances { get; set; }
-        public DbSet<Invoice> Invoices { get; set; }
+        public DbSet<BillingDocument> BillingDocuments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -106,40 +86,25 @@ namespace Repository
                 .HasForeignKey(sp => sp.ServiceId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Attendance (join: Lesson x Customer, unique per pair)
-            modelBuilder.Entity<Attendance>()
-                .HasOne(a => a.Lesson)
-                .WithMany(l => l.Attendances)
-                .HasForeignKey(a => a.LessonId)
-                .OnDelete(DeleteBehavior.Cascade);
-            modelBuilder.Entity<Attendance>()
-                .HasOne(a => a.Student)
-                .WithMany(s => s.Attendances)
+            // Lesson (join: Lesson x Customer, unique per pair)
+            modelBuilder.Entity<Lesson>()
+                .HasOne(l => l.Student)
+                .WithMany(s => s.Lessons)
                 .HasForeignKey(a => a.StudentId)
                 .OnDelete(DeleteBehavior.Restrict);
-            modelBuilder.Entity<Attendance>()
-                .HasIndex(a => new { a.LessonId, a.StudentId })
-                .IsUnique();
 
             // Invoice 
-            modelBuilder.Entity<Invoice>(invoice =>
+            modelBuilder.Entity<BillingDocument>(doc =>
             {
-                invoice.HasKey(i => i.Id);
-                invoice.Property(i => i.Id).ValueGeneratedOnAdd();
-                invoice.HasIndex(i => i.Name).IsUnique();
+                doc.HasKey(d => d.Id);
+                doc.HasIndex(d => new { d.Type, d.Year, d.SequenceNumber }).IsUnique();
             });
 
-            modelBuilder.Entity<InvoiceAttendance>()
-                .HasOne(x => x.Invoice)
+            modelBuilder.Entity<Lesson>()
+                .HasOne(l => l.BillingDocument)
                 .WithMany(i => i.Lines)
-                .HasForeignKey(x => x.InvoiceId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<InvoiceAttendance>()
-                .HasOne(x => x.Attendance)
-                .WithMany()
-                .HasForeignKey(x => x.AttendanceId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(a => a.BillingDocumentId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

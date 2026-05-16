@@ -42,29 +42,22 @@ namespace Repository
     public interface ILessonRepository
     {
         Task<IEnumerable<LessonSummary>> GetLessonsAsync(bool showOnlyUnpaid, int? months);
-        Task<Lesson> AddLessonAsync(DateOnly date, string name,
-            bool isPricePerHour, int? duration, decimal pricePerStudent,
+        Task<Lesson> AddLessonAsync(DateOnly date, string name, bool isPaid, Guid studentId,
+            Guid? billingDocumentId, bool isPricePerHour, int? duration, decimal basePrice,
             bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee,
-             string? notes, IReadOnlyList<Guid> studentIds);
-        Task<Lesson> UpdateLessonNoteAsync(Guid id, string? note);
+             string? notes);
         Task<Lesson> UpdateLesson(Guid id, DateOnly date, string name,
             bool isPricePerHour, int? duration, decimal pricePerStudent,
             bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, string? note);
-        Task<Lesson> AddAttendanceAsync(Guid lessonId, IReadOnlyCollection<Guid> studentIds);
-        Task<Lesson> RemoveAttendanceAsync(Guid lessonId, Guid attendanceId);
-        Task<Lesson> UpdateAttendanceAsync(Guid lessonId, Guid attendanceId, bool isPaid);
+        Task DeleteAsync(Guid id);
     }
 
-    public interface IInvoiceRepository
+    public interface IBillingRepository
     {
-        Task<IEnumerable<InvoiceAttendanceSummary>> GetInvoiceAttendancesAsync(Guid payerId);
-        Task<IEnumerable<InvoiceAttendanceSummary>> GetInvoiceAttendancesAsync(string invoiceName);
-        Task UpdateAttendancesAsync(IEnumerable<Guid> attendancesIds);
-        Task AddAsync(Invoice invoice);
-        Task<(int invoiceId, string InvoiceName)> CreateInvoiceAsync(Guid payerId,
-            IEnumerable<Guid> attendanceIds, string? requestedName);
-        Task DeleteInvoiceAsync(int invoiceId);
-        Task<IEnumerable<Invoice>> GetInvoicesAsync();
+        Task<IEnumerable<LessonLine>> GetUnbilledLessonsAsync(Guid payerId);
+        Task UpdateLessonsAsync(IEnumerable<Guid> lessonsIds, bool isPaid);
+        Task<string> CreateBillAsync(Guid payerId, List<Guid> ids, DocumentType type);
+        Task DeleteAsync(Guid id);
     }
 
     public interface IGeneralRepository
@@ -77,10 +70,10 @@ namespace Repository
             List<Student> students,
             List<Specification> specifications,
             List<Lesson> lessons,
-            List<Invoice> invoices);
+            List<BillingDocument> invoices);
 
         Task<(List<Service> Services, List<Payer> Payers, List<Student> Students,
-            List<Specification> Specifications, List<Lesson> Lessons, List<Invoice> Invoices)> GetAllDataAsync();
+            List<Specification> Specifications, List<Lesson> Lessons, List<BillingDocument> Invoices)> GetAllDataAsync();
         Task<List<PayerActivityInfo>> GetPayersWithActivityAsync();
         Task ArchiveOldDataAsync(List<Guid> payerIds);
     }

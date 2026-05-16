@@ -40,25 +40,19 @@
                         VerticalAlignment="Bottom" />
             </StackPanel>
 
-            <StackPanel Orientation="Horizontal" Spacing="8">
-                <TextBox x:Name="InvoiceNameBox"
-                         Header="Invoice name (optional)"
-                         Width="260" />
-                <Button Content="Generate PDF..."
-                        Click="ExportPdf_Click"
-                        IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
-                        VerticalAlignment="Bottom" />
-            </StackPanel>
+            <CommandBar DefaultLabelPosition="Right" Background="Transparent" HorizontalAlignment="Left">
 
-            <StackPanel Orientation="Horizontal" Spacing="8">
-                <TextBox x:Name="InvoiceNameSearchBox"
-                         Header="Search invoice by name"
-                         Width="260" />
-                <Button Content="Load by invoice name"
-                        Click="LoadByName_Click"
-                        IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
-                        VerticalAlignment="Bottom" />
-            </StackPanel>
+                    <AppBarButton Label="New invoice" 
+                      Icon="Document"
+                      Click="CreateInvoice_Click"
+                      IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
+
+                    <AppBarButton Label="New ticket" 
+                      Icon="Tag"
+                      Click="CreateTicket_Click"
+                      IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
+
+            </CommandBar>
 
             <StackPanel Orientation="Horizontal"
                         Spacing="24">
@@ -80,7 +74,7 @@
                     Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}" />
             </StackPanel>
 
-            <ListView ItemsSource="{Binding Attendances}">
+            <ListView ItemsSource="{Binding Lessons}">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="vm:InvoiceLine">
                         <StackPanel Spacing="8"
@@ -90,14 +84,14 @@
                                       VerticalAlignment="Center"
                                       Width="20"
                                       Height="20" />
-                            <TextBlock Text="{x:Bind Date, Converter={StaticResource DateFormatConverter}}"
+                            <TextBlock Text="{x:Bind Data.Date, Converter={StaticResource DateFormatConverter}}"
                                        VerticalAlignment="Center" />
-                            <TextBlock Text="{x:Bind LessonName}"
+                            <TextBlock Text="{x:Bind Data.Name}"
                                        VerticalAlignment="Center" />
-                            <TextBlock Text="{x:Bind StudentName}"
+                            <TextBlock Text="{x:Bind Data.StudentName}"
                                        VerticalAlignment="Center" />
                             <TextBlock VerticalAlignment="Center">
-                                <Run Text="{x:Bind Price, Converter={StaticResource DecimalToCurrencyConverter}}" />
+                                <Run Text="{x:Bind Data.FinalPrice, Converter={StaticResource DecimalToCurrencyConverter}}" />
                             </TextBlock>
                         </StackPanel>
                     </DataTemplate>

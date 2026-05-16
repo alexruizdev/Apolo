@@ -19,9 +19,7 @@ namespace Repository
 
             // 3. Apply Filters
             if (showOnlyUnpaid)
-            {
-                query = query.Where(l => l.Attendances.Any(a => !a.IsPaid));
-            }
+                query = query.Where(l => !l.IsPaid);
 
             if (months is not null)
             {
@@ -33,23 +31,22 @@ namespace Repository
                 .OrderByDescending(l => l.Date)
                 .Select(l => new LessonSummary(
                     l.Id,
-                    l.Name,
                     l.Date,
+                    l.Name,
+                    l.FinalPrice,
+                    l.IsPaid,
+                    l.StudentId,
+                    l.Student.FullName,
+                    l.BillingDocumentId,
+                    l.BillingDocument == null ? string.Empty : l.BillingDocument.DocumentNumber,
                     l.IsPricePerHour,
                     l.DurationMinutes,
-                    l.PricePerAttendance,
+                    l.BasePrice,
                     l.IsOnline,
                     l.TravelAllowance,
                     l.IsWeekenOrHoliday,
                     l.WeekendFee,
-                    l.Notes,
-                    l.Attendances.Select(a => new AttendanceSummary(
-                        a.Id,
-                        a.StudentId,
-                        a.Student.FullName, // EF handles the join automatically here
-                        a.IsPaid
-                    )).ToList()
-                ))
+                    l.Notes))
                 .ToListAsync();
         }
 
@@ -59,35 +56,13 @@ namespace Repository
             await _db.SaveChangesAsync();
         }
 
-        public async Task<Lesson> AddLessonAsync(DateOnly date, string name, 
-            bool isPricePerHour, int? duration, decimal pricePerStudent,
+        public async Task<Lesson> AddLessonAsync(DateOnly date, string name, bool isPaid, Guid studentId,
+            Guid? billingDocumentId, bool isPricePerHour, int? duration, decimal basePrice,
             bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee,
-             string? notes, IReadOnlyList<Guid> studentIds)
+             string? notes)
         {
-            var lesson = new Lesson
-            {
-                Date = date,
-                Name = name,
-                IsPricePerHour = isPricePerHour,
-                DurationMinutes = duration, 
-                PricePerAttendance = pricePerStudent,
-                IsOnline = isOnline,
-                TravelAllowance = travelAllowance,
-                IsWeekenOrHoliday = isWeekendOrHoliday,
-                WeekendFee = weekendFee,
-                Notes = notes
-            };
-
-            for (int i = 0; i < studentIds.Count; i++)
-            {
-                lesson.Attendances.Add(new Attendance
-                {
-                    LessonId = lesson.Id,
-                    StudentId = studentIds[i],
-                    IsPaid = false,
-                    Price = lesson.GetFinalPricePerStudent()
-                });
-            }
+            var lesson = new Lesson(date, name, isPaid, studentId, billingDocumentId, isPricePerHour, duration, basePrice,
+                isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, notes);
 
             _db.Lessons.Add(lesson);
             await _db.SaveChangesAsync();
@@ -95,34 +70,24 @@ namespace Repository
             return lesson;
         }
 
-        public async Task<Lesson> UpdateLessonNoteAsync(Guid id, string? note)
-        {
-            var entity = await _db.Lessons.FirstOrDefaultAsync(i => i.Id == id);
-            if (entity is null)
-                throw new InvalidDataException("Lesson not found.");
-            entity.Notes = note;
-            await _db.SaveChangesAsync();
-            return entity;
-        }
-
         public async Task<Lesson> UpdateLesson(Guid id, DateOnly date, string name, 
             bool isPricePerHour, int? duration, decimal pricePerStudent,
             bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, string? note)
         {
-            var entity = await _db.Lessons.Include(l => l.Attendances).FirstOrDefaultAsync(i => i.Id == id);
+            var entity = await _db.Lessons.FirstOrDefaultAsync(i => i.Id == id);
 
             if (entity is null)
                 throw new InvalidDataException("Lesson not found.");
 
             entity.Date = date;
             entity.Name = name;
-            entity.IsPricePerHour = isPricePerHour;
-            entity.DurationMinutes = duration;
-            entity.PricePerAttendance = pricePerStudent;
-            entity.IsOnline = isOnline;
-            entity.TravelAllowance = travelAllowance;
-            entity.IsWeekenOrHoliday = isWeekendOrHoliday;
-            entity.WeekendFee = weekendFee;
+            var canEdit = entity.Set(isPricePerHour, duration, pricePerStudent, isOnline, travelAllowance,
+                isWeekendOrHoliday, weekendFee);
+            if (!canEdit)
+            {
+                var reason = entity.IsPaid ? "is marked as paid." : "is assigned to a ticket/invoice.";
+                throw new InvalidDataException($"Lesson {entity.Name} can't be edited because {reason}");
+            }
             entity.Notes = note;
 
             await _db.SaveChangesAsync();
@@ -130,72 +95,13 @@ namespace Repository
             return entity;
         }
 
-        public async Task<Lesson> AddAttendanceAsync(Guid lessonId, IReadOnlyCollection<Guid> studentIds)
+        public async Task DeleteAsync(Guid id)
         {
-            var lesson = await _db.Lessons
-                .Include(l => l.Attendances)
-                .FirstOrDefaultAsync(l => l.Id == lessonId);
-            if (lesson is null)
-                throw new InvalidDataException("Lesson not found.");
+            var entity = await _db.Lessons.FindAsync(id)
+                         ?? throw new ArgumentNullException("Lesson not found.");
 
-            // Exclude students already present
-            var existing = lesson.Attendances.Select(a => a.StudentId).ToHashSet();
-            var newIds = studentIds.Where(id => !existing.Contains(id)).ToList();
-            if (newIds.Count == 0)
-                throw new InvalidOperationException("No new students to be added.");
-
-            var newAttendances = new List<Attendance>(newIds.Count);
-            for (int i = 0; i < newIds.Count; i++)
-            {
-                newAttendances.Add(new Attendance
-                {
-                    LessonId = lessonId,
-                    StudentId = newIds[i],
-                    IsPaid = false,
-                    Price = lesson.GetFinalPricePerStudent()
-                });
-            }
-
-            _db.Attendances.AddRange(newAttendances);
+            _db.Lessons.Remove(entity);
             await _db.SaveChangesAsync();
-
-            return lesson;
-        }
-
-        public async Task<Lesson> RemoveAttendanceAsync(Guid lessonId, Guid attendanceId)
-        {
-            var lesson = await _db.Lessons.Include(l => l.Attendances).FirstOrDefaultAsync(l => l.Id == lessonId)
-                         ?? throw new InvalidDataException("Lesson not found.");
-
-            var attendance = lesson.Attendances.FirstOrDefault(a => a.Id == attendanceId)
-                             ?? throw new InvalidDataException("Attendance not found.");
-
-            lesson.Attendances.Remove(attendance);
-
-            _db.Attendances.Remove(attendance);
-
-            if (lesson.Attendances.Count == 0)
-            {
-                _db.Lessons.Remove(lesson);
-            }
-
-            await _db.SaveChangesAsync();
-            return lesson;
-        }
-
-        public async Task<Lesson> UpdateAttendanceAsync(Guid lessonId, Guid attendanceId, bool isPaid)
-        {
-            var attendance = await _db.Attendances.FirstOrDefaultAsync(a => a.Id == attendanceId && a.LessonId == lessonId);
-            if (attendance is null)
-                throw new InvalidDataException("Attendance not found.");
-
-            attendance.IsPaid = isPaid;
-
-            var lesson = await _db.Lessons.Include(l => l.Attendances).FirstAsync(l => l.Id == lessonId);
-
-            await _db.SaveChangesAsync();
-
-            return lesson;
         }
     }
 }

@@ -28,7 +28,7 @@ namespace Apolo.Views
             var studentsList = new ListView
             {
                 Header = "Students",
-                SelectionMode = ListViewSelectionMode.Multiple,
+                SelectionMode = ListViewSelectionMode.Single,
                 ItemsSource = ViewModel.Students,
                 MaxHeight = 240
             };
@@ -217,17 +217,24 @@ namespace Apolo.Views
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Primary)
             {
-                var selectedIds = studentsList.SelectedItems.Cast<StudentOption>().Select(s => s.Id).ToList();
+                var selectedId = ((StudentOption)studentsList.SelectedItem).Id;
                 var dto = datePick.Date ?? DateTimeOffset.Now;
                 var date = DateOnly.FromDateTime(dto.Date);
                 bool isOnline = onlineBox.IsChecked == true;
                 bool isWeekend = weekendBox.IsChecked == true;
                 await ViewModel.AddLessonAsync(date, nameBox.Text, (ServiceSummary)serviceBox.SelectedItem, 
                     (int?)durationBox.Value, (decimal)priceBox.Value,
-                    isOnline, isWeekend, noteBox.Text, selectedIds);
+                    isOnline, isWeekend, noteBox.Text, selectedId);
             }
         }
 
+        private async void DeleteLesson_Click(object sender, RoutedEventArgs e)
+        {
+            //TODO
+            if (sender is not Button b || b.DataContext is not LessonSummary row) return;
+
+            await ViewModel.DeleteLessonAsync(row.Id);
+        }
         private async void EditLesson_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not Button b || b.DataContext is not LessonSummary row) return;
@@ -248,7 +255,7 @@ namespace Apolo.Views
             var priceBox = new NumberBox
             {
                 Header = "Price:",
-                Value = (double)row.PricePerAttendance,
+                Value = (double)row.BasePrice,
                 PlaceholderText = "0.00"
             };
             string note = row.Notes ?? string.Empty;
@@ -304,181 +311,13 @@ namespace Apolo.Views
                 var dto = datePick.Date ?? new DateTimeOffset(row.Date.ToDateTime(TimeOnly.MinValue));
                 var date = DateOnly.FromDateTime(dto.Date);
                 bool isPricePerHour = isPricePerHourBox.IsChecked == true;
-                int? duration = isPricePerHour ? null : (int)durationBox.Value;
+                int? duration = isPricePerHour ? (int)durationBox.Value : null;
                 await ViewModel.UpdateLessonAsync(
                     row.Id, date, nameBox.Text, 
                     isPricePerHour, duration, (decimal)priceBox.Value,
                     onlineBox.IsChecked == true, (decimal)travelAllowanceBox.Value,
                     weekenBox.IsChecked == true, (decimal)weekendFeeBox.Value,
                     noteBox.Text);
-            }
-        }
-
-        private async void Notes_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is not Button b || b.DataContext is not LessonSummary row) return;
-
-            var noteBox = new TextBox { 
-                Header = "Notes", 
-                MinWidth = 400, 
-                AcceptsReturn = true, 
-                TextWrapping = TextWrapping.Wrap 
-            };
-
-            noteBox.Text = row.Notes;
-
-            var panel = new StackPanel { Spacing = 8 };
-            panel.Children.Add(noteBox);
-
-            var viewer = new ScrollViewer
-            {
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                VerticalScrollMode = ScrollMode.Enabled,
-                MaxHeight = 500,
-                Content = panel
-            };
-
-            var dialog = new ContentDialog
-            {
-                Title = $"{row.Name} Notes",
-                Content = viewer,
-                PrimaryButtonText = "Save",
-                CloseButtonText = Loc.Buttons_Cancel,
-                DefaultButton = ContentDialogButton.Primary,
-                XamlRoot = Content.XamlRoot
-            };
-
-            var result = await dialog.ShowAsync();
-            if (result == ContentDialogResult.Primary)
-            {
-                await ViewModel.UpdateLessonNoteAsync(row.Id, noteBox.Text);
-            }
-        }
-
-        private async void AddAttendances_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is not Button b || b.DataContext is not LessonSummary row) return;
-
-            // choose students not already in this lesson
-            var existingIds = row.Attendances.Select(a => a.StudentId).ToHashSet();
-            var options = ViewModel.Students.Where(s => !existingIds.Contains(s.Id)).ToList();
-
-            var list = new ListView
-            {
-                Header = "Students",
-                SelectionMode = ListViewSelectionMode.Multiple,
-                ItemsSource = options,
-                MaxHeight = 240
-            };
-            list.DisplayMemberPath = "FullName";
-            var error = new TextBlock
-            {
-                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.IndianRed),
-                Visibility = Visibility.Collapsed
-            };
-
-            var panel = new StackPanel { Spacing = 8 };
-            panel.Children.Add(list);
-            panel.Children.Add(error);
-
-            var viewer = new ScrollViewer
-            {
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                VerticalScrollMode = ScrollMode.Enabled,
-                MaxHeight = 500,
-                Content = panel
-            };
-
-            var dialog = new ContentDialog
-            {
-                Title = "Add attendances",
-                Content = viewer,
-                PrimaryButtonText = "Add",
-                CloseButtonText = Loc.Buttons_Cancel,
-                DefaultButton = ContentDialogButton.Primary,
-                XamlRoot = Content.XamlRoot
-            };
-
-            void UpdateUI()
-            {
-                error.Visibility = Visibility.Collapsed;
-                error.Text = string.Empty;
-                if (list.SelectedItems.Count == 0)
-                {
-                    error.Text = "Select at least one customer.";
-                    error.Visibility = Visibility.Visible;
-                }
-                dialog.IsPrimaryButtonEnabled = error.Visibility == Visibility.Collapsed;
-            }
-
-            list.SelectionChanged += (_, __) => UpdateUI();
-            dialog.Loaded += (_, __) => UpdateUI();
-
-            var result = await dialog.ShowAsync();
-            if (result == ContentDialogResult.Primary)
-            {
-                var ids = list.SelectedItems.Cast<StudentOption>().Select(x => x.Id).ToList();
-                await ViewModel.AddAttendanceAsync(row.Id, ids);
-            }
-        }
-
-        private async void EditAttendances_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is not Button b)
-                return;
-            if (b.CommandParameter is not AttendanceSummary attendance) 
-                return;
-            if (b.DataContext is not LessonSummary lesson)
-                return;
-
-            // find parent lesson id
-            if (b.Parent as FrameworkElement is null) return;
-
-            var paidBox = new CheckBox { Content = "Paid", IsChecked = attendance.IsPaid };
-
-            var panel = new StackPanel { Spacing = 8 };
-            panel.Children.Add(paidBox);
-
-            var dialog = new ContentDialog
-            {
-                Title = "Edit attendance",
-                Content = panel,
-                PrimaryButtonText = "Save",
-                CloseButtonText = Loc.Buttons_Cancel,
-                DefaultButton = ContentDialogButton.Primary,
-                XamlRoot = Content.XamlRoot
-            };
-
-            var result = await dialog.ShowAsync();
-            if (result == ContentDialogResult.Primary)
-            {
-                await ViewModel.UpdateAttendanceAsync(lesson.Id, attendance.Id, paidBox.IsChecked == true);
-            }
-        } 
-
-        private async void RemoveAttendance_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is not Button b)
-                return;
-            if (b.CommandParameter is not AttendanceSummary attendance)
-                return;
-            if (b.DataContext is not LessonSummary lesson)
-                return;
-
-            var dialog = new ContentDialog()
-            {
-                Title = "Delete attendace?",
-                Content = $"Remove {attendance.StudentName} from '{lesson.Name}'?",
-                PrimaryButtonText = Loc.Buttons_Delete,
-                CloseButtonText = Loc.Buttons_Cancel,
-                DefaultButton = ContentDialogButton.Close,
-                XamlRoot = Content.XamlRoot
-            };
-
-            var result = await dialog.ShowAsync();
-            if (result == ContentDialogResult.Primary)
-            {
-                await ViewModel.RemoveAttendanceAsync(lesson.Id, attendance.Id);
             }
         }
 

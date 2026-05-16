@@ -34,56 +34,36 @@ namespace Repository
 
         public async Task<IEnumerable<PayerSummary>> GetPayersAsync()
         {
-            // 1. Fetch only the 'ingredients' needed for the calculation
-            var unpaidAttendances = await _db.Attendances
+            var rawData = await _db.Payers
                 .AsNoTracking()
-                .Where(a => !a.IsPaid)
-                .Select(a => new
+                .Select(p => new
                 {
-                    a.Student.PayerId,
-                    // We pull the Lesson properties needed for the static GetPrice method
-                    a.Lesson.IsPricePerHour,
-                    a.Lesson.DurationMinutes,
-                    a.Lesson.PricePerAttendance,
-                    a.Lesson.IsOnline,
-                    a.Lesson.TravelAllowance,
-                    a.Lesson.IsWeekenOrHoliday,
-                    a.Lesson.WeekendFee
-                })
-                .ToListAsync();
-
-            // 2. Group by Payer and calculate using the Model's logic
-            var debtMap = unpaidAttendances
-                .GroupBy(a => a.PayerId)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Sum(a => Lesson.GetPrice(
-                        1, // Calculating price per student
-                        a.IsPricePerHour,
-                        a.DurationMinutes,
-                        a.PricePerAttendance,
-                        a.IsOnline,
-                        a.TravelAllowance,
-                        a.IsWeekenOrHoliday,
-                        a.WeekendFee))
-                );
-
-            // 3. Get the Payer list and inject the calculated debt
-            var payers = await _db.Payers
-                .AsNoTracking()
-                .Select(p => new PayerSummary(
                     p.Id,
                     p.FirstName,
                     p.LastName,
-                    debtMap.ContainsKey(p.Id) ? debtMap[p.Id] : 0m,
+                    Outstanding = p.Students
+                        .SelectMany(s => s.Lessons)
+                        .Where(l => !l.IsPaid)
+                        .Sum(l => (decimal?)l.FinalPrice) ?? 0m,
                     p.Address,
                     p.ZipCode,
                     p.City,
                     p.TaxId
-                ))
-                .ToListAsync();
+                })
+                .ToListAsync(); 
 
-            return payers.OrderBy(x => x.FullName).ToList();
+            return rawData
+                .OrderByDescending(x => x.Outstanding) 
+                .Select(x => new PayerSummary(
+                    x.Id,
+                    x.FirstName,
+                    x.LastName,
+                    x.Outstanding,
+                    x.Address,
+                    x.ZipCode,
+                    x.City,
+                    x.TaxId
+                ));
         }
 
         public async Task<IEnumerable<PayerOption>> GetPayerOptionsAsync()

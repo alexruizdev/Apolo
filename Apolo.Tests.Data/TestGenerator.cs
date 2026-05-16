@@ -1,5 +1,6 @@
 ﻿using Models;
 using System.Reflection.Metadata.Ecma335;
+using System.Xml.Linq;
 
 namespace Apolo.Tests.Data
 {
@@ -33,7 +34,7 @@ namespace Apolo.Tests.Data
         public const int NormalDuration = 60;
         public const int LongDuration = 180;
         public const int ShortDuration = 25;
-        public const decimal LessonPricePerAttendance = 50;
+        public const decimal BasePrice = 50;
         public const decimal LessonTravelAllowance = 10;
         public const decimal LessonWeekendFee = 5;
         public const string LessonNotes = "This is a test lesson.";
@@ -112,34 +113,12 @@ namespace Apolo.Tests.Data
         };
 
         // Lesson constructors
-        public static Lesson CreateLessonPaid() => new Lesson
-        {
-            Id = Guid.NewGuid(),
-            Name = LessonNamePaid,
-            Date = LessonOldDate,
-            IsPricePerHour = true,
-            DurationMinutes = NormalDuration,
-            PricePerAttendance = LessonPricePerAttendance,
-            IsOnline = false,
-            TravelAllowance = LessonTravelAllowance,
-            IsWeekenOrHoliday = true,
-            WeekendFee = LessonWeekendFee,
-            Notes = LessonNotes
-        };
-        public static Lesson CreateLessonUnpaid(bool paid = false) => new Lesson
-        {
-            Id = Guid.NewGuid(),
-            Name = paid ? LessonNamePaid : LessonNameUnpaid,
-            Date = LessonNewDate,
-            IsPricePerHour = false,
-            DurationMinutes = LongDuration,
-            PricePerAttendance = LessonPricePerAttendance,
-            IsOnline = true,
-            TravelAllowance = LessonTravelAllowance,
-            IsWeekenOrHoliday = false,
-            WeekendFee = LessonWeekendFee,
-            Notes = null
-        };
+        public static Lesson CreateLessonPaid(Guid studentId) => new Lesson(
+            LessonOldDate, LessonNamePaid, isPaid: true, studentId, null, isPricePerHour: true, NormalDuration, BasePrice,
+            isOnline: false, LessonTravelAllowance, isWeekenOrHoliday: true, LessonWeekendFee, LessonNotes);
+        public static Lesson CreateLessonUnpaid(Guid studentId) => new Lesson(
+            LessonNewDate, LessonNameUnpaid, isPaid: false, studentId, null, isPricePerHour: false, null, 
+            BasePrice, isOnline: true, LessonTravelAllowance, isWeekenOrHoliday: false, LessonWeekendFee, null);
 
         private static DateOnly GetRandomDateLastNMonths(int months)
         {
@@ -156,51 +135,19 @@ namespace Apolo.Tests.Data
 
         private static bool RandomBool = Random.Shared.Next(2) == 0;
 
-        public static Lesson CreateRandomLesson(string name, bool paid, int months) => new Lesson
-        {
-            Id = Guid.NewGuid(),
-            Name = name,
-            Date = GetRandomDateLastNMonths(months),
-            IsPricePerHour = false,
-            PricePerAttendance = LessonPricePerAttendance,
-            IsOnline = RandomBool,
-            TravelAllowance = LessonTravelAllowance,
-            IsWeekenOrHoliday = RandomBool,
-            WeekendFee = LessonWeekendFee
-        };
+        public static Lesson CreateRandomLesson(string name, bool paid, int months, Guid studentId) => new Lesson(
+            GetRandomDateLastNMonths(months), name, isPaid: paid, studentId, null, isPricePerHour: false, null,
+            BasePrice, isOnline: RandomBool, LessonTravelAllowance, isWeekenOrHoliday: RandomBool, LessonWeekendFee, null);
+        
 
         public static Lesson CreateLesson(Guid studentId, bool paid = false)
         {
-            var lesson = paid ? CreateLessonPaid() : CreateLessonUnpaid();
-            lesson.Attendances = new List<Attendance>
-            {
-                new Attendance
-                {
-                    Id = Guid.NewGuid(),
-                    LessonId = lesson.Id,
-                    StudentId = studentId,
-                    IsPaid = paid,
-                    Price = lesson.GetFinalPricePerStudent()
-                }
-            };
-            return lesson;
+            return paid ? CreateLessonPaid(studentId) : CreateLessonUnpaid(studentId);
         }
 
         public static Lesson CreateRandomLesson(Guid studentId, string name, bool paid, int months)
         {
-            var lesson = CreateRandomLesson(name, paid, months);
-            lesson.Attendances = new List<Attendance>    
-            {
-                new Attendance
-                {
-                    Id = Guid.NewGuid(),
-                    LessonId = lesson.Id,
-                    StudentId = studentId,
-                    IsPaid = paid,
-                    Price = lesson.GetFinalPricePerStudent()
-                }
-            };
-            return lesson;
+            return CreateRandomLesson(name, paid, months, studentId);
         }
 
         // Specification constructors
@@ -227,22 +174,16 @@ namespace Apolo.Tests.Data
             IsWeekenOrHoliday = false
         };
 
-        public static Invoice CreateInvoice(List<Lesson> lessons, Guid payerId)
+        public static BillingDocument CreateInvoice(List<Lesson> lessons, Guid payerId)
         {
-            var invoice = new Invoice
+            var invoice = new BillingDocument (DateTime.UtcNow)
             {
-                Id = InvoiceId1,
-                Name = InvoiceName1,
-                CreatedUTC = DateTime.UtcNow,
+                Type = DocumentType.Invoice,
+                SequenceNumber = 0,
                 PayerId = payerId
             };
 
-            invoice.Lines = lessons.SelectMany(l => l.Attendances.Select(a => new InvoiceAttendance
-            {
-                Id = Guid.NewGuid(),
-                InvoiceId = invoice.Id,
-                AttendanceId = a.Id
-            })).ToList();
+            invoice.Lines = lessons;
 
             return invoice;
         }
