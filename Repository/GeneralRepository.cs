@@ -84,12 +84,84 @@ namespace Repository
                 .ToListAsync();
         }
 
+        public async Task<List<PayerOption>> GetPayersFromArchiveAsync()
+        {
+            return await _archiveDb.Payers
+                .AsNoTracking()
+                 .OrderBy(s => s.FirstName)
+                 .ThenBy(s => s.LastName)
+                 .Select(p => new PayerOption(
+                     p.Id,
+                     p.FullName))
+                 .ToListAsync();
+        }
+
+        public async Task RetrieveDataFromArchiveAsync(List<Guid> payerIds)
+        {
+            using var transaction = await _db.Database.BeginTransactionAsync();
+            using var archiveTransaction = await _archiveDb.Database.BeginTransactionAsync();
+            try
+            {
+                _db.ChangeTracker.Clear();
+                _archiveDb.ChangeTracker.Clear();
+
+                // 1. Identify Payers and Students
+                var payersToMove = await _archiveDb.Payers
+                    .AsNoTracking()
+                    .Where(p => payerIds.Contains(p.Id))
+                    .ToListAsync();
+
+                var studentsToMove = await _archiveDb.Students
+                    .AsNoTracking()
+                    .Where(s => payerIds.Contains(s.PayerId))
+                    .ToListAsync();
+
+                var studentIds = studentsToMove.Select(s => s.Id).ToList();
+
+                // 2. Identify Lessons and Invoices linked to these students
+                var lessonsToMove = await _archiveDb.Lessons
+                    .AsNoTracking()
+                    .Where(l => studentIds.Contains(l.StudentId))
+                    .ToListAsync();
+
+                var billsToMove = await _archiveDb.BillingDocuments
+                    .AsNoTracking()
+                    .Where(b => payerIds.Contains(b.PayerId))
+                    .ToListAsync();
+
+                _db.Payers.AddRange(payersToMove);
+                _db.Students.AddRange(studentsToMove);
+                _db.Lessons.AddRange(lessonsToMove);
+                _db.BillingDocuments.AddRange(billsToMove);
+
+                await _db.SaveChangesAsync();
+
+                // 4. MAIN SIDE: Clean up
+                await _archiveDb.BillingDocuments.Where(i => payerIds.Contains(i.PayerId)).ExecuteDeleteAsync();
+                await _archiveDb.Lessons.Where(l => studentIds.Contains(l.StudentId)).ExecuteDeleteAsync();
+                await _archiveDb.Students.Where(s => payerIds.Contains(s.PayerId)).ExecuteDeleteAsync();
+                await _archiveDb.Payers.Where(p => payerIds.Contains(p.Id)).ExecuteDeleteAsync();
+
+                await transaction.CommitAsync();
+                await archiveTransaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                await archiveTransaction.RollbackAsync();
+                throw;
+            }
+        }
+
         public async Task ArchiveOldDataAsync(List<Guid> payerIds)
         {
             using var transaction = await _db.Database.BeginTransactionAsync();
             using var archiveTransaction = await _archiveDb.Database.BeginTransactionAsync();
             try
             {
+                _db.ChangeTracker.Clear();
+                _archiveDb.ChangeTracker.Clear();
+
                 // 1. Identify Payers and Students
                 var payersToMove = await _db.Payers
                     .AsNoTracking()

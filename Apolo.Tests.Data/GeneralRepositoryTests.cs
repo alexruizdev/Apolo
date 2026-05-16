@@ -124,7 +124,20 @@ namespace Apolo.Tests.Data
         }
 
         [TestMethod]
-        public async Task Archive()
+        public async Task GetPayersFromArchive()
+        {
+            var data = Helper.GetData();
+            _archiveContext.Payers.AddRange(data.Payers);
+            await _archiveContext.SaveChangesAsync();
+
+            var payers = await _repository.GetPayersFromArchiveAsync();
+
+            Assert.HasCount(3, payers);
+            Assert.AreEqual("Payer 1", payers[0].FullName);
+        }
+
+        [TestMethod]
+        public async Task ArchiveBackForth()
         {
             var data = Helper.GetData();
             _context.Services.AddRange(data.Services);
@@ -135,7 +148,44 @@ namespace Apolo.Tests.Data
             _context.BillingDocuments.AddRange(data.Invoices);
             await _context.SaveChangesAsync();
 
-            await _repository.ArchiveOldDataAsync([data.Payers[0].Id]);
+            var payerId = data.Payers[0].Id;
+
+            await _repository.ArchiveOldDataAsync([payerId]);
+
+            // Main DB
+            Assert.HasCount(3, _context.Services);
+            Assert.HasCount(2, _context.Payers);
+            Assert.HasCount(2, _context.Students);
+            Assert.HasCount(2, _context.Specifications);
+            Assert.HasCount(3, _context.Lessons);
+            Assert.HasCount(1, _context.BillingDocuments);
+
+            // Archive DB
+            Assert.HasCount(1, _archiveContext.Payers);
+            Assert.HasCount(1, _archiveContext.Students);
+            Assert.HasCount(1, _archiveContext.Lessons);
+            Assert.HasCount(1, _archiveContext.BillingDocuments);
+
+            await _repository.RetrieveDataFromArchiveAsync([payerId]);
+
+            // Main DB
+            Assert.HasCount(3, _context.Services);
+            Assert.HasCount(3, _context.Payers);
+            Assert.HasCount(3, _context.Students);
+            Assert.HasCount(2, _context.Specifications);
+            Assert.HasCount(4, _context.Lessons);
+            Assert.HasCount(2, _context.BillingDocuments);
+
+            // Archive DB
+            Assert.HasCount(0, _archiveContext.Payers);
+            Assert.HasCount(0, _archiveContext.Students);
+            Assert.HasCount(0, _archiveContext.Lessons);
+            Assert.HasCount(0, _archiveContext.BillingDocuments);
+
+            // I haved added this test because I found a condition that crashes when the database tracker kept the
+            // entities and crashes the second time we want to archive. I have added a clear tracker before archiving and
+            // retrieving
+            await _repository.ArchiveOldDataAsync([payerId]);
 
             // Main DB
             Assert.HasCount(3, _context.Services);

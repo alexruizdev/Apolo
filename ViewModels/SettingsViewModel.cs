@@ -188,6 +188,8 @@ namespace Apolo.ViewModels
 
         public async Task<List<PayerActivityInfo>> GetPayersActivity() => await _repository.GetPayersWithActivityAsync();
 
+        public async Task<List<PayerOption>> GetPayersFromArchive() => await _repository.GetPayersFromArchiveAsync();
+
         public async Task ArchiveOldData(List<Guid> payersIds)
         {
             if (IsBusy)
@@ -210,6 +212,33 @@ namespace Apolo.ViewModels
                 SetExitFunction("Archived data successfully.", InfoBarType.Success);
             }
             catch (Exception ex) 
+            {
+                SetExitFunction(ex.Message, InfoBarType.Error);
+            }
+        }
+
+        public async Task RetrieveDataFromArchive(List<Guid> payersIds)
+        {
+            if (IsBusy)
+            {
+                SetExitFunction("Can't retrieve data from archive while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            SetEnterFunction();
+
+            if (payersIds.Count == 0)
+            {
+                SetExitFunction("No payers were selected.", InfoBarType.Info);
+                return;
+            }
+
+            try
+            {
+                await _repository.RetrieveDataFromArchiveAsync(payersIds);
+                SetExitFunction("Data retrieved successfully from archive.", InfoBarType.Success);
+            }
+            catch (Exception ex)
             {
                 SetExitFunction(ex.Message, InfoBarType.Error);
             }

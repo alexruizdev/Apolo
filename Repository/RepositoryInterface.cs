@@ -76,5 +76,7 @@ namespace Repository
             List<Specification> Specifications, List<Lesson> Lessons, List<BillingDocument> Invoices)> GetAllDataAsync();
         Task<List<PayerActivityInfo>> GetPayersWithActivityAsync();
         Task ArchiveOldDataAsync(List<Guid> payerIds);
+        Task<List<PayerOption>> GetPayersFromArchiveAsync();
+        Task RetrieveDataFromArchiveAsync(List<Guid> payerIds);
     }
 }

@@ -86,6 +86,7 @@
                     <AppBarButton Label="Import from Excel" Icon="Import" Click="ImportExcelButton_Click"/>
                     <AppBarButton Icon="Save" Label="Export Excel" Click="ExportExcelButton_Click"/>
                     <AppBarButton Icon="Library" Label="Archive" Click="ArchiveButton_Click"/>
+                    <AppBarButton Icon="Import" Label="Retrieve from archive" Click="RetrieveFromArchiveButton_Click"/>
                     <AppBarSeparator />
                     <AppBarButton Icon="Delete" Label="Nuke Database" Foreground="Red" Click="DeleteDatabaseButton_Click"/>
                     <AppBarButton Icon="Delete" Label="Nuke Archive" Foreground="Red" Click="DeleteArchiveButton_Click"/>

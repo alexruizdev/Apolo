@@ -143,6 +143,50 @@ namespace Apolo.Views
             await ViewModel.ArchiveOldData(ids);
         }
 
+        private async void RetrieveFromArchiveButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button) return;
+
+            var payers = await ViewModel.GetPayersFromArchive();
+
+            var payersList = new ListView
+            {
+                Header = "Payers",
+                SelectionMode = ListViewSelectionMode.Multiple,
+                ItemsSource = payers,
+                MaxHeight = 240
+            };
+            payersList.DisplayMemberPath = "FullName";
+
+            var panel = new StackPanel { Spacing = 8 };
+            panel.Children.Add(payersList);
+
+            var viewer = new ScrollViewer
+            {
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                VerticalScrollMode = ScrollMode.Enabled,
+                MaxHeight = 500,
+                Content = panel
+            };
+
+            var dialog = new ContentDialog()
+            {
+                Title = "Select payers to retrieve from archive.",
+                Content = viewer,
+                PrimaryButtonText = "Retrieve",
+                CloseButtonText = Loc.Buttons_Cancel,
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = Content.XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result != ContentDialogResult.Primary)
+                return;
+
+            var ids = payersList.SelectedItems.Cast<PayerOption>().Select(s => s.Id).ToList();
+            await ViewModel.RetrieveDataFromArchive(ids);
+        }
+
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);

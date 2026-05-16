@@ -286,5 +286,65 @@ namespace Apolo.Tests.ViewModels
 
             _repositoryMock.Verify(r => r.ArchiveOldDataAsync(ids), Times.Once);
         }
+
+        [TestMethod]
+        public async Task GetPayersFromArchive()
+        {
+            await _viewModel.GetPayersFromArchive();
+
+            Assert.IsFalse(_viewModel.OpenInfoBar);
+            Assert.IsFalse(_viewModel.IsBusy);
+
+            _repositoryMock.Verify(r => r.GetPayersFromArchiveAsync(), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task RetrieveFromArchive_WhileBusy()
+        {
+            _viewModel.IsBusy = true;
+
+            await _viewModel.RetrieveDataFromArchive([Guid.NewGuid()]);
+
+            VerifyAction("Can't retrieve data from archive while busy.", InfoBarType.Warning, isOpen: true, isBusy: true);
+
+            _repositoryMock.Verify(r => r.RetrieveDataFromArchiveAsync(It.IsAny<List<Guid>>()), Times.Never);
+        }
+
+        [TestMethod]
+        public async Task RetrieveFromArchive_NoPayersSelected()
+        {
+            await _viewModel.RetrieveDataFromArchive([]);
+
+            VerifyAction("No payers were selected.", InfoBarType.Info, isOpen: true);
+
+            _repositoryMock.Verify(r => r.RetrieveDataFromArchiveAsync(It.IsAny<List<Guid>>()), Times.Never);
+        }
+
+        [TestMethod]
+        public async Task RetrieveFromArchive_Exception()
+        {
+            List<Guid> ids = [Guid.NewGuid()];
+
+            _repositoryMock.Setup(r => r.RetrieveDataFromArchiveAsync(ids))
+                .ThrowsAsync(new DbUpdateException("Database connection lost."));
+
+            await _viewModel.RetrieveDataFromArchive(ids);
+
+            VerifyAction("Database connection lost.", InfoBarType.Error, isOpen: true);
+
+            _repositoryMock.Verify(r => r.RetrieveDataFromArchiveAsync(ids), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task RetrieveFromArchive()
+        {
+            List<Guid> ids = [Guid.NewGuid()];
+
+            await _viewModel.RetrieveDataFromArchive(ids);
+
+            VerifyAction("Data retrieved successfully from archive.", InfoBarType.Success, isOpen: true);
+
+            _repositoryMock.Verify(r => r.RetrieveDataFromArchiveAsync(ids), Times.Once);
+        }
     }
 }
