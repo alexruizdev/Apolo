@@ -361,6 +361,10 @@ namespace Apolo.ViewModels
                 foreach (var item in Lessons.Where(l => !l.IsSelected).ToList())
                     Lessons.Remove(item);
 
+                // Unselect lessons
+                foreach (var item in Lessons)
+                    item.IsSelected = false;
+
                 var documentName = (isInvoice ? DocumentType.Invoice : DocumentType.Ticket).ToString();
                 SetExitFunction($"{documentName} saved to: {filePath}.", InfoBarType.Info);
             }

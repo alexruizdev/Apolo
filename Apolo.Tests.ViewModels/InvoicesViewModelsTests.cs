@@ -422,7 +422,7 @@ namespace Apolo.Tests.ViewModels
             decimal selected = 0;
             if (selectLessons && !success)
                 selected = 65.5m;
-            decimal total = success ? 60.5m : 307.6m;
+            decimal total = success ? 65.5m : 307.6m;
 
             VerifyAction(infoMessage, severity, isOpen: true, payersCount: 1, count: success ? 2 : 4,
                 totalSelected: selected, total: total, isBusy: isBusy);
@@ -470,7 +470,7 @@ namespace Apolo.Tests.ViewModels
         {
             var ids = ArrangeForGenerateInvoice();
             await ActForForGenerateInvoice(ids);
-            AssertForGenerateInvoice(ids, infoMessage: "Invoice saved to: \\somepath\\invented\\Invoice_Name.pdf.", 
+            AssertForGenerateInvoice(ids, infoMessage: "Invoice saved to: \\somepath\\invented\\2026-05-E-0001.pdf.", 
                 severity: InfoBarType.Success, success: true);
         }
     }
