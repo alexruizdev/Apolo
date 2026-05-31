@@ -336,6 +336,7 @@ namespace Excel
                     var lesson = lessons[i];
                     payment -= lesson.FinalPrice;
                     lesson.IsPaid = true;
+                    lesson.BillingDocumentId = invoice.Id;
                 }
 
                 // Save leftovers

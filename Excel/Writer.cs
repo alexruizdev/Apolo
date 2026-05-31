@@ -195,7 +195,7 @@ namespace Excel
         private void WriteInvoices(XLWorkbook workbook, in List<BillingDocument> bills,
             in List<Payer> payers, in List<Lesson> lessons)
         {
-            var table = GetTable(workbook, "Invoices");
+            var table = GetTable(workbook, "Bills");
             int row = 1;
 
             var billLookup = lessons

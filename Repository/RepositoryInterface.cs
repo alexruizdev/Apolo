@@ -1,4 +1,5 @@
 ﻿using Models;
+using System.ComponentModel;
 
 namespace Repository
 {
@@ -55,9 +56,12 @@ namespace Repository
     public interface IBillingRepository
     {
         Task<IEnumerable<LessonLine>> GetUnbilledLessonsAsync(Guid payerId);
+        Task<IEnumerable<LessonLine>> GetLessonsFromBillAsync(Guid billId);
         Task UpdateLessonsAsync(IEnumerable<Guid> lessonsIds, bool isPaid);
-        Task<string> CreateBillAsync(Guid payerId, List<Guid> ids, DocumentType type);
+        Task RemoveLessonsAsync(IEnumerable<Guid> lessonsIds);
+        Task<BillingDocument> CreateBillAsync(Guid payerId, List<Guid> ids, DocumentType type);
         Task DeleteAsync(Guid id);
+        Task<IEnumerable<BillingDocument>> GetBillSuggestionsAsync(string searchTerm);
     }
 
     public interface IGeneralRepository

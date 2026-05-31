@@ -24,16 +24,36 @@ namespace Repository
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<LessonLine>> GetLessonsFromBillAsync(Guid billId)
+        {
+            // 1. Fetch only the raw 'ingredients' from SQL
+            return await _db.Lessons
+                .AsNoTracking()
+                .Where(l => l.BillingDocumentId == billId)
+                .OrderBy(l => l.Date)
+                .Select(l => new LessonLine(l.Id, l.StudentId, l.Date, l.Name, l.Student.FullName, l.FinalPrice, l.IsPaid))
+                .ToListAsync();
+        }
+
         public async Task UpdateLessonsAsync(IEnumerable<Guid> lessonsIds, bool isPaid)
         {
             if (!lessonsIds.Any()) return;
 
             await _db.Lessons
                 .Where(l => lessonsIds.Contains(l.Id))
-                .ExecuteUpdateAsync(s => s.SetProperty(a => a.IsPaid, isPaid));
+                .ExecuteUpdateAsync(s => s.SetProperty(l => l.IsPaid, isPaid));
         }
 
-        public async Task<string> CreateBillAsync(Guid payerId, List<Guid> ids, DocumentType type)
+        public async Task RemoveLessonsAsync(IEnumerable<Guid> lessonsIds)
+        {
+            if (!lessonsIds.Any()) return;
+
+            await _db.Lessons
+                .Where(l => lessonsIds.Contains(l.Id))
+                .ExecuteUpdateAsync(s => s.SetProperty(l => l.BillingDocumentId, (Guid?)null));
+        }
+
+        public async Task<BillingDocument> CreateBillAsync(Guid payerId, List<Guid> ids, DocumentType type)
         {
             if (ids.Count == 0)
                 throw new ArgumentException($"Cannot create {type.ToString()} without any lesson.");
@@ -64,7 +84,7 @@ namespace Repository
             _db.BillingDocuments.Add(doc);
             await _db.SaveChangesAsync();
 
-            return doc.DocumentNumber;
+            return doc;
         }
 
         public async Task DeleteAsync(Guid id)
@@ -74,6 +94,14 @@ namespace Repository
 
             _db.BillingDocuments.Remove(entity);
             await _db.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<BillingDocument>> GetBillSuggestionsAsync(string searchTerm)
+        {
+            return await _db.BillingDocuments
+                .Where(b => b.SequenceNumber.ToString().Contains(searchTerm) || b.Year.ToString().Contains(searchTerm))
+                .Take(10)
+                .ToListAsync();
         }
     }
 }
