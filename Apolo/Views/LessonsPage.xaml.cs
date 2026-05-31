@@ -52,8 +52,10 @@ namespace Apolo.Views
 
             var nameBox = new TextBox { Header = "Lesson name", MinWidth = 320 };
 
-            var datePick = new CalendarDatePicker { Header = "Date", IsTodayHighlighted = true, Date = DateTimeOffset.Now };
-            var durationBox = new NumberBox { Header = "Duration (minutes):", Value = 60, SmallChange = 15, LargeChange = 30 };
+            var datePick = new CalendarDatePicker { Header = "Date", IsTodayHighlighted = true, Date = DateTimeOffset.Now,
+                DateFormat = "{day.integer(2)}/{month.integer(2)}/{year.full}"
+            };
+            var durationBox = new NumberBox { Header = "Duration (minutes):", Value = 60, SmallChange = 15, LargeChange = 30, };
             var onlineBox = new CheckBox { Content = "Online" };
             var weekendBox = new CheckBox { Content = "Weekend or Holiday" };
             var priceBox = new NumberBox { Header = "Price:", PlaceholderText = "0.00" };
