@@ -65,7 +65,7 @@ namespace Apolo.ViewModels
             Lessons.Clear();
             foreach (var item in items) Lessons.Add(item);
 
-            SetExitFunction();
+            SetExitFunction($"{Lessons.Count} loaded", InfoBarType.Success);
         }
 
         public (StudentOption item, int index) GetStudent(Guid id)

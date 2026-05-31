@@ -117,7 +117,7 @@ namespace Apolo.Tests.ViewModels
             _mockLessonRepo.Verify(r => r.GetLessonsAsync(false, 1), Times.Exactly(2));
 
             // 2. Verify the UI collection was updated correctly
-            VerifyAction(null, InfoBarType.Success, isOpen: false, lessonCount: 2, studentsCount: 2, servicesCount: 2);
+            VerifyAction("2 loaded", InfoBarType.Success, isOpen: true, lessonCount: 2, studentsCount: 2, servicesCount: 2);
             var addedStudent = _viewModel.Students.First();
             var addedService = _viewModel.Services.First();
             var addedLesson = _viewModel.Lessons.First();
@@ -144,7 +144,7 @@ namespace Apolo.Tests.ViewModels
             _mockServiceRepo.Verify(r => r.GetServicesAsync(), Times.Once);
             _mockLessonRepo.Verify(r => r.GetLessonsAsync(false, 1), Times.Once);
 
-            VerifyAction(null, InfoBarType.Success, isOpen: false, lessonCount: 0, studentsCount: 0, servicesCount: 0);
+            VerifyAction("0 loaded", InfoBarType.Success, isOpen: true, lessonCount: 0, studentsCount: 0, servicesCount: 0);
         }
 
         [TestMethod]
@@ -172,7 +172,7 @@ namespace Apolo.Tests.ViewModels
             _mockLessonRepo.Verify(r => r.GetLessonsAsync(true, 13), Times.Once);
             _mockLessonRepo.Verify(r => r.GetLessonsAsync(true, null), Times.Once);
 
-            VerifyAction(null, InfoBarType.Success, isOpen: false, lessonCount: 0, studentsCount: 0, servicesCount: 0);
+            VerifyAction("0 loaded", InfoBarType.Success, isOpen: true, lessonCount: 0, studentsCount: 0, servicesCount: 0);
         }
 
         // Get student ID

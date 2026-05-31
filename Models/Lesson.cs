@@ -104,9 +104,10 @@ namespace Models
             {
                 if (DurationMinutes is null) 
                     throw new ArgumentException("Duration is required when price is per hour.");
-                price = Math.Round(price * (DurationMinutes.Value / 60m), 2, MidpointRounding.AwayFromZero);
+                price = price * (DurationMinutes.Value / 60m);
             }
-            return travel + price;
+            decimal total = travel + price;
+            return Math.Round(total * 2m, MidpointRounding.AwayFromZero) / 2m;
         }
 
         public static string Truncate(string? input, int maxLength)

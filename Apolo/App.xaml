@@ -12,6 +12,7 @@
             </ResourceDictionary.MergedDictionaries>
             <!-- Other app resources here -->
             <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+            <conv:BooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" Invert="True" />
             <conv:InverseBooleanConverter x:Key="InverseBooleanConverter" />
             <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
             <conv:DecimalToCurrencyConverter x:Key="DecimalToCurrencyConverter" />

@@ -92,7 +92,7 @@ namespace Apolo.Tests.Models
             Assert.AreEqual(7.5m, lesson.TravelAllowance);
             Assert.IsFalse(lesson.IsWeekenOrHoliday);
             Assert.AreEqual(7.5m, lesson.WeekendFee);
-            Assert.AreEqual(44.83m, lesson.FinalPrice);
+            Assert.AreEqual(45m, lesson.FinalPrice);
 
             lesson.IsPaid = true;
             Assert.IsFalse(lesson.Set(isPricePerHour: true, duration: 90, price: 35, online: false, travel: 7.5m,

@@ -128,13 +128,13 @@ namespace Apolo.Tests.Data
 
             var lessonIds = lessons.Select(l => l.Id).ToList();
 
-            string billName = await _repository.CreateBillAsync(payer.Id, lessonIds, DocumentType.Invoice);
+            var entity = await _repository.CreateBillAsync(payer.Id, lessonIds, DocumentType.Invoice);
 
             var result = await _context.BillingDocuments.ToListAsync();
 
             Assert.HasCount(1, result);
             Assert.HasCount(2, result[0].Lines);
-            Assert.AreEqual($"{DateTime.Now:yyyy-MM}-E-0001", billName);
+            Assert.AreEqual($"{DateTime.Now:yyyy-MM}-E-0001", entity.DocumentNumber);
         }
 
         [TestMethod]
@@ -154,13 +154,13 @@ namespace Apolo.Tests.Data
 
             var lessonIds = lessons.Select(l => l.Id).ToList();
 
-            string billName = await _repository.CreateBillAsync(payer.Id, lessonIds, DocumentType.Ticket);
+            var entity = await _repository.CreateBillAsync(payer.Id, lessonIds, DocumentType.Ticket);
 
             var result = await _context.BillingDocuments.ToListAsync();
 
             Assert.HasCount(1, result);
             Assert.HasCount(2, result[0].Lines);
-            Assert.AreEqual($"TCK-{DateTime.Now:yyyy-MM}-0001", billName);
+            Assert.AreEqual($"TCK-{DateTime.Now:yyyy-MM}-0001", entity.DocumentNumber);
         }
 
         [TestMethod]
