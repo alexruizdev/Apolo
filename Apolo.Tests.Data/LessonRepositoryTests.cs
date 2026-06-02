@@ -107,7 +107,7 @@ namespace Apolo.Tests.Data
 
             // Act
             var lesson = await _repository.AddLessonAsync(DateOnly.FromDateTime(DateTime.Now), "Guitar Class", isPaid: false, 
-                student.Id, null, false, 60, 25.0m, false, 0, false, 0, "Note");
+                student.Id, null, false, 60, 25.0m, false, 0, false, 0, 10, "Note");
 
             // Assert
             Assert.AreEqual("Guitar Class", lesson.Name);
@@ -119,6 +119,7 @@ namespace Apolo.Tests.Data
             Assert.AreEqual(0, lesson.TravelAllowance);
             Assert.IsFalse(lesson.IsWeekenOrHoliday);
             Assert.AreEqual(0, lesson.WeekendFee);
+            Assert.AreEqual(10, lesson.Tip);
             Assert.AreEqual("Note", lesson.Notes);
             var dbLesson = await _context.Lessons.FirstAsync(l => l.Id == lesson.Id);
             Assert.AreEqual(student.Id, dbLesson.StudentId);
@@ -134,7 +135,7 @@ namespace Apolo.Tests.Data
             {
                 await _repository.UpdateLesson(Guid.NewGuid(), DateOnly.FromDateTime(DateTime.Now), "Guitar Class",
                 false, 60, 25.0m, 
-                false, 0, false, 0, "Note");
+                false, 0, false, 0, 15.5m, "Note");
             });
         }
 
@@ -152,7 +153,7 @@ namespace Apolo.Tests.Data
             await _context.SaveChangesAsync();
 
             var updatedLesson = await _repository.UpdateLesson(lesson.Id, TestGenerator.LessonNewDate, "Guitar Class",
-                false, 60, 25.0m, false, 0, false, 0, "Updated note");
+                false, 60, 25.0m, false, 0, false, 0, 15.5m, "Updated note");
             Assert.AreEqual("Guitar Class", updatedLesson.Name);
             Assert.IsFalse(updatedLesson.IsPricePerHour);
             Assert.AreEqual("Updated note", updatedLesson.Notes);
@@ -172,6 +173,7 @@ namespace Apolo.Tests.Data
             Assert.AreEqual(0, dbLesson.TravelAllowance);
             Assert.IsFalse(dbLesson.IsWeekenOrHoliday);
             Assert.AreEqual(0, dbLesson.WeekendFee);
+            Assert.AreEqual(15.5m, dbLesson.Tip);
         }
     }
 }

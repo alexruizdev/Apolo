@@ -115,9 +115,12 @@ public sealed partial class SpecificationsPage : Page
             TextWrapping = TextWrapping.Wrap
         };
 
+        var tipBox = new NumberBox { Header = "Tip:", PlaceholderText = "0.00" };
+
         var panel = new StackPanel { Spacing = 8 };
         panel.Children.Add(datePicker);
         panel.Children.Add(noteBox);
+        panel.Children.Add(tipBox);
 
         var viewer = new ScrollViewer
         {
@@ -144,7 +147,7 @@ public sealed partial class SpecificationsPage : Page
             var dto = datePicker.Date ?? DateTimeOffset.Now;
             var date = DateOnly.FromDateTime(dto.Date);
             var notes = string.IsNullOrWhiteSpace(noteBox.Text) ? null : noteBox.Text;
-            await ViewModel.CreateLessonFromSpecificationAsync(item.Id, date, notes);
+            await ViewModel.CreateLessonFromSpecificationAsync(item.Id, date, (decimal)tipBox.Value, notes);
         }
     }
 

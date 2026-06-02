@@ -517,12 +517,12 @@ namespace Apolo.Tests.ViewModels
             _viewModel.Specifications.Add(spec);
         }
 
-        private async Task ActForCreateLessonTests(Guid targetId)
+        private async Task ActForCreateLessonTests(Guid targetId, bool invalidTip = false)
         {
             var date = DateOnly.FromDateTime(new DateTime(1993, 8, 17));
             string notes = "Some notes";
 
-            await _viewModel.CreateLessonFromSpecificationAsync(targetId, date, notes);
+            await _viewModel.CreateLessonFromSpecificationAsync(targetId, date, invalidTip ? -10 : 10, notes);
         }
 
         private void ThrowExceptionForCreateLessonTests(Guid targetId, Guid studentId, bool hasPrice = false)
@@ -532,7 +532,7 @@ namespace Apolo.Tests.ViewModels
             List<Guid> ids = [studentId];
             _mockLessonRepo.Setup(r => r.AddLessonAsync(date, "Service", false, studentId, null, 
                     true, 60, hasPrice ? 60 : 50,
-                    false, 10, false, 20,
+                    false, 10, false, 20, 10,
                     notes))
                      .ThrowsAsync(new DbUpdateException("Constraint failed."));
         }
@@ -549,7 +549,7 @@ namespace Apolo.Tests.ViewModels
             {
                 _mockLessonRepo.Verify(r => r.AddLessonAsync(date, "Service", false, studentId, null,
                     true, 60, hasPrice ? 60 : 50,
-                    false, 10, false, 20,
+                    false, 10, false, 20, 10,
                     notes), Times.Once);
             }
             else
@@ -557,7 +557,7 @@ namespace Apolo.Tests.ViewModels
                 _mockLessonRepo.Verify(r => r.AddLessonAsync(It.IsAny<DateOnly>(), It.IsAny<string>(), It.IsAny<bool>(),
                     It.IsAny<Guid>(), It.IsAny<Guid?>(),
                     It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<decimal>(),
-                    It.IsAny<bool>(), It.IsAny<decimal>(), It.IsAny<bool>(), It.IsAny<decimal>(),
+                    It.IsAny<bool>(), It.IsAny<decimal>(), It.IsAny<bool>(), It.IsAny<decimal>(), It.IsAny<decimal>(), 
                     It.IsAny<string?>()), Times.Never);
             }
 
@@ -578,6 +578,19 @@ namespace Apolo.Tests.ViewModels
 
             AssertForCreateLessonTests(targetId, studentId, success: false, isBusy: true,
                  infoMessage: "Can't create lesson while busy.", severity: InfoBarType.Warning);
+        }
+
+        [TestMethod]
+        public async Task CreateLessonFromSpecificationAsync_InvalidTip()
+        {
+            var targetId = Guid.NewGuid();
+            var studentId = Guid.NewGuid();
+            ArrangeForCreateLessonTests(targetId, studentId);
+
+            await ActForCreateLessonTests(targetId, invalidTip: true);
+
+            AssertForCreateLessonTests(targetId, studentId, success: false, isBusy: false,
+                 infoMessage: "Tip can't be negative.", severity: InfoBarType.Error);
         }
 
         [TestMethod]

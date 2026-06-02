@@ -228,7 +228,7 @@ namespace Apolo.ViewModels
             }
         }
 
-        public async Task CreateLessonFromSpecificationAsync(Guid id, DateOnly date, string? notes)
+        public async Task CreateLessonFromSpecificationAsync(Guid id, DateOnly date, decimal tip, string? notes)
         {
             if (IsBusy)
             {
@@ -237,6 +237,12 @@ namespace Apolo.ViewModels
             }
 
             SetEnterFunction();
+
+            if (tip < 0)
+            {
+                SetExitFunction("Tip can't be negative.", InfoBarType.Error);
+                return;
+            }
 
             var spec = GetSpecification(id);
 
@@ -248,7 +254,7 @@ namespace Apolo.ViewModels
                     date, spec.value.ServiceName, isPaid: false, spec.value.StudentId, null,
                     service.IsPricePerHour, spec.value.DurationMinutes, (decimal)(spec.value.Price ?? service.Price),
                     spec.value.IsOnline, TravelAllowance, spec.value.IsWeekenOrHoliday, WeekendFee,
-                    notes);
+                    tip, notes);
 
                 SetExitFunction($"Lesson '{spec.value.ServiceName}' created for {spec.value.StudentName}.",
                     InfoBarType.Success); ;

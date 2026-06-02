@@ -30,6 +30,7 @@ namespace Models
         decimal TravelAllowance,
         bool IsWeekenOrHoliday,
         decimal WeekendFee,
+        decimal Tip,
         string? Notes)
     {
         public string ShortNote => Lesson.Truncate(Notes, 70);
@@ -58,11 +59,12 @@ namespace Models
         public decimal TravelAllowance { get; private set; }
         public bool IsWeekenOrHoliday{ get; private set; }
         public decimal WeekendFee { get; private set; }
+        public decimal Tip { get; set; }
         public string? Notes { get; set; }
 
         public Lesson(DateOnly date, string name, bool isPaid, Guid studentId, Guid? billingDocumentId, 
             bool isPricePerHour, int? durationMinutes, decimal basePrice, 
-            bool isOnline, decimal travelAllowance, bool isWeekenOrHoliday, decimal weekendFee, string? notes)
+            bool isOnline, decimal travelAllowance, bool isWeekenOrHoliday, decimal weekendFee, decimal tip, string? notes)
         {
             Date = date;
             Name = name;
@@ -76,6 +78,7 @@ namespace Models
             TravelAllowance = travelAllowance;
             IsWeekenOrHoliday = isWeekenOrHoliday;
             WeekendFee = weekendFee;
+            Tip = tip;
             Notes = notes;
             FinalPrice = GetPrice();
         }

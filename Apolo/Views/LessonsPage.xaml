@@ -61,10 +61,11 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
-                            <StackPanel VerticalAlignment="Center">
+                            <StackPanel VerticalAlignment="Top">
                                 <TextBlock Text="{x:Bind Date, Converter={StaticResource DateFormatConverter}}"
                                            FontWeight="SemiBold" 
                                            FontSize="15" />
+
                                 <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,4,0,0">
                                     <SymbolIcon Symbol="Clock" Foreground="Gray" />
                                     <TextBlock Text="{x:Bind DurationMinutes}" Foreground="Gray" />
@@ -78,6 +79,29 @@
                                     <Run Text=" • " Foreground="Gray" />
                                     <Run Text="{x:Bind StudentName}" />
                                 </TextBlock>
+                                <Border Background="#E6F4EA" 
+                                        Padding="6,2" 
+                                        CornerRadius="4" 
+                                        Margin="0,4,0,0"
+                                        HorizontalAlignment="Left"
+                                        Visibility="{x:Bind IsPaid, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <TextBlock Text="PAID" 
+                                               Foreground="#137333" 
+                                               FontSize="10" 
+                                               FontWeight="Bold" />
+                                </Border>
+
+                                <Border Background="#FCE8E6" 
+                                        Padding="6,2" 
+                                        CornerRadius="4" 
+                                        Margin="0,4,0,0"
+                                        HorizontalAlignment="Left"
+                                        Visibility="{x:Bind IsPaid, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                    <TextBlock Text="UNPAID" 
+                                                Foreground="#C5221F" 
+                                                FontSize="10" 
+                                                FontWeight="Bold" />
+                                </Border>
 
                                 <TextBlock Text="{x:Bind ShortNote}" 
                                            Foreground="DimGray" 
@@ -90,11 +114,16 @@
                                 </TextBlock>
                             </StackPanel>
 
+
                             <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
                                 <TextBlock Text="{x:Bind FinalPrice, Converter={StaticResource DecimalToCurrencyConverter}}"
                                            FontWeight="Bold" 
                                            FontSize="16" 
                                            HorizontalAlignment="Right" />
+                                <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,4,0,0" HorizontalAlignment="Right">
+                                    <FontIcon Glyph="&#xE948;" Foreground="Gray" />
+                                    <TextBlock Text="{x:Bind Tip, Converter={StaticResource DecimalToCurrencyConverter}}" Foreground="Gray" />
+                                </StackPanel>
                                 
                                 <TextBlock Text="{x:Bind BillingName}" 
                                            Foreground="Gray" 
@@ -106,30 +135,6 @@
                                         <ToolTip Content="Billing Document" />
                                     </ToolTipService.ToolTip>
                                 </TextBlock>
-
-                                <Border Background="#E6F4EA" 
-                                        Padding="6,2" 
-                                        CornerRadius="4" 
-                                        Margin="0,4,0,0"
-                                        HorizontalAlignment="Right"
-                                        Visibility="{x:Bind IsPaid, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                    <TextBlock Text="PAID" 
-                                               Foreground="#137333" 
-                                               FontSize="10" 
-                                               FontWeight="Bold" />
-                                </Border>
-
-                                <Border Background="#FCE8E6" 
-                                        Padding="6,2" 
-                                        CornerRadius="4" 
-                                        Margin="0,4,0,0"
-                                        HorizontalAlignment="Right"
-                                        Visibility="{x:Bind IsPaid, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                                    <TextBlock Text="UNPAID" 
-                                               Foreground="#C5221F" 
-                                               FontSize="10" 
-                                               FontWeight="Bold" />
-                                </Border>
 
                             </StackPanel>
 

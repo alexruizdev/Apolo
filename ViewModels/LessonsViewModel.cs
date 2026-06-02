@@ -1,6 +1,7 @@
 ﻿using Apolo.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
@@ -79,12 +80,18 @@ namespace Apolo.ViewModels
             return (student, Students.IndexOf(student));
         }
 
-        public bool ValidateLessonInput(ref string name, ref int? duration, bool isPricePerHour, decimal basePrice)
+        public bool ValidateLessonInput(ref string name, ref int? duration, bool isPricePerHour, decimal basePrice, decimal tip)
         {
             name = (name ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(name))
             {
                 SetExitFunction("Lesson name is required.", InfoBarType.Warning);
+                return false;
+            }
+
+            if (tip < 0)
+            {
+                SetExitFunction("Enter a valid non-negative tip (e.g., 15.5).", InfoBarType.Error);
                 return false;
             }
 
@@ -127,7 +134,7 @@ namespace Apolo.ViewModels
         }
 
         public async Task AddLessonAsync(DateOnly date, string name, ServiceSummary service,
-            int? duration, decimal pricePerLesson, bool isOnline, bool isWeekendOrHoliday,
+            int? duration, decimal pricePerLesson, bool isOnline, bool isWeekendOrHoliday, decimal tip,
             string? note, Guid studentId)
         {
             if (IsBusy)
@@ -140,14 +147,14 @@ namespace Apolo.ViewModels
 
             var student = GetStudent(studentId);
 
-            if (!ValidateLessonInput(ref name, ref duration, service.IsPricePerHour, pricePerLesson))
+            if (!ValidateLessonInput(ref name, ref duration, service.IsPricePerHour, pricePerLesson, tip))
                 return; 
 
             try
             {
                 var lesson = await _lessonRepository.AddLessonAsync(date, name, isPaid: false, studentId, null,
                     service.IsPricePerHour, duration, pricePerLesson,
-                    isOnline, TravelAllowance, isWeekendOrHoliday, WeekendFee, note);
+                    isOnline, TravelAllowance, isWeekendOrHoliday, WeekendFee, tip, note);
 
                 // Add to UI
                 Lessons.Insert(0, new LessonSummary(
@@ -167,6 +174,7 @@ namespace Apolo.ViewModels
                     lesson.TravelAllowance,
                     lesson.IsWeekenOrHoliday,
                     lesson.WeekendFee,
+                    lesson.Tip,
                     lesson.Notes));
                 
                 SetExitFunction($"Lesson '{lesson.Name}' added successfully.", InfoBarType.Success);
@@ -211,7 +219,7 @@ namespace Apolo.ViewModels
 
         public async Task UpdateLessonAsync(Guid id, DateOnly date, string name,
             bool isPricePerHour, int? duration, decimal pricePerLesson,
-            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, string? note)
+            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip, string? note)
         {
             if (IsBusy)
             {
@@ -221,7 +229,7 @@ namespace Apolo.ViewModels
 
             SetEnterFunction();
 
-            if (!ValidateLessonInput(ref name, ref duration, isPricePerHour, pricePerLesson))
+            if (!ValidateLessonInput(ref name, ref duration, isPricePerHour, pricePerLesson, tip))
                 return;
 
             var (oldItem, idx) = GetLesson(id);
@@ -230,7 +238,7 @@ namespace Apolo.ViewModels
             {
                 var entity = await _lessonRepository.UpdateLesson(id, date, name, 
                     isPricePerHour, duration, pricePerLesson,
-                    isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, note);
+                    isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, tip, note);
 
                 // Update item in UI list
                 Lessons[idx] = oldItem with
@@ -244,6 +252,7 @@ namespace Apolo.ViewModels
                     TravelAllowance = entity.TravelAllowance,
                     IsWeekenOrHoliday = entity.IsWeekenOrHoliday,
                     WeekendFee = entity.WeekendFee,
+                    Tip = entity.Tip,
                     Notes = entity.Notes,
                 };
                 SetExitFunction($"Lesson '{entity.Name}' updated successfully.", InfoBarType.Success);

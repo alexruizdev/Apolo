@@ -45,11 +45,10 @@ namespace Repository
         Task<IEnumerable<LessonSummary>> GetLessonsAsync(bool showOnlyUnpaid, int? months);
         Task<Lesson> AddLessonAsync(DateOnly date, string name, bool isPaid, Guid studentId,
             Guid? billingDocumentId, bool isPricePerHour, int? duration, decimal basePrice,
-            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee,
-             string? notes);
+            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip, string? notes);
         Task<Lesson> UpdateLesson(Guid id, DateOnly date, string name,
             bool isPricePerHour, int? duration, decimal pricePerStudent,
-            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, string? note);
+            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip, string? note);
         Task DeleteAsync(Guid id);
     }
 

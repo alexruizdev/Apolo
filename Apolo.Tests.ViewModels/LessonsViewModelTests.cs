@@ -1,5 +1,6 @@
 ﻿using Apolo.Services;
 using Apolo.ViewModels;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using DocumentFormat.OpenXml.Office2010.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.EntityFrameworkCore;
@@ -89,11 +90,11 @@ namespace Apolo.Tests.ViewModels
             secondServiceLoad.Add(new ServiceSummary(Guid.NewGuid(), "New Service", true, 50));
             secondServiceLoad.Add(new ServiceSummary(Guid.NewGuid(), "New Contract", true, 50));
             var firstLessonLoad = new List<LessonSummary>();
-            firstLessonLoad.Add(new LessonSummary(Guid.NewGuid(), date, "Old Lesson 1", 30, false, firstStudentLoad[0].Id, firstStudentLoad[0].FullName, null, string.Empty, false, null, 30, false, 5, false, 5, null));
-            firstLessonLoad.Add(new LessonSummary(Guid.NewGuid(), date, "Old Lesson 2", 30, false, firstStudentLoad[1].Id, firstStudentLoad[1].FullName, null, string.Empty, false, null, 30, false, 5, false, 5, null));
+            firstLessonLoad.Add(new LessonSummary(Guid.NewGuid(), date, "Old Lesson 1", 30, false, firstStudentLoad[0].Id, firstStudentLoad[0].FullName, null, string.Empty, false, null, 30, false, 5, false, 5, 0, null));
+            firstLessonLoad.Add(new LessonSummary(Guid.NewGuid(), date, "Old Lesson 2", 30, false, firstStudentLoad[1].Id, firstStudentLoad[1].FullName, null, string.Empty, false, null, 30, false, 5, false, 5, 0, null));
             var secondLessonLoad = new List<LessonSummary>();
-            secondLessonLoad.Add(new LessonSummary(Guid.NewGuid(), date, "New Lesson 1", 40, false, secondStudentLoad[0].Id, secondStudentLoad[0].FullName, null, string.Empty, true, 60, 30, true, 5, true, 5, null));
-            secondLessonLoad.Add(new LessonSummary(Guid.NewGuid(), date, "New Lesson 2", 40, false, secondStudentLoad[1].Id, secondStudentLoad[1].FullName, null, string.Empty, true, 60, 30, true, 5, true, 5, null));
+            secondLessonLoad.Add(new LessonSummary(Guid.NewGuid(), date, "New Lesson 1", 40, false, secondStudentLoad[0].Id, secondStudentLoad[0].FullName, null, string.Empty, true, 60, 30, true, 5, true, 5, 0, null));
+            secondLessonLoad.Add(new LessonSummary(Guid.NewGuid(), date, "New Lesson 2", 40, false, secondStudentLoad[1].Id, secondStudentLoad[1].FullName, null, string.Empty, true, 60, 30, true, 5, true, 5, 0, null));
             _mockStudentRepo.SetupSequence(r => r.GetStudentOptionsAsync())
              .ReturnsAsync(firstStudentLoad)
              .ReturnsAsync(secondStudentLoad);
@@ -208,7 +209,8 @@ namespace Apolo.Tests.ViewModels
         public void ValidateLesson_InvalidLessonName(string invalidName)
         {
             int? duration = 60;
-            var result = _viewModel.ValidateLessonInput(ref invalidName, ref duration, isPricePerHour: true, basePrice: 30);
+            decimal tip = 10.5m;
+            var result = _viewModel.ValidateLessonInput(ref invalidName, ref duration, isPricePerHour: true, basePrice: 30, tip);
             Assert.IsFalse(result);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.AreEqual("Lesson name is required.", _viewModel.InfoMessage);
@@ -217,11 +219,26 @@ namespace Apolo.Tests.ViewModels
         }
 
         [TestMethod]
+        public void ValidateLesson_InvalidTip()
+        {
+            var name = "Lesson";
+            decimal tip = -10.5m;
+            int? duration = null;
+            var result = _viewModel.ValidateLessonInput(ref name, ref duration, isPricePerHour: true, basePrice: 30, tip);
+            Assert.IsFalse(result);
+            Assert.IsFalse(_viewModel.IsBusy);
+            Assert.AreEqual("Enter a valid non-negative tip (e.g., 15.5).", _viewModel.InfoMessage);
+            Assert.IsTrue(_viewModel.OpenInfoBar);
+            Assert.AreEqual(InfoBarType.Error, _viewModel.InfoBarType);
+        }
+
+        [TestMethod]
         public void ValidateLesson_InvalidLessonDurationRequired()
         {
             var name = "Lesson";
+            decimal tip = 10.5m;
             int? duration = null;
-            var result = _viewModel.ValidateLessonInput(ref name, ref duration, isPricePerHour: true, basePrice: 30);
+            var result = _viewModel.ValidateLessonInput(ref name, ref duration, isPricePerHour: true, basePrice: 30, tip);
             Assert.IsFalse(result);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.AreEqual("Duration is required when the lesson is priced per hour.", _viewModel.InfoMessage);
@@ -233,8 +250,9 @@ namespace Apolo.Tests.ViewModels
         public void ValidateLesson_InvalidDuration()
         {
             var name = "Lesson";
+            decimal tip = 10.5m;
             int? duration = -30;
-            var result = _viewModel.ValidateLessonInput(ref name, ref duration, isPricePerHour: true, basePrice: 30);
+            var result = _viewModel.ValidateLessonInput(ref name, ref duration, isPricePerHour: true, basePrice: 30, tip);
             Assert.IsFalse(result);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.AreEqual("Enter a valid non-negative duration (e.g., 60).", _viewModel.InfoMessage);
@@ -246,8 +264,9 @@ namespace Apolo.Tests.ViewModels
         public void ValidateLesson_InvalidPrice()
         {
             int? duration = 30;
+            decimal tip = 10.5m;
             var name = "Lesson";
-            var result = _viewModel.ValidateLessonInput(ref name, ref duration, isPricePerHour: true, basePrice: -30);
+            var result = _viewModel.ValidateLessonInput(ref name, ref duration, isPricePerHour: true, basePrice: -30, tip);
             Assert.IsFalse(result);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.AreEqual("Enter a valid non-negative price per student (e.g., 42.5).", _viewModel.InfoMessage);
@@ -259,8 +278,9 @@ namespace Apolo.Tests.ViewModels
         public void ValidateLesson_DeleteDuration()
         {
             int? duration = 30;
+            decimal tip = 10.5m;
             var name = "Lesson";
-            var result = _viewModel.ValidateLessonInput(ref name, ref duration, isPricePerHour: false, basePrice: 30);
+            var result = _viewModel.ValidateLessonInput(ref name, ref duration, isPricePerHour: false, basePrice: 30, tip);
             Assert.IsTrue(result);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.IsNull(_viewModel.InfoMessage);
@@ -285,7 +305,7 @@ namespace Apolo.Tests.ViewModels
         {
             var student = new StudentOption(Guid.NewGuid(), "Old Man");
             var service = new ServiceSummary(Guid.NewGuid(), "Old Service", false, 30);
-            var lesson = new LessonSummary(Guid.NewGuid(), DateOnly.FromDateTime(DateTime.Today), "Old Lesson 1", 30, false, student.Id, student.FullName, null, string.Empty, false, null, 30, false, 5, false, 5, null);
+            var lesson = new LessonSummary(Guid.NewGuid(), DateOnly.FromDateTime(DateTime.Today), "Old Lesson 1", 30, false, student.Id, student.FullName, null, string.Empty, false, null, 30, false, 5, false, 5, 0, null);
             _viewModel.Lessons.Add(lesson);
             var result = _viewModel.GetLesson(lesson.Id);
             Assert.AreEqual(lesson.Name, result.lesson.Name);
@@ -308,8 +328,9 @@ namespace Apolo.Tests.ViewModels
         {
             var date = DateOnly.FromDateTime(new DateTime(1993, 8, 17));
             var name = invalidLesson ? "" : "Lesson";
+            decimal tip = 10;
             string notes = "Some notes";
-            Lesson result = new Lesson(date, name, isPaid: false, studentId, null, service.IsPricePerHour, null, 30, true, 10, false, 20, notes);
+            Lesson result = new Lesson(date, name, isPaid: false, studentId, null, service.IsPricePerHour, null, 30, true, 10, false, 20, 10, notes);
             if (invalidStudent)
                 studentId = Guid.NewGuid();
 
@@ -317,23 +338,23 @@ namespace Apolo.Tests.ViewModels
             if (dbError)
             {
                 _mockLessonRepo.Setup(r => r.AddLessonAsync(
-                    date, name, false, studentId, null, service.IsPricePerHour, null, 30, true, 10, false, 20, notes))
+                    date, name, false, studentId, null, service.IsPricePerHour, null, 30, true, 10, false, 20, 10, notes))
                 .ThrowsAsync(new DbUpdateException("Constraint failed."));
             }
             else
             {
                 _mockLessonRepo.Setup(r => r.AddLessonAsync(
-                    date, name, false, studentId, null, service.IsPricePerHour, null, 30, true, 10, false, 20, notes))
+                    date, name, false, studentId, null, service.IsPricePerHour, null, 30, true, 10, false, 20, 10, notes))
                  .ReturnsAsync(result);
             }
             // Act
             if (invalidStudent)
             {
                 await Assert.ThrowsAsync<InvalidDataException>(async () =>
-                    await _viewModel.AddLessonAsync(date, name, service, 60, 30, true, false, notes, studentId));
+                    await _viewModel.AddLessonAsync(date, name, service, 60, 30, true, false, tip, notes, studentId));
             }
             else 
-                await _viewModel.AddLessonAsync(date, name, service, 60, 30, true, false, notes, studentId);
+                await _viewModel.AddLessonAsync(date, name, service, 60, 30, true, false, tip, notes, studentId);
         }
 
         private void AssertForAddLessonTests(Guid studentId, Guid lessonId, bool success, 
@@ -346,14 +367,14 @@ namespace Apolo.Tests.ViewModels
             if (success || dbError)
             {
                 _mockLessonRepo.Verify(r => r.AddLessonAsync(date, "Lesson", false, studentId, null,
-                    false, null, 30, true, 10, false, 20, notes), Times.Once);
+                    false, null, 30, true, 10, false, 20, 10, notes), Times.Once);
             }
             else
             {
                 _mockLessonRepo.Verify(r => r.AddLessonAsync(It.IsAny<DateOnly>(), It.IsAny<string>(), It.IsAny<bool>(),
                     It.IsAny<Guid>(), It.IsAny<Guid?>(),
                     It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<decimal>(),
-                    It.IsAny<bool>(), It.IsAny<decimal>(), It.IsAny<bool>(), It.IsAny<decimal>(),
+                    It.IsAny<bool>(), It.IsAny<decimal>(), It.IsAny<bool>(), It.IsAny<decimal>(), It.IsAny<decimal>(),
                     It.IsAny<string?>()), Times.Never);
             }
             VerifyAction(infoMessage, severity, isOpen: !invalidStudent, 
@@ -439,9 +460,9 @@ namespace Apolo.Tests.ViewModels
             var service = new ServiceSummary(Guid.NewGuid(), "Service", false, 30);
             var date = DateOnly.FromDateTime(new DateTime(1993, 8, 17));
             var originalLesson = new LessonSummary
-            (lessonId, date, "Old lesson", 25, false, studentId, student.FullName, null, string.Empty, false, 60, 25, false, 5, false, 10, null);
+            (lessonId, date, "Old lesson", 25, false, studentId, student.FullName, null, string.Empty, false, 60, 25, false, 5, false, 10, 0, null);
             var otherLesson = new LessonSummary
-            (Guid.NewGuid(), date, "Other lesson", 25, false, studentId, student.FullName, null, string.Empty, false, 60, 25, false, 5, false, 10, null);
+            (Guid.NewGuid(), date, "Other lesson", 25, false, studentId, student.FullName, null, string.Empty, false, 60, 25, false, 5, false, 10, 0, null);
             _viewModel.Lessons.Add(otherLesson);
             _viewModel.Lessons.Add(originalLesson);
             _viewModel.Students.Add(student);
@@ -460,26 +481,27 @@ namespace Apolo.Tests.ViewModels
             decimal travelAllowance = 10;
             bool isWeekendOrHoliday = true;
             decimal weekendFee = 20;
+            decimal tip = 0;
             string notes = "Some notes";
             Lesson result = new Lesson(date, name, false, studentId, null, isPricePerHour, duration, basePrice, isOnline, 
-                travelAllowance, isWeekendOrHoliday, weekendFee, notes);
+                travelAllowance, isWeekendOrHoliday, weekendFee, tip, notes);
 
             //Mock
             if (dbError)
             {
                 _mockLessonRepo.Setup(r => r.UpdateLesson(lessonId, date, name, isPricePerHour, duration, basePrice,
-                    isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, notes))
+                    isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, tip, notes))
                 .ThrowsAsync(new DbUpdateException("Constraint failed."));
             }
             else
             {
                 _mockLessonRepo.Setup(r => r.UpdateLesson(lessonId, date, name, isPricePerHour, duration, basePrice,
-                    isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, notes))
+                    isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, tip, notes))
                  .ReturnsAsync(result);
             }
             // Act
             await _viewModel.UpdateLessonAsync(lessonId, date, name, isPricePerHour, duration, basePrice, isOnline,
-                travelAllowance, isWeekendOrHoliday, weekendFee, notes);
+                travelAllowance, isWeekendOrHoliday, weekendFee, tip, notes);
         }
 
         private void AssertForUpdateLessonTests(Guid lessonId, Guid studentId, bool success, 
@@ -494,18 +516,19 @@ namespace Apolo.Tests.ViewModels
             decimal travelAllowance = 10;
             bool isWeekendOrHoliday = true;
             decimal weekendFee = 20;
+            decimal tip = 0;
             string notes = "Some notes";
 
             if (success || dbError)
             {
                 _mockLessonRepo.Verify(r => r.UpdateLesson(lessonId, date, name, isPricePerHour, duration, basePrice,
-                    isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, notes), Times.Once);
+                    isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, tip, notes), Times.Once);
             }
             else
             {
                 _mockLessonRepo.Verify(r => r.UpdateLesson(It.IsAny<Guid>(), It.IsAny<DateOnly>(), It.IsAny<string>(),
                     It.IsAny<bool>(), It.IsAny<int?>(), It.IsAny<decimal>(),
-                    It.IsAny<bool>(), It.IsAny<decimal>(), It.IsAny<bool>(), It.IsAny<decimal>(),
+                    It.IsAny<bool>(), It.IsAny<decimal>(), It.IsAny<bool>(), It.IsAny<decimal>(), It.IsAny<decimal>(),
                     It.IsAny<string?>()), Times.Never);
             }
             VerifyAction(infoMessage, severity, isOpen: true, studentsCount: 1, servicesCount: 1, lessonCount: 2, isBusy: isBusy);
@@ -603,9 +626,9 @@ namespace Apolo.Tests.ViewModels
             var service = new ServiceSummary(Guid.NewGuid(), "Service", false, 30);
             var date = DateOnly.FromDateTime(new DateTime(1993, 8, 17));
             var lessonWithBill = new LessonSummary
-            (lessonIdWithBill, date, "Lesson with bill", 25, false, student.Id, student.FullName, Guid.NewGuid(), "Invoice_Name", false, 60, 25, false, 5, false, 10, null);
+            (lessonIdWithBill, date, "Lesson with bill", 25, false, student.Id, student.FullName, Guid.NewGuid(), "Invoice_Name", false, 60, 25, false, 5, false, 10, 0, null);
             var lessonWithoutBill = new LessonSummary
-            (lessonIdWithoutBill, date, "Lesson without bill", 25, false, student.Id, student.FullName, null, string.Empty, false, 60, 25, false, 5, false, 10, null);
+            (lessonIdWithoutBill, date, "Lesson without bill", 25, false, student.Id, student.FullName, null, string.Empty, false, 60, 25, false, 5, false, 10, 0, null);
             _viewModel.Lessons.Add(lessonWithBill);
             _viewModel.Lessons.Add(lessonWithoutBill);
             _viewModel.Students.Add(student);

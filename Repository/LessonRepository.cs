@@ -46,6 +46,7 @@ namespace Repository
                     l.TravelAllowance,
                     l.IsWeekenOrHoliday,
                     l.WeekendFee,
+                    l.Tip,
                     l.Notes))
                 .ToListAsync();
         }
@@ -58,11 +59,11 @@ namespace Repository
 
         public async Task<Lesson> AddLessonAsync(DateOnly date, string name, bool isPaid, Guid studentId,
             Guid? billingDocumentId, bool isPricePerHour, int? duration, decimal basePrice,
-            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee,
+            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip,
              string? notes)
         {
             var lesson = new Lesson(date, name, isPaid, studentId, billingDocumentId, isPricePerHour, duration, basePrice,
-                isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, notes);
+                isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, tip, notes);
 
             _db.Lessons.Add(lesson);
             await _db.SaveChangesAsync();
@@ -72,7 +73,7 @@ namespace Repository
 
         public async Task<Lesson> UpdateLesson(Guid id, DateOnly date, string name, 
             bool isPricePerHour, int? duration, decimal pricePerStudent,
-            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, string? note)
+            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip, string? note)
         {
             var entity = await _db.Lessons.FirstOrDefaultAsync(i => i.Id == id);
 
@@ -88,6 +89,7 @@ namespace Repository
                 var reason = entity.IsPaid ? "is marked as paid." : "is assigned to a ticket/invoice.";
                 throw new InvalidDataException($"Lesson {entity.Name} can't be edited because {reason}");
             }
+            entity.Tip = tip;
             entity.Notes = note;
 
             await _db.SaveChangesAsync();
