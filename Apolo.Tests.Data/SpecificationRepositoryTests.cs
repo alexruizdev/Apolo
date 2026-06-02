@@ -48,6 +48,7 @@ namespace Apolo.Tests.Data
             Assert.IsNull(results[0].Price);
             Assert.IsTrue(results[0].IsOnline);
             Assert.IsFalse(results[0].IsWeekenOrHoliday);
+            Assert.AreEqual(TestGenerator.specificationUsage2, results[0].UsageCount);
 
             Assert.AreEqual(TestGenerator.SpecificationName1, results[1].SpecificationName);
             Assert.AreEqual(student1.FullName, results[1].StudentName);
@@ -57,6 +58,7 @@ namespace Apolo.Tests.Data
             Assert.AreEqual((double)TestGenerator.ServicePrice2, results[1].Price!.Value);
             Assert.IsFalse(results[1].IsOnline);
             Assert.IsTrue(results[1].IsWeekenOrHoliday);
+            Assert.AreEqual(TestGenerator.specificationUsage1, results[1].UsageCount);
         }
 
         [TestMethod]
@@ -214,6 +216,39 @@ namespace Apolo.Tests.Data
 
             // Assert
             Assert.HasCount(1, _context.Specifications);
+        }
+
+        [TestMethod]
+        public async Task IncreaseUsage_InvalidId()
+        {
+            await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            {
+                await _repository.IncrementUsageAsync(Guid.NewGuid());
+            });
+        }
+
+        [TestMethod]
+        public async Task IncreaseUsage()
+        {
+            // Arrange: Create a Payer first because Student depends on PayerId
+            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
+            var student = TestGenerator.CreateStudent1(payer.Id);
+            var service = TestGenerator.CreateService1();
+            var spec = TestGenerator.CreateSpecification1(student.Id, service.Id);
+
+            _context.Payers.Add(payer);
+            _context.Students.Add(student);
+            _context.Services.Add(service);
+            _context.Specifications.Add(spec);
+            await _context.SaveChangesAsync();
+
+            // Act
+            await _repository.IncrementUsageAsync(spec.Id);
+
+            // Assert
+            var databaseSpec = await _context.Specifications.FindAsync(spec.Id);
+            Assert.IsNotNull(databaseSpec);
+            Assert.AreEqual(TestGenerator.specificationUsage1+1, databaseSpec.UsageCount);
         }
     }
 }

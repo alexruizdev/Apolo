@@ -95,7 +95,7 @@ namespace Apolo.Tests.ViewModels
         public void GetSpecification()
         {
             var spec = new SpecificationSummary(Guid.NewGuid(), "Old Default", Guid.NewGuid(), 
-                "Student", Guid.NewGuid(), "Service", 60, null, false, false);
+                "Student", Guid.NewGuid(), "Service", 60, null, false, false, 0);
             _viewModel.Specifications.Add(spec);
             var result = _viewModel.GetSpecification(spec.Id);
             Assert.AreEqual(spec.SpecificationName, result.value.SpecificationName);
@@ -136,11 +136,11 @@ namespace Apolo.Tests.ViewModels
             secondServiceLoad.Add(new ServiceSummary(Guid.NewGuid(), "New Service", true, 50));
             secondServiceLoad.Add(new ServiceSummary(Guid.NewGuid(), "New Contract", true, 50));
             var firstSpecificationLoad = new List<SpecificationSummary>();
-            firstSpecificationLoad.Add(new SpecificationSummary(Guid.NewGuid(), "Old Default", firstStudentLoad[0].Id, firstStudentLoad[0].FullName, firstServiceLoad[0].Id, firstServiceLoad[0].Name, 60, null, false, false));
-            firstSpecificationLoad.Add(new SpecificationSummary(Guid.NewGuid(), "Old Spec", firstStudentLoad[1].Id, firstStudentLoad[1].FullName, firstServiceLoad[1].Id, firstServiceLoad[1].Name, 60, null, false, false));
+            firstSpecificationLoad.Add(new SpecificationSummary(Guid.NewGuid(), "Old Default", firstStudentLoad[0].Id, firstStudentLoad[0].FullName, firstServiceLoad[0].Id, firstServiceLoad[0].Name, 60, null, false, false,0));
+            firstSpecificationLoad.Add(new SpecificationSummary(Guid.NewGuid(), "Old Spec", firstStudentLoad[1].Id, firstStudentLoad[1].FullName, firstServiceLoad[1].Id, firstServiceLoad[1].Name, 60, null, false, false,0));
             var secondSpecificationLoad = new List<SpecificationSummary>();
-            secondSpecificationLoad.Add(new SpecificationSummary(Guid.NewGuid(), "New Default", secondStudentLoad[0].Id, secondStudentLoad[0].FullName, secondServiceLoad[0].Id, secondServiceLoad[0].Name, 90, 50, true, true));
-            secondSpecificationLoad.Add(new SpecificationSummary(Guid.NewGuid(), "New Spec", secondStudentLoad[1].Id, secondStudentLoad[1].FullName, secondServiceLoad[1].Id, secondServiceLoad[1].Name, 90, 50, true, true));
+            secondSpecificationLoad.Add(new SpecificationSummary(Guid.NewGuid(), "New Default", secondStudentLoad[0].Id, secondStudentLoad[0].FullName, secondServiceLoad[0].Id, secondServiceLoad[0].Name, 90, 50, true, true,0));
+            secondSpecificationLoad.Add(new SpecificationSummary(Guid.NewGuid(), "New Spec", secondStudentLoad[1].Id, secondStudentLoad[1].FullName, secondServiceLoad[1].Id, secondServiceLoad[1].Name, 90, 50, true, true,0));
 
             _mockStudentRepo.SetupSequence(r => r.GetStudentOptionsAsync())
              .ReturnsAsync(firstStudentLoad)
@@ -190,6 +190,37 @@ namespace Apolo.Tests.ViewModels
             _mockSpecificationRepo.Verify(r => r.GetSpecificationsAsync(), Times.Once);
 
             VerifyAction(null, InfoBarType.Success, isOpen: false, specCount: 0, studentsCount: 0, servicesCount: 0);
+        }
+
+        // --- Refresh specifications Tests ---
+
+        [TestMethod]
+        public async Task RefreshSpecificationsAsync_WhenAlreadyBusy()
+        {
+            _viewModel.IsBusy = true;
+
+            await _viewModel.RefreshSpecifications();
+
+            VerifyAction("Can't refresh specifications while busy.", InfoBarType.Warning, isOpen: true,
+                specCount: 0, studentsCount: 0, servicesCount: 0, isBusy: true);
+            _mockSpecificationRepo.Verify(r => r.GetSpecificationsAsync(), Times.Never);
+        }
+
+        [TestMethod]
+        public async Task RefreshSpecificationsAsync()
+        {
+            var firstSpecificationLoad = new List<SpecificationSummary>();
+            firstSpecificationLoad.Add(new SpecificationSummary(Guid.NewGuid(), "Spec 1", Guid.NewGuid(), "Student 1", Guid.NewGuid(), "Service 1", 60, null, false, false, 1));
+            firstSpecificationLoad.Add(new SpecificationSummary(Guid.NewGuid(), "Spec 2", Guid.NewGuid(), "Student 2", Guid.NewGuid(), "Service 2", 60, null, false, false, 3));
+
+
+            _mockSpecificationRepo.SetupSequence(r => r.GetSpecificationsAsync())
+             .ReturnsAsync(firstSpecificationLoad);
+
+            await _viewModel.RefreshSpecifications();
+
+            VerifyAction(null, InfoBarType.Success, isOpen: false, specCount: 2, studentsCount: 0, servicesCount: 0);
+            _mockSpecificationRepo.Verify(r => r.GetSpecificationsAsync(), Times.Once);
         }
 
         // --- AddSpecificationAsync Tests ---
@@ -311,7 +342,7 @@ namespace Apolo.Tests.ViewModels
             var service = new ServiceSummary(Guid.NewGuid(), "Service", true, 50);
             var student = new StudentOption(Guid.NewGuid(), "Student");
             var itemToDelete = new SpecificationSummary(Guid.NewGuid(), "Spec", student.Id,
-                student.FullName, service.Id, service.Name, 60, null, false, false);
+                student.FullName, service.Id, service.Name, 60, null, false, false, 0);
             _viewModel.IsBusy = true;
             _viewModel.Services.Add(service);
             _viewModel.Students.Add(student);
@@ -333,7 +364,7 @@ namespace Apolo.Tests.ViewModels
             var service = new ServiceSummary(Guid.NewGuid(), "Service", true, 50);
             var student = new StudentOption(Guid.NewGuid(), "Student");
             var itemToDelete = new SpecificationSummary(Guid.NewGuid(), "Spec", student.Id,
-                student.FullName, service.Id, service.Name, 60, null, false, false);
+                student.FullName, service.Id, service.Name, 60, null, false, false, 0);
 
             _viewModel.Services.Add(service);
             _viewModel.Students.Add(student);
@@ -359,9 +390,9 @@ namespace Apolo.Tests.ViewModels
             var service = new ServiceSummary(Guid.NewGuid(), "Service", true, 50);
             var student = new StudentOption(Guid.NewGuid(), "Student");
             var itemToDelete = new SpecificationSummary(Guid.NewGuid(), "Spec", student.Id,
-                student.FullName, service.Id, service.Name, 60, null, false, false);
+                student.FullName, service.Id, service.Name, 60, null, false, false, 0);
             var itemToKeep = new SpecificationSummary(Guid.NewGuid(), "Spec to keep", student.Id,
-                student.FullName, service.Id, service.Name, 90, 35, true, true);
+                student.FullName, service.Id, service.Name, 90, 35, true, true, 0);
 
             _viewModel.Services.Add(service);
             _viewModel.Students.Add(student);
@@ -387,9 +418,9 @@ namespace Apolo.Tests.ViewModels
             var service2 = new ServiceSummary(service2Id, "Service2", false, 90);
             var student = new StudentOption(Guid.NewGuid(), "Student");
             var originalItem = new SpecificationSummary(targetId, "Spec", student.Id,
-                student.FullName, service1.Id, service1.Name, 60, null, false, false);
+                student.FullName, service1.Id, service1.Name, 60, null, false, false, 0);
             var unrelatedItem = new SpecificationSummary(Guid.NewGuid(), "Keep Specification", student.Id,
-                student.FullName, service1.Id, service1.Name, 60, null, false, false);
+                student.FullName, service1.Id, service1.Name, 60, null, false, false, 0);
 
             _viewModel.Students.Add(student);
             _viewModel.Services.Add(service1);
@@ -510,7 +541,7 @@ namespace Apolo.Tests.ViewModels
             var student = new StudentOption(studentId, "Student");
             var spec = new SpecificationSummary(targetId, "Spec", student.Id,
                 student.FullName, invalidService ? Guid.NewGuid() : service.Id, service.Name,
-                60, hasPrice ? 60 : null, false, false);
+                60, hasPrice ? 60 : null, false, false, 0);
 
             _viewModel.Students.Add(student);
             _viewModel.Services.Add(service);
@@ -538,7 +569,7 @@ namespace Apolo.Tests.ViewModels
         }
 
         private void AssertForCreateLessonTests(Guid targetId, Guid studentId, bool success, InfoBarType severity, string? infoMessage = null,
-            bool isBusy = false, bool hasPrice = false)
+            bool isBusy = false, bool hasPrice = false, bool dbError = false)
         {
             var date = DateOnly.FromDateTime(new DateTime(1993, 8, 17));
             string notes = "Some notes";
@@ -551,6 +582,15 @@ namespace Apolo.Tests.ViewModels
                     true, 60, hasPrice ? 60 : 50,
                     false, 10, false, 20, 10,
                     notes), Times.Once);
+                _mockSpecificationRepo.Verify(r => r.IncrementUsageAsync(targetId), Times.Once);
+            }
+            else if (dbError)
+            {
+                _mockLessonRepo.Verify(r => r.AddLessonAsync(date, "Service", false, studentId, null,
+                    true, 60, hasPrice ? 60 : 50,
+                    false, 10, false, 20, 10,
+                    notes), Times.Once);
+                _mockSpecificationRepo.Verify(r => r.IncrementUsageAsync(It.IsAny<Guid>()), Times.Never);
             }
             else
             {
@@ -559,6 +599,7 @@ namespace Apolo.Tests.ViewModels
                     It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<decimal>(),
                     It.IsAny<bool>(), It.IsAny<decimal>(), It.IsAny<bool>(), It.IsAny<decimal>(), It.IsAny<decimal>(), 
                     It.IsAny<string?>()), Times.Never);
+                _mockSpecificationRepo.Verify(r => r.IncrementUsageAsync(It.IsAny<Guid>()), Times.Never);
             }
 
             // 2. Verify UI Update
@@ -642,7 +683,7 @@ namespace Apolo.Tests.ViewModels
             await ActForCreateLessonTests(targetId);
 
             // Assert
-            AssertForCreateLessonTests(targetId, studentId, success: true, 
+            AssertForCreateLessonTests(targetId, studentId, success: false, dbError: true,
                 infoMessage: "Constraint failed.", severity: InfoBarType.Error);
         }
 

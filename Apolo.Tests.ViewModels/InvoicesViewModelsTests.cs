@@ -470,7 +470,8 @@ namespace Apolo.Tests.ViewModels
         {
             var ids = ArrangeForGenerateInvoice();
             await ActForForGenerateInvoice(ids);
-            AssertForGenerateInvoice(ids, infoMessage: "Invoice saved to: \\somepath\\invented\\2026-05-E-0001.pdf.", 
+
+            AssertForGenerateInvoice(ids, infoMessage: $"Invoice saved to: \\somepath\\invented\\{_viewModel.Bill.Name}.pdf.", 
                 severity: InfoBarType.Success, success: true);
         }
     }

@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
 using System.Collections.ObjectModel;
-using System.Security.AccessControl;
 using ViewModels;
 
 namespace Apolo.ViewModels
@@ -57,7 +56,6 @@ namespace Apolo.ViewModels
             return (service, Services.IndexOf(service));
         }
 
-        [RelayCommand]
         public async Task LoadAsync()
         {
             if (IsBusy)
@@ -85,6 +83,23 @@ namespace Apolo.ViewModels
 
             SetExitFunction();
         }
+
+        public async Task RefreshSpecifications()
+        {
+            if (IsBusy)
+            {
+                SetExitFunction("Can't refresh specifications while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            var items = await _specificationRepository.GetSpecificationsAsync();
+
+            Specifications.Clear();
+            foreach (var item in items) Specifications.Add(item);
+
+            SetExitFunction();
+        }
+
 
         public async Task AddSpecificationAsync(string name, int durationMinutes, double? price,
             bool online, bool weekend,
@@ -128,7 +143,7 @@ namespace Apolo.ViewModels
                 Specifications.Add(new SpecificationSummary(
                     specification.Id, specification.Name, specification.StudentId, studentName,
                     specification.ServiceId, serviceName, specification.DurationMinutes, (double?)specification.Price,
-                    specification.IsOnline, specification.IsWeekenOrHoliday));
+                    specification.IsOnline, specification.IsWeekenOrHoliday, specification.UsageCount));
 
                 SetExitFunction($"Specification '{name}' added for {studentName}.", InfoBarType.Success);
             }
@@ -255,6 +270,8 @@ namespace Apolo.ViewModels
                     service.IsPricePerHour, spec.value.DurationMinutes, (decimal)(spec.value.Price ?? service.Price),
                     spec.value.IsOnline, TravelAllowance, spec.value.IsWeekenOrHoliday, WeekendFee,
                     tip, notes);
+
+                await _specificationRepository.IncrementUsageAsync(id);
 
                 SetExitFunction($"Lesson '{spec.value.ServiceName}' created for {spec.value.StudentName}.",
                     InfoBarType.Success); ;

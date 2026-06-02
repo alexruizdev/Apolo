@@ -38,6 +38,7 @@ namespace Repository
         Task<IEnumerable<SpecificationOption>> GetSpecificationsForStudentAsync(IEnumerable<Guid> studentsIds);
         Task DeleteAsync(Guid id);
         Task UpdateAsync(Guid id, Guid serviceId, string name, int duration, decimal? price, bool isOnline, bool isWeekend);
+        Task IncrementUsageAsync(Guid id);
     }
 
     public interface ILessonRepository

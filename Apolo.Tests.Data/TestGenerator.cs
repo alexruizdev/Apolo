@@ -44,6 +44,8 @@ namespace Apolo.Tests.Data
         // Specification const
         public const string SpecificationName1 = "Specification 1";
         public const string SpecificationName2 = "Specification 2";
+        public const int specificationUsage1 = 3;
+        public const int specificationUsage2 = 5;
 
         // Invoice const
         public const int InvoiceId1 = 1;
@@ -161,7 +163,8 @@ namespace Apolo.Tests.Data
             DurationMinutes = LongDuration,
             Price = ServicePrice2,
             IsOnline = false,
-            IsWeekenOrHoliday = true
+            IsWeekenOrHoliday = true,
+            UsageCount = specificationUsage1
         };
 
         public static Specification CreateSpecification2(Guid studentId, Guid serviceId) => new Specification
@@ -172,7 +175,8 @@ namespace Apolo.Tests.Data
             ServiceId = serviceId,
             DurationMinutes = ShortDuration,
             IsOnline = true,
-            IsWeekenOrHoliday = false
+            IsWeekenOrHoliday = false,
+            UsageCount = specificationUsage2
         };
 
         public static BillingDocument CreateInvoice(List<Lesson> lessons, Guid payerId)

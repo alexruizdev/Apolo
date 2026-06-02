@@ -147,7 +147,11 @@ public sealed partial class SpecificationsPage : Page
             var dto = datePicker.Date ?? DateTimeOffset.Now;
             var date = DateOnly.FromDateTime(dto.Date);
             var notes = string.IsNullOrWhiteSpace(noteBox.Text) ? null : noteBox.Text;
-            await ViewModel.CreateLessonFromSpecificationAsync(item.Id, date, (decimal)tipBox.Value, notes);
+            decimal tip = 0;
+            if (!double.IsNaN(tipBox.Value))
+                tip = (decimal)tipBox.Value;
+            await ViewModel.CreateLessonFromSpecificationAsync(item.Id, date, tip, notes);
+            await ViewModel.RefreshSpecifications(); // Refresh the specifications to update the usage count
         }
     }
 

@@ -22,8 +22,7 @@ namespace Repository
         {
             return await _db.Specifications
                 .AsNoTracking()
-                .OrderBy(sp => sp.Student.FirstName)
-                .ThenBy(sp => sp.Name)
+                .OrderByDescending(sp => sp.UsageCount)
                 .Select(sp => new SpecificationSummary(
                     sp.Id,
                     sp.Name,
@@ -34,9 +33,20 @@ namespace Repository
                     sp.DurationMinutes,
                     (double?)sp.Price,
                     sp.IsOnline,
-                    sp.IsWeekenOrHoliday
+                    sp.IsWeekenOrHoliday,
+                    sp.UsageCount
                 ))
                 .ToListAsync();
+        }
+
+        public async Task IncrementUsageAsync(Guid id)
+        {
+            var entity = await _db.Specifications.FirstOrDefaultAsync(s => s.Id == id);
+            if (entity is null)
+                throw new ArgumentNullException("Specification not found.");
+            
+            entity.UsageCount++;
+            await _db.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<SpecificationOption>> GetSpecificationsForStudentAsync(IEnumerable<Guid> studentsIds)
