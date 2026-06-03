@@ -242,6 +242,13 @@ namespace Apolo.Views
 
             await ViewModel.DeleteLessonAsync(row.Id);
         }
+
+        private async void ChangePayment_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button b || b.DataContext is not LessonSummary row) return;
+            await ViewModel.ChangePayment(row.Id);
+        }
+
         private async void EditLesson_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not Button b || b.DataContext is not LessonSummary row) return;

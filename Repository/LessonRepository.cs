@@ -97,12 +97,35 @@ namespace Repository
             return entity;
         }
 
+        public async Task UpdateLessonsPayment(IEnumerable<Guid> lessonsIds, bool isPaid)
+        {
+            if (!lessonsIds.Any()) return;
+
+            await _db.Lessons
+                .Where(l => lessonsIds.Contains(l.Id))
+                .ExecuteUpdateAsync(s => s.SetProperty(l => l.IsPaid, isPaid));
+        }
+
         public async Task DeleteAsync(Guid id)
         {
             var entity = await _db.Lessons.FindAsync(id)
                          ?? throw new ArgumentNullException("Lesson not found.");
 
             _db.Lessons.Remove(entity);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task UnassignBillToLessons(IEnumerable<Guid> lessonsIds)
+        {
+            if (!lessonsIds.Any()) return;
+
+            var lesssons = await _db.Lessons
+                .Where(l => lessonsIds.Contains(l.Id))
+                .ToListAsync();
+            
+            foreach(var lesson in lesssons)
+                lesson.BillingDocumentId = null;
+
             await _db.SaveChangesAsync();
         }
     }

@@ -28,6 +28,7 @@ namespace Apolo.ViewModels
     {
         IBillingRepository _billingRepository;
         IPayerRepository _payerRepository;
+        ILessonRepository _lessonRepository;
         PDF.IWriter _pdfWriter;
 
         public ObservableCollection<PayerOption> Payers { get; } = new();
@@ -43,8 +44,8 @@ namespace Apolo.ViewModels
 
         public BillSummary ResetBill() => new BillSummary(null, Guid.NewGuid(), DocumentType.Ticket, "", "");
 
-        public BillingViewModel(IBillingRepository billingRepository, IPayerRepository payerRepository, 
-            IUserProfileService userProfile, PDF.IWriter pdfWriter)
+        public BillingViewModel(IBillingRepository billingRepository, IPayerRepository payerRepository,  
+            IUserProfileService userProfile, PDF.IWriter pdfWriter, ILessonRepository lessonRepository)
             : base(userProfile)
         {
             _billingRepository = billingRepository;
@@ -73,6 +74,7 @@ namespace Apolo.ViewModels
                 // 3. Always recompute when the list structure changes
                 RecomputeTotals();
             };
+            _lessonRepository = lessonRepository;
         }
 
         // Tri-state "Selection state" checkbox: true=all, false=none, null=mixed
@@ -219,7 +221,7 @@ namespace Apolo.ViewModels
 
             try
             {
-                await _billingRepository.UpdateLessonsAsync(ids, isPaid: markAsPaid);
+                await _lessonRepository.UpdateLessonsPayment(ids, isPaid: markAsPaid);
 
                 // Update UI
                 for (int i = 0; i < Lessons.Count; i++)
@@ -259,7 +261,7 @@ namespace Apolo.ViewModels
 
             try
             {
-                await _billingRepository.RemoveLessonsAsync(ids);
+                await _lessonRepository.UnassignBillToLessons(ids);
 
                 // Remove paid lessons from the UI
                 for (int i = Lessons.Count - 1; i >= 0; i--)

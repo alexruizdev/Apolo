@@ -35,24 +35,6 @@ namespace Repository
                 .ToListAsync();
         }
 
-        public async Task UpdateLessonsAsync(IEnumerable<Guid> lessonsIds, bool isPaid)
-        {
-            if (!lessonsIds.Any()) return;
-
-            await _db.Lessons
-                .Where(l => lessonsIds.Contains(l.Id))
-                .ExecuteUpdateAsync(s => s.SetProperty(l => l.IsPaid, isPaid));
-        }
-
-        public async Task RemoveLessonsAsync(IEnumerable<Guid> lessonsIds)
-        {
-            if (!lessonsIds.Any()) return;
-
-            await _db.Lessons
-                .Where(l => lessonsIds.Contains(l.Id))
-                .ExecuteUpdateAsync(s => s.SetProperty(l => l.BillingDocumentId, (Guid?)null));
-        }
-
         public async Task<BillingDocument> CreateBillAsync(Guid payerId, List<Guid> ids, DocumentType type)
         {
             if (ids.Count == 0)

@@ -50,15 +50,15 @@ namespace Repository
         Task<Lesson> UpdateLesson(Guid id, DateOnly date, string name,
             bool isPricePerHour, int? duration, decimal pricePerStudent,
             bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip, string? note);
+        Task UpdateLessonsPayment(IEnumerable<Guid> lessonsIds, bool isPaid);
         Task DeleteAsync(Guid id);
+        Task UnassignBillToLessons(IEnumerable<Guid> lessonsIds);
     }
 
     public interface IBillingRepository
     {
         Task<IEnumerable<LessonLine>> GetUnbilledLessonsAsync(Guid payerId);
         Task<IEnumerable<LessonLine>> GetLessonsFromBillAsync(Guid billId);
-        Task UpdateLessonsAsync(IEnumerable<Guid> lessonsIds, bool isPaid);
-        Task RemoveLessonsAsync(IEnumerable<Guid> lessonsIds);
         Task<BillingDocument> CreateBillAsync(Guid payerId, List<Guid> ids, DocumentType type);
         Task DeleteAsync(Guid id);
         Task<IEnumerable<BillingDocument>> GetBillSuggestionsAsync(string searchTerm);

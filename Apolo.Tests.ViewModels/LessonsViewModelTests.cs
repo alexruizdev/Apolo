@@ -715,5 +715,102 @@ namespace Apolo.Tests.ViewModels
                 severity: InfoBarType.Success);
         }
 
+        // Update Payment status
+
+        private void ArrangeForUpdatePaymentStatusTests(Guid lessonIdWithBill, Guid lessonIdWithoutBill)
+        {
+            var student = new StudentOption(Guid.NewGuid(), "Student");
+            var service = new ServiceSummary(Guid.NewGuid(), "Service", false, 30);
+            var date = DateOnly.FromDateTime(new DateTime(1993, 8, 17));
+            var lessonWithBill = new LessonSummary
+            (lessonIdWithBill, date, "Lesson with bill", 25, true, student.Id, student.FullName, Guid.NewGuid(), "Invoice_Name", false, 60, 25, false, 5, false, 10, 0, null);
+            var lessonWithoutBill = new LessonSummary
+            (lessonIdWithoutBill, date, "Lesson without bill", 25, false, student.Id, student.FullName, null, string.Empty, false, 60, 25, false, 5, false, 10, 0, null);
+            _viewModel.Lessons.Add(lessonWithBill);
+            _viewModel.Lessons.Add(lessonWithoutBill);
+            _viewModel.Students.Add(student);
+            _viewModel.Services.Add(service);
+        }
+
+        private async Task ActForUpdatePaymentStatusTests(Guid lessonId, bool dbError = false, bool markAsPaid = true)
+        {
+            //Mock
+            if (dbError)
+            {
+                _mockLessonRepo.Setup(r => r.UpdateLessonsPayment(new List<Guid> { lessonId }, markAsPaid))
+                    .ThrowsAsync(new DbUpdateException("Constraint failed."));
+            }
+            // Act
+            await _viewModel.ChangePayment(lessonId);
+        }
+
+        private void AssertForUpdatePaymentStatusTests(Guid lessonId, bool success,
+            string? infoMessage, InfoBarType severity, bool isBusy = false, bool dbError = false, bool markAsPaid = true)
+        {
+            if (success || dbError)
+            {
+                _mockLessonRepo.Verify(r => r.UpdateLessonsPayment(new List<Guid> { lessonId }, markAsPaid), Times.Once);
+            }
+            else
+            {
+                _mockLessonRepo.Verify(r => r.UpdateLessonsPayment(It.IsAny<List<Guid>>(), It.IsAny<bool>()), Times.Never);
+            }
+            VerifyAction(infoMessage, severity, isOpen: true, studentsCount: 1, servicesCount: 1, lessonCount: 2,
+                isBusy: isBusy);
+
+            if (success)
+            {
+                var updatedLesson = _viewModel.Lessons[1];
+                Assert.AreEqual(markAsPaid, updatedLesson.IsPaid);
+            }
+        }
+
+        [TestMethod]
+        public async Task UpdatePaymentStatus_IsBusy()
+        {
+            _viewModel.IsBusy = true;
+            var lessonIdWithBill = Guid.NewGuid();
+            var lessonIdWithoutBill = Guid.NewGuid();
+            ArrangeForUpdatePaymentStatusTests(lessonIdWithBill, lessonIdWithoutBill);
+            await ActForUpdatePaymentStatusTests(lessonIdWithoutBill);
+            AssertForUpdatePaymentStatusTests(lessonIdWithoutBill, success: false, infoMessage: "Can't change payment while busy.",
+                severity: InfoBarType.Warning, isBusy: true);
+        }
+
+        [TestMethod]
+        public async Task UpdatePaymentStatus_MarkAsUnpaid()
+        {
+            var lessonIdWithBill = Guid.NewGuid();
+            var lessonIdWithoutBill = Guid.NewGuid();
+            ArrangeForUpdatePaymentStatusTests(lessonIdWithBill, lessonIdWithoutBill);
+            await ActForUpdatePaymentStatusTests(lessonIdWithBill, markAsPaid: false);
+            AssertForUpdatePaymentStatusTests(lessonIdWithBill, success: true, markAsPaid: false,
+                infoMessage: "Lesson 'Lesson with bill' marked as unpaid.",
+                severity: InfoBarType.Success);
+        }
+
+        [TestMethod]
+        public async Task UpdatePaymentStatus_DbError()
+        {
+            var lessonIdWithBill = Guid.NewGuid();
+            var lessonIdWithoutBill = Guid.NewGuid();
+            ArrangeForUpdatePaymentStatusTests(lessonIdWithBill, lessonIdWithoutBill);
+            await ActForUpdatePaymentStatusTests(lessonIdWithoutBill, dbError: true);
+            AssertForUpdatePaymentStatusTests(lessonIdWithoutBill, success: false, dbError: true,
+                infoMessage: "Constraint failed.", severity: InfoBarType.Error);
+        }
+
+        [TestMethod]
+        public async Task UpdatePaymentStatus()
+        {
+            var lessonIdWithBill = Guid.NewGuid();
+            var lessonIdWithoutBill = Guid.NewGuid();
+            ArrangeForUpdatePaymentStatusTests(lessonIdWithBill, lessonIdWithoutBill);
+            await ActForUpdatePaymentStatusTests(lessonIdWithoutBill);
+            AssertForUpdatePaymentStatusTests(lessonIdWithoutBill, success: true,
+                infoMessage: $"Lesson 'Lesson without bill' marked as paid.",
+                severity: InfoBarType.Success);
+        }
+
     }
 }

@@ -13,6 +13,7 @@ namespace Apolo.Tests.ViewModels
     {
         private Mock<IBillingRepository> _mockInvoiceRepo = null!;
         private Mock<IPayerRepository> _mockPayerRepo = null!;
+        private Mock<ILessonRepository> _mockLessonRepo = null!;
         private Mock<IUserProfileService> _mockUserProfileService = null!;
         private Mock<PDF.IWriter> _mockPDFWriter = null!;
         private BillingViewModel _viewModel = null!;
@@ -22,6 +23,7 @@ namespace Apolo.Tests.ViewModels
         {
             _mockInvoiceRepo = new Mock<IBillingRepository>();
             _mockPayerRepo = new Mock<IPayerRepository>();
+            _mockLessonRepo = new Mock<ILessonRepository>();
             _mockUserProfileService = new Mock<IUserProfileService>();
             _mockPDFWriter = new Mock<PDF.IWriter>();
 
@@ -45,7 +47,7 @@ namespace Apolo.Tests.ViewModels
                 .ReturnsAsync(userProfile);
 
             _viewModel = new BillingViewModel(_mockInvoiceRepo.Object, _mockPayerRepo.Object, _mockUserProfileService.Object,
-                _mockPDFWriter.Object);
+                _mockPDFWriter.Object, _mockLessonRepo.Object);
         }
 
         void VerifyAction(string? message, InfoBarType severity, bool isOpen, int payersCount, int count, decimal totalSelected, decimal total, bool isBusy = false)
@@ -278,7 +280,7 @@ namespace Apolo.Tests.ViewModels
         {
             if (dbError)
             {
-                _mockInvoiceRepo.Setup(r => r.UpdateLessonsAsync(ids, isPaid: true))
+                _mockLessonRepo.Setup(r => r.UpdateLessonsPayment(ids, isPaid: true))
                     .ThrowsAsync(new DbUpdateException("Constraint failed."));
             }
 
@@ -290,11 +292,11 @@ namespace Apolo.Tests.ViewModels
         {
             if (success || dbError)
             {
-                _mockInvoiceRepo.Verify(r => r.UpdateLessonsAsync(ids, isPaid: true), Times.Once);
+                _mockLessonRepo.Verify(r => r.UpdateLessonsPayment(ids, isPaid: true), Times.Once);
             }
             else
             {
-                _mockInvoiceRepo.Verify(r => r.UpdateLessonsAsync(It.IsAny<IReadOnlyList<Guid>>(), It.IsAny<bool>()), Times.Never);
+                _mockLessonRepo.Verify(r => r.UpdateLessonsPayment(It.IsAny<IReadOnlyList<Guid>>(), It.IsAny<bool>()), Times.Never);
             }
 
             if (dbError || success)

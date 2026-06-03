@@ -1,7 +1,6 @@
 ﻿using Apolo.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using DocumentFormat.OpenXml.Drawing.Charts;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
@@ -178,6 +177,30 @@ namespace Apolo.ViewModels
                     lesson.Notes));
                 
                 SetExitFunction($"Lesson '{lesson.Name}' added successfully.", InfoBarType.Success);
+            }
+            catch (DbUpdateException ex)
+            {
+                SetExitFunction(ex.Message, InfoBarType.Error);
+            }
+        }
+
+        public async Task ChangePayment(Guid id)
+        {
+            if (IsBusy)
+            {
+                SetExitFunction("Can't change payment while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            SetEnterFunction();
+
+            var (item, idx) = GetLesson(id);
+            try
+            {
+                await _lessonRepository.UpdateLessonsPayment(new List<Guid> { id }, !item.IsPaid);
+                Lessons[idx] = item with { IsPaid = !item.IsPaid };
+                SetExitFunction($"Lesson '{item.Name}' marked as {(Lessons[idx].IsPaid ? "paid" : "unpaid")}.",
+                    InfoBarType.Success);
             }
             catch (DbUpdateException ex)
             {

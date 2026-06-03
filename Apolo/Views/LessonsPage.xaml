@@ -147,6 +147,14 @@
                                     <ToolTipService.ToolTip>Edit lesson</ToolTipService.ToolTip>
                                 </Button>
 
+                                <Button Click="ChangePayment_Click" 
+                                        Background="Transparent" 
+                                        BorderThickness="0"
+                                        IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
+                                    <SymbolIcon Symbol="Shop" />
+                                    <ToolTipService.ToolTip>Change payment status</ToolTipService.ToolTip>
+                                </Button>
+
                                 <Button Click="DeleteLesson_Click" 
                                         Background="Transparent" 
                                         BorderThickness="0" 
