@@ -68,7 +68,7 @@ namespace Apolo.ViewModels
             Students.Clear();
             foreach (var s in studentItems) Students.Add(s);
 
-            SetExitFunction();
+            SetExitFunction($"{Students.Count} loaded", InfoBarType.Success);
         }
 
         public async Task AddStudentAsync(string firstName, string lastName, Guid? payerId)

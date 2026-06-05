@@ -58,7 +58,7 @@ namespace Apolo.Tests.Models
             var lesson = new LessonSummary(Id: Guid.NewGuid(), DateOnly.FromDateTime(DateTime.Today), "Lesson",
                 FinalPrice: 65, IsPaid: true, StudentId: Guid.NewGuid(), "Student", BillingDocumentId: Guid.NewGuid(),
                 "2025-09-E-0001", IsPricePerHour: true, DurationMinutes: 60, BasePrice: 30, IsOnline: false, TravelAllowance: 5, 
-                IsWeekenOrHoliday: false, WeekendFee: 5, Tip: 0, longNote);
+                IsWeekendOrHoliday: false, WeekendFee: 5, Tip: 0, longNote);
 
             Assert.AreEqual(shortNote, lesson.ShortNote);
         }
@@ -72,7 +72,7 @@ namespace Apolo.Tests.Models
 
             var shortNote = "This is a short note.";
             var lesson = new Lesson(date, "Lesson", isPaid: false, studentId, null, isPricePerHour: false,
-                durationMinutes: null, basePrice: 90, isOnline: true, travelAllowance: 5, isWeekenOrHoliday: true, weekendFee: 5, tip: 0,
+                durationMinutes: null, basePrice: 90, isOnline: true, travelAllowance: 5, isWeekendOrHoliday: true, weekendFee: 5, tip: 0,
                 shortNote);
             Assert.AreEqual(95, lesson.FinalPrice);
 
@@ -90,7 +90,7 @@ namespace Apolo.Tests.Models
             Assert.AreEqual(35, lesson.BasePrice);
             Assert.IsFalse(lesson.IsOnline);
             Assert.AreEqual(7.5m, lesson.TravelAllowance);
-            Assert.IsFalse(lesson.IsWeekenOrHoliday);
+            Assert.IsFalse(lesson.IsWeekendOrHoliday);
             Assert.AreEqual(7.5m, lesson.WeekendFee);
             Assert.AreEqual(45m, lesson.FinalPrice);
 

@@ -391,7 +391,7 @@ namespace Apolo.Tests.ViewModels
                 Assert.AreEqual(30, addedLesson.BasePrice);
                 Assert.IsTrue(addedLesson.IsOnline);
                 Assert.AreEqual(10, addedLesson.TravelAllowance);
-                Assert.IsFalse(addedLesson.IsWeekenOrHoliday);
+                Assert.IsFalse(addedLesson.IsWeekendOrHoliday);
                 Assert.AreEqual(20, addedLesson.WeekendFee);
                 Assert.AreEqual(notes, addedLesson.Notes);
             }
@@ -543,7 +543,7 @@ namespace Apolo.Tests.ViewModels
                 Assert.AreEqual(30, addedLesson.BasePrice);
                 Assert.IsTrue(addedLesson.IsOnline);
                 Assert.AreEqual(10, addedLesson.TravelAllowance);
-                Assert.IsTrue(addedLesson.IsWeekenOrHoliday);
+                Assert.IsTrue(addedLesson.IsWeekendOrHoliday);
                 Assert.AreEqual(20, addedLesson.WeekendFee);
                 Assert.AreEqual(notes, addedLesson.Notes);
             }

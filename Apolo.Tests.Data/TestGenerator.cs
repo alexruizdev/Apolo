@@ -118,10 +118,10 @@ namespace Apolo.Tests.Data
         // Lesson constructors
         public static Lesson CreateLessonPaid(Guid studentId) => new Lesson(
             LessonOldDate, LessonNamePaid, isPaid: true, studentId, null, isPricePerHour: true, NormalDuration, BasePrice,
-            isOnline: false, LessonTravelAllowance, isWeekenOrHoliday: true, LessonWeekendFee, LessonTip, LessonNotes);
+            isOnline: false, LessonTravelAllowance, isWeekendOrHoliday: true, LessonWeekendFee, LessonTip, LessonNotes);
         public static Lesson CreateLessonUnpaid(Guid studentId) => new Lesson(
             LessonNewDate, LessonNameUnpaid, isPaid: false, studentId, null, isPricePerHour: false, null, 
-            BasePrice, isOnline: true, LessonTravelAllowance, isWeekenOrHoliday: false, LessonWeekendFee, LessonTip, null);
+            BasePrice, isOnline: true, LessonTravelAllowance, isWeekendOrHoliday: false, LessonWeekendFee, LessonTip, null);
 
         private static DateOnly GetRandomDateLastNMonths(int months)
         {
@@ -140,7 +140,7 @@ namespace Apolo.Tests.Data
 
         public static Lesson CreateRandomLesson(string name, bool paid, int months, Guid studentId) => new Lesson(
             GetRandomDateLastNMonths(months), name, isPaid: paid, studentId, null, isPricePerHour: false, null,
-            BasePrice, isOnline: RandomBool, LessonTravelAllowance, isWeekenOrHoliday: RandomBool, LessonWeekendFee, LessonTip, null);
+            BasePrice, isOnline: RandomBool, LessonTravelAllowance, isWeekendOrHoliday: RandomBool, LessonWeekendFee, LessonTip, null);
         
 
         public static Lesson CreateLesson(Guid studentId, bool paid = false)
@@ -163,7 +163,7 @@ namespace Apolo.Tests.Data
             DurationMinutes = LongDuration,
             Price = ServicePrice2,
             IsOnline = false,
-            IsWeekenOrHoliday = true,
+            IsWeekendOrHoliday = true,
             UsageCount = specificationUsage1
         };
 
@@ -175,7 +175,7 @@ namespace Apolo.Tests.Data
             ServiceId = serviceId,
             DurationMinutes = ShortDuration,
             IsOnline = true,
-            IsWeekenOrHoliday = false,
+            IsWeekendOrHoliday = false,
             UsageCount = specificationUsage2
         };
 

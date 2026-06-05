@@ -330,7 +330,7 @@ namespace Apolo.Tests.ViewModels
             Assert.AreEqual(60, addedSpecification.DurationMinutes);
             Assert.IsNull(addedSpecification.Price);
             Assert.IsFalse(addedSpecification.IsOnline);
-            Assert.IsFalse(addedSpecification.IsWeekenOrHoliday);
+            Assert.IsFalse(addedSpecification.IsWeekendOrHoliday);
         }
 
         // --- DeleteSpecificationAsync Tests ---

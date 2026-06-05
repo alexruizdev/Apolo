@@ -44,7 +44,7 @@ namespace Repository
                     l.BasePrice,
                     l.IsOnline,
                     l.TravelAllowance,
-                    l.IsWeekenOrHoliday,
+                    l.IsWeekendOrHoliday,
                     l.WeekendFee,
                     l.Tip,
                     l.Notes))

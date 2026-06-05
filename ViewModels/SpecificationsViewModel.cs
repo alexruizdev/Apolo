@@ -133,7 +133,7 @@ namespace Apolo.ViewModels
                     DurationMinutes = durationMinutes,
                     Price = (decimal?)price,
                     IsOnline = online,
-                    IsWeekenOrHoliday = weekend
+                    IsWeekendOrHoliday = weekend
                 };
                 await _specificationRepository.AddSpecificationAsync(specification);
 
@@ -143,7 +143,7 @@ namespace Apolo.ViewModels
                 Specifications.Add(new SpecificationSummary(
                     specification.Id, specification.Name, specification.StudentId, studentName,
                     specification.ServiceId, serviceName, specification.DurationMinutes, (double?)specification.Price,
-                    specification.IsOnline, specification.IsWeekenOrHoliday, specification.UsageCount));
+                    specification.IsOnline, specification.IsWeekendOrHoliday, specification.UsageCount));
 
                 SetExitFunction($"Specification '{name}' added for {studentName}.", InfoBarType.Success);
             }
@@ -230,7 +230,7 @@ namespace Apolo.ViewModels
                     DurationMinutes = durationMinutes,
                     Price = price,
                     IsOnline = isOnline,
-                    IsWeekenOrHoliday = isWeekend,
+                    IsWeekendOrHoliday = isWeekend,
                     ServiceId = serviceId,
                     ServiceName = serviceName
                 };
@@ -268,7 +268,7 @@ namespace Apolo.ViewModels
                 await _lessonRepository.AddLessonAsync(
                     date, spec.value.ServiceName, isPaid: false, spec.value.StudentId, null,
                     service.IsPricePerHour, spec.value.DurationMinutes, (decimal)(spec.value.Price ?? service.Price),
-                    spec.value.IsOnline, TravelAllowance, spec.value.IsWeekenOrHoliday, WeekendFee,
+                    spec.value.IsOnline, TravelAllowance, spec.value.IsWeekendOrHoliday, WeekendFee,
                     tip, notes);
 
                 await _specificationRepository.IncrementUsageAsync(id);

@@ -171,7 +171,7 @@ namespace Apolo.ViewModels
                     lesson.BasePrice,
                     lesson.IsOnline,
                     lesson.TravelAllowance,
-                    lesson.IsWeekenOrHoliday,
+                    lesson.IsWeekendOrHoliday,
                     lesson.WeekendFee,
                     lesson.Tip,
                     lesson.Notes));
@@ -273,7 +273,7 @@ namespace Apolo.ViewModels
                     BasePrice = entity.BasePrice,
                     IsOnline = entity.IsOnline,
                     TravelAllowance = entity.TravelAllowance,
-                    IsWeekenOrHoliday = entity.IsWeekenOrHoliday,
+                    IsWeekendOrHoliday = entity.IsWeekendOrHoliday,
                     WeekendFee = entity.WeekendFee,
                     Tip = entity.Tip,
                     Notes = entity.Notes,

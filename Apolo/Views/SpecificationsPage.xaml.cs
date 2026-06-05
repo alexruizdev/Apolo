@@ -58,7 +58,7 @@ public sealed partial class SpecificationsPage : Page
         var durationBox = new NumberBox { Header = "Duration (minutes):", Value = item.DurationMinutes, SmallChange = 15, LargeChange = 30 };
         var priceBox = new NumberBox { Header = "Price:", PlaceholderText = "leave empty to use service price", SmallChange = 15, LargeChange = 30 };
         var onlineBox = new CheckBox { Content = "Online", IsChecked = item.IsOnline };
-        var weekendBox = new CheckBox { Content = "Weekend or holiday", IsChecked = item.IsWeekenOrHoliday };
+        var weekendBox = new CheckBox { Content = "Weekend or holiday", IsChecked = item.IsWeekendOrHoliday };
 
         if (item.Price is not null)
             priceBox.Value = item.Price.Value;

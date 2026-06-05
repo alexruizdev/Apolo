@@ -33,7 +33,7 @@ namespace Repository
                     sp.DurationMinutes,
                     (double?)sp.Price,
                     sp.IsOnline,
-                    sp.IsWeekenOrHoliday,
+                    sp.IsWeekendOrHoliday,
                     sp.UsageCount
                 ))
                 .ToListAsync();
@@ -64,7 +64,7 @@ namespace Repository
                     (double?)sp.Price,
                     sp.DurationMinutes,
                     sp.IsOnline,
-                    sp.IsWeekenOrHoliday))
+                    sp.IsWeekendOrHoliday))
                 .ToListAsync();
 
         }
@@ -96,7 +96,7 @@ namespace Repository
             entity.DurationMinutes = duration;
             entity.Price = price;
             entity.IsOnline = isOnline;
-            entity.IsWeekenOrHoliday = isWeekend;
+            entity.IsWeekendOrHoliday = isWeekend;
 
             await _db.SaveChangesAsync();
         }

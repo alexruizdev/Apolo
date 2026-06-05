@@ -8,48 +8,54 @@
       xmlns:m="using:Models"
       x:Name="PageRoot">
 
-    <ScrollView>
-        <StackPanel Padding="24"
-                    Spacing="16">
+    <ScrollView VerticalScrollBarVisibility="Auto">
+        <StackPanel Padding="24" Spacing="16" MaxWidth="1000" HorizontalAlignment="Stretch">
+            
+            <!-- ========================================== -->
+            <!-- HEADER & STATE ZONE                        -->
+            <!-- ========================================== -->
+            <TextBlock Text="{x:Bind loc:Loc.Menu_Settings}" Style="{ThemeResource TitleLargeTextBlockStyle}" />
 
-            <TextBlock Text="{x:Bind loc:Loc.Menu_Settings}"
-                       FontSize="28"
-                       FontWeight="SemiBold" />
-
-            <StackPanel>
+            <StackPanel Spacing="4">
                 <ProgressBar IsIndeterminate="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
-                <InfoBar
-                    IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}"
-                    Severity="{x:Bind ViewModel.InfoBarType, Converter={StaticResource InfoBarTypeConverter}, Mode=TwoWay}"
-                    Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}" />
+                <InfoBar IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}"
+                         Severity="{x:Bind ViewModel.InfoBarType, Converter={StaticResource InfoBarTypeConverter}, Mode=TwoWay}"
+                         Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}" />
             </StackPanel>
 
-            <!-- 1. Main Information -->
+            <!-- ========================================== -->
+            <!-- SECTION 1: MAIN INFORMATION                -->
+            <!-- ========================================== -->
             <Expander Header="Main Information" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                <StackPanel Spacing="12" Margin="0,10,0,0" MinWidth="500">
-                    <Grid ColumnDefinitions="*, *">
-                        <TextBox Header="Full Name" Text="{x:Bind ViewModel.Profile.FullName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
+                <StackPanel Spacing="12" Padding="0,8,0,4">
+                    <Grid ColumnDefinitions="*, *" ColumnSpacing="12">
+                        <TextBox Grid.Column="0" Header="Full Name" Text="{x:Bind ViewModel.Profile.FullName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
                         <TextBox Grid.Column="1" Header="Phone" Text="{x:Bind ViewModel.Profile.Phone, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="4,0,0,0"/>
                     </Grid>
+                    
                     <TextBox Header="Address" Text="{x:Bind ViewModel.Profile.Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    
                     <Grid ColumnDefinitions="*, *">
-                        <TextBox Header="Zip Code" Text="{x:Bind ViewModel.Profile.ZipCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
+                        <TextBox Grid.Column="0" Header="Zip Code" Text="{x:Bind ViewModel.Profile.ZipCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
                         <TextBox Grid.Column="1" Header="City" Text="{x:Bind ViewModel.Profile.City, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="4,0,0,0"/>
                     </Grid>
+                    
                     <TextBox  Header="Email" Text="{x:Bind ViewModel.Profile.Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  />
                 </StackPanel>
             </Expander>
 
-            <!-- 2. Billing & Legal -->
+            <!-- ========================================== -->
+            <!-- SECTION 2: BILLING & TAX DETAILS           -->
+            <!-- ========================================== -->
             <Expander Header="Billing &amp; Tax Details" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                <StackPanel Spacing="12" Margin="0,10,0,0">
-                    <Grid ColumnDefinitions="*, *">
-                        <TextBox Header="Tax ID" Text="{x:Bind ViewModel.Profile.TaxId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
+                <StackPanel Spacing="12" Padding="0,8,0,4">
+                    <Grid ColumnDefinitions="*, *" ColumnSpacing="12">
+                        <TextBox Grid.Column="0" Header="Tax ID" Text="{x:Bind ViewModel.Profile.TaxId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
                         <TextBox Grid.Column="1" Header="Bank Name" Text="{x:Bind ViewModel.Profile.BankName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="4,0,0,0"/>
                     </Grid>
 
                     <Grid ColumnDefinitions="*, *">
-                        <TextBox Header="Bank Account (IBAN)" Text="{x:Bind ViewModel.Profile.BankAccount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
+                        <TextBox Grid.Column="0" Header="Bank Account (IBAN)" Text="{x:Bind ViewModel.Profile.BankAccount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
                         <NumberBox Grid.Column="1" Header="IVA (VAT) Percent" 
                                Value="{x:Bind ViewModel.Profile.IvaPercent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                SmallChange="1" LargeChange="5" SpinButtonPlacementMode="Inline" Margin="4,0,0,0"/>
@@ -57,10 +63,12 @@
                 </StackPanel>
             </Expander>
 
-            <!-- 3. Configuration & Fees -->
+            <!-- ========================================== -->
+            <!-- SECTION 3: CONFIGURATION & FEES            -->
+            <!-- ========================================== -->
             <Expander Header="Configuration &amp; Fees" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
                 <StackPanel Spacing="12" Margin="0,10,0,0">
-                    <Grid ColumnDefinitions="*, *">
+                    <Grid ColumnDefinitions="*, *" ColumnSpacing="12">
                         <NumberBox Header="Travel Allowance" 
                                Value="{x:Bind ViewModel.Profile.TravelAllowance, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                PlaceholderText="0.00" SpinButtonPlacementMode="Inline" Margin="0,0,4,0"/>
@@ -71,26 +79,44 @@
                 </StackPanel>
             </Expander>
 
-            <!-- Action Bar (The Save Button) -->
-            <CommandBar DefaultLabelPosition="Right" HorizontalAlignment="Left" Background="Transparent">
+            <!-- PRIMARY SAVING ACTION TOOLBAR -->
+            <CommandBar DefaultLabelPosition="Right" HorizontalAlignment="Left" Background="Transparent" Margin="0,4,0,0">
                 <AppBarButton Icon="Save" Label="Save" Command="{Binding SaveCommand}"/>
                 <AppBarSeparator />
                 <AppBarButton Icon="Refresh" Label="Discard Changes"  Command="{Binding RefreshProfileCommand}"/>
             </CommandBar>
 
-            <StackPanel>
-                <!-- Data Management Section -->
-                <TextBlock Text="Data Management" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,20,0,0"/>
-                
-                <CommandBar DefaultLabelPosition="Right"  HorizontalAlignment="Left"  Background="Transparent">
-                    <AppBarButton Label="Import from Excel" Icon="Import" Click="ImportExcelButton_Click"/>
-                    <AppBarButton Icon="Save" Label="Export Excel" Click="ExportExcelButton_Click"/>
-                    <AppBarButton Icon="Library" Label="Archive" Click="ArchiveButton_Click"/>
-                    <AppBarButton Icon="Import" Label="Retrieve from archive" Click="RetrieveFromArchiveButton_Click"/>
-                    <AppBarSeparator />
-                    <AppBarButton Icon="Delete" Label="Nuke Database" Foreground="Red" Click="DeleteDatabaseButton_Click"/>
-                    <AppBarButton Icon="Delete" Label="Nuke Archive" Foreground="Red" Click="DeleteArchiveButton_Click"/>
-                </CommandBar>
+            <!-- ========================================== -->
+            <!-- DATA MANAGEMENT UTILITIES                  -->
+            <!-- ========================================== -->
+            <StackPanel Spacing="12" Margin="0,16,0,0">
+                <TextBlock Text="Data Management" Style="{StaticResource SubtitleTextBlockStyle}"/>
+
+                <Border Style="{StaticResource SettingUtilitiesStyle}">
+
+                    <StackPanel Spacing="8">
+
+                        <!-- Safe/Standard File Actions -->
+                        <CommandBar DefaultLabelPosition="Right"  HorizontalAlignment="Left"  Background="Transparent">
+                            <AppBarButton Label="Import from Excel" Icon="Import" Click="ImportExcelButton_Click"/>
+                            <AppBarButton Icon="Save" Label="Export Excel" Click="ExportExcelButton_Click"/>
+                            <AppBarSeparator />
+                            <AppBarButton Icon="Library" Label="Archive" Click="ArchiveButton_Click"/>
+                            <AppBarButton Icon="Import" Label="Retrieve from archive" Click="RetrieveFromArchiveButton_Click"/>
+                        </CommandBar>
+
+                        <MenuFlyoutSeparator />
+
+                        <!-- Danger/Destructive Actions Strip -->
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Danger Zone" Style="{StaticResource BodyStrongTextBlockStyle}" Foreground="{ThemeResource SystemFillColorCriticalBrush}" />
+                            <CommandBar DefaultLabelPosition="Right" HorizontalAlignment="Left" Background="Transparent">
+                                <AppBarButton Label="Nuke Database" Icon="Delete" Foreground="{ThemeResource SystemFillColorCriticalBrush}" Click="DeleteDatabaseButton_Click"/>
+                                <AppBarButton Label="Nuke Archive" Icon="Delete" Foreground="{ThemeResource SystemFillColorCriticalBrush}" Click="DeleteArchiveButton_Click"/>
+                            </CommandBar>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </StackPanel>
     </ScrollView>

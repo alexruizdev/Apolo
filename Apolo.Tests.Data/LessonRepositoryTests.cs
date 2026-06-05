@@ -46,7 +46,7 @@ namespace Apolo.Tests.Data
             Assert.AreEqual(TestGenerator.BasePrice, results[0].BasePrice);
             Assert.IsTrue(results[0].IsOnline);
             Assert.AreEqual(TestGenerator.LessonTravelAllowance, results[0].TravelAllowance);
-            Assert.IsFalse(results[0].IsWeekenOrHoliday);
+            Assert.IsFalse(results[0].IsWeekendOrHoliday);
             Assert.AreEqual(TestGenerator.LessonWeekendFee, results[0].WeekendFee);
             Assert.IsNull(results[0].Notes);
             Assert.IsFalse(results[0].IsPaid);
@@ -118,7 +118,7 @@ namespace Apolo.Tests.Data
             Assert.AreEqual(25.0m, lesson.BasePrice);
             Assert.IsFalse(lesson.IsOnline);
             Assert.AreEqual(0, lesson.TravelAllowance);
-            Assert.IsFalse(lesson.IsWeekenOrHoliday);
+            Assert.IsFalse(lesson.IsWeekendOrHoliday);
             Assert.AreEqual(0, lesson.WeekendFee);
             Assert.AreEqual(10, lesson.Tip);
             Assert.AreEqual("Note", lesson.Notes);
@@ -162,7 +162,7 @@ namespace Apolo.Tests.Data
             Assert.AreEqual(25.0m, updatedLesson.BasePrice);
             Assert.IsFalse(updatedLesson.IsOnline);
             Assert.AreEqual(0, updatedLesson.TravelAllowance);
-            Assert.IsFalse(updatedLesson.IsWeekenOrHoliday);
+            Assert.IsFalse(updatedLesson.IsWeekendOrHoliday);
             Assert.AreEqual(0, updatedLesson.WeekendFee);
             var dbLesson = await _context.Lessons.FirstAsync(l => l.Id == lesson.Id);
             Assert.AreEqual("Guitar Class", dbLesson.Name);
@@ -172,7 +172,7 @@ namespace Apolo.Tests.Data
             Assert.AreEqual(25.0m, dbLesson.BasePrice);
             Assert.IsFalse(dbLesson.IsOnline);
             Assert.AreEqual(0, dbLesson.TravelAllowance);
-            Assert.IsFalse(dbLesson.IsWeekenOrHoliday);
+            Assert.IsFalse(dbLesson.IsWeekendOrHoliday);
             Assert.AreEqual(0, dbLesson.WeekendFee);
             Assert.AreEqual(15.5m, dbLesson.Tip);
         }

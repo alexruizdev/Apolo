@@ -47,7 +47,7 @@ namespace Apolo.Tests.Data
             Assert.AreEqual(TestGenerator.ShortDuration, results[0].DurationMinutes);
             Assert.IsNull(results[0].Price);
             Assert.IsTrue(results[0].IsOnline);
-            Assert.IsFalse(results[0].IsWeekenOrHoliday);
+            Assert.IsFalse(results[0].IsWeekendOrHoliday);
             Assert.AreEqual(TestGenerator.specificationUsage2, results[0].UsageCount);
 
             Assert.AreEqual(TestGenerator.SpecificationName1, results[1].SpecificationName);
@@ -57,7 +57,7 @@ namespace Apolo.Tests.Data
             Assert.IsNotNull(results[1].Price);
             Assert.AreEqual((double)TestGenerator.ServicePrice2, results[1].Price!.Value);
             Assert.IsFalse(results[1].IsOnline);
-            Assert.IsTrue(results[1].IsWeekenOrHoliday);
+            Assert.IsTrue(results[1].IsWeekendOrHoliday);
             Assert.AreEqual(TestGenerator.specificationUsage1, results[1].UsageCount);
         }
 
@@ -123,7 +123,7 @@ namespace Apolo.Tests.Data
             Assert.AreEqual(90, updated.DurationMinutes);
             Assert.AreEqual(75.5m, updated.Price);
             Assert.IsTrue(updated.IsOnline);
-            Assert.IsFalse(updated.IsWeekenOrHoliday);
+            Assert.IsFalse(updated.IsWeekendOrHoliday);
         }
 
         [TestMethod]

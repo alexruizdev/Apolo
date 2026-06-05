@@ -9,168 +9,151 @@
       x:Name="PageRoot"
       Loaded="Page_Loaded">
 
-    <ScrollView>
-        <StackPanel Padding="24"
-                    Spacing="16">
+    <Grid Style="{StaticResource MainGridStyle}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-            <TextBlock Text="{x:Bind loc:Loc.Menu_Invoicing}"
-                       FontSize="28"
-                       FontWeight="SemiBold" />
-            
-            <!--Load bill - create / edit-->
+        <Grid Grid.Row="0" VerticalAlignment="Center">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-            <Grid ColumnDefinitions="*, *" ColumnSpacing="24">
+            <TextBlock Grid.Column="0" 
+                       Text="{x:Bind loc:Loc.Menu_Invoicing}" 
+                       Style="{ThemeResource TitleLargeTextBlockStyle}" 
+                       VerticalAlignment="Top"/>
 
-                <StackPanel Grid.Column="0" Spacing="12" Padding="16" CornerRadius="8"
-                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}" BorderThickness="1">
-                    <TextBlock Text="Create bill" FontWeight="SemiBold" FontSize="16" />
-                    <ComboBox Header="Payer"
-                              ItemsSource="{Binding Payers}"
-                              SelectedValuePath="Id"
-                              DisplayMemberPath="FullName"
-                              SelectedValue="{x:Bind ViewModel.SelectedPayerId, Mode=TwoWay}" 
-                              HorizontalAlignment="Stretch"/>
-                    <Button Content="Load lessons" Click="LoadForPayer_Click" 
-                            IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
-                </StackPanel>
+            <StackPanel Grid.Column="1" 
+                        Orientation="Horizontal" 
+                        Spacing="12" 
+                        Margin="16,0,0,0"
+                        VerticalAlignment="Center"
+                        Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
 
-                <StackPanel Grid.Column="1" Spacing="12" Padding="16" CornerRadius="8"
-                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}" BorderThickness="1">
-                    <TextBlock Text="Edit existing bill" FontWeight="SemiBold" FontSize="16" />
-                    <AutoSuggestBox Header="Search Bill Name/Number"
-                                    PlaceholderText="e.g. 2024-03..."
-                                    Text="{x:Bind ViewModel.SearchBillText, Mode=TwoWay}"
-                                    ItemsSource="{x:Bind ViewModel.BillSuggestions, Mode=OneWay}"
-                
-                                    DisplayMemberPath="DocumentNumber"
-                                    TextMemberPath="DocumentNumber"
-                                    UpdateTextOnSelect="True"
-                
-                                    TextChanged="BillSearch_TextChanged"
-                                    SuggestionChosen="BillSearch_SuggestionChosen"
-                
-                                    HorizontalAlignment="Stretch"/>
-                    <Button Content="Load bill" Click="LoadForBill_Click" 
-                            IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
-                </StackPanel>
-            </Grid>
-            
-            <!--Bill information-->
+                <TextBlock Text="•" 
+                           Style="{ThemeResource TitleLargeTextBlockStyle}" 
+                           Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" 
+                           VerticalAlignment="Center"/>
 
-            <Border Background="{ThemeResource LayerFillColorDefaultBrush}" 
-                    Padding="16" CornerRadius="8" 
-                    Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
-                <StackPanel Orientation="Horizontal" Spacing="24">
-                    <TextBlock FontSize="18" FontWeight="Bold">
-                        <Run Text="Bill: " />
-                        <Run Text="{x:Bind ViewModel.Bill.Name, Mode=OneWay}" Foreground="{ThemeResource SystemAccentColor}" />
-                    </TextBlock>
-                    <TextBlock FontSize="16" VerticalAlignment="Center">
-                        <Run Text="Date: " FontWeight="SemiBold"/>
-                        <Run Text="{x:Bind ViewModel.Bill.Date, Mode=OneWay}" />
-                    </TextBlock>
-                </StackPanel>
-            </Border>
-            
-            <!--Actions-->
-
-            <CommandBar DefaultLabelPosition="Right" Background="Transparent" HorizontalAlignment="Left">
-
-                <AppBarButton Label="Mark selected as paid" Icon="Accept" Click="MarkPaid_Click"  
-                              IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
-                <AppBarButton Label="Mark selected as unpaid" Icon="Undo" Foreground="#C5221F" Click="MarkUnpaid_Click"  
-                              IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
-                <AppBarButton Label="Remove from bill" Icon="Remove" Click="RemoveLesson_Click"
-                              Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" 
-                              IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"/>
-                <AppBarSeparator />
-                
-                <AppBarButton Label="New invoice" Icon="Document" Click="CreateInvoice_Click" 
-                              Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                              IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
-                <AppBarButton Label="New ticket" Icon="Tag" Click="CreateTicket_Click" 
-                              Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                              IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
-                <AppBarSeparator />
-                
-                <AppBarButton Label="Generate PDF" Icon="Print"  Click="PrintInvoice_Click"
-                              Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                <AppBarButton Label="Delete Bill" Icon="Delete" Foreground="Red"  Click="DeleteBill_Click"
-                              Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
-            </CommandBar>
-            
-            <!--Price amount-->
-            <StackPanel Orientation="Horizontal" Spacing="24">
-                <CheckBox Content="Select all" IsThreeState="True" IsChecked="{x:Bind ViewModel.SelectionState, Mode=TwoWay}" />
-                <TextBlock VerticalAlignment="Center">
-                    <Run Text="Total (selected): " FontWeight="SemiBold" />
-                    <Run Text="{x:Bind ViewModel.TotalSelected, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}}" FontWeight="Bold" />
+                <TextBlock Style="{ThemeResource BodyTextBlockStyle}" VerticalAlignment="Center">
+                    <Run Text="Active Bill: " Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                    <Run Text="{x:Bind ViewModel.Bill.Name, Mode=OneWay}" FontWeight="SemiBold" Foreground="{ThemeResource SystemAccentColor}"/>
                 </TextBlock>
-                <TextBlock VerticalAlignment="Center">
-                     <Run Text="Total (all): " FontWeight="SemiBold" />
-                     <Run Text="{x:Bind ViewModel.TotalAll, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}}" FontWeight="Bold" />
+
+                <TextBlock Style="{ThemeResource BodyTextBlockStyle}" VerticalAlignment="Center">
+                    <Run Text="Date: " Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                    <Run Text="{x:Bind ViewModel.Bill.Date, Mode=OneWay}" FontWeight="SemiBold"/>
                 </TextBlock>
             </StackPanel>
+        </Grid>
 
-            <StackPanel>
-                <ProgressBar IsIndeterminate="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
-                <InfoBar
-                    IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}"
-                    Severity="{x:Bind ViewModel.InfoBarType, Converter={StaticResource InfoBarTypeConverter}, Mode=TwoWay}"
-                    Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}" />
-            </StackPanel>
-            
-            <!--Lessons-->
-            <ListView ItemsSource="{Binding Lessons}" SelectionMode="None">
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="vm:InvoiceLine">
-                        <Grid Padding="12" Margin="0,4,0,8" ColumnSpacing="16"
-                              Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                              CornerRadius="6" BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}" BorderThickness="1">
-                            
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="100" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="100" />
-                            </Grid.ColumnDefinitions>
-                            
-                            <!--Selection-->
-                            <CheckBox Grid.Column="0" IsChecked="{x:Bind IsSelected, Mode=TwoWay}" VerticalAlignment="Center" />
-                            
-                            <!--Date-->
-                            <TextBlock Grid.Column="1" Text="{x:Bind Data.Date, Converter={StaticResource DateFormatConverter}}"
-                                       FontWeight="SemiBold" VerticalAlignment="Center" />
+        <Grid Grid.Row="1" ColumnDefinitions="320, *" ColumnSpacing="24">
 
-                            <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                                <TextBlock FontSize="15" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis">
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Spacing="16" Padding="0,0,4,0">
+
+                    <StackPanel Style="{StaticResource CardPanelStyle}">
+                        <TextBlock Text="Create bill" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                        <ComboBox Header="Payer"
+                                  ItemsSource="{Binding Payers}"
+                                  SelectedValuePath="Id"
+                                  DisplayMemberPath="FullName"
+                                  SelectedValue="{x:Bind ViewModel.SelectedPayerId, Mode=TwoWay}" 
+                                  HorizontalAlignment="Stretch"/>
+                        <Button Content="Load lessons" Click="LoadForPayer_Click" Style="{ThemeResource AccentButtonStyle}"
+                                IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" Margin="0,8,0,0"/>
+                    </StackPanel>
+
+                    <StackPanel Style="{StaticResource CardPanelStyle}">
+                        <TextBlock Text="Edit existing bill" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                        <AutoSuggestBox Header="Search Bill Name/Number"
+                                        PlaceholderText="e.g. 2024-03..."
+                                        Text="{x:Bind ViewModel.SearchBillText, Mode=TwoWay}"
+                                        ItemsSource="{x:Bind ViewModel.BillSuggestions, Mode=OneWay}"
+                                        DisplayMemberPath="DocumentNumber"
+                                        TextMemberPath="DocumentNumber"
+                                        UpdateTextOnSelect="True"
+                                        TextChanged="BillSearch_TextChanged"
+                                        SuggestionChosen="BillSearch_SuggestionChosen"
+                                        HorizontalAlignment="Stretch"/>
+                        <Button Content="Load bill" Click="LoadForBill_Click" Style="{ThemeResource AccentButtonStyle}"
+                                IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" Margin="0,8,0,0"/>
+                    </StackPanel>
+
+                    <StackPanel Style="{StaticResource CardPanelStyle}" Spacing="8">
+                        <TextBlock Text="Summaries" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                        <CheckBox Content="Select all" IsThreeState="True" IsChecked="{x:Bind ViewModel.SelectionState, Mode=TwoWay}" Margin="0" />
+                        <TextBlock Style="{ThemeResource BodyTextBlockStyle}">
+                            <Run Text="Selected: " Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                            <Run Text="{x:Bind ViewModel.TotalSelected, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}}" FontWeight="Bold" />
+                        </TextBlock>
+                        <TextBlock Style="{ThemeResource BodyTextBlockStyle}">
+                             <Run Text="Total All: " Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                             <Run Text="{x:Bind ViewModel.TotalAll, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}}" FontWeight="Bold" />
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+
+            <Grid Grid.Column="1" RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <CommandBar Grid.Row="0" DefaultLabelPosition="Right" Background="Transparent" HorizontalAlignment="Left">
+                    <AppBarButton Label="Mark paid" Icon="Accept" Click="MarkPaid_Click" IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
+                    <AppBarButton Label="Mark unpaid" Icon="Undo" Foreground="{ThemeResource SystemFillColorCriticalBrush}" Click="MarkUnpaid_Click" IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
+                    <AppBarButton Label="Remove" Icon="Remove" Click="RemoveLesson_Click" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    <AppBarSeparator />
+                    <AppBarButton Label="New invoice" Icon="Document" Click="CreateInvoice_Click" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
+                    <AppBarButton Label="New ticket" Icon="Tag" Click="CreateTicket_Click" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
+                    <AppBarSeparator />
+                    <AppBarButton Label="PDF" Icon="Print" Click="PrintInvoice_Click" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    <AppBarButton Label="Delete" Icon="Delete" Foreground="{ThemeResource SystemFillColorCriticalBrush}" Click="DeleteBill_Click" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                </CommandBar>
+
+                <StackPanel Grid.Row="1" Spacing="4">
+                    <ProgressBar IsIndeterminate="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
+                    <InfoBar IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}" Severity="{x:Bind ViewModel.InfoBarType, Converter={StaticResource InfoBarTypeConverter}, Mode=TwoWay}" Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}" />
+                </StackPanel>
+
+                <ListView Grid.Row="2" ItemsSource="{Binding Lessons}" SelectionMode="None">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:InvoiceLine">
+                            <Grid Style="{StaticResource CardGridStyle}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="100" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="100" />
+                                </Grid.ColumnDefinitions>
+
+                                <CheckBox Grid.Column="0" IsChecked="{x:Bind IsSelected, Mode=TwoWay}" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="{x:Bind Data.Date, Converter={StaticResource DateFormatConverter}}" Style="{ThemeResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="2" Style="{ThemeResource BodyTextBlockStyle}" VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis">
                                     <Run Text="{x:Bind Data.Name}" FontWeight="SemiBold" />
-                                    <Run Text=" • " Foreground="Gray" />
-                                    <Run Text="{x:Bind Data.StudentName}"  />
+                                    <Run Text=" • " Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                                    <Run Text="{x:Bind Data.StudentName}" />
                                 </TextBlock>
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                <TextBlock Text="{x:Bind Data.FinalPrice, Converter={StaticResource DecimalToCurrencyConverter}}"
-                                           FontWeight="Bold" FontSize="16" HorizontalAlignment="Right" />
-
-                                <Border Background="#E6F4EA" Padding="6,2" CornerRadius="4" Margin="0,4,0,0" HorizontalAlignment="Right"
-                                        Visibility="{x:Bind Data.IsPaid, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                    <TextBlock Text="PAID" Foreground="#137333" FontSize="10" FontWeight="Bold" />
-                                </Border>
-
-                                <Border Background="#FCE8E6" Padding="6,2" CornerRadius="4" Margin="0,4,0,0" HorizontalAlignment="Right"
-                                        Visibility="{x:Bind Data.IsPaid, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                                    <TextBlock Text="UNPAID" Foreground="#C5221F" FontSize="10" FontWeight="Bold" />
-                                </Border>
-                            </StackPanel>
-                        </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-
-        </StackPanel>
-    </ScrollView>
+                                <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                    <TextBlock Text="{x:Bind Data.FinalPrice, Converter={StaticResource DecimalToCurrencyConverter}}" Style="{ThemeResource BodyStrongTextBlockStyle}" FontSize="16" HorizontalAlignment="Right" />
+                                    <Border Style="{StaticResource PaidBadgeStyle}" Visibility="{x:Bind Data.IsPaid, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <TextBlock Text="PAID" Style="{StaticResource PaidTextStyle}" />
+                                    </Border>
+                                    <Border Style="{StaticResource UnpaidBadgeStyle}" Visibility="{x:Bind Data.IsPaid, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                        <TextBlock Text="UNPAID" Style="{StaticResource UnpaidTextStyle}" />
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+        </Grid>
+    </Grid>
 </Page>
