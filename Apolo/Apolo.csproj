@@ -17,6 +17,7 @@
 	<ItemGroup>
 		<None Remove="CurstomersPage.xaml" />
 		<None Remove="HomePage.xaml" />
+		<None Remove="Themes\Styles.xaml" />
 		<None Remove="Views\InvoicesPage.xaml" />
 		<None Remove="Views\LessonsPage.xaml" />
 		<None Remove="Views\PayersPage.xaml" />
@@ -120,6 +121,11 @@
 		<Page Update="Pages\SettingsPage.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</Page>
+	</ItemGroup>
+	<ItemGroup>
+	  <Page Update="Styles\Styles.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
 	</ItemGroup>
 
 	<PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">

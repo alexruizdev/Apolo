@@ -37,12 +37,15 @@ namespace Apolo.Tests.Data
         public const decimal BasePrice = 50;
         public const decimal LessonTravelAllowance = 10;
         public const decimal LessonWeekendFee = 5;
+        public const decimal LessonTip = 5.5m;
         public const string LessonNotes = "This is a test lesson.";
         public const decimal LessonTotalPrice = 65; // 50 + 10 travel + 5 weekend fee
 
         // Specification const
         public const string SpecificationName1 = "Specification 1";
         public const string SpecificationName2 = "Specification 2";
+        public const int specificationUsage1 = 3;
+        public const int specificationUsage2 = 5;
 
         // Invoice const
         public const int InvoiceId1 = 1;
@@ -115,10 +118,10 @@ namespace Apolo.Tests.Data
         // Lesson constructors
         public static Lesson CreateLessonPaid(Guid studentId) => new Lesson(
             LessonOldDate, LessonNamePaid, isPaid: true, studentId, null, isPricePerHour: true, NormalDuration, BasePrice,
-            isOnline: false, LessonTravelAllowance, isWeekenOrHoliday: true, LessonWeekendFee, LessonNotes);
+            isOnline: false, LessonTravelAllowance, isWeekendOrHoliday: true, LessonWeekendFee, LessonTip, LessonNotes);
         public static Lesson CreateLessonUnpaid(Guid studentId) => new Lesson(
             LessonNewDate, LessonNameUnpaid, isPaid: false, studentId, null, isPricePerHour: false, null, 
-            BasePrice, isOnline: true, LessonTravelAllowance, isWeekenOrHoliday: false, LessonWeekendFee, null);
+            BasePrice, isOnline: true, LessonTravelAllowance, isWeekendOrHoliday: false, LessonWeekendFee, LessonTip, null);
 
         private static DateOnly GetRandomDateLastNMonths(int months)
         {
@@ -137,7 +140,7 @@ namespace Apolo.Tests.Data
 
         public static Lesson CreateRandomLesson(string name, bool paid, int months, Guid studentId) => new Lesson(
             GetRandomDateLastNMonths(months), name, isPaid: paid, studentId, null, isPricePerHour: false, null,
-            BasePrice, isOnline: RandomBool, LessonTravelAllowance, isWeekenOrHoliday: RandomBool, LessonWeekendFee, null);
+            BasePrice, isOnline: RandomBool, LessonTravelAllowance, isWeekendOrHoliday: RandomBool, LessonWeekendFee, LessonTip, null);
         
 
         public static Lesson CreateLesson(Guid studentId, bool paid = false)
@@ -160,7 +163,8 @@ namespace Apolo.Tests.Data
             DurationMinutes = LongDuration,
             Price = ServicePrice2,
             IsOnline = false,
-            IsWeekenOrHoliday = true
+            IsWeekendOrHoliday = true,
+            UsageCount = specificationUsage1
         };
 
         public static Specification CreateSpecification2(Guid studentId, Guid serviceId) => new Specification
@@ -171,7 +175,8 @@ namespace Apolo.Tests.Data
             ServiceId = serviceId,
             DurationMinutes = ShortDuration,
             IsOnline = true,
-            IsWeekenOrHoliday = false
+            IsWeekendOrHoliday = false,
+            UsageCount = specificationUsage2
         };
 
         public static BillingDocument CreateInvoice(List<Lesson> lessons, Guid payerId)

@@ -47,53 +47,6 @@ namespace Apolo.Tests.Data
         }
 
         [TestMethod]
-        public async Task UpdateLessonsAsync()
-        {
-            // Arrange
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student = TestGenerator.CreateStudent1(payer.Id);
-            var lessons = new List<Lesson> { TestGenerator.CreateRandomLesson(student.Id, "Lesson 1", paid: true, months: 6),
-                            TestGenerator.CreateRandomLesson(student.Id, "Lesson 2", paid: true, months: 6),
-                            TestGenerator.CreateRandomLesson(student.Id, "Lesson 3", paid: false, months: 6),
-                            TestGenerator.CreateRandomLesson(student.Id, "Lesson 4", paid: false, months: 6) };
-            var invoice = TestGenerator.CreateInvoice(lessons, payer.Id);
-
-            _context.Payers.Add(payer);
-            _context.Students.Add(student);
-            _context.Lessons.AddRange(lessons);
-            _context.BillingDocuments.Add(invoice);
-            await _context.SaveChangesAsync();
-
-            var lessonIds = lessons.Select(l => l.Id).ToList();
-
-            await _repository.UpdateLessonsAsync(lessonIds, isPaid: true);
-
-
-            Assert.AreEqual(4, _context.Lessons.Count(a => a.IsPaid));
-
-        }
-
-        [TestMethod]
-        public async Task UpdateLessonsAsyncEmpty()
-        {
-            // Arrange
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student = TestGenerator.CreateStudent1(payer.Id);
-            var invoice = TestGenerator.CreateInvoice([], payer.Id);
-
-            _context.Payers.Add(payer);
-            _context.Students.Add(student);
-            _context.BillingDocuments.Add(invoice);
-            await _context.SaveChangesAsync();
-
-            await _repository.UpdateLessonsAsync([], isPaid: true);
-
-
-            Assert.AreEqual(0, _context.Lessons.Count(l => l.IsPaid));
-
-        }
-
-        [TestMethod]
         public async Task CreateInvoiceAsyncEmptyLesson()
         {
             // Arrange
@@ -128,13 +81,13 @@ namespace Apolo.Tests.Data
 
             var lessonIds = lessons.Select(l => l.Id).ToList();
 
-            string billName = await _repository.CreateBillAsync(payer.Id, lessonIds, DocumentType.Invoice);
+            var entity = await _repository.CreateBillAsync(payer.Id, lessonIds, DocumentType.Invoice);
 
             var result = await _context.BillingDocuments.ToListAsync();
 
             Assert.HasCount(1, result);
             Assert.HasCount(2, result[0].Lines);
-            Assert.AreEqual($"{DateTime.Now:yyyy-MM}-E-0001", billName);
+            Assert.AreEqual($"{DateTime.Now:yyyy-MM}-E-0001", entity.DocumentNumber);
         }
 
         [TestMethod]
@@ -154,13 +107,13 @@ namespace Apolo.Tests.Data
 
             var lessonIds = lessons.Select(l => l.Id).ToList();
 
-            string billName = await _repository.CreateBillAsync(payer.Id, lessonIds, DocumentType.Ticket);
+            var entity = await _repository.CreateBillAsync(payer.Id, lessonIds, DocumentType.Ticket);
 
             var result = await _context.BillingDocuments.ToListAsync();
 
             Assert.HasCount(1, result);
             Assert.HasCount(2, result[0].Lines);
-            Assert.AreEqual($"TCK-{DateTime.Now:yyyy-MM}-0001", billName);
+            Assert.AreEqual($"TCK-{DateTime.Now:yyyy-MM}-0001", entity.DocumentNumber);
         }
 
         [TestMethod]

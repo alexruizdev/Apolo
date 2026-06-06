@@ -58,7 +58,7 @@ public sealed partial class SpecificationsPage : Page
         var durationBox = new NumberBox { Header = "Duration (minutes):", Value = item.DurationMinutes, SmallChange = 15, LargeChange = 30 };
         var priceBox = new NumberBox { Header = "Price:", PlaceholderText = "leave empty to use service price", SmallChange = 15, LargeChange = 30 };
         var onlineBox = new CheckBox { Content = "Online", IsChecked = item.IsOnline };
-        var weekendBox = new CheckBox { Content = "Weekend or holiday", IsChecked = item.IsWeekenOrHoliday };
+        var weekendBox = new CheckBox { Content = "Weekend or holiday", IsChecked = item.IsWeekendOrHoliday };
 
         if (item.Price is not null)
             priceBox.Value = item.Price.Value;
@@ -115,9 +115,12 @@ public sealed partial class SpecificationsPage : Page
             TextWrapping = TextWrapping.Wrap
         };
 
+        var tipBox = new NumberBox { Header = "Tip:", PlaceholderText = "0.00" };
+
         var panel = new StackPanel { Spacing = 8 };
         panel.Children.Add(datePicker);
         panel.Children.Add(noteBox);
+        panel.Children.Add(tipBox);
 
         var viewer = new ScrollViewer
         {
@@ -144,7 +147,11 @@ public sealed partial class SpecificationsPage : Page
             var dto = datePicker.Date ?? DateTimeOffset.Now;
             var date = DateOnly.FromDateTime(dto.Date);
             var notes = string.IsNullOrWhiteSpace(noteBox.Text) ? null : noteBox.Text;
-            await ViewModel.CreateLessonFromSpecificationAsync(item.Id, date, notes);
+            decimal tip = 0;
+            if (!double.IsNaN(tipBox.Value))
+                tip = (decimal)tipBox.Value;
+            await ViewModel.CreateLessonFromSpecificationAsync(item.Id, date, tip, notes);
+            await ViewModel.RefreshSpecifications(); // Refresh the specifications to update the usage count
         }
     }
 

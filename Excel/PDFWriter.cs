@@ -185,8 +185,6 @@ namespace PDF
 
                     page.Header().PaddingBottom(20).Row(row =>
                     {
-                        row.RelativeItem().Text("TICKET").SemiBold().FontSize(24).FontColor(Colors.Blue.Medium);
-
                         row.ConstantItem(220).Column(col =>
                         {
                             col.Item().AlignRight().Text($"Date: {dateText}");
@@ -196,10 +194,9 @@ namespace PDF
                     page.Content().Column(col =>
                     {
                         // Simplified Payer block (No 'From' section)
-                        col.Item().Border(1).Padding(8).Column(c =>
+                        col.Item().Padding(8).Column(c =>
                         {
-                            c.Item().Text("Ticket for:").SemiBold();
-                            c.Item().Text(payer.FullName);
+                            c.Item().Text("Class list").SemiBold();
                         });
 
                         col.Item().Height(15);

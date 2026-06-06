@@ -39,7 +39,8 @@
         <ui:NavigationView x:Name="NavView"
                            Grid.Row="1"
                            IsSettingsVisible="False"
-                           PaneDisplayMode="Left"
+                           IsPaneToggleButtonVisible="True"
+                           PaneDisplayMode="Top"
                            SelectionChanged="NavView_SelectionChanged">
 
             <ui:NavigationView.MenuItems>

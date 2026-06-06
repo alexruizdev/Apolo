@@ -28,8 +28,9 @@ namespace Models
         decimal BasePrice,
         bool IsOnline,
         decimal TravelAllowance,
-        bool IsWeekenOrHoliday,
+        bool IsWeekendOrHoliday,
         decimal WeekendFee,
+        decimal Tip,
         string? Notes)
     {
         public string ShortNote => Lesson.Truncate(Notes, 70);
@@ -56,13 +57,14 @@ namespace Models
         public decimal BasePrice { get; private set; }
         public bool IsOnline { get; private set; }
         public decimal TravelAllowance { get; private set; }
-        public bool IsWeekenOrHoliday{ get; private set; }
+        public bool IsWeekendOrHoliday{ get; private set; }
         public decimal WeekendFee { get; private set; }
+        public decimal Tip { get; set; }
         public string? Notes { get; set; }
 
         public Lesson(DateOnly date, string name, bool isPaid, Guid studentId, Guid? billingDocumentId, 
             bool isPricePerHour, int? durationMinutes, decimal basePrice, 
-            bool isOnline, decimal travelAllowance, bool isWeekenOrHoliday, decimal weekendFee, string? notes)
+            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip, string? notes)
         {
             Date = date;
             Name = name;
@@ -74,8 +76,9 @@ namespace Models
             BasePrice = basePrice;
             IsOnline = isOnline;
             TravelAllowance = travelAllowance;
-            IsWeekenOrHoliday = isWeekenOrHoliday;
+            IsWeekendOrHoliday = isWeekendOrHoliday;
             WeekendFee = weekendFee;
+            Tip = tip;
             Notes = notes;
             FinalPrice = GetPrice();
         }
@@ -90,7 +93,7 @@ namespace Models
             BasePrice = price;
             IsOnline = online;
             TravelAllowance = travel;
-            IsWeekenOrHoliday = weekend;
+            IsWeekendOrHoliday = weekend;
             WeekendFee = fee;
             FinalPrice = GetPrice();
             return true;
@@ -99,14 +102,15 @@ namespace Models
         private decimal GetPrice()
         {
             decimal travel = IsOnline ? 0 : TravelAllowance;
-            decimal price = IsWeekenOrHoliday ? WeekendFee + BasePrice : BasePrice;
+            decimal price = IsWeekendOrHoliday ? WeekendFee + BasePrice : BasePrice;
             if (IsPricePerHour)
             {
                 if (DurationMinutes is null) 
                     throw new ArgumentException("Duration is required when price is per hour.");
-                price = Math.Round(price * (DurationMinutes.Value / 60m), 2, MidpointRounding.AwayFromZero);
+                price = price * (DurationMinutes.Value / 60m);
             }
-            return travel + price;
+            decimal total = travel + price;
+            return Math.Round(total * 2m, MidpointRounding.AwayFromZero) / 2m;
         }
 
         public static string Truncate(string? input, int maxLength)

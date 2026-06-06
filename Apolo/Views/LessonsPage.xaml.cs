@@ -52,11 +52,14 @@ namespace Apolo.Views
 
             var nameBox = new TextBox { Header = "Lesson name", MinWidth = 320 };
 
-            var datePick = new CalendarDatePicker { Header = "Date", IsTodayHighlighted = true, Date = DateTimeOffset.Now };
-            var durationBox = new NumberBox { Header = "Duration (minutes):", Value = 60, SmallChange = 15, LargeChange = 30 };
+            var datePick = new CalendarDatePicker { Header = "Date", IsTodayHighlighted = true, Date = DateTimeOffset.Now,
+                DateFormat = "{day.integer(2)}/{month.integer(2)}/{year.full}"
+            };
+            var durationBox = new NumberBox { Header = "Duration (minutes):", Value = 60, SmallChange = 15, LargeChange = 30, };
             var onlineBox = new CheckBox { Content = "Online" };
             var weekendBox = new CheckBox { Content = "Weekend or Holiday" };
             var priceBox = new NumberBox { Header = "Price:", PlaceholderText = "0.00" };
+            var tipBox = new NumberBox { Header = "Tip:", PlaceholderText = "0.00" };
 
             var noteBox = new TextBox
             {
@@ -83,6 +86,7 @@ namespace Apolo.Views
             panel.Children.Add(onlineBox);
             panel.Children.Add(weekendBox);
             panel.Children.Add(priceBox);
+            panel.Children.Add(tipBox);
             panel.Children.Add(error);
             panel.Children.Add(noteBox);
 
@@ -222,9 +226,12 @@ namespace Apolo.Views
                 var date = DateOnly.FromDateTime(dto.Date);
                 bool isOnline = onlineBox.IsChecked == true;
                 bool isWeekend = weekendBox.IsChecked == true;
+                decimal tip = 0;
+                if (!double.IsNaN(tipBox.Value)) 
+                    tip = (decimal)tipBox.Value;
                 await ViewModel.AddLessonAsync(date, nameBox.Text, (ServiceSummary)serviceBox.SelectedItem, 
                     (int?)durationBox.Value, (decimal)priceBox.Value,
-                    isOnline, isWeekend, noteBox.Text, selectedId);
+                    isOnline, isWeekend, tip, noteBox.Text, selectedId);
             }
         }
 
@@ -235,6 +242,13 @@ namespace Apolo.Views
 
             await ViewModel.DeleteLessonAsync(row.Id);
         }
+
+        private async void ChangePayment_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button b || b.DataContext is not LessonSummary row) return;
+            await ViewModel.ChangePayment(row.Id);
+        }
+
         private async void EditLesson_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not Button b || b.DataContext is not LessonSummary row) return;
@@ -249,13 +263,19 @@ namespace Apolo.Views
             var durationBox = new NumberBox { Header = "Duration (minutes):", Value = row.DurationMinutes ?? 0, SmallChange = 15, LargeChange = 30, IsEnabled = row.IsPricePerHour };
             var onlineBox = new CheckBox { Content = "Online", IsChecked = row.IsOnline };
             var travelAllowanceBox = new NumberBox { Header = "Travel allowance:", Value = (double)row.TravelAllowance, IsEnabled = !row.IsOnline };
-            var weekenBox = new CheckBox { Content = "Weekend or Holiday", IsChecked = row.IsWeekenOrHoliday };
+            var weekenBox = new CheckBox { Content = "Weekend or Holiday", IsChecked = row.IsWeekendOrHoliday };
             var weekendFeeBox = new NumberBox { Header = "Weekend or Holiday Fee:", Value = (double)row.TravelAllowance, IsEnabled = !row.IsOnline };
             var isPricePerHourBox = new CheckBox { Content = "Price/hour", IsChecked = row.IsPricePerHour };
             var priceBox = new NumberBox
             {
                 Header = "Price:",
                 Value = (double)row.BasePrice,
+                PlaceholderText = "0.00"
+            };
+            var tipBox = new NumberBox
+            {
+                Header = "Tip:",
+                Value = (double)row.Tip,
                 PlaceholderText = "0.00"
             };
             string note = row.Notes ?? string.Empty;
@@ -279,6 +299,7 @@ namespace Apolo.Views
             panel.Children.Add(travelAllowanceBox);
             panel.Children.Add(weekenBox);
             panel.Children.Add(weekendFeeBox);
+            panel.Children.Add(tipBox);
             panel.Children.Add(noteBox);
 
             isPricePerHourBox.Checked += (_, __) => durationBox.IsEnabled = true;
@@ -312,11 +333,15 @@ namespace Apolo.Views
                 var date = DateOnly.FromDateTime(dto.Date);
                 bool isPricePerHour = isPricePerHourBox.IsChecked == true;
                 int? duration = isPricePerHour ? (int)durationBox.Value : null;
+                decimal tip = 0;
+                if (!double.IsNaN(tipBox.Value))
+                    tip = (decimal)tipBox.Value;
+
                 await ViewModel.UpdateLessonAsync(
                     row.Id, date, nameBox.Text, 
                     isPricePerHour, duration, (decimal)priceBox.Value,
                     onlineBox.IsChecked == true, (decimal)travelAllowanceBox.Value,
-                    weekenBox.IsChecked == true, (decimal)weekendFeeBox.Value,
+                    weekenBox.IsChecked == true, (decimal)weekendFeeBox.Value, tip,
                     noteBox.Text);
             }
         }

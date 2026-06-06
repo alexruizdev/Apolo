@@ -1,12 +1,11 @@
-using Apolo.Services;
 using Apolo.ViewModels;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.Storage.Pickers;
+using Models;
 using System;
-using System.Linq;
 
 namespace Apolo.Views
 {
@@ -25,27 +24,20 @@ namespace Apolo.Views
         private async void LoadForPayer_Click(object sender, RoutedEventArgs e)
             => await ViewModel.LoadLessonsAsync();
 
+        private async void LoadForBill_Click(object sender, RoutedEventArgs e)
+            => await ViewModel.LoadBillLessonsAsync();
+
         private async void MarkPaid_Click(object sender, RoutedEventArgs e)
-        {
-            var selectedCount = ViewModel.Lessons.Where(a => a.IsSelected).Count();
+            => await ViewModel.MarkSelectedPaymentAsync(markAsPaid: true);
 
-            if (selectedCount == 0)
-                return;
+        private async void MarkUnpaid_Click(object sender, RoutedEventArgs e)
+            => await ViewModel.MarkSelectedPaymentAsync(markAsPaid: false);
 
-            var dialog = new ContentDialog
-            {
-                Title = "Mark as paid?",
-                Content = $"Mark {selectedCount} lesson(s) as paid?",
-                PrimaryButtonText = "Mark paid",
-                CloseButtonText = Loc.Buttons_Cancel,
-                DefaultButton = ContentDialogButton.Primary,
-                XamlRoot = Content.XamlRoot
-            };
+        private async void RemoveLesson_Click(object sender, RoutedEventArgs e)
+            => await ViewModel.RemoveSelectedLessonsAsync();
 
-            var result = await dialog.ShowAsync();
-            if (result == ContentDialogResult.Primary)
-                await ViewModel.MarkSelectedAsPaidAsync();
-        }
+        private async void DeleteBill_Click(object sender, RoutedEventArgs e)
+            => await ViewModel.DeleteBillAsync();
 
         private async void CreateInvoice_Click(object sender, RoutedEventArgs e)
         {
@@ -59,6 +51,20 @@ namespace Apolo.Views
             if (folder == null) return;
 
             await ViewModel.GenerateInvoice(folder.Path, isInvoice: true);
+        }
+
+        private async void PrintInvoice_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button) return;
+
+            // Ask where to save
+            var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
+            picker.CommitButtonText = "Pick a folder";
+
+            var folder = await picker.PickSingleFolderAsync();
+            if (folder == null) return;
+
+            await ViewModel.PrintDocument(folder.Path);
         }
 
         private async void CreateTicket_Click(object sender, RoutedEventArgs e)
@@ -83,6 +89,24 @@ namespace Apolo.Views
             if (ViewModel != null)
             {
                 await ViewModel.RefreshProfileAsync();
+            }
+        }
+
+        private async void BillSearch_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            // Only query if the user actually typed something (ignore changes caused by code)
+            if (args.Reason != AutoSuggestionBoxTextChangeReason.UserInput)
+                return;
+
+            await ViewModel.SuggestBills(sender.Text);
+        }
+
+        private void BillSearch_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        {
+            // Cast the selected item back to a BillingDocument
+            if (args.SelectedItem is BillingDocument selectedBill)
+            {
+                ViewModel.SelectBillToEdit(selectedBill);
             }
         }
     }

@@ -135,7 +135,7 @@ namespace Apolo.Tests.ViewModels
             _mockStudentRepo.Verify(r => r.GetSudentsAsync(), Times.Exactly(2));
 
             // 2. Verify the UI collection was updated correctly
-            VerifyAction(null, InfoBarType.Success, isOpen: false, payersCount: 2, studentsCount: 2);
+            VerifyAction("2 loaded", InfoBarType.Success, isOpen: true, payersCount: 2, studentsCount: 2);
             var addedStudent = _viewModel.Students.First();
             var addedPayer = _viewModel.Payers.First();
             Assert.AreEqual("New Human", addedStudent.FullName);
@@ -155,7 +155,7 @@ namespace Apolo.Tests.ViewModels
 
             _mockPayerRepo.Verify(r => r.GetPayerOptionsAsync(), Times.Once);
             _mockStudentRepo.Verify(r => r.GetSudentsAsync(), Times.Once);
-            VerifyAction(null, InfoBarType.Success, isOpen: false, studentsCount: 0, payersCount: 0);
+            VerifyAction("0 loaded", InfoBarType.Success, isOpen: true, studentsCount: 0, payersCount: 0);
         }
 
         // --- AddStudentAsync Tests ---

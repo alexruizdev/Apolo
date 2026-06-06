@@ -6,6 +6,8 @@
         Ticket
     }
 
+    public sealed record BillSummary(Guid? Id, Guid payerId, DocumentType type, string Name, string Date);
+
     public sealed class BillingDocument
     {
         public BillingDocument(DateTime createdUTC)

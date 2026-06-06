@@ -1,6 +1,5 @@
 ﻿using Apolo.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
@@ -19,28 +18,42 @@ namespace Apolo.ViewModels
         {
             this.Data = lesson;
         }
-        
+
+        public void RefreshDataUI()
+        {
+            OnPropertyChanged(nameof(Data));
+        }
     }
     public partial class BillingViewModel : UserProfileViewModel
     {
         IBillingRepository _billingRepository;
         IPayerRepository _payerRepository;
+        ILessonRepository _lessonRepository;
         PDF.IWriter _pdfWriter;
 
         public ObservableCollection<PayerOption> Payers { get; } = new();
         public ObservableCollection<InvoiceLine> Lessons { get; } = new();
+        public ObservableCollection<BillingDocument> BillSuggestions { get; } = new(); 
 
         [ObservableProperty] private Guid? selectedPayerId;
+        [ObservableProperty] private string? searchBillText;
         [ObservableProperty] private decimal totalSelected;
         [ObservableProperty] private decimal totalAll;
+        [ObservableProperty] private bool editMode;
+        [ObservableProperty] private BillSummary bill;
 
-        public BillingViewModel(IBillingRepository billingRepository, IPayerRepository payerRepository, 
-            IUserProfileService userProfile, PDF.IWriter pdfWriter)
+        public BillSummary ResetBill() => new BillSummary(null, Guid.NewGuid(), DocumentType.Ticket, "", "");
+
+        public BillingViewModel(IBillingRepository billingRepository, IPayerRepository payerRepository,  
+            IUserProfileService userProfile, PDF.IWriter pdfWriter, ILessonRepository lessonRepository)
             : base(userProfile)
         {
             _billingRepository = billingRepository;
             _payerRepository = payerRepository;
             _pdfWriter = pdfWriter;
+
+            EditMode = false;
+            Bill = ResetBill();
 
             Lessons.CollectionChanged += (s, e) =>
             {
@@ -61,6 +74,7 @@ namespace Apolo.ViewModels
                 // 3. Always recompute when the list structure changes
                 RecomputeTotals();
             };
+            _lessonRepository = lessonRepository;
         }
 
         // Tri-state "Selection state" checkbox: true=all, false=none, null=mixed
@@ -116,7 +130,6 @@ namespace Apolo.ViewModels
             }
         }
 
-        [RelayCommand]
         public async Task LoadAsync()
         {
             if (IsBusy)
@@ -135,7 +148,6 @@ namespace Apolo.ViewModels
             SetExitFunction();
         }
 
-        [RelayCommand]
         public async Task LoadLessonsAsync()
         {
             if (IsBusy)
@@ -148,7 +160,7 @@ namespace Apolo.ViewModels
 
             if (SelectedPayerId is null)
             {
-                SetExitFunction();
+                SetExitFunction("No payer was selected", InfoBarType.Warning);
                 return;
             }
 
@@ -156,16 +168,44 @@ namespace Apolo.ViewModels
 
             Lessons.Clear();
             foreach (var l in unbilledLessons) Lessons.Add(new InvoiceLine(l));
+
+            EditMode = false;
             
-            SetExitFunction();
+            SetExitFunction($"Loaded {Lessons.Count} lessons unbilled and unpaid", InfoBarType.Success);
         }
 
-        [RelayCommand]
-        public async Task MarkSelectedAsPaidAsync()
+        public async Task LoadBillLessonsAsync()
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't mark lessons as paid while busy.", InfoBarType.Warning, false);
+                SetExitFunction($"Can't load {Bill.Name} lessons while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            SetEnterFunction();
+
+            if (Bill.Id is null)
+            {
+                SetExitFunction("No bill was selected", InfoBarType.Warning);
+                return;
+            }
+
+            var billedLessons = await _billingRepository.GetLessonsFromBillAsync(Bill.Id.Value);
+
+            Lessons.Clear();
+            foreach (var l in billedLessons) Lessons.Add(new InvoiceLine(l));
+
+            EditMode = true;
+
+            SetExitFunction($"Loaded {Lessons.Count} lessons.", InfoBarType.Success);
+        }
+
+        public async Task MarkSelectedPaymentAsync(bool markAsPaid)
+        {
+            string actionName = markAsPaid ? "paid" : "unpaid";
+            if (IsBusy)
+            {
+                SetExitFunction($"Can't mark lessons as {actionName} while busy.", InfoBarType.Warning, false);
                 return;
             }
 
@@ -175,13 +215,53 @@ namespace Apolo.ViewModels
 
             if (ids.Count == 0)
             {
-                SetExitFunction("Please, select first an lesson to mark them as paid.", InfoBarType.Info);
+                SetExitFunction($"Please, select first a lesson to mark them as {actionName}.", InfoBarType.Info);
                 return;
             }
 
             try
             {
-                await _billingRepository.UpdateLessonsAsync(ids, isPaid: true);
+                await _lessonRepository.UpdateLessonsPayment(ids, isPaid: markAsPaid);
+
+                // Update UI
+                for (int i = 0; i < Lessons.Count; i++)
+                {
+                    if (ids.Contains(Lessons[i].Data.Id))
+                    {
+                        Lessons[i].Data = Lessons[i].Data with { IsPaid = markAsPaid };
+                        Lessons[i].RefreshDataUI();
+                    }
+                }
+
+                SetExitFunction($"{ids.Count} were marked as {actionName} successfully.", InfoBarType.Success);
+            }
+            catch (DbUpdateException ex)
+            {
+                SetExitFunction(ex.Message, InfoBarType.Error);
+            }
+        }
+
+        public async Task RemoveSelectedLessonsAsync()
+        {
+            if (IsBusy)
+            {
+                SetExitFunction("Can't remove selected lessons while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            SetEnterFunction();
+
+            var ids = Lessons.Where(l => l.IsSelected).Select(l => l.Data.Id).ToList();
+
+            if (ids.Count == 0)
+            {
+                SetExitFunction($"Please, select first a lesson to remove it.", InfoBarType.Info);
+                return;
+            }
+
+            try
+            {
+                await _lessonRepository.UnassignBillToLessons(ids);
 
                 // Remove paid lessons from the UI
                 for (int i = Lessons.Count - 1; i >= 0; i--)
@@ -191,12 +271,45 @@ namespace Apolo.ViewModels
                         Lessons.RemoveAt(i);
                     }
                 }
-                SetExitFunction($"{ids.Count} were marked as paid successfully.", InfoBarType.Success);
+                SetExitFunction($"{ids.Count} were removed from {Bill.Name}.", InfoBarType.Success);
+
             }
             catch (DbUpdateException ex)
             {
                 SetExitFunction(ex.Message, InfoBarType.Error);
             }
+        }
+
+        public async Task DeleteBillAsync()
+        {
+            if (IsBusy)
+            {
+                SetExitFunction("Can't remove bill document while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            SetEnterFunction();
+
+            if (Bill.Id is null)
+            {
+                SetExitFunction("Error, bill was not loaded properly.", InfoBarType.Error);
+                return;
+            }
+            try
+            {
+                await _billingRepository.DeleteAsync(Bill.Id.Value);
+                string deletedBillName = Bill.Name;
+                EditMode = false;
+                Lessons.Clear();
+                SearchBillText = string.Empty;
+                Bill = ResetBill();
+                SetExitFunction($"Bill document '{deletedBillName}' deleted successfully.", InfoBarType.Success);
+            }
+            catch (DbUpdateException ex)
+            {
+                SetExitFunction(ex.Message, InfoBarType.Error);
+            }
+
         }
 
         public async Task GenerateInvoice(string folderPath, bool isInvoice)
@@ -231,18 +344,28 @@ namespace Apolo.ViewModels
 
             try
             {
-                var documentNumber = await _billingRepository.CreateBillAsync(
+                var document = await _billingRepository.CreateBillAsync(
                     SelectedPayerId.Value, lessonsIds, isInvoice ? DocumentType.Invoice : DocumentType.Ticket);
 
-                var filePath = Path.Combine(folderPath, $"{documentNumber}.pdf");
+                var filePath = Path.Combine(folderPath, $"{document.DocumentNumber}.pdf");
 
                 if (isInvoice)
-                    _pdfWriter.GenerateInvoice(documentNumber, payer, lessons, Profile, filePath);
+                    _pdfWriter.GenerateInvoice(document.DocumentNumber, payer, lessons, Profile, filePath);
                 else
-                    _pdfWriter.GenerateTicket(documentNumber, payer, lessons, Profile, filePath);
+                    _pdfWriter.GenerateTicket(document.DocumentNumber, payer, lessons, Profile, filePath);
 
-                foreach (var item in Lessons.Where(l => l.IsSelected).ToList())
+                Bill = new BillSummary(document.Id, document.PayerId, document.Type, document.DocumentNumber,
+                    document.CreatedUTC.ToString("dd/MM/yyyy"));
+                EditMode = true;
+                SearchBillText = document.DocumentNumber;
+
+                // Remove those not included in the invocie
+                foreach (var item in Lessons.Where(l => !l.IsSelected).ToList())
                     Lessons.Remove(item);
+
+                // Unselect lessons
+                foreach (var item in Lessons)
+                    item.IsSelected = false;
 
                 var documentName = (isInvoice ? DocumentType.Invoice : DocumentType.Ticket).ToString();
                 SetExitFunction($"{documentName} saved to: {filePath}.", InfoBarType.Info);
@@ -250,9 +373,48 @@ namespace Apolo.ViewModels
             catch (DbUpdateException ex)
             {
                 SetExitFunction(ex.Message, InfoBarType.Error);
+            }
+        }
+
+        public async Task PrintDocument(string folderPath)
+        {
+            if (IsBusy)
+            {
+                SetExitFunction("Can't print invoice while busy.", InfoBarType.Warning, false);
+                return;
+            }
+            var lessons = Lessons .Select(l => l.Data).ToList();
+            var filePath = Path.Combine(folderPath, $"{Bill.Name}.pdf");
+            var payer = await _payerRepository.GetPayerSummaryNoOutstandingAsync(Bill.payerId);
+
+            if (Bill.type is DocumentType.Invoice)
+                _pdfWriter.GenerateInvoice(Bill.Name, payer, lessons, Profile, filePath);
+            else
+                _pdfWriter.GenerateTicket(Bill.Name, payer, lessons, Profile, filePath);
+
+            SetExitFunction($"{Bill.Name} saved to: {filePath}.", InfoBarType.Info);
+        }
+
+        public async Task SuggestBills(string searchTerm)
+        {
+            searchTerm = searchTerm.ToLower();
+
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                BillSuggestions.Clear();
                 return;
             }
 
+            var matches = await _billingRepository.GetBillSuggestionsAsync(searchTerm);
+            BillSuggestions.Clear();
+            foreach (var match in matches) BillSuggestions.Add(match);
+        }
+
+        public void SelectBillToEdit(BillingDocument document)
+        {
+            Bill = new BillSummary(document.Id, document.PayerId, document.Type, document.DocumentNumber, 
+                document.CreatedUTC.ToString("dd/MM/yyyy"));
+            SearchBillText = document.DocumentNumber;
         }
     }
 }

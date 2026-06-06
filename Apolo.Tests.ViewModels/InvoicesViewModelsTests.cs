@@ -13,6 +13,7 @@ namespace Apolo.Tests.ViewModels
     {
         private Mock<IBillingRepository> _mockInvoiceRepo = null!;
         private Mock<IPayerRepository> _mockPayerRepo = null!;
+        private Mock<ILessonRepository> _mockLessonRepo = null!;
         private Mock<IUserProfileService> _mockUserProfileService = null!;
         private Mock<PDF.IWriter> _mockPDFWriter = null!;
         private BillingViewModel _viewModel = null!;
@@ -22,6 +23,7 @@ namespace Apolo.Tests.ViewModels
         {
             _mockInvoiceRepo = new Mock<IBillingRepository>();
             _mockPayerRepo = new Mock<IPayerRepository>();
+            _mockLessonRepo = new Mock<ILessonRepository>();
             _mockUserProfileService = new Mock<IUserProfileService>();
             _mockPDFWriter = new Mock<PDF.IWriter>();
 
@@ -45,7 +47,7 @@ namespace Apolo.Tests.ViewModels
                 .ReturnsAsync(userProfile);
 
             _viewModel = new BillingViewModel(_mockInvoiceRepo.Object, _mockPayerRepo.Object, _mockUserProfileService.Object,
-                _mockPDFWriter.Object);
+                _mockPDFWriter.Object, _mockLessonRepo.Object);
         }
 
         void VerifyAction(string? message, InfoBarType severity, bool isOpen, int payersCount, int count, decimal totalSelected, decimal total, bool isBusy = false)
@@ -164,11 +166,11 @@ namespace Apolo.Tests.ViewModels
                 .ReturnsAsync(secondLoad);
 
             await _viewModel.LoadLessonsAsync(); // test that Lessons.Clear() is working
-            VerifyAction(null, InfoBarType.Success, isOpen: false,
+            VerifyAction("Loaded 3 lessons unbilled and unpaid", InfoBarType.Success, isOpen: true,
                 payersCount: 1, count: 3, isBusy: false, total: 600, totalSelected: 0);
 
             await _viewModel.LoadLessonsAsync(); // If LoadAsync is called twice, you should not have duplicate items in your list
-            VerifyAction(null, InfoBarType.Success, isOpen: false,
+            VerifyAction("Loaded 3 lessons unbilled and unpaid", InfoBarType.Success, isOpen: true,
                 payersCount: 1, count: 3, isBusy: false, total: 575, totalSelected: 0);
 
             _mockInvoiceRepo.Verify(r => r.GetUnbilledLessonsAsync(payer.Id), Times.Exactly(2));
@@ -227,7 +229,7 @@ namespace Apolo.Tests.ViewModels
                 .ReturnsAsync(new List<LessonLine>());
 
             await _viewModel.LoadLessonsAsync(); // test that Lessons.Clear() is working
-            VerifyAction(null, InfoBarType.Success, isOpen: false,
+            VerifyAction("Loaded 0 lessons unbilled and unpaid", InfoBarType.Success, isOpen: true,
                 payersCount: 1, count: 0, isBusy: false, total: 0, totalSelected: 0);
 
             _mockInvoiceRepo.Verify(r => r.GetUnbilledLessonsAsync(payer.Id), Times.Once);
@@ -278,11 +280,11 @@ namespace Apolo.Tests.ViewModels
         {
             if (dbError)
             {
-                _mockInvoiceRepo.Setup(r => r.UpdateLessonsAsync(ids, isPaid: true))
+                _mockLessonRepo.Setup(r => r.UpdateLessonsPayment(ids, isPaid: true))
                     .ThrowsAsync(new DbUpdateException("Constraint failed."));
             }
 
-            await _viewModel.MarkSelectedAsPaidAsync();
+            await _viewModel.MarkSelectedPaymentAsync(markAsPaid: true);
         }
 
         private void AssertForMarkAsPaid(List<Guid> ids, bool success,
@@ -290,22 +292,17 @@ namespace Apolo.Tests.ViewModels
         {
             if (success || dbError)
             {
-                _mockInvoiceRepo.Verify(r => r.UpdateLessonsAsync(ids, isPaid: true), Times.Once);
+                _mockLessonRepo.Verify(r => r.UpdateLessonsPayment(ids, isPaid: true), Times.Once);
             }
             else
             {
-                _mockInvoiceRepo.Verify(r => r.UpdateLessonsAsync(It.IsAny<IReadOnlyList<Guid>>(), It.IsAny<bool>()), Times.Never);
+                _mockLessonRepo.Verify(r => r.UpdateLessonsPayment(It.IsAny<IReadOnlyList<Guid>>(), It.IsAny<bool>()), Times.Never);
             }
 
-            if (dbError)
+            if (dbError || success)
             {
                 VerifyAction(infoMessage, severity, isOpen: true, payersCount: 0, count: 4,
                 totalSelected: 65.5m, total: 307.6m, isBusy: isBusy);
-            }
-            else if (success)
-            {
-                VerifyAction(infoMessage, severity, isOpen: true, payersCount: 0, count: 2,
-                totalSelected: 0, total: 242.1m, isBusy: isBusy);
             }
             else
             {
@@ -331,7 +328,7 @@ namespace Apolo.Tests.ViewModels
         {
             var ids = ArrangeForMarkAsPaid();
             await ActForMarkAsPaid(ids);
-            AssertForMarkAsPaid(ids, success: false, infoMessage: "Please, select first an lesson to mark them as paid.",
+            AssertForMarkAsPaid(ids, success: false, infoMessage: "Please, select first a lesson to mark them as paid.",
                 severity: InfoBarType.Info);
         }
 
@@ -393,7 +390,7 @@ namespace Apolo.Tests.ViewModels
             else 
             {
                 _mockInvoiceRepo.Setup(r => r.CreateBillAsync(payerId, ids, DocumentType.Invoice))
-                    .ReturnsAsync(("Invoice_Name"));
+                    .ReturnsAsync((new BillingDocument(DateTime.UtcNow){ SequenceNumber = 1, Type = DocumentType.Invoice}));
             }
 
             await _viewModel.GenerateInvoice("\\somepath\\invented", isInvoice: true);
@@ -427,7 +424,7 @@ namespace Apolo.Tests.ViewModels
             decimal selected = 0;
             if (selectLessons && !success)
                 selected = 65.5m;
-            decimal total = success ? 242.1m : 307.6m;
+            decimal total = success ? 65.5m : 307.6m;
 
             VerifyAction(infoMessage, severity, isOpen: true, payersCount: 1, count: success ? 2 : 4,
                 totalSelected: selected, total: total, isBusy: isBusy);
@@ -475,7 +472,8 @@ namespace Apolo.Tests.ViewModels
         {
             var ids = ArrangeForGenerateInvoice();
             await ActForForGenerateInvoice(ids);
-            AssertForGenerateInvoice(ids, infoMessage: "Invoice saved to: \\somepath\\invented\\Invoice_Name.pdf.", 
+
+            AssertForGenerateInvoice(ids, infoMessage: $"Invoice saved to: \\somepath\\invented\\{_viewModel.Bill.Name}.pdf.", 
                 severity: InfoBarType.Success, success: true);
         }
     }

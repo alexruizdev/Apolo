@@ -259,7 +259,7 @@ namespace Excel
                     isPaid: false, student.Id, null,
                     isPricePerHour: false, durationMinutes: durationMinutes, basePrice: finalPrice, 
                     isOnline: online, travelAllowance: 0,
-                    isWeekenOrHoliday: false, weekendFee: 0, notes: null);
+                    isWeekendOrHoliday: false, weekendFee: 0, tip: 0, notes: null);
                 
                 Lessons.Add(lesson);
             }
@@ -336,6 +336,7 @@ namespace Excel
                     var lesson = lessons[i];
                     payment -= lesson.FinalPrice;
                     lesson.IsPaid = true;
+                    lesson.BillingDocumentId = invoice.Id;
                 }
 
                 // Save leftovers

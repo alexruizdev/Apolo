@@ -9,131 +9,128 @@
       x:Name="PageRoot"
       Loaded="Page_Loaded">
 
-    <StackPanel Padding="24"
-                Spacing="16">
+    <Grid Style="{StaticResource MainGridStyle}">
 
-        <TextBlock Text="{x:Bind loc:Loc.Menu_Lessons}"
-                    FontSize="28"
-                    FontWeight="SemiBold" />
-        <StackPanel Orientation="Horizontal"
-                    Spacing="16"
-                    VerticalAlignment="Top">
-            <ToggleSwitch Header="Only updaid"
-                            IsOn="{x:Bind ViewModel.ShownOnlyUnpaid, Mode=TwoWay}" />
-            <DatePicker DayVisible="False" Date="{x:Bind ViewModel.DateFiler, Mode=TwoWay}"/>
-            <CommandBar DefaultLabelPosition="Right">
-                <AppBarButton Label="Refresh lessons" Icon="Refresh"
-                              Command="{x:Bind ViewModel.LoadCommand}"
-                              IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
-                <AppBarButton Label="New lesson" Icon="Add"
-                              Click="NewLesson_Click"
-                              IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
-            </CommandBar>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
+        <StackPanel Grid.Row="0" Spacing="16">
+            <TextBlock Text="{x:Bind loc:Loc.Menu_Lessons}"
+                       Style="{ThemeResource TitleLargeTextBlockStyle}" />
+
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <ToggleSwitch Header="Only unpaid" IsOn="{x:Bind ViewModel.ShownOnlyUnpaid, Mode=TwoWay}" />
+                    <CalendarDatePicker Date="{x:Bind ViewModel.DateFiler, Mode=TwoWay}"
+                                        DisplayMode="Year"
+                                        Header="Filter Period"
+                                        PlaceholderText="Pick Month"
+                                        Width="160"
+                                        VerticalAlignment="Bottom"/>
+                </StackPanel>
+
+                <CommandBar Grid.Column="1" DefaultLabelPosition="Right" Background="Transparent" IsDynamicOverflowEnabled="False">
+                    <AppBarButton Label="Refresh" Icon="Refresh"
+                                  Command="{x:Bind ViewModel.LoadCommand}"
+                                  IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
+                    <AppBarButton Label="New" Icon="Add"
+                                  Click="NewLesson_Click"
+                                  IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
+                </CommandBar>
+            </Grid>
         </StackPanel>
 
-        <StackPanel>
+        <StackPanel Grid.Row="1" Spacing="4">
             <ProgressBar IsIndeterminate="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
             <InfoBar
                 IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}"
                 Severity="{x:Bind ViewModel.InfoBarType, Converter={StaticResource InfoBarTypeConverter}, Mode=TwoWay}"
                 Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}" />
         </StackPanel>
-        
-        <ScrollView MaxHeight="500">
-            
-            <ListView ItemsSource="{x:Bind ViewModel.Lessons, Mode=OneWay}"
-                        SelectionMode="None">
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="m:LessonSummary">
-                        <Grid Padding="12" 
-                              Margin="0,4,0,8" 
-                              ColumnSpacing="16"
-                              Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                              CornerRadius="6"
-                              BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
-                              BorderThickness="1">
 
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="110" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="120" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
+        <ListView Grid.Row="2" 
+                  ItemsSource="{x:Bind ViewModel.Lessons, Mode=OneWay}"
+                  SelectionMode="None">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="m:LessonSummary">
+                    <Grid Style="{StaticResource CardGridStyle}"  >
 
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="{x:Bind Date, Converter={StaticResource DateFormatConverter}}"
-                                           FontWeight="SemiBold" 
-                                           FontSize="15" />
-                                <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,4,0,0">
-                                    <SymbolIcon Symbol="Clock" Foreground="Gray" />
-                                    <TextBlock Text="{x:Bind DurationMinutes}" Foreground="Gray" />
-                                    <TextBlock Text="min" Foreground="Gray" />
-                                </StackPanel>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="110" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel VerticalAlignment="Top">
+                            <TextBlock Text="{x:Bind Date, Converter={StaticResource DateFormatConverter}}" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                            <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,8,0,0">
+                                <SymbolIcon Symbol="Clock" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                                <TextBlock Text="{x:Bind DurationMinutes}" Style="{ThemeResource CaptionTextBlockStyle}" />
+                                <TextBlock Text="min" Style="{ThemeResource CaptionTextBlockStyle}" />
                             </StackPanel>
+                        </StackPanel>
 
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                <TextBlock FontSize="16" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis">
-                                    <Run Text="{x:Bind Name}" FontWeight="SemiBold" />
-                                    <Run Text=" • " Foreground="Gray" />
-                                    <Run Text="{x:Bind StudentName}" />
-                                    <Run Text=" • " Foreground="Gray" />
-                                    <Run Text="{x:Bind BillingName}" />
-                                </TextBlock>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis">
+                                <Run Text="{x:Bind Name}" FontWeight="SemiBold" />
+                                <Run Text=" • " Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                                <Run Text="{x:Bind StudentName}" />
+                            </TextBlock>
 
-                                <TextBlock Text="{x:Bind ShortNote}" 
-                                           Foreground="DimGray" 
-                                           FontStyle="Italic" 
-                                           Margin="0,4,0,0"
-                                           TextTrimming="CharacterEllipsis">
-                                    <ToolTipService.ToolTip>
-                                        <ToolTip Content="{x:Bind Notes}" MaxWidth="400" />
-                                    </ToolTipService.ToolTip>
-                                </TextBlock>
+                            <Border Style="{StaticResource PaidBadgeStyle}" Visibility="{x:Bind IsPaid, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <TextBlock Text="PAID" Style="{StaticResource PaidTextStyle}" />
+                            </Border>
+                            <Border Style="{StaticResource UnpaidBadgeStyle}" Visibility="{x:Bind IsPaid, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                <TextBlock Text="UNPAID" Style="{StaticResource UnpaidTextStyle}" />
+                            </Border>
+
+                            <TextBlock Text="{x:Bind ShortNote}" Style="{ThemeResource CaptionTextBlockStyle}" FontStyle="Italic" Margin="0,4,0,0" TextTrimming="CharacterEllipsis">
+                                <ToolTipService.ToolTip>
+                                    <ToolTip Content="{x:Bind Notes}" MaxWidth="400" />
+                                </ToolTipService.ToolTip>
+                            </TextBlock>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                            <TextBlock Text="{x:Bind FinalPrice, Converter={StaticResource DecimalToCurrencyConverter}}" Style="{ThemeResource BodyStrongTextBlockStyle}" HorizontalAlignment="Right" FontSize="16" />
+                            <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,4,0,0" HorizontalAlignment="Right">
+                                <FontIcon Glyph="&#xE948;" FontSize="12" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                                <TextBlock Text="{x:Bind Tip, Converter={StaticResource DecimalToCurrencyConverter}}" Style="{ThemeResource CaptionTextBlockStyle}" />
                             </StackPanel>
+                            <TextBlock Text="{x:Bind BillingName}" Style="{ThemeResource CaptionTextBlockStyle}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis">
+                                <ToolTipService.ToolTip>
+                                    <ToolTip Content="Billing Document" />
+                                </ToolTipService.ToolTip>
+                            </TextBlock>
+                        </StackPanel>
 
-                            <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                <TextBlock Text="{x:Bind FinalPrice, Converter={StaticResource DecimalToCurrencyConverter}}"
-                                           FontWeight="Bold" 
-                                           FontSize="16" 
-                                           HorizontalAlignment="Right" />
-
-                                <TextBlock Text="{x:Bind BillingName}" 
-                                           Foreground="Gray" 
-                                           FontSize="12" 
-                                           HorizontalAlignment="Right"
-                                           Margin="0,2,0,0"
-                                           TextTrimming="CharacterEllipsis">
-                                    <ToolTipService.ToolTip>
-                                        <ToolTip Content="Billing Document" />
-                                    </ToolTipService.ToolTip>
-                                </TextBlock>
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                                <Button Click="EditLesson_Click" 
-                                        Background="Transparent" 
-                                        BorderThickness="0"
-                                        IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
-                                    <SymbolIcon Symbol="Edit" />
-                                    <ToolTipService.ToolTip>Edit lesson</ToolTipService.ToolTip>
-                                </Button>
-
-                                <Button Click="DeleteLesson_Click" 
-                                        Background="Transparent" 
-                                        BorderThickness="0" 
-                                        Foreground="Red"
-                                        IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
-                                    <SymbolIcon Symbol="Delete" />
-                                    <ToolTipService.ToolTip>Delete lesson</ToolTipService.ToolTip>
-                                </Button>
-                            </StackPanel>
-
-                        </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-        </ScrollView>
-    </StackPanel>
+                        <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                            <Button Style="{StaticResource RowActionButtonStyle}" Click="EditLesson_Click" IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
+                                <SymbolIcon Symbol="Edit" />
+                                <ToolTipService.ToolTip>Edit lesson</ToolTipService.ToolTip>
+                            </Button>
+                            <Button Style="{StaticResource RowActionButtonStyle}" Click="ChangePayment_Click" IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
+                                <SymbolIcon Symbol="Shop" />
+                                <ToolTipService.ToolTip>Change payment status</ToolTipService.ToolTip>
+                            </Button>
+                            <Button Style="{StaticResource RowDeleteButtonStyle}" Click="DeleteLesson_Click" IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
+                                <SymbolIcon Symbol="Delete" />
+                                <ToolTipService.ToolTip>Delete lesson</ToolTipService.ToolTip>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
 
 </Page>

@@ -62,7 +62,7 @@ namespace Apolo.ViewModels
             var items = await _payerRepository.GetPayersAsync();
             Payers.Clear();
             foreach (var item in items) Payers.Add(item);
-            SetExitFunction();
+            SetExitFunction($"{Payers.Count} loaded", InfoBarType.Success);
         }
 
 

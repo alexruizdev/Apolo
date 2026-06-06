@@ -18,7 +18,8 @@
         int DurationMinutes,
         double? Price,
         bool IsOnline,
-        bool IsWeekenOrHoliday
+        bool IsWeekendOrHoliday,
+        int UsageCount
         );
     public sealed class Specification
     {
@@ -35,6 +36,7 @@
         public int DurationMinutes { get; set; } // TODO: null
         public decimal? Price { get; set; } // when null, we use service price
         public bool IsOnline { get; set; }
-        public bool IsWeekenOrHoliday { get; set; }
+        public bool IsWeekendOrHoliday { get; set; }
+        public int UsageCount { get; set; } = 0; // Track frequency manually
     }
 }

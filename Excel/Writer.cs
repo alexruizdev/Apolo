@@ -139,7 +139,7 @@ namespace Excel
                 table.DataRange.Cell(row, 4).Value = spec.DurationMinutes;
                 table.DataRange.Cell(row, 5).Value = spec.Price; 
                 table.DataRange.Cell(row, 6).Value = spec.IsOnline;
-                table.DataRange.Cell(row, 7).Value = spec.IsWeekenOrHoliday;
+                table.DataRange.Cell(row, 7).Value = spec.IsWeekendOrHoliday;
                 table.DataRange.Cell(row, 8).Value = spec.Id.ToString();
                 table.DataRange.Cell(row, 9).Value = spec.StudentId.ToString();
                 table.DataRange.Cell(row, 10).Value = spec.ServiceId.ToString();
@@ -180,7 +180,7 @@ namespace Excel
                 table.DataRange.Cell(row, 10).Value = lesson.BasePrice;
                 table.DataRange.Cell(row, 11).Value = lesson.IsOnline;
                 table.DataRange.Cell(row, 12).Value = lesson.TravelAllowance;
-                table.DataRange.Cell(row, 14).Value = lesson.IsWeekenOrHoliday;
+                table.DataRange.Cell(row, 14).Value = lesson.IsWeekendOrHoliday;
                 table.DataRange.Cell(row, 15).Value = lesson.WeekendFee;
                 table.DataRange.Cell(row, 15).Value = lesson.Id.ToString();
                 table.DataRange.Cell(row, 16).Value = lesson.StudentId.ToString();
@@ -195,7 +195,7 @@ namespace Excel
         private void WriteInvoices(XLWorkbook workbook, in List<BillingDocument> bills,
             in List<Payer> payers, in List<Lesson> lessons)
         {
-            var table = GetTable(workbook, "Invoices");
+            var table = GetTable(workbook, "Bills");
             int row = 1;
 
             var billLookup = lessons

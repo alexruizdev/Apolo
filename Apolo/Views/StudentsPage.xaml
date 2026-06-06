@@ -10,67 +10,84 @@
       Loaded="Page_Loaded">
 
 
-    <StackPanel Padding="24"
-                Spacing="16">
+    <Grid Style="{StaticResource MainGridStyle}">
 
-        <TextBlock Text="{x:Bind loc:Loc.Menu_Students}"
-                   FontSize="28"
-                   FontWeight="SemiBold" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-        <Button Content="New student"
-                Click="NewStudent_Click"
-                IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
+        <Grid Grid.Row="0" VerticalAlignment="Center">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
 
-        <StackPanel>
+            <TextBlock Grid.Column="0" 
+               Text="{x:Bind loc:Loc.Menu_Students}"
+               Style="{ThemeResource TitleLargeTextBlockStyle}" />
+
+            <CommandBar Grid.Column="1" DefaultLabelPosition="Right" Background="Transparent" IsDynamicOverflowEnabled="False">
+                <AppBarButton Label="New" Icon="Add"
+                              Click="NewStudent_Click"
+                              IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
+            </CommandBar>
+        </Grid>
+
+        <!--Status / errors-->
+        <StackPanel Grid.Row="1" Spacing="4">
             <ProgressBar IsIndeterminate="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
-            <InfoBar
-                IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}"
-                Severity="{x:Bind ViewModel.InfoBarType, Converter={StaticResource InfoBarTypeConverter}, Mode=TwoWay}"
-                Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}" />
+            <InfoBar IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}"
+                    Severity="{x:Bind ViewModel.InfoBarType, Converter={StaticResource InfoBarTypeConverter}, Mode=TwoWay}"
+             Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}" />
         </StackPanel>
 
-        <ScrollView MaxHeight="500">
-            <ListView ItemsSource="{Binding Students}">
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="m:StudentSummary">
-                        <StackPanel Spacing="8"
-                                        Padding="8">
-                            <Grid ColumnDefinitions="*, Auto">
-                                <StackPanel Orientation="Vertical"
-                                                Spacing="4">
-                                    <TextBlock Text="{x:Bind FullName}"
-                                                   FontWeight="SemiBold" />
-                                    <TextBlock>
-                                        <Run Text="Payer: " />
-                                        <Run Text="{x:Bind PayerName}" />
-                                    </TextBlock>
-                                </StackPanel>
+        <!--List of student -->
+        <ListView Grid.Row="2" ItemsSource="{Binding Students}" SelectionMode="None">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="m:StudentSummary">
+                    <Grid Style="{StaticResource CardGridStyle}">
 
-                                <StackPanel Grid.Column="1"
-                                                Orientation="Horizontal"
-                                                Spacing="8"
-                                                Margin="20,0,0,0"
-                                                VerticalAlignment="Top">
-                                    <Button x:Uid="Buttons/Edit"
-                                                Click="EditStudent_Click"
-                                                Style="{StaticResource AccentButtonStyle}"
-                                                IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
-                                    <Button Content="{x:Bind loc:Loc.Buttons_Delete}"
-                                                Click="DeleteStudent_Click"
-                                                IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
-                                </StackPanel>
-                            </Grid>
-
-                            <!-- Separator -->
-                            <Border Height="1"
-                                        Background="LightGray"
-                                        Margin="0,8,0,0" />
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        
+                        <!-- INFO -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Spacing="10">
+                            <TextBlock Text="{x:Bind FullName}" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                            <TextBlock Text="•" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}">
+                                <Run Text="Payer: "  Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                                <Run Text="{x:Bind PayerName}" FontWeight="SemiBold" />
+                            </TextBlock>
                         </StackPanel>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-        </ScrollView>
+                        
+                        <!-- ACTIONS -->
+                        <StackPanel Grid.Column="1"
+                                        Orientation="Horizontal"
+                                        Spacing="8"
+                                        VerticalAlignment="Center">
+                            <!-- EDIT -->
+                            <Button Style="{StaticResource RowActionButtonStyle}"
+                                    Click="EditStudent_Click"
+                                    IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
+                                <SymbolIcon Symbol="Edit" />
+                                <ToolTipService.ToolTip>Edit payer</ToolTipService.ToolTip>
+                            </Button>
+                            <!-- DELETE -->
+                            <Button Style="{StaticResource RowDeleteButtonStyle}" Click="DeleteStudent_Click" 
+                                    IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
+                                <SymbolIcon Symbol="Delete" />
+                                <ToolTipService.ToolTip>Delete payer</ToolTipService.ToolTip>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
 
-    </StackPanel>
+    </Grid>
 
 </Page>

@@ -9,76 +9,120 @@
       x:Name="PageRoot"
       Loaded="Page_Loaded">
 
-    <StackPanel Padding="24"
-                Spacing="16">
+    <Grid Style="{StaticResource MainGridStyle}">
 
-        <TextBlock Text="{x:Bind loc:Loc.Menu_Specifications}"
-                    FontSize="28"
-                    FontWeight="SemiBold" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" /> <!-- 1. Header & Actions Zone -->
+            <RowDefinition Height="Auto" /> <!-- 2. System Messages Zone -->
+            <RowDefinition Height="*" />    <!-- 3. Main Data List View -->
+        </Grid.RowDefinitions>
 
-        <Button Content="New specification"
-            Click="NewSpecification_Click"
-            IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
+        <!-- ========================================== -->
+        <!-- 1. HEADER & ACTIONS ZONE                   -->
+        <!-- ========================================== -->
+        <Grid Grid.Row="0" VerticalAlignment="Center">
 
-        <StackPanel>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="{x:Bind loc:Loc.Menu_Specifications}" Style="{ThemeResource TitleLargeTextBlockStyle}" />
+
+            <CommandBar Grid.Column="1" DefaultLabelPosition="Right" Background="Transparent" IsDynamicOverflowEnabled="False">
+                <AppBarButton Label="New" Icon="Add"
+                  Click="NewSpecification_Click"
+                  IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
+            </CommandBar>
+        </Grid>
+
+        <!-- ========================================== -->
+        <!-- 2. SYSTEM MESSAGES ZONE                    -->
+        <!-- ========================================== -->
+        <StackPanel Grid.Row="1" Spacing="4">
             <ProgressBar IsIndeterminate="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
-            <InfoBar
-                IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}"
-                Severity="{x:Bind ViewModel.InfoBarType, Converter={StaticResource InfoBarTypeConverter}, Mode=TwoWay}"
-                Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}" />
+            <InfoBar IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}"
+                     Severity="{x:Bind ViewModel.InfoBarType, Converter={StaticResource InfoBarTypeConverter}, Mode=TwoWay}"
+                     Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}" />
         </StackPanel>
 
-        <ScrollView MaxHeight="500">
-            <ListView ItemsSource="{Binding Specifications}">
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="m:SpecificationSummary">
-                        <Grid ColumnDefinitions="*, Auto"
-                                Padding="8">
-                            <StackPanel Orientation="Vertical"
-                                        Spacing="2">
-                                <TextBlock>
-                                    <Run Text="{x:Bind StudentName}" FontWeight="SemiBold" />
-                                    <Run Text=" - " />
-                                    <Run Text="{x:Bind SpecificationName}" />
-                                </TextBlock>
-                                <TextBlock>
-                                    <Run Text="Service: " />
-                                    <Run Text="{x:Bind ServiceName}" />
-                                </TextBlock>
-                                <TextBlock>
-                                    <Run Text="Duration: " />
-                                    <Run Text="{x:Bind DurationMinutes}" />
-                                    <Run Text=" min" />
-                                </TextBlock>
-                                <TextBlock>
-                                    <Run Text="Price: " />
-                                    <Run Text="{x:Bind Price}" />
-                                </TextBlock>
-                                <CheckBox IsChecked="{x:Bind IsOnline}"
-                                            IsHitTestVisible="False"
-                                            Content="Online" />
-                                <CheckBox IsChecked="{x:Bind IsWeekenOrHoliday}"
-                                        IsHitTestVisible="False"
-                                        Content="Weekend or holiday" />
+        <!-- ========================================== -->
+        <!-- 3. MAIN DATA LIST VIEW                     -->
+        <!-- ========================================== -->
+        <ListView ItemsSource="{Binding Specifications}" Grid.Row="2" SelectionMode="None">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="m:SpecificationSummary">
+                    <Grid Style="{StaticResource CardGridStyle}">
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- INFO -->
+                        <StackPanel Grid.Column="0" Spacing="6" VerticalAlignment="Center">
+                            <!-- Student & Specification Identification Header -->
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="{x:Bind StudentName}" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="•" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                                <TextBlock Text="{x:Bind SpecificationName}" Style="{ThemeResource BodyTextBlockStyle}" />
                             </StackPanel>
 
-                            <StackPanel Grid.Column="1"
-                                        Orientation="Horizontal"
-                                        Spacing="8">
-                                <Button Content="Create lesson"
-                                        Click="CreateLesson_Click"
-                                        IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
-                                <Button x:Uid="Buttons/Edit"
-                                        Click="EditSpecification_Click"
-                                        IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
-                                <Button Content="{x:Bind loc:Loc.Buttons_Delete}"
-                                        Click="DeleteSpecification_Click"
-                                        IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                            <!-- Service, Duration, and Price Sub-Details -->
+                            <StackPanel Orientation="Horizontal" Spacing="16">
+                                <TextBlock Style="{ThemeResource CaptionTextBlockStyle}">
+                                    <Run Text="Service: " Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                                    <Run Text="{x:Bind ServiceName}" FontWeight="SemiBold" />
+                                </TextBlock>
+
+                                <TextBlock Style="{ThemeResource CaptionTextBlockStyle}">
+                                    <Run Text="Duration: " Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                                    <Run Text="{x:Bind DurationMinutes}" FontWeight="SemiBold" />
+                                    <Run Text=" min" />
+                                </TextBlock>
+
+                                <TextBlock Style="{ThemeResource CaptionTextBlockStyle}">
+                                    <Run Text="Price: " Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                                    <Run Text="{x:Bind Price, Converter={StaticResource DecimalToCurrencyConverter}}" FontWeight="SemiBold" />
+                                </TextBlock>
                             </StackPanel>
-                        </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-        </ScrollView>
-    </StackPanel>
+                            
+                            <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2,0,0">
+                                <!-- Online Status Badge -->
+                                <Border Style="{StaticResource OnlineBadgeStyle}" 
+                                        Visibility="{x:Bind IsOnline, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <TextBlock Text="ONLINE" Style="{StaticResource OnlineTextStyle}" />
+                                </Border>
+
+                                <!-- Weekend or Holiday Premium Status Badge -->
+                                <Border Style="{StaticResource WeekendBadgeStyle}"
+                                        Visibility="{x:Bind IsWeekendOrHoliday, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <TextBlock Text="WEEKEND / HOLIDAY" Style="{StaticResource WeekendTextStyle}" />
+                                </Border>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- Right Side: Row Action Controls featuring clean icons -->
+                        <StackPanel Grid.Column="1"
+                                    Orientation="Horizontal"
+                                    Spacing="4"
+                                    VerticalAlignment="Center">
+                            <Button Style="{StaticResource RowActionButtonStyle}" Click="EditSpecification_Click" IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
+                                <SymbolIcon Symbol="Edit" />
+                                <ToolTipService.ToolTip>Edit specification</ToolTipService.ToolTip>
+                            </Button>
+                            <Button Style="{StaticResource RowActionButtonStyle}" Click="CreateLesson_Click" IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
+                                <SymbolIcon Symbol="Calendar" />
+                                <ToolTipService.ToolTip>Create lesson</ToolTipService.ToolTip>
+                            </Button>
+                            <Button Style="{StaticResource RowDeleteButtonStyle}" Click="DeleteSpecification_Click" IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
+                                <SymbolIcon Symbol="Delete" />
+                                <ToolTipService.ToolTip>Delete specification</ToolTipService.ToolTip>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
 </Page>

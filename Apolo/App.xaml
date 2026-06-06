@@ -8,15 +8,19 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-                <!-- Other merged dictionaries here -->
+                <ResourceDictionary Source="Themes/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <!-- Other app resources here -->
             <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+            <conv:BooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" Invert="True" />
             <conv:InverseBooleanConverter x:Key="InverseBooleanConverter" />
             <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
             <conv:DecimalToCurrencyConverter x:Key="DecimalToCurrencyConverter" />
             <conv:DateFormatConverter x:Key="DateFormatConverter" />
             <conv:InfoBarTypeConverter x:Key="InfoBarTypeConverter" />
+            
+            
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>

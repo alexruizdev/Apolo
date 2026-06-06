@@ -1,4 +1,5 @@
 ﻿using Models;
+using System.ComponentModel;
 
 namespace Repository
 {
@@ -37,6 +38,7 @@ namespace Repository
         Task<IEnumerable<SpecificationOption>> GetSpecificationsForStudentAsync(IEnumerable<Guid> studentsIds);
         Task DeleteAsync(Guid id);
         Task UpdateAsync(Guid id, Guid serviceId, string name, int duration, decimal? price, bool isOnline, bool isWeekend);
+        Task IncrementUsageAsync(Guid id);
     }
 
     public interface ILessonRepository
@@ -44,20 +46,22 @@ namespace Repository
         Task<IEnumerable<LessonSummary>> GetLessonsAsync(bool showOnlyUnpaid, int? months);
         Task<Lesson> AddLessonAsync(DateOnly date, string name, bool isPaid, Guid studentId,
             Guid? billingDocumentId, bool isPricePerHour, int? duration, decimal basePrice,
-            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee,
-             string? notes);
+            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip, string? notes);
         Task<Lesson> UpdateLesson(Guid id, DateOnly date, string name,
             bool isPricePerHour, int? duration, decimal pricePerStudent,
-            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, string? note);
+            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip, string? note);
+        Task UpdateLessonsPayment(IEnumerable<Guid> lessonsIds, bool isPaid);
         Task DeleteAsync(Guid id);
+        Task UnassignBillToLessons(IEnumerable<Guid> lessonsIds);
     }
 
     public interface IBillingRepository
     {
         Task<IEnumerable<LessonLine>> GetUnbilledLessonsAsync(Guid payerId);
-        Task UpdateLessonsAsync(IEnumerable<Guid> lessonsIds, bool isPaid);
-        Task<string> CreateBillAsync(Guid payerId, List<Guid> ids, DocumentType type);
+        Task<IEnumerable<LessonLine>> GetLessonsFromBillAsync(Guid billId);
+        Task<BillingDocument> CreateBillAsync(Guid payerId, List<Guid> ids, DocumentType type);
         Task DeleteAsync(Guid id);
+        Task<IEnumerable<BillingDocument>> GetBillSuggestionsAsync(string searchTerm);
     }
 
     public interface IGeneralRepository

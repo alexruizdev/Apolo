@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
 using System.Collections.ObjectModel;
-using System.Security.AccessControl;
 using ViewModels;
 
 namespace Apolo.ViewModels
@@ -57,7 +56,6 @@ namespace Apolo.ViewModels
             return (service, Services.IndexOf(service));
         }
 
-        [RelayCommand]
         public async Task LoadAsync()
         {
             if (IsBusy)
@@ -85,6 +83,23 @@ namespace Apolo.ViewModels
 
             SetExitFunction();
         }
+
+        public async Task RefreshSpecifications()
+        {
+            if (IsBusy)
+            {
+                SetExitFunction("Can't refresh specifications while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            var items = await _specificationRepository.GetSpecificationsAsync();
+
+            Specifications.Clear();
+            foreach (var item in items) Specifications.Add(item);
+
+            SetExitFunction();
+        }
+
 
         public async Task AddSpecificationAsync(string name, int durationMinutes, double? price,
             bool online, bool weekend,
@@ -118,7 +133,7 @@ namespace Apolo.ViewModels
                     DurationMinutes = durationMinutes,
                     Price = (decimal?)price,
                     IsOnline = online,
-                    IsWeekenOrHoliday = weekend
+                    IsWeekendOrHoliday = weekend
                 };
                 await _specificationRepository.AddSpecificationAsync(specification);
 
@@ -128,7 +143,7 @@ namespace Apolo.ViewModels
                 Specifications.Add(new SpecificationSummary(
                     specification.Id, specification.Name, specification.StudentId, studentName,
                     specification.ServiceId, serviceName, specification.DurationMinutes, (double?)specification.Price,
-                    specification.IsOnline, specification.IsWeekenOrHoliday));
+                    specification.IsOnline, specification.IsWeekendOrHoliday, specification.UsageCount));
 
                 SetExitFunction($"Specification '{name}' added for {studentName}.", InfoBarType.Success);
             }
@@ -215,7 +230,7 @@ namespace Apolo.ViewModels
                     DurationMinutes = durationMinutes,
                     Price = price,
                     IsOnline = isOnline,
-                    IsWeekenOrHoliday = isWeekend,
+                    IsWeekendOrHoliday = isWeekend,
                     ServiceId = serviceId,
                     ServiceName = serviceName
                 };
@@ -228,7 +243,7 @@ namespace Apolo.ViewModels
             }
         }
 
-        public async Task CreateLessonFromSpecificationAsync(Guid id, DateOnly date, string? notes)
+        public async Task CreateLessonFromSpecificationAsync(Guid id, DateOnly date, decimal tip, string? notes)
         {
             if (IsBusy)
             {
@@ -237,6 +252,12 @@ namespace Apolo.ViewModels
             }
 
             SetEnterFunction();
+
+            if (tip < 0)
+            {
+                SetExitFunction("Tip can't be negative.", InfoBarType.Error);
+                return;
+            }
 
             var spec = GetSpecification(id);
 
@@ -247,8 +268,10 @@ namespace Apolo.ViewModels
                 await _lessonRepository.AddLessonAsync(
                     date, spec.value.ServiceName, isPaid: false, spec.value.StudentId, null,
                     service.IsPricePerHour, spec.value.DurationMinutes, (decimal)(spec.value.Price ?? service.Price),
-                    spec.value.IsOnline, TravelAllowance, spec.value.IsWeekenOrHoliday, WeekendFee,
-                    notes);
+                    spec.value.IsOnline, TravelAllowance, spec.value.IsWeekendOrHoliday, WeekendFee,
+                    tip, notes);
+
+                await _specificationRepository.IncrementUsageAsync(id);
 
                 SetExitFunction($"Lesson '{spec.value.ServiceName}' created for {spec.value.StudentName}.",
                     InfoBarType.Success); ;
