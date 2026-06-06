@@ -29,8 +29,8 @@ namespace Repository
                 _db.Payers.AddRange(payers);
                 _db.Students.AddRange(students);
                 _db.Specifications.AddRange(specifications);
-                _db.Lessons.AddRange(lessons);
                 _db.BillingDocuments.AddRange(invoices);
+                _db.Lessons.AddRange(lessons);
                 await _db.SaveChangesAsync();
                 await transaction.CommitAsync();
             }

@@ -22,6 +22,17 @@ namespace Excel
         public List<Lesson> Lessons { get; } = new List<Lesson>();
         public List<BillingDocument> Invoices { get; } = new List<BillingDocument>();
 
+        private IXLTable GetTable(XLWorkbook workbook, string name)
+        {
+            var worksheet = workbook.Worksheet(name);
+            var table = worksheet.Table(name);
+            if (table == null)
+            {
+                throw new Exception($"Table '{name}' not found in the workbook.");
+            }
+            return table;
+        }
+
         public async Task ReadExcel(string filePath)
         {
             try
@@ -29,9 +40,11 @@ namespace Excel
                 using (var workbook = new XLWorkbook(filePath))
                 {
                     ReadServices(workbook);
+                    ReadPayers(workbook);
                     ReadStudents(workbook);
-                    ReadLessons(workbook);
+                    ReadSpecification(workbook);
                     ReadPayment(workbook);
+                    ReadLessons(workbook);
                 }
             }
             catch (Exception ex)
@@ -42,224 +55,169 @@ namespace Excel
 
         private void ReadServices(XLWorkbook workbook)
         {
-            var worksheet = workbook.Worksheet("Service");
-            var range = worksheet.Range("Services");
-            var rows = range.RowsUsed();
-
+            var table = GetTable(workbook, "Services");
+            var rows = table.DataRange.RowsUsed();
             foreach (var row in rows)
             {
                 string name = row.Cell(1).GetValue<string>().Trim();
                 decimal price = 0;
-                if (row.Cell(3).DataType == XLDataType.Number)
-                    price = row.Cell(3).GetValue<decimal>();
+                if (row.Cell(2).DataType == XLDataType.Number)
+                    price = row.Cell(2).GetValue<decimal>();
 
                 if (string.IsNullOrEmpty(name))
                     throw new InvalidDataException("Service name cannot be empty.");
 
+                bool isPricePerHour = row.Cell(3).GetValue<string>().Trim().ToLower() == "true";
+                string id = row.Cell(4).GetValue<string>().Trim();
+
                 Services.Add(new Service()
                 {
+                    Id = Guid.Parse(id),
                     Name = name,
-                    IsPricePerHour = true,
+                    IsPricePerHour = isPricePerHour,
                     Price = price
+                });
+            }
+        }
+
+        private void ReadPayers(XLWorkbook workbook)
+        {
+            var table = GetTable(workbook, "Payers");
+            var rows = table.DataRange.RowsUsed();
+            foreach (var row in rows)
+            {
+                string firstName = row.Cell(1).GetValue<string>().Trim();
+                string lastName = row.Cell(2).GetValue<string>().Trim();
+                string address = row.Cell(3).GetValue<string>().Trim();
+                string zip = row.Cell(4).GetValue<string>().Trim();
+                string city = row.Cell(5).GetValue<string>().Trim();
+                string taxId = row.Cell(6).GetValue<string>().Trim();
+                string id = row.Cell(7).GetValue<string>().Trim();
+
+                Payers.Add(new Payer()
+                {
+                    FirstName = firstName,
+                    LastName = lastName,
+                    Address = address,
+                    ZipCode = zip,
+                    City = city,
+                    TaxId = taxId,
+                    Id = Guid.Parse(id)
                 });
             }
         }
 
         private void ReadStudents(XLWorkbook workbook)
         {
-            var worksheet = workbook.Worksheet("Students");
-            var table = workbook.Table("Students");
+            var table = GetTable(workbook, "Students");
             var rows = table.DataRange.RowsUsed();
-
-            var serviceLookup = Services.ToDictionary(s => s.Name, s => s);
-
-            // Add Astex Online
-            Payers.Add(new Payer()
-            {
-                FirstName = "Astex Online Classes"
-            });
-            Students.Add(new Student()
-            {
-                FirstName = "Astex Online Classes",
-                PayerId = Payers.Last().Id,
-            });
-
             foreach (var row in rows)
             {
-                string name = row.Field("Name").GetValue<string>().Trim();
-                string serviceName = row.Field("Service").GetValue<string>().Trim();
-                string channel = row.Field("Channel").GetValue<string>().Trim();
-                string payerName = row.Field("Payer").GetValue<string>().Trim();
-                string paymentMethod = row.Field("Payment Method").GetValue<string>().Trim();
-                decimal contractPrice = 0;
-                if (row.Field("Contract Price").TryGetValue(out decimal result))
-                    contractPrice = result;
-                string currency = row.Field("Currency").GetValue<string>().Trim();
-                int defaultTime = 0;
-                if (row.Field("Default Time").TryGetValue(out int defaultTimeResult))
-                    defaultTime = defaultTimeResult;
-
-                // TODO: remove after creating new Excel
-                if (name == "Pino")
-                    continue;
-                
-                if (name == "Pino, Jaime & Diego")
-                    payerName = "Pino Herrero";
-
-                if (name.ToLower().Contains("astex"))
-                    payerName = "Astex Online Classes";
-
-                if (name == "Filip")
-                    name = "Filip Langsam";
-
-                if (name == "Pablo")
-                    name = "Pablo de Alier";
-
-                if (name == "Ela")
-                    name = "Ela Nowacka";
-
-                // Add payer
-                if (string.IsNullOrEmpty(payerName))
-                    payerName = name; // Student is the payer
-
-                var payer = Payers.FirstOrDefault(p => p.FirstName == payerName);
-                if (payer is null) // Payer doesn't exist yet, create new
-                {
-                    payer = new Payer()
-                    {
-                        FirstName = payerName
-                    };
-                    Payers.Add(payer);
-                }
+                string firstName = row.Cell(1).GetValue<string>().Trim();
+                string lastName = row.Cell(2).GetValue<string>().Trim();
+                string payerName = row.Cell(3).GetValue<string>().Trim();
+                string id = row.Cell(4).GetValue<string>().Trim();
+                string payerId = row.Cell(5).GetValue<string>().Trim();
 
                 // Add student
-                var student = Students.FirstOrDefault(s => s.FirstName == name);
-                if (student is null)
+                var student = new Student()
                 {
-                    student = new Student()
-                    {
-                        FirstName = name,
-                        PayerId = payer.Id,
-                    };
-                    Students.Add(student);
-                }
+                    FirstName = firstName,
+                    LastName = lastName,
+                    Id = Guid.Parse(id),
+                    PayerId = Guid.Parse(payerId),
+                };
+                Students.Add(student);
 
-                // Add specification
-                if (!string.IsNullOrEmpty(serviceName))
-                {
-                    if (!serviceLookup.TryGetValue(serviceName, out var service))
-                    {
-                        throw new ArgumentException($"{serviceName} is not defined in Service tab.");
-                    }
-
-                    Specifications.Add(new Specification()
-                    {
-                        Name = $"{serviceName} {defaultTime}",
-                        StudentId = student.Id,
-                        ServiceId = service.Id,
-                        DurationMinutes = defaultTime,
-                        IsOnline = defaultTime == 0
-                    });
-
-                    if (name == "Pino Herrero")
-                    {
-                        Specifications.Add(new Specification()
-                        {
-                            Name = "Online",
-                            StudentId = student.Id,
-                            ServiceId = service.Id,
-                            DurationMinutes = 30,
-                            IsOnline = true
-                        });
-                    }
-                }
             }
         }
 
-        private Student GetStudent(string studentName, ref decimal finalPrice)
+        private void ReadSpecification(XLWorkbook workbook)
         {
-            if (studentName.ToLower() == "pino")
-                studentName = "Pino Herrero";
-            if (studentName.ToLower() == "pino & jaime herreo")
+            var table = GetTable(workbook, "Specifications");
+            var rows = table.DataRange.RowsUsed();            foreach (var row in rows)
             {
-                studentName = "Pino, Jaime & Diego";
-                finalPrice = 40;
+                string name = row.Cell(1).GetValue<string>().Trim();
+                string studentName = row.Cell(2).GetValue<string>().Trim();
+                string serviceName = row.Cell(3).GetValue<string>().Trim();
+                int durationMinutes = 0;
+                if (row.Cell(4).DataType == XLDataType.Number)
+                    durationMinutes = row.Cell(4).GetValue<int>();
+                decimal? price = null;
+                if (row.Cell(5).DataType == XLDataType.Number)
+                    price = row.Cell(5).GetValue<decimal>();
+                bool isOnline = row.Cell(6).GetValue<string>().Trim().ToLower() == "true";
+                bool weekend = row.Cell(7).GetValue<string>().Trim().ToLower() == "true";
+                int usage = 0;
+                if (row.Cell(8).DataType == XLDataType.Number)
+                    usage = row.Cell(8).GetValue<int>();
+                string id = row.Cell(9).GetValue<string>().Trim();
+                string studentId = row.Cell(10).GetValue<string>().Trim();
+                string serviceId = row.Cell(11).GetValue<string>().Trim();
+
+                Specifications.Add(new Specification()
+                {
+                    Id = Guid.Parse(id),
+                    Name = name,
+                    StudentId = Guid.Parse(studentId),
+                    ServiceId = Guid.Parse(serviceId),
+                    DurationMinutes = durationMinutes,
+                    Price = price,
+                    IsOnline = isOnline,
+                    IsWeekendOrHoliday = weekend,
+                    UsageCount = usage
+                });
             }
-            if (studentName.ToLower() == "pino & jaime")
-            {
-                studentName = "Pino, Jaime & Diego";
-                finalPrice = 40;
-            }
-            if (studentName == "Astex Online Classes")
-                finalPrice = 16;
-
-            if (studentName.ToLower() == "filip")
-                studentName = "Filip Langsam";
-
-            if (studentName.ToLower() == "pablo")
-                studentName = "Pablo de Alier";
-
-            if (studentName.ToLower() == "ela")
-                studentName = "Ela Nowacka";
-
-            if (studentName.ToLower().Contains("world"))
-            {
-                studentName = "Worldstrides";
-            }
-
-            var student = Students.FirstOrDefault(s => s.FirstName.ToLower() == studentName.ToLower());
-            if (student is null)
-                throw new Exception($"Invalid student name {studentName}");
-
-            return student;
         }
 
         private void ReadLessons(XLWorkbook workbook)
         {
-            var worksheet = workbook.Worksheet("Lessons");
-            var table = workbook.Table("Lessons");
+            var table = GetTable(workbook, "Lessons");
             var rows = table.DataRange.RowsUsed();
 
             foreach (var row in rows)
             {
-                if (!row.Field("Lesson Date").TryGetValue(out DateTime dtValue))
-                    continue;
+                string date = row.Cell(1).GetValue<string>().Trim();
+                var dtValue = DateTime.ParseExact(date, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
                 DateOnly lessonDate = DateOnly.FromDateTime(dtValue);
-                string studentName = row.Field("Student").GetValue<string>().Trim();
-                string serviceName = row.Field("Service").GetValue<string>().Trim();
-                string channel = row.Field("Channel").GetValue<string>().Trim();
+                string serviceName = row.Cell(2).GetValue<string>().Trim();
+                string studentName = row.Cell(3).GetValue<string>().Trim();
+                decimal price = row.Cell(4).GetValue<decimal>();
+                bool paid = row.Cell(5).GetValue<string>().Trim().ToLower() == "true";
+                string notes = row.Cell(6).GetValue<string>().Trim();
+                string bill = row.Cell(7).GetValue<string>().Trim();
+                bool pricePerHour = row.Cell(8).GetValue<string>().Trim().ToLower() == "true";
                 int durationMinutes = 0;
-                if (row.Field("Time (min)").TryGetValue(out int result))
-                    durationMinutes = result;
-                decimal finalPrice = 0;
-                if (row.Field("Price").TryGetValue(out decimal priceResul))
-                    finalPrice = priceResul;
-                bool online = row.Field("Online").GetValue<bool>();
-                decimal travelAllowance = 0;
-                if (row.Field("Commuting").TryGetValue(out decimal travelAllowanceResult))
-                    travelAllowance = travelAllowanceResult;
+                if (row.Cell(9).DataType == XLDataType.Number)
+                    durationMinutes = row.Cell(9).GetValue<int>();
+                decimal basePrice = row.Cell(10).GetValue<decimal>();
+                bool isOnline = row.Cell(11).GetValue<string>().Trim().ToLower() == "true";
+                decimal travelAllowance = row.Cell(12).GetValue<decimal>();
+                bool weekend = row.Cell(13).GetValue<string>().Trim().ToLower() == "true";
+                decimal fee = row.Cell(14).GetValue<decimal>();
+                decimal tip = row.Cell(15).GetValue<decimal>();
+                string id = row.Cell(16).GetValue<string>().Trim();
+                string studentId = row.Cell(17).GetValue<string>().Trim();
+                string billId = row.Cell(18).GetValue<string>().Trim();
 
-                // Old version fixes (delete)
-                if (string.IsNullOrWhiteSpace(studentName ))
-                    continue;
-                
-                // Search student
-                var student = GetStudent(studentName, ref finalPrice);
-                studentName = student.FirstName;
-
-                if (finalPrice == 0)
+                var lesson = new Lesson(
+                    lessonDate,
+                    serviceName,
+                    isPaid: paid,
+                    Guid.Parse(studentId),
+                    string.IsNullOrEmpty(billId) ? null : Guid.Parse(billId),
+                    isPricePerHour: pricePerHour,
+                    durationMinutes: durationMinutes,
+                    basePrice: basePrice,
+                    isOnline: isOnline,
+                    travelAllowance: travelAllowance,
+                    isWeekendOrHoliday: weekend,
+                    weekendFee: fee,
+                    tip: tip,
+                    notes: notes)
                 {
-                    row.Field("Input").TryGetValue(out finalPrice);
-                    if (finalPrice == 0)
-                        continue;
-                }
-
-                var lesson = new Lesson(lessonDate, 
-                    string.IsNullOrEmpty(serviceName) ? "Lesson" : serviceName,
-                    isPaid: false, student.Id, null,
-                    isPricePerHour: false, durationMinutes: durationMinutes, basePrice: finalPrice, 
-                    isOnline: online, travelAllowance: 0,
-                    isWeekendOrHoliday: false, weekendFee: 0, tip: 0, notes: null);
+                    Id = Guid.Parse(id)
+                };
                 
                 Lessons.Add(lesson);
             }
@@ -267,81 +225,27 @@ namespace Excel
 
         private void ReadPayment(XLWorkbook workbook)
         {
-            var worksheet = workbook.Worksheet("Payment");
-            var table = workbook.Table("Payment");
+            var table = GetTable(workbook, "Bills");
             var rows = table.DataRange.RowsUsed();
-
-            int invoiceCounter = 1;
-
-            var temporaryList = new List<(DateOnly paymentDate, string studentName, decimal payment)>();
-
             foreach (var row in rows)
             {
-                // Read Excel
-                if (!row.Field("Date").TryGetValue(out DateTime dtValue))
-                    continue;
-                DateOnly paymentDate = DateOnly.FromDateTime(dtValue);
-                string studentName = row.Field("Student").GetValue<string>().Trim();
-                decimal payment = 0;
-                if (row.Field("Payment").TryGetValue(out decimal result))
-                    payment = result;
+                string name = row.Cell(1).GetValue<string>().Trim();
+                string type = row.Cell(2).GetValue<string>().Trim();
+                string date = row.Cell(3).GetValue<string>().Trim();
+                var dtValue = DateTime.Parse(date);
+                string payer = row.Cell(4).GetValue<string>().Trim();
+                string total = row.Cell(5).GetValue<string>().Trim();
+                string payerId = row.Cell(6).GetValue<string>().Trim();
+                string id = row.Cell(7).GetValue<string>().Trim();
+                int sequence = row.Cell(8).GetValue<int>();
 
-                // Check data
-                if (studentName.ToLower().Contains("tip"))
-                    continue; // tips are not considered payments
-                if (studentName.ToLower().Contains("impuesto"))
-                    continue; // taxes are not considered payments
-                if (string.IsNullOrWhiteSpace(studentName))
-                    continue;
-                if (payment == 0)
-                    continue;
-
-                // Add to list as a tuple
-                temporaryList.Add((paymentDate, studentName, payment));
-            }
-
-            var sortedList = temporaryList.OrderBy(p => p.paymentDate).ToList();
-            var leftoverPayments = new Dictionary<string, decimal>();
-            for (int j = 0; j < sortedList.Count; j++) { 
-                var(paymentDate, studentName, payment) = sortedList[j];
-                // Get student
-                decimal finalPrice = 0; // not used, but needed to get student
-                var student = GetStudent(studentName, ref finalPrice);
-
-                // Get lessons to pay
-                var lessons = Lessons
-                    .Where(l => l.StudentId == student.Id &&  !l.IsPaid)
-                    .OrderBy(l => l.Date).ToList();
-
-                if (!lessons.Any()) 
-                    continue;
-
-                // Load leftover payment
-                if (leftoverPayments.ContainsKey(student.FirstName))
-                    payment += leftoverPayments[student.FirstName];
-
-                // Create invoice
-                var invoice = new BillingDocument(paymentDate.ToDateTime(TimeOnly.MinValue))
+                Invoices.Add(new BillingDocument(dtValue)
                 {
-                    SequenceNumber = invoiceCounter,
-                    Type = DocumentType.Ticket,
-                    PayerId = student.PayerId,
-                };
-                Invoices.Add(invoice);
-                invoiceCounter++;
-
-                // Mark lessons as paid until payment is consumed
-                for (int i = 0; i < lessons.Count && payment > 0; i++)
-                {
-                    var lesson = lessons[i];
-                    payment -= lesson.FinalPrice;
-                    lesson.IsPaid = true;
-                    lesson.BillingDocumentId = invoice.Id;
-                }
-
-                // Save leftovers
-                if (payment != 0)
-                    leftoverPayments[student.FirstName] = payment;
+                    Id = Guid.Parse(id),
+                    PayerId = Guid.Parse(payerId),
+                    Type = type.ToLower() == "invoice" ? DocumentType.Invoice : DocumentType.Ticket,
+                    SequenceNumber = sequence
+                });
             }
         }
     }

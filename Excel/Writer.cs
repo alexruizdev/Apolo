@@ -140,9 +140,10 @@ namespace Excel
                 table.DataRange.Cell(row, 5).Value = spec.Price; 
                 table.DataRange.Cell(row, 6).Value = spec.IsOnline;
                 table.DataRange.Cell(row, 7).Value = spec.IsWeekendOrHoliday;
-                table.DataRange.Cell(row, 8).Value = spec.Id.ToString();
-                table.DataRange.Cell(row, 9).Value = spec.StudentId.ToString();
-                table.DataRange.Cell(row, 10).Value = spec.ServiceId.ToString();
+                table.DataRange.Cell(row, 8).Value = spec.UsageCount;
+                table.DataRange.Cell(row, 9).Value = spec.Id.ToString();
+                table.DataRange.Cell(row, 10).Value = spec.StudentId.ToString();
+                table.DataRange.Cell(row, 11).Value = spec.ServiceId.ToString();
 
                 row++;
             }
@@ -180,11 +181,12 @@ namespace Excel
                 table.DataRange.Cell(row, 10).Value = lesson.BasePrice;
                 table.DataRange.Cell(row, 11).Value = lesson.IsOnline;
                 table.DataRange.Cell(row, 12).Value = lesson.TravelAllowance;
-                table.DataRange.Cell(row, 14).Value = lesson.IsWeekendOrHoliday;
-                table.DataRange.Cell(row, 15).Value = lesson.WeekendFee;
-                table.DataRange.Cell(row, 15).Value = lesson.Id.ToString();
-                table.DataRange.Cell(row, 16).Value = lesson.StudentId.ToString();
-                table.DataRange.Cell(row, 17).Value = billId;
+                table.DataRange.Cell(row, 13).Value = lesson.IsWeekendOrHoliday;
+                table.DataRange.Cell(row, 14).Value = lesson.WeekendFee;
+                table.DataRange.Cell(row, 15).Value = lesson.Tip;
+                table.DataRange.Cell(row, 16).Value = lesson.Id.ToString();
+                table.DataRange.Cell(row, 17).Value = lesson.StudentId.ToString();
+                table.DataRange.Cell(row, 18).Value = billId;
 
                 row++;
             }
@@ -216,6 +218,7 @@ namespace Excel
                 table.DataRange.Cell(row, 5).Value = billLookup[bill.Id];
                 table.DataRange.Cell(row, 6).Value = bill.PayerId.ToString();
                 table.DataRange.Cell(row, 7).Value = bill.Id.ToString();
+                table.DataRange.Cell(row, 8).Value = bill.SequenceNumber;
 
                 row++;
             }
