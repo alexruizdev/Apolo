@@ -83,6 +83,40 @@ namespace Apolo.Tests.ViewModels
             VerifyAction("User profile saved successfully.", InfoBarType.Success, isOpen: true);
         }
 
+        // Delete async
+        [TestMethod]
+        public async Task DeleteAsyn_WhenBusy()
+        {
+            _viewModel.IsBusy = true;
+
+            await _viewModel.DeleteAsync();
+
+            VerifyAction("Can't delete settings while busy.", InfoBarType.Warning, isOpen: true, isBusy: true);
+        }
+
+        [TestMethod]
+        public async Task DeleteAsync()
+        {
+            await _viewModel.DeleteAsync();
+
+            Assert.AreEqual(string.Empty, _viewModel.Profile.FullName);
+            Assert.AreEqual(string.Empty, _viewModel.Profile.Address);
+            Assert.AreEqual(string.Empty, _viewModel.Profile.ZipCode);
+            Assert.AreEqual(string.Empty, _viewModel.Profile.City);
+            Assert.AreEqual(string.Empty, _viewModel.Profile.Phone);
+            Assert.AreEqual(string.Empty, _viewModel.Profile.TaxId);
+            Assert.AreEqual(string.Empty, _viewModel.Profile.Email);
+            Assert.AreEqual(string.Empty, _viewModel.Profile.BankName);
+            Assert.AreEqual(string.Empty, _viewModel.Profile.BankAccount);
+            Assert.AreEqual(0, _viewModel.Profile.IvaPercent);
+            Assert.AreEqual(0, _viewModel.Profile.TravelAllowance);
+            Assert.AreEqual(0, _viewModel.Profile.WeekendFee);
+            Assert.AreEqual(string.Empty, _viewModel.Profile.BillingFolder);
+            Assert.AreEqual(string.Empty, _viewModel.Profile.BackupFolder);
+
+            VerifyAction("User profile deleted successfully.", InfoBarType.Success, isOpen: true);
+        }
+
         // Clear database
         [TestMethod]
         public async Task ClearDatabase_WhenBusy()
@@ -195,15 +229,16 @@ namespace Apolo.Tests.ViewModels
         public async Task ExportToExcel_WhenBusy()
         {
             _viewModel.IsBusy = true;
-            await _viewModel.ExportDatabaseToExcel("folder", "installed_path");
+            await _viewModel.ExportDatabaseToExcel("installed_path");
             VerifyAction("Can't export database while busy.", InfoBarType.Warning, isOpen: true, isBusy: true);
         }
 
         [TestMethod]
         public async Task ExportToExcel_InvalidFolder()
         {
-            await _viewModel.ExportDatabaseToExcel("folder", "installed_path");
-            VerifyAction("Directory folder does not exist.", InfoBarType.Error, isOpen: true);
+            _viewModel.Profile.BackupFolder = "folder";
+            await _viewModel.ExportDatabaseToExcel("installed_path");
+            VerifyAction("Directory 'folder' does not exist.", InfoBarType.Error, isOpen: true);
         }
 
         [TestMethod]
@@ -215,12 +250,13 @@ namespace Apolo.Tests.ViewModels
             string fileName = $"Summary_{DateTime.Now:yyyyMMdd_HHmm}.txt";
             string resultPath = Path.Combine(tempPath, fileName);
             Directory.CreateDirectory(tempPath);
+            _viewModel.Profile.BackupFolder = tempPath;
 
             var data = Helper.GetData();
 
             _repositoryMock.Setup(r => r.GetAllDataAsync()).ReturnsAsync(data);
 
-            await _viewModel.ExportDatabaseToExcel(tempPath, "installed_path");
+            await _viewModel.ExportDatabaseToExcel("installed_path");
 
             _repositoryMock.Verify(r => r.GetAllDataAsync(), Times.Once);
 

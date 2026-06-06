@@ -76,6 +76,19 @@
                                Value="{x:Bind ViewModel.Profile.WeekendFee, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                PlaceholderText="0.00" SpinButtonPlacementMode="Inline" Margin="4,0,0,0"/>
                     </Grid>
+
+                    <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto">
+                        <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Billing Folder" Style="{ThemeResource BodyTextBlockStyle}" Margin="0,0,0,4"/>
+                        <TextBox x:Name="BillingFolderTextBlock" Grid.Row="1" Text="{x:Bind ViewModel.Profile.BillingFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True" PlaceholderText="Select a folder..."/>
+                        <Button Grid.Row="1" Grid.Column="1" Content="Pick a folder" Click="PickBillingFolder_Click" Margin="8,0,0,0"/>
+
+                    </Grid>
+
+                    <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto">
+                        <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Backups Folder" Style="{ThemeResource BodyTextBlockStyle}" Margin="0,0,0,4"/>
+                        <TextBox x:Name="BackupFolderTextBlock" Grid.Row="1" Text="{x:Bind ViewModel.Profile.BackupFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True" PlaceholderText="Select a folder..."/>
+                        <Button Grid.Row="1" Grid.Column="1" Content="Pick a folder" Click="PickBackupFolder_Click" Margin="8,0,0,0"/>
+                    </Grid>
                 </StackPanel>
             </Expander>
 
@@ -84,6 +97,8 @@
                 <AppBarButton Icon="Save" Label="Save" Command="{Binding SaveCommand}"/>
                 <AppBarSeparator />
                 <AppBarButton Icon="Refresh" Label="Discard Changes"  Command="{Binding RefreshProfileCommand}"/>
+                <AppBarSeparator />
+                <AppBarButton Icon="Delete" Label="Delete profile" Foreground="{ThemeResource SystemFillColorCriticalBrush}"  Command="{Binding DeleteCommand}"/>
             </CommandBar>
 
             <!-- ========================================== -->

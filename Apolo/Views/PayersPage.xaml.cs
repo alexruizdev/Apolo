@@ -56,10 +56,10 @@ namespace Apolo.Pages
             // Prefill with the current names
             var firstBox = new TextBox { Header = "First name", Text = item.FirstName, MinWidth = 300 };
             var lastBox = new TextBox { Header = "Last name", Text = item.LastName, MinWidth = 300 };
-            var addressBox = new TextBox { Header = "Address", Text = item.LastName, MinWidth = 300 };
-            var zipBox = new TextBox { Header = "Zip code", Text = item.LastName, MinWidth = 300 };
-            var cityBox = new TextBox { Header = "City", Text = item.LastName, MinWidth = 300 };
-            var taxBox = new TextBox { Header = "NIF/CIF", Text = item.LastName, MinWidth = 300 };
+            var addressBox = new TextBox { Header = "Address", Text = item.Address, MinWidth = 300 };
+            var zipBox = new TextBox { Header = "Zip code", Text = item.Zip, MinWidth = 300 };
+            var cityBox = new TextBox { Header = "City", Text = item.City, MinWidth = 300 };
+            var taxBox = new TextBox { Header = "NIF/CIF", Text = item.TaxId, MinWidth = 300 };
 
 
             var panel = new StackPanel { Spacing = 8 };
@@ -83,7 +83,9 @@ namespace Apolo.Pages
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Primary)
             {
-                await ViewModel.UpdatePayerAsync(item.Id, firstBox.Text, lastBox.Text, addressBox.Text, zipBox.Text, cityBox.Text, taxBox.Text);
+                await ViewModel.UpdatePayerAsync(item.Id, firstBox.Text, lastBox.Text,
+                    addressBox.Text ?? string.Empty, zipBox.Text ?? string.Empty, 
+                    cityBox.Text ?? string.Empty, taxBox.Text ?? string.Empty);
             }
 
         }

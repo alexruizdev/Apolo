@@ -43,14 +43,7 @@ namespace Apolo.Views
         {
             if (sender is not Button button) return;
 
-            // Ask where to save
-            var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
-            picker.CommitButtonText = "Pick a folder";
-
-            var folder = await picker.PickSingleFolderAsync();
-            if (folder == null) return;
-
-            await ViewModel.GenerateInvoice(folder.Path, isInvoice: true);
+            await ViewModel.GenerateInvoice(isInvoice: true);
         }
 
         private async void PrintInvoice_Click(object sender, RoutedEventArgs e)
@@ -71,14 +64,7 @@ namespace Apolo.Views
         {
             if (sender is not Button button) return;
 
-            // Ask where to save
-            var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
-            picker.CommitButtonText = "Pick a folder";
-
-            var folder = await picker.PickSingleFolderAsync();
-            if (folder == null) return;
-
-            await ViewModel.GenerateInvoice(folder.Path, isInvoice: false);
+            await ViewModel.GenerateInvoice(isInvoice: false);
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)

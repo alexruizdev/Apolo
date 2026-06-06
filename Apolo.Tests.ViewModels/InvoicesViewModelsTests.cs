@@ -40,7 +40,8 @@ namespace Apolo.Tests.ViewModels
                 BankAccount = "123456234567",
                 IvaPercent = 25,
                 TravelAllowance = 10,
-                WeekendFee = 20
+                WeekendFee = 20,
+                BillingFolder = "\\somepath\\invented"
             };
 
             _mockUserProfileService.Setup(r => r.LoadProfileAsync())
@@ -352,8 +353,16 @@ namespace Apolo.Tests.ViewModels
 
         // Generate invoice
 
-        private List<Guid> ArrangeForGenerateInvoice(bool selectPayer = true, bool selectLessons = true)
+        private List<Guid> ArrangeForGenerateInvoice(bool selectPayer = true, bool selectLessons = true, bool invalidDirectory = false)
         {
+            // Create a temporary path so we don't clutter the machine
+            string tempPath = Path.Combine(Path.GetTempPath(), invalidDirectory ? "invalid" : "valid");
+            if (Directory.Exists(tempPath) && invalidDirectory)
+                Directory.Delete(tempPath); 
+            if (!invalidDirectory)
+                Directory.CreateDirectory(tempPath);
+            _viewModel.Profile.BillingFolder = tempPath;
+
             var payer = new PayerOption(Guid.NewGuid(), "Payer");
 
             _viewModel.Payers.Add(payer);
@@ -393,14 +402,14 @@ namespace Apolo.Tests.ViewModels
                     .ReturnsAsync((new BillingDocument(DateTime.UtcNow){ SequenceNumber = 1, Type = DocumentType.Invoice}));
             }
 
-            await _viewModel.GenerateInvoice("\\somepath\\invented", isInvoice: true);
+            await _viewModel.GenerateInvoice(isInvoice: true);
         }
 
         private void AssertForGenerateInvoice(List<Guid> ids, string? infoMessage, InfoBarType severity,bool success, bool dbError = false,
-            bool isBusy = false, bool selectPayer = true, bool selectLessons = true)
+            bool isBusy = false, bool selectPayer = true, bool selectLessons = true, bool invalidDirectory = false)
         {
             // Get payer summary
-            if (isBusy || !selectPayer || !selectLessons)
+            if (isBusy || !selectPayer || !selectLessons || invalidDirectory)
             {
                 _mockPayerRepo.Verify(r => r.GetPayerSummaryNoOutstandingAsync(It.IsAny<Guid>()), Times.Never);
             }
@@ -441,6 +450,15 @@ namespace Apolo.Tests.ViewModels
         }
 
         [TestMethod]
+        public async Task GenerateInvoice_InvalidDirectory()
+        {
+            var ids = ArrangeForGenerateInvoice(invalidDirectory: true);
+            await ActForForGenerateInvoice(ids);
+            AssertForGenerateInvoice(ids, infoMessage: $"Directory '{_viewModel.Profile.BillingFolder}' does not exist.", 
+                severity: InfoBarType.Error, success: false, invalidDirectory: true);
+        }
+
+        [TestMethod]
         public async Task GenerateInvoice_NoPayerSelected()
         {
             var ids = ArrangeForGenerateInvoice(selectPayer: false);
@@ -473,7 +491,9 @@ namespace Apolo.Tests.ViewModels
             var ids = ArrangeForGenerateInvoice();
             await ActForForGenerateInvoice(ids);
 
-            AssertForGenerateInvoice(ids, infoMessage: $"Invoice saved to: \\somepath\\invented\\{_viewModel.Bill.Name}.pdf.", 
+            string path = Path.Combine(_viewModel.Profile.BillingFolder, $"{_viewModel.Bill.Name}.pdf");
+
+            AssertForGenerateInvoice(ids, infoMessage: $"Invoice saved to: {path}.", 
                 severity: InfoBarType.Success, success: true);
         }
     }

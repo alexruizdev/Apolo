@@ -312,7 +312,7 @@ namespace Apolo.ViewModels
 
         }
 
-        public async Task GenerateInvoice(string folderPath, bool isInvoice)
+        public async Task GenerateInvoice(bool isInvoice)
         {
             if (IsBusy)
             {
@@ -321,6 +321,12 @@ namespace Apolo.ViewModels
             }
 
             SetEnterFunction();
+
+            if (!Directory.Exists(Profile.BillingFolder))
+            {
+                SetExitFunction($"Directory '{Profile.BillingFolder}' does not exist.", InfoBarType.Error);
+                return;
+            }
 
             if (SelectedPayerId is null)
             {
@@ -347,7 +353,7 @@ namespace Apolo.ViewModels
                 var document = await _billingRepository.CreateBillAsync(
                     SelectedPayerId.Value, lessonsIds, isInvoice ? DocumentType.Invoice : DocumentType.Ticket);
 
-                var filePath = Path.Combine(folderPath, $"{document.DocumentNumber}.pdf");
+                var filePath = Path.Combine(Profile.BillingFolder, $"{document.DocumentNumber}.pdf");
 
                 if (isInvoice)
                     _pdfWriter.GenerateInvoice(document.DocumentNumber, payer, lessons, Profile, filePath);

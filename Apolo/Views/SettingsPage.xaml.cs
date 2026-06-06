@@ -66,19 +66,9 @@ namespace Apolo.Views
         {
             if (sender is not Button button) return;
 
-            var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
-
-            picker.CommitButtonText = "Pick Folder";
-            picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-            picker.ViewMode = PickerViewMode.List;
-
-            var folder = await picker.PickSingleFolderAsync();
-
-            if (folder == null) return;
-
             var installedPath = Windows.ApplicationModel.Package.Current.InstalledPath;
 
-            await ViewModel.ExportDatabaseToExcel(folder.Path, installedPath);
+            await ViewModel.ExportDatabaseToExcel(installedPath);
         }
 
         private async void ImportExcelButton_Click(object sender, RoutedEventArgs e)
@@ -196,6 +186,42 @@ namespace Apolo.Views
             {
                 await ViewModel.RefreshProfileAsync();
             }
+        }
+
+        private async void PickBillingFolder_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button) return;
+
+            var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
+
+            picker.CommitButtonText = "Pick Folder";
+            picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+            picker.ViewMode = PickerViewMode.List;
+
+            // Show the picker dialog window
+            var folder = await picker.PickSingleFolderAsync();
+            if (folder == null)
+                return;
+
+            BillingFolderTextBlock.Text = folder.Path;
+        }
+
+        private async void PickBackupFolder_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button) return;
+
+            var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
+
+            picker.CommitButtonText = "Pick Folder";
+            picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+            picker.ViewMode = PickerViewMode.List;
+
+            // Show the picker dialog window
+            var folder = await picker.PickSingleFolderAsync();
+            if (folder == null)
+                return;
+
+            BackupFolderTextBlock.Text = folder.Path;
         }
     }
 }

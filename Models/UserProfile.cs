@@ -17,6 +17,8 @@ namespace Models
 
         public double TravelAllowance { get; set; } = 0;
         public double WeekendFee { get; set; } = 0;
+        public string BillingFolder { get; set; } = string.Empty;
+        public string BackupFolder { get; set; } = string.Empty;
     }
 }
 

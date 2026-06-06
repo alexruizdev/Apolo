@@ -56,7 +56,7 @@ public sealed partial class ServicesPage : Page
         // Prefill with the current names
         var nameBox = new TextBox { Header = "Name", Text = item.Name, MinWidth = 320, MaxLength = 100 };
         var priceBox = new NumberBox {
-            Header = "Price per hour:", 
+            Header = "Service rate (price):", 
             Value = (double)item.Price, 
             PlaceholderText = "0.00"
         };
@@ -88,7 +88,7 @@ public sealed partial class ServicesPage : Page
     private async void NewService_Click(object sender, RoutedEventArgs e)
     {
         var nameBox = new TextBox { Header = "Name", MinWidth = 320, MaxLength = 120 };
-        var priceBox = new NumberBox { Header = "Price per hour", MinWidth = 320, PlaceholderText = "0.00", Value = 0 };
+        var priceBox = new NumberBox { Header = "Service rate (price):", MinWidth = 320, PlaceholderText = "0.00", Value = 0 };
         var isPricePerHourCheck = new CheckBox { Content = "Is price per hour?", IsChecked = true };
 
         var panel = new StackPanel { Spacing = 8 };

@@ -39,6 +39,24 @@ namespace Apolo.ViewModels
             SetExitFunction("User profile saved successfully.", InfoBarType.Success);
         }
 
+        [RelayCommand]
+        public async Task DeleteAsync()
+        {
+            if (IsBusy)
+            {
+                SetExitFunction("Can't delete settings while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            SetEnterFunction();
+
+            Profile = new UserProfile();
+
+            await _userProfileService.SaveAsync(Profile);
+
+            SetExitFunction("User profile deleted successfully.", InfoBarType.Success);
+        }
+
         public async Task ClearDatabaseAsync()
         {
             if (IsBusy)
@@ -155,7 +173,7 @@ namespace Apolo.ViewModels
             SetExitFunction($"Import completed ({elapsedTime}). Summary saved to {path}", InfoBarType.Success);
         }
 
-        public async Task ExportDatabaseToExcel(string folder, string installedPath)
+        public async Task ExportDatabaseToExcel(string installedPath)
         {
             if (IsBusy)
             {
@@ -165,9 +183,9 @@ namespace Apolo.ViewModels
 
             SetEnterFunction();
 
-            if (!Directory.Exists(folder))
+            if (!Directory.Exists(Profile.BackupFolder))
             {
-                SetExitFunction($"Directory {folder} does not exist.", InfoBarType.Error);
+                SetExitFunction($"Directory '{Profile.BackupFolder}' does not exist.", InfoBarType.Error);
                 return;
             }
 
@@ -176,14 +194,14 @@ namespace Apolo.ViewModels
             string templatePath = Path.Combine(installedPath, "Assets", "Excel", "Template.xlsx");
 
             var data = await _repository.GetAllDataAsync();
-            _excelWriter.WriteExcel(templatePath, folder, in data);
+            _excelWriter.WriteExcel(templatePath, Profile.BackupFolder, in data);
 
             watch.Stop();
             TimeSpan ts = watch.Elapsed;
             string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}",
                 ts.Hours, ts.Minutes, ts.Seconds);
 
-            SetExitFunction($"Export completed ({elapsedTime}). File saved to {folder}", InfoBarType.Success);
+            SetExitFunction($"Export completed ({elapsedTime}). File saved to {Profile.BackupFolder}", InfoBarType.Success);
         }
 
         public async Task<List<PayerActivityInfo>> GetPayersActivity() => await _repository.GetPayersWithActivityAsync();

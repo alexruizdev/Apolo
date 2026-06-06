@@ -24,7 +24,9 @@ namespace Apolo.Services
                 BankAccount = v[nameof(UserProfile.BankAccount)] as string ?? "",
                 IvaPercent = v[nameof(UserProfile.IvaPercent)] as double? ?? 0,
                 TravelAllowance = v[nameof(UserProfile.TravelAllowance)] as double? ?? 0,
-                WeekendFee = v[nameof(UserProfile.WeekendFee)] as double? ?? 0
+                WeekendFee = v[nameof(UserProfile.WeekendFee)] as double? ?? 0,
+                BillingFolder = v[nameof(UserProfile.BillingFolder)] as string ?? "",
+                BackupFolder = v[nameof(UserProfile.BackupFolder)] as string ?? ""
             };
 
             return Task.FromResult(p);
@@ -46,6 +48,8 @@ namespace Apolo.Services
             v[nameof(UserProfile.IvaPercent)] = profile.IvaPercent;
             v[nameof(UserProfile.TravelAllowance)] = profile.TravelAllowance;
             v[nameof(UserProfile.WeekendFee)] = profile.WeekendFee;
+            v[nameof(UserProfile.BillingFolder)] = profile.BillingFolder;
+            v[nameof(UserProfile.BackupFolder)] = profile.BackupFolder;
 
             return Task.CompletedTask;
         }
