@@ -8,15 +8,15 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="Apolo.Manager"
-    Publisher="CN=aruizdlc"
+    Name="Qadra.ApoloBill"
+    Publisher="CN=C8DDAB7D-1B2E-425F-81C7-1188EE7FD33A"
     Version="0.0.1.0" />
 
-  <mp:PhoneIdentity PhoneProductId="bc1a2b6a-ebae-4cc6-8e0e-8f176d21993f" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="2d9b9128-abf9-4b12-a683-a019357bbc2c" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>Apolo</DisplayName>
-    <PublisherDisplayName>alexd</PublisherDisplayName>
+    <DisplayName>Apolo Bill</DisplayName>
+    <PublisherDisplayName>Qadra</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
@@ -34,7 +34,7 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="Apolo"
+        DisplayName="Apolo Bill"
         Description="Application for teachers to manage their classes invoicing"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"

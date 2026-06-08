@@ -139,15 +139,18 @@
 		<PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
 		<PublishTrimmed Condition="'$(Configuration)' != 'Debug'">False</PublishTrimmed>
 		<GenerateAppInstallerFile>False</GenerateAppInstallerFile>
-		<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
-		<AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
-    <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
-		<GenerateTestArtifacts>True</GenerateTestArtifacts>
-    <AppxBundle>Always</AppxBundle>
+
+		<AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
+
+		<AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
+
+		<GenerateTestArtifacts>False</GenerateTestArtifacts>
+
+		<AppxBundle>Always</AppxBundle>
 		<AppxBundlePlatforms>x64</AppxBundlePlatforms>
-		<AppInstallerUri>C:\Users\alexd\Downloads</AppInstallerUri>
 		<HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
 		<AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
-		<PackageCertificateThumbprint>E071C5690D3558A263F3B1E18D2E8CFB0DBF8B74</PackageCertificateThumbprint>
+		<AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+
 	</PropertyGroup>
 </Project>
