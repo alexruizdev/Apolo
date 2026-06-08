@@ -180,7 +180,7 @@ namespace Apolo.Tests.ViewModels
         {
             // --- Arrange ---
             // Create a temporary path so we don't clutter the machine
-            string tempPath =Path.GetTempPath();
+            string tempPath = Path.GetTempPath();
             string file = Path.Combine(tempPath, "Excel.xlsm");
             string fileName = $"Summary_{DateTime.Now:yyyyMMdd_HHmm}.txt";
             string resultPath = Path.Combine(tempPath, fileName);
@@ -224,6 +224,32 @@ namespace Apolo.Tests.ViewModels
             }
         }
 
+        // IMPORT ARCHIVE
+        [TestMethod]
+        public async Task ImportArchive_WhenBusy()
+        {
+            _viewModel.IsBusy = true;
+            await _viewModel.ImportArchiveFromExcel("file");
+            VerifyAction("Can't import archive from Excel while busy.", InfoBarType.Warning, isOpen: true, isBusy: true);
+        }
+
+        [TestMethod]
+        [DataRow(null)]
+        [DataRow("")]
+        [DataRow("   ")]
+        public async Task ImportArchive_InvalidFile(string invalidName)
+        {
+            await _viewModel.ImportArchiveFromExcel(invalidName);
+            VerifyAction("No file selected.", InfoBarType.Warning, isOpen: true);
+        }
+
+        [TestMethod]
+        public async Task ImportArchive_InvalidPath()
+        {
+            await _viewModel.ImportArchiveFromExcel("\\invalid_path\\file.xlsm");
+            VerifyAction("Directory '\\invalid_path' does not exist.", InfoBarType.Error, isOpen: true);
+        }
+
         // Export database from excel
         [TestMethod]
         public async Task ExportToExcel_WhenBusy()
@@ -262,6 +288,47 @@ namespace Apolo.Tests.ViewModels
 
             VerifyAction($"Export completed", InfoBarType.Success, isOpen: true, contains: true);
         }
+
+        // Export database from excel
+        [TestMethod]
+        public async Task ExportArchive_WhenBusy()
+        {
+            _viewModel.IsBusy = true;
+            await _viewModel.ExportArchiveToExcel("installed_path");
+            VerifyAction("Can't export archive while busy.", InfoBarType.Warning, isOpen: true, isBusy: true);
+        }
+
+        [TestMethod]
+        public async Task ExportArchive_InvalidFolder()
+        {
+            _viewModel.Profile.BackupFolder = "folder";
+            await _viewModel.ExportArchiveToExcel("installed_path");
+            VerifyAction("Directory 'folder' does not exist.", InfoBarType.Error, isOpen: true);
+        }
+
+        [TestMethod]
+        public async Task ExportArchive()
+        {
+            // Create a temporary path so we don't clutter the machine
+            string tempPath = Path.GetTempPath();
+            string file = Path.Combine(tempPath, "Excel.xlsm");
+            string fileName = $"Summary_{DateTime.Now:yyyyMMdd_HHmm}.txt";
+            string resultPath = Path.Combine(tempPath, fileName);
+            Directory.CreateDirectory(tempPath);
+            _viewModel.Profile.BackupFolder = tempPath;
+
+            var data = Helper.GetData();
+
+            _repositoryMock.Setup(r => r.ExportArchiveAsync()).ReturnsAsync(data);
+
+            await _viewModel.ExportArchiveToExcel("installed_path");
+
+            _repositoryMock.Verify(r => r.ExportArchiveAsync(), Times.Once);
+
+            VerifyAction($"Export completed", InfoBarType.Success, isOpen: true, contains: true);
+        }
+
+        // Get payers with activity
 
         [TestMethod]
         public async Task GetPayersActivity()

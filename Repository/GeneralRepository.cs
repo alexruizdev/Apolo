@@ -41,6 +41,29 @@ namespace Repository
             }
         }
 
+        public async Task ImportArchiveAsync(
+            List<Payer> payers,
+            List<Student> students,
+            List<Lesson> lessons,
+            List<BillingDocument> invoices)
+        {
+            using var transaction = await _archiveDb.Database.BeginTransactionAsync();
+            try
+            {
+                _archiveDb.Payers.AddRange(payers);
+                _archiveDb.Students.AddRange(students);
+                _archiveDb.BillingDocuments.AddRange(invoices);
+                _archiveDb.Lessons.AddRange(lessons);
+                await _archiveDb.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
         public async Task<(List<Service> Services, List<Payer> Payers, List<Student> Students,
             List<Specification> Specifications, List<Lesson> Lessons, List<BillingDocument> Invoices)>
             GetAllDataAsync()
@@ -52,6 +75,20 @@ namespace Repository
                 await _db.Specifications.AsNoTracking().ToListAsync(),
                 await _db.Lessons.AsNoTracking().ToListAsync(),
                 await _db.BillingDocuments.AsNoTracking().ToListAsync()
+            );
+        }
+
+        public async Task<(List<Service> Services, List<Payer> Payers, List<Student> Students,
+            List<Specification> Specifications, List<Lesson> Lessons, List<BillingDocument> Invoices)>
+            ExportArchiveAsync()
+        {
+            return (
+                new List<Service>(),
+                await _archiveDb.Payers.AsNoTracking().ToListAsync(),
+                await _archiveDb.Students.AsNoTracking().ToListAsync(),
+                new List<Specification>(),
+                await _archiveDb.Lessons.AsNoTracking().ToListAsync(),
+                await _archiveDb.BillingDocuments.AsNoTracking().ToListAsync()
             );
         }
 

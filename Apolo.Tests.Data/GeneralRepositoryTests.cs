@@ -83,6 +83,17 @@ namespace Apolo.Tests.Data
         }
 
         [TestMethod]
+        public async Task ImportArchive()
+        {
+            var data = Helper.GetData();
+            await _repository.ImportArchiveAsync(data.Payers, data.Students, data.Lessons, data.Invoices);
+            Assert.HasCount(3, _archiveContext.Payers);
+            Assert.HasCount(3, _archiveContext.Students);
+            Assert.HasCount(4, _archiveContext.Lessons);
+            Assert.HasCount(2, _archiveContext.BillingDocuments);
+        }
+
+        [TestMethod]
         public async Task Export()
         {
             var data = Helper.GetData();
@@ -99,6 +110,25 @@ namespace Apolo.Tests.Data
             Assert.HasCount(3, newData.Payers);
             Assert.HasCount(3, newData.Students);
             Assert.HasCount(3, newData.Specifications);
+            Assert.HasCount(4, newData.Lessons);
+            Assert.HasCount(2, newData.Invoices);
+        }
+
+        [TestMethod]
+        public async Task ExportArchive()
+        {
+            var data = Helper.GetData();
+            _archiveContext.Payers.AddRange(data.Payers);
+            _archiveContext.Students.AddRange(data.Students);
+            _archiveContext.Lessons.AddRange(data.Lessons);
+            _archiveContext.BillingDocuments.AddRange(data.Invoices);
+            await _archiveContext.SaveChangesAsync();
+
+            var newData = await _repository.ExportArchiveAsync();
+            Assert.HasCount(0, newData.Services);
+            Assert.HasCount(3, newData.Payers);
+            Assert.HasCount(3, newData.Students);
+            Assert.HasCount(0, newData.Specifications);
             Assert.HasCount(4, newData.Lessons);
             Assert.HasCount(2, newData.Invoices);
         }

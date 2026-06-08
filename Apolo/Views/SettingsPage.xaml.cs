@@ -71,6 +71,15 @@ namespace Apolo.Views
             await ViewModel.ExportDatabaseToExcel(installedPath);
         }
 
+        private async void ExportArchiveButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button) return;
+
+            var installedPath = Windows.ApplicationModel.Package.Current.InstalledPath;
+
+            await ViewModel.ExportArchiveToExcel(installedPath);
+        }
+
         private async void ImportExcelButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not Button button) return;
@@ -87,6 +96,24 @@ namespace Apolo.Views
             if (file == null) return;
 
             await ViewModel.ImportDatabaseFromExcel(file.Path);
+        }
+
+        private async void ImportArchiveButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button) return;
+
+            var picker = new FileOpenPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
+            picker.FileTypeFilter.Add(".xlsx");
+            picker.FileTypeFilter.Add(".xls");
+            picker.FileTypeFilter.Add(".xlsm");
+
+            picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+            picker.CommitButtonText = "Pick a file";
+
+            var file = await picker.PickSingleFileAsync();
+            if (file == null) return;
+
+            await ViewModel.ImportArchiveFromExcel(file.Path);
         }
 
         private async void ArchiveButton_Click(object sender, RoutedEventArgs e)

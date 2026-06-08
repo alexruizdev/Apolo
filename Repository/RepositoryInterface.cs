@@ -76,8 +76,16 @@ namespace Repository
             List<Lesson> lessons,
             List<BillingDocument> invoices);
 
+        Task ImportArchiveAsync(
+            List<Payer> payers,
+            List<Student> students,
+            List<Lesson> lessons,
+            List<BillingDocument> invoices);
+
         Task<(List<Service> Services, List<Payer> Payers, List<Student> Students,
             List<Specification> Specifications, List<Lesson> Lessons, List<BillingDocument> Invoices)> GetAllDataAsync();
+        Task<(List<Service> Services, List<Payer> Payers, List<Student> Students,
+            List<Specification> Specifications, List<Lesson> Lessons, List<BillingDocument> Invoices)> ExportArchiveAsync();
         Task<List<PayerActivityInfo>> GetPayersWithActivityAsync();
         Task ArchiveOldDataAsync(List<Guid> payerIds);
         Task<List<PayerOption>> GetPayersFromArchiveAsync();

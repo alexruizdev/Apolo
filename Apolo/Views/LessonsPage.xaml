@@ -34,7 +34,8 @@
                                         Header="Filter Period"
                                         PlaceholderText="Pick Month"
                                         Width="160"
-                                        VerticalAlignment="Bottom"/>
+                                        VerticalAlignment="Bottom"
+                                        DateFormat="{}{day.integer}/{month.integer}/{year.full}"/>
                 </StackPanel>
 
                 <CommandBar Grid.Column="1" DefaultLabelPosition="Right" Background="Transparent" IsDynamicOverflowEnabled="False">
