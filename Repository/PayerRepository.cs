@@ -20,16 +20,7 @@ namespace Repository
                 .FirstOrDefaultAsync(p => p.Id == payerId)
                 ?? throw new InvalidDataException("Payer not found.");
 
-            return new PayerSummary(
-                payerId,
-                payer.FirstName,
-                payer.LastName,
-                0m,
-                payer.Address,
-                payer.ZipCode,
-                payer.City,
-                payer.TaxId
-            );
+            return Helper.ConvertToPayerSummary(payer, 0);
         }
 
         public async Task<IEnumerable<PayerSummary>> GetPayersAsync()
@@ -72,9 +63,7 @@ namespace Repository
                  .AsNoTracking()
                  .OrderBy(s => s.FirstName)
                  .ThenBy(s => s.LastName)
-                 .Select(p => new PayerOption(
-                     p.Id,
-                     p.FullName))
+                 .Select(p => Helper.ConvertToPayerOption(p))
                  .ToListAsync();
         }
 

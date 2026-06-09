@@ -51,12 +51,6 @@ namespace Repository
                 .ToListAsync();
         }
 
-        public async Task AddLessonsAsync(List<Lesson> lessons)
-        {
-            _db.Lessons.AddRange(lessons);
-            await _db.SaveChangesAsync();
-        }
-
         public async Task<Lesson> AddLessonAsync(DateOnly date, string name, bool isPaid, Guid studentId,
             Guid? billingDocumentId, bool isPricePerHour, int? duration, decimal basePrice,
             bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip,

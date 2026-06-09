@@ -102,15 +102,7 @@ namespace Apolo.ViewModels
                 await _payerRepository.AddAsync(payer);
 
                 // Append to UI (no unpaid items yet)
-                Payers.Add(new PayerSummary(
-                    payer.Id, 
-                    payer.FirstName, 
-                    payer.LastName, 
-                    0m, 
-                    payer.Address, 
-                    payer.ZipCode, 
-                    payer.City, 
-                    payer.TaxId));
+                Payers.Add(Helper.ConvertToPayerSummary(payer, 0));
                 SetExitFunction($"Payer '{payer.FullName}' added successfully.", InfoBarType.Success);
             }
             catch (DbUpdateException ex)

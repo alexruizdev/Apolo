@@ -142,5 +142,51 @@ namespace Apolo.Tests.Models
 
             Assert.AreEqual("Payer 1 - No recorded activity", payer.Display);
         }
-    }
+
+        [TestMethod]
+        public void TestFullName()
+        {
+            var fullName = Helper.GetFullName("First", "Last");
+            Assert.AreEqual("First Last", fullName);
+            fullName = Helper.GetFullName("First", "");
+            Assert.AreEqual("First", fullName);
+            fullName = Helper.GetFullName("", "Last");
+            Assert.AreEqual("Last", fullName);
+            fullName = Helper.GetFullName("", "");
+            Assert.AreEqual("", fullName);
+        }
+        
+        [TestMethod]
+        public void TestConvertToServiceSummary()
+        {
+            var service = new Service()
+            {
+                Id = Guid.NewGuid(),
+                Name = "Service 1",
+                IsPricePerHour = true,
+                Price = 30
+            };
+            var summary = Helper.ConvertToServiceSummary(service);
+            Assert.AreEqual(service.Id, summary.Id);
+            Assert.AreEqual(service.Name, summary.Name);
+            Assert.AreEqual(service.IsPricePerHour, summary.IsPricePerHour);
+            Assert.AreEqual((double)service.Price, summary.Price);
+        }
+
+        [TestMethod]
+        public void TestConvertToPayerActivityInfo()
+        {
+            var data = Helper.GetDummyData();
+            var payer = data.Payers.First();
+            var students = data.Students.Where(s => s.PayerId == payer.Id).ToList();
+            foreach (var student in students)
+                student.Lessons = data.Lessons.Where(l => l.StudentId == student.Id).ToList();
+            payer.Students = students;
+
+            var payerActivity = Helper.ConvertToPayerActivityInfo(payer);
+            Assert.AreEqual(payer.Id, payerActivity.PayerId);
+            Assert.AreEqual(payer.FullName, payerActivity.PayerName);
+            Assert.AreEqual(new DateOnly(2025, 8, 18), payerActivity.LastLessonDate);
+        }
+}
 }

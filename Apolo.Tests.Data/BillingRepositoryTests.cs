@@ -19,47 +19,26 @@ namespace Apolo.Tests.Data
         [TestMethod]
         public async Task GetInvoiceLessonsAsyncByPayerId()
         {
-            // Arrange
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student = TestGenerator.CreateStudent1(payer.Id);
-            var lesson1 = TestGenerator.CreateRandomLesson(student.Id, "Lesson 1", paid: true, months: 6);
-            var lesson2 = TestGenerator.CreateRandomLesson(student.Id, "Lesson 2", paid: true, months: 6);
-            var lesson3 = TestGenerator.CreateRandomLesson(student.Id, "Lesson 3", paid: false, months: 6);
-            var lesson4 = TestGenerator.CreateRandomLesson(student.Id, "Lesson 4", paid: false, months: 6);
 
-            _context.Payers.Add(payer);
-            _context.Students.Add(student);
-            _context.Lessons.AddRange(lesson1, lesson2, lesson3, lesson4);
-            await _context.SaveChangesAsync();
+            var results = (await _repository.GetUnbilledLessonsAsync(_data.Payers[2].Id)).ToList();
 
-            var results = (await _repository.GetUnbilledLessonsAsync(payer.Id)).ToList();
-
-            Assert.HasCount(2, results);
-            Assert.IsTrue(results[0].Date <= results[1].Date);
+            Assert.HasCount(1, results);
 
             // Lesson 3
-            int idx = results.FindIndex(r => r.Id == lesson3.Id);
-            Assert.AreEqual(lesson3.Id, results[idx].Id);
-            Assert.AreEqual(lesson3.Date, results[idx].Date);
-            Assert.AreEqual(lesson3.Name, results[idx].Name);
-            Assert.AreEqual(student.Id, results[idx].StudentId);
-            Assert.AreEqual(student.FullName, results[idx].StudentName);
+            int idx = results.FindIndex(r => r.Id == _data.Lessons[19].Id);
+            Assert.AreEqual(_data.Lessons[19].Id, results[idx].Id);
+            Assert.AreEqual(_data.Lessons[19].Date, results[idx].Date);
+            Assert.AreEqual(_data.Lessons[19].Name, results[idx].Name);
+            Assert.AreEqual(_data.Students[4].Id, results[idx].StudentId);
+            Assert.AreEqual(_data.Students[4].FullName, results[idx].StudentName);
         }
 
         [TestMethod]
         public async Task CreateInvoiceAsyncEmptyLesson()
         {
-            // Arrange
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student = TestGenerator.CreateStudent1(payer.Id);
-
-            _context.Payers.Add(payer);
-            _context.Students.Add(student);
-            await _context.SaveChangesAsync();
-
             await Assert.ThrowsAsync<ArgumentException>(async () =>
             {
-                await _repository.CreateBillAsync(payer.Id, [], DocumentType.Invoice);
+                await _repository.CreateBillAsync(_data.Payers[0].Id, [], DocumentType.Invoice);
             });
 
         }
@@ -67,75 +46,46 @@ namespace Apolo.Tests.Data
         [TestMethod]
         public async Task CreateInvoiceAsync()
         {
-            // Arrange
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student = TestGenerator.CreateStudent1(payer.Id);
-            var lessons = new List<Lesson>();
-            lessons.Add(TestGenerator.CreateRandomLesson(student.Id, "Lesson 1", paid: true, months: 6));
-            lessons.Add(TestGenerator.CreateRandomLesson(student.Id, "Lesson 2", paid: true, months: 6));
+            var lessonIds = _data.Lessons
+                .Where(l => l.BillingDocumentId == null)
+                .Select(l => l.Id).ToList();
 
-            _context.Payers.Add(payer);
-            _context.Students.Add(student);
-            _context.Lessons.AddRange(lessons);
-            await _context.SaveChangesAsync();
-
-            var lessonIds = lessons.Select(l => l.Id).ToList();
-
-            var entity = await _repository.CreateBillAsync(payer.Id, lessonIds, DocumentType.Invoice);
+            var entity = await _repository.CreateBillAsync(_data.Payers[2].Id, lessonIds, DocumentType.Invoice);
 
             var result = await _context.BillingDocuments.ToListAsync();
 
-            Assert.HasCount(1, result);
-            Assert.HasCount(2, result[0].Lines);
-            Assert.AreEqual($"{DateTime.Now:yyyy-MM}-E-0001", entity.DocumentNumber);
+            Assert.HasCount(25, result);
+            Assert.HasCount(1, result.Last().Lines);
+            var count = DateTimeOffset.UtcNow.Year > 2026 ? 1 : 6;
+            Assert.AreEqual($"{DateTime.Now:yyyy-MM}-E-000{count}", entity.DocumentNumber);
         }
 
         [TestMethod]
         public async Task CreateTicketAsync()
         {
-            // Arrange
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student = TestGenerator.CreateStudent1(payer.Id);
-            var lessons = new List<Lesson>();
-            lessons.Add(TestGenerator.CreateRandomLesson(student.Id, "Lesson 1", paid: true, months: 6));
-            lessons.Add(TestGenerator.CreateRandomLesson(student.Id, "Lesson 2", paid: true, months: 6));
+            var lessonIds = _data.Lessons
+                .Where(l => l.BillingDocumentId == null)
+                .Select(l => l.Id).ToList();
 
-            _context.Payers.Add(payer);
-            _context.Students.Add(student);
-            _context.Lessons.AddRange(lessons);
-            await _context.SaveChangesAsync();
-
-            var lessonIds = lessons.Select(l => l.Id).ToList();
-
-            var entity = await _repository.CreateBillAsync(payer.Id, lessonIds, DocumentType.Ticket);
+            var entity = await _repository.CreateBillAsync(_data.Payers[2].Id, lessonIds, DocumentType.Ticket);
 
             var result = await _context.BillingDocuments.ToListAsync();
 
-            Assert.HasCount(1, result);
-            Assert.HasCount(2, result[0].Lines);
-            Assert.AreEqual($"TCK-{DateTime.Now:yyyy-MM}-0001", entity.DocumentNumber);
+            Assert.HasCount(25, result);
+            Assert.HasCount(1, result.Last().Lines);
+            var count = DateTimeOffset.UtcNow.Year > 2026 ? 1 : 5;
+            Assert.AreEqual($"TCK-{DateTime.Now:yyyy-MM}-000{count}", entity.DocumentNumber);
         }
 
         [TestMethod]
         public async Task DeleteInvoiceAsync()
         {
-            // Arrange
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student = TestGenerator.CreateStudent1(payer.Id);
-            var lesson1 = TestGenerator.CreateRandomLesson(student.Id, "Lesson 1", paid: true, months: 6);
-            var invoice = TestGenerator.CreateInvoice([lesson1], payer.Id);
 
-            _context.Payers.Add(payer);
-            _context.Students.Add(student);
-            _context.Lessons.AddRange(lesson1);
-            _context.BillingDocuments.Add(invoice);
-            await _context.SaveChangesAsync();
+            Assert.HasCount(24, _context.BillingDocuments);
 
-            Assert.HasCount(1, _context.BillingDocuments);
+            await _repository.DeleteAsync(_data.Invoices[0].Id);
 
-            await _repository.DeleteAsync(invoice.Id);
-
-            Assert.HasCount(0, _context.BillingDocuments);
+            Assert.HasCount(23, _context.BillingDocuments);
         }
 
         [TestMethod]

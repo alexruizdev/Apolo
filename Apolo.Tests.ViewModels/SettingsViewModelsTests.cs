@@ -190,7 +190,7 @@ namespace Apolo.Tests.ViewModels
             {
 
                 // Arrange
-                var data = Helper.GetData();
+                var data = Helper.GetDummyData();
 
                 _readerMock.Setup(r => r.Services).Returns(data.Services);
                 _readerMock.Setup(r => r.Payers).Returns(data.Payers);
@@ -210,8 +210,8 @@ namespace Apolo.Tests.ViewModels
 
                 // 3. Verify specific data points are inside the string
                 StringAssert.Contains(fileContent, "APOLO APP - IMPORT SUMMARY");
-                StringAssert.Contains(fileContent, $"- Services Imported: 3");
-                StringAssert.Contains(fileContent, $"- Invoices Processed: 2");
+                StringAssert.Contains(fileContent, $"- Services Imported: 6");
+                StringAssert.Contains(fileContent, $"- Invoices Processed: 24");
                 StringAssert.Contains(fileContent, "STATUS: Success");
             }
             finally
@@ -278,7 +278,7 @@ namespace Apolo.Tests.ViewModels
             Directory.CreateDirectory(tempPath);
             _viewModel.Profile.BackupFolder = tempPath;
 
-            var data = Helper.GetData();
+            var data = Helper.GetDummyData();
 
             _repositoryMock.Setup(r => r.GetAllDataAsync()).ReturnsAsync(data);
 
@@ -317,7 +317,7 @@ namespace Apolo.Tests.ViewModels
             Directory.CreateDirectory(tempPath);
             _viewModel.Profile.BackupFolder = tempPath;
 
-            var data = Helper.GetData();
+            var data = Helper.GetDummyData();
 
             _repositoryMock.Setup(r => r.ExportArchiveAsync()).ReturnsAsync(data);
 

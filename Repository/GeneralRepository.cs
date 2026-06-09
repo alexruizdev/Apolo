@@ -107,15 +107,7 @@ namespace Repository
         public async Task<List<PayerActivityInfo>> GetPayersWithActivityAsync()
         {
             return await _db.Payers
-                .Select(p => new PayerActivityInfo
-                {
-                    PayerId = p.Id,
-                    PayerName = p.FullName,
-                    LastLessonDate = p.Students
-                        .SelectMany(s => s.Lessons)
-                        .Select(l => (DateOnly?)l.Date)
-                        .Max()
-                })
+                .Select(p => Helper.ConvertToPayerActivityInfo(p))
                 .AsNoTracking()
                 .OrderBy(p => p.LastLessonDate) // Show oldest/inactive first
                 .ToListAsync();
@@ -127,9 +119,7 @@ namespace Repository
                 .AsNoTracking()
                  .OrderBy(s => s.FirstName)
                  .ThenBy(s => s.LastName)
-                 .Select(p => new PayerOption(
-                     p.Id,
-                     p.FullName))
+                 .Select(p => Helper.ConvertToPayerOption(p))
                  .ToListAsync();
         }
 

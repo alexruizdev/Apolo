@@ -16,74 +16,40 @@ namespace Apolo.Tests.Data
         }
 
         [TestMethod]
-        public async Task DeleteAsync_WithAssociatedStudents_ThrowsInvalidOperationException()
-        {
-            // Arrange: Create a payer and a student linked to them
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student = TestGenerator.CreateStudent1(payer.Id);
-
-            _context.Payers.Add(payer);
-            _context.Students.Add(student);
-            await _context.SaveChangesAsync();
-
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            {
-                await _repository.DeleteAsync(payer.Id);
-            });
-        }
-
-        [TestMethod]
         public async Task GetPayersAsync_CalculatesUnpaidTotalsCorrectly()
         {
-            // Arrange
-            var payer = TestGenerator.CreatePayer1(emptyInfo: false);
-            var student = TestGenerator.CreateStudent1(payer.Id);
-            var lesson1 = TestGenerator.CreateLessonPaid(student.Id);
-            var lesson2 = TestGenerator.CreateLessonUnpaid(student.Id);
-
-            _context.Payers.Add(payer);
-            _context.Students.Add(student);
-            _context.Lessons.Add(lesson1);
-            _context.Lessons.Add(lesson2);
-            await _context.SaveChangesAsync();
-
+            var id = _data.Payers[0].Id;
             // Act
             var results = await _repository.GetPayersAsync();
-            var payerSummary = results.First(p => p.Id == payer.Id);
+            var payerSummary = results.First(p => p.Id == id);
 
             // Assert
             // Verify the debt is calculated (assuming 50 is the price)
-            Assert.AreEqual(TestGenerator.PayerName1, payerSummary.FirstName);
-            Assert.AreEqual(TestGenerator.PayerLastName1, payerSummary.LastName);
-            Assert.AreEqual(50, payerSummary.Outstanding);
-            Assert.AreEqual(TestGenerator.Address1, payerSummary.Address);
-            Assert.AreEqual(TestGenerator.ZipCode1, payerSummary.Zip);
-            Assert.AreEqual(TestGenerator.City1, payerSummary.City);
-            Assert.AreEqual(TestGenerator.TaxId1, payerSummary.TaxId);
+            Assert.AreEqual("John", payerSummary.FirstName);
+            Assert.AreEqual("Doe", payerSummary.LastName);
+            Assert.AreEqual(297, payerSummary.Outstanding);
+            Assert.AreEqual("123 Main St", payerSummary.Address);
+            Assert.AreEqual("10001", payerSummary.Zip);
+            Assert.AreEqual("New York", payerSummary.City);
+            Assert.AreEqual("TX123456", payerSummary.TaxId);
         }
 
         [TestMethod]
         public async Task GetPayerSummaryNoOutstandingAsync()
         {
-            // Arrange
-            var payer = TestGenerator.CreatePayer1(emptyInfo: false);
-
-            _context.Payers.Add(payer);
-            await _context.SaveChangesAsync();
-
+            var id = _data.Payers[4].Id;
             // Act
-            var payerSummary = await _repository.GetPayerSummaryNoOutstandingAsync(payer.Id);
+            var payerSummary = await _repository.GetPayerSummaryNoOutstandingAsync(id);
 
             // Assert
             // Verify the debt is calculated (assuming 50 is the price)
-            Assert.AreEqual(TestGenerator.PayerName1, payerSummary.FirstName);
-            Assert.AreEqual(TestGenerator.PayerLastName1, payerSummary.LastName);
+            Assert.AreEqual("Luca", payerSummary.FirstName);
+            Assert.AreEqual("Rossi", payerSummary.LastName);
             Assert.AreEqual(0, payerSummary.Outstanding);
-            Assert.AreEqual(TestGenerator.Address1, payerSummary.Address);
-            Assert.AreEqual(TestGenerator.ZipCode1, payerSummary.Zip);
-            Assert.AreEqual(TestGenerator.City1, payerSummary.City);
-            Assert.AreEqual(TestGenerator.TaxId1, payerSummary.TaxId);
+            Assert.AreEqual("Via Roma 15", payerSummary.Address);
+            Assert.AreEqual("00100", payerSummary.Zip);
+            Assert.AreEqual("Rome", payerSummary.City);
+            Assert.AreEqual("IT11223344", payerSummary.TaxId);
         }
 
         [TestMethod]
@@ -99,16 +65,16 @@ namespace Apolo.Tests.Data
         public async Task AddAsync_ValidPayer_SavesSuccessfully()
         {
             // Arrange
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
+            var payer = new Payer { FirstName = "Test", LastName = "Payer" };
 
             // Act
             await _repository.AddAsync(payer);
 
             // Assert
-            var saved = _context.Payers.FirstOrDefault(p => p.FirstName == TestGenerator.PayerName1);
+            var saved = _context.Payers.FirstOrDefault(p => p.Id == payer.Id);
             Assert.IsNotNull(saved);
-            Assert.AreEqual(TestGenerator.PayerName1, saved.FirstName);
-            Assert.AreEqual(TestGenerator.PayerLastName1, saved.LastName);
+            Assert.AreEqual("Test", saved.FirstName);
+            Assert.AreEqual("Payer", saved.LastName);
             Assert.IsNull(saved.Address);
             Assert.IsNull(saved.ZipCode);
             Assert.IsNull(saved.City);
@@ -118,11 +84,7 @@ namespace Apolo.Tests.Data
         [TestMethod]
         public async Task AddAsync_ExistingPayer()
         {
-            // Arrange
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-
-            _context.Payers.Add(payer);
-            await _context.SaveChangesAsync();
+            var payer = _data.Payers[0];
 
             // Act
             await Assert.ThrowsAsync<InvalidDataException>(async () =>
@@ -132,7 +94,7 @@ namespace Apolo.Tests.Data
 
             var payerInDb = await _context.Payers.FindAsync(payer.Id);
 
-            Assert.HasCount(1, _context.Payers, "Database should still only have one payer record.");
+            Assert.HasCount(10, _context.Payers);
             Assert.IsNotNull(payerInDb);
         }
 
@@ -141,11 +103,7 @@ namespace Apolo.Tests.Data
         [TestMethod]
         public async Task DeleteAsync_ExistingId_RemovesFromDb()
         {
-            // Arrange
-            var id = Guid.NewGuid();
-            _context.Payers.Add(TestGenerator.CreateTemporaryPayer(id));
-            await _context.SaveChangesAsync();
-
+            var id = _data.Payers[8].Id;
             // Act
             await _repository.DeleteAsync(id);
 
@@ -164,36 +122,20 @@ namespace Apolo.Tests.Data
         }
 
         [TestMethod]
-        public async Task DeleteAsync_AssociatedStudent_ThrowsException()
+        public async Task DeleteAsync_WithAssociatedStudents_ThrowsInvalidOperationException()
         {
-            // Arrange
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student = TestGenerator.CreateStudent1(payer.Id);
-
-            _context.Payers.Add(payer);
-            _context.Students.Add(student);
-
-            await _context.SaveChangesAsync();
-
-            // Act
+            var id = _data.Payers[0].Id;
+            // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
-                await _repository.DeleteAsync(payer.Id);
+                await _repository.DeleteAsync(id);
             });
         }
 
         [TestMethod]
         public async Task UpdateAsync_ValidChanges_UpdatesProperties()
         {
-            // Arrange
-            var id = Guid.NewGuid();
-            _context.Payers.Add(new Payer { 
-                Id = id, 
-                FirstName = "Old Name", 
-                LastName = "Old Last Name"
-            });
-            await _context.SaveChangesAsync();
-
+            var id = _data.Payers[1].Id;
             // Act
             await _repository.UpdateAsync(id, "New Name", "New Last Name", "New Address", "New Zip", "New City", "New Tax");
 
@@ -222,21 +164,13 @@ namespace Apolo.Tests.Data
         [TestMethod]
         public async Task GetPayerOptionsAsync_ReturnsAlphabeticalPayers()
         {
-            // Arrange
-            _context.Payers.AddRange(
-                new Payer { Id = Guid.NewGuid(), FirstName = "B", LastName = "User" },
-                new Payer { Id = Guid.NewGuid(), FirstName = "A", LastName = "User" },
-                new Payer { Id = Guid.NewGuid(), FirstName = "Z", LastName = "User" }
-            );
-            await _context.SaveChangesAsync();
-
             // Act
             var options = (await _repository.GetPayerOptionsAsync()).ToList();
 
             // Assert
-            Assert.AreEqual("A User", options[0].FullName);
-            Assert.AreEqual("B User", options[1].FullName);
-            Assert.AreEqual("Z User", options[2].FullName);
+            Assert.AreEqual("Carlos Gomez", options[0].FullName);
+            Assert.AreEqual("David Garcia", options[1].FullName);
+            Assert.AreEqual("Emma Brown", options[2].FullName);
         }
     }
 }

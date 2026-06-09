@@ -97,7 +97,7 @@ namespace Apolo.ViewModels
                     };
 
                     await _payerRepository.AddAsync(payer);
-                    Payers.Add(new PayerOption(payer.Id, payer.FullName));
+                    Payers.Add(Helper.ConvertToPayerOption(payer));
                     payerId = payer.Id;
                     additionalMessage = " Created payer with same name.";
                 }
