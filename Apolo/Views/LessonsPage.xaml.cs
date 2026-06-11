@@ -264,7 +264,7 @@ namespace Apolo.Views
             var onlineBox = new CheckBox { Content = "Online", IsChecked = row.IsOnline };
             var travelAllowanceBox = new NumberBox { Header = "Travel allowance:", Value = (double)row.TravelAllowance, IsEnabled = !row.IsOnline };
             var weekenBox = new CheckBox { Content = "Weekend or Holiday", IsChecked = row.IsWeekendOrHoliday };
-            var weekendFeeBox = new NumberBox { Header = "Weekend or Holiday Fee:", Value = (double)row.TravelAllowance, IsEnabled = !row.IsOnline };
+            var weekendFeeBox = new NumberBox { Header = "Weekend or Holiday Fee:", Value = (double)row.WeekendFee, IsEnabled = !row.IsOnline };
             var isPricePerHourBox = new CheckBox { Content = "Price/hour", IsChecked = row.IsPricePerHour };
             var priceBox = new NumberBox
             {

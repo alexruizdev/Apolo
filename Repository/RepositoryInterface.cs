@@ -43,7 +43,11 @@ namespace Repository
 
     public interface ILessonRepository
     {
-        Task<IEnumerable<LessonSummary>> GetLessonsAsync(bool showOnlyUnpaid, int? months);
+        Task<IEnumerable<LessonSummary>> GetLessonsAsync(string studentName,
+            string payerName,
+            bool? isPaid, 
+            DateOnly? startDate,
+            DateOnly? endDate);
         Task<Lesson> AddLessonAsync(DateOnly date, string name, bool isPaid, Guid studentId,
             Guid? billingDocumentId, bool isPricePerHour, int? duration, decimal basePrice,
             bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip, string? notes);

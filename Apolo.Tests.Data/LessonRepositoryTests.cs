@@ -21,33 +21,30 @@ namespace Apolo.Tests.Data
         [TestMethod]
         public async Task GetLessonsAsync_FilterByUnpaid_ReturnsCorrectLessons()
         {
+            // Filter
+            var studentName = "alice";
+            var payerName = "doe";
+            var isPaid = false;
+            var startDate = new DateOnly(2024, 1, 1);
+            var endDate = new DateOnly(2024, 12, 1);
+
             // Act
-            var results = (await _repository.GetLessonsAsync(showOnlyUnpaid: true, months: null)).ToList();
+            var results = (await _repository.GetLessonsAsync(
+                studentName, payerName, isPaid, startDate, endDate)).ToList();
 
             // Assert
-            Assert.HasCount(21, results);
-            Assert.AreEqual("French Lessons - Chloe", results[0].Name);
+            Assert.HasCount(1, results);
+            Assert.AreEqual("Math Tutoring - Alice", results[0].Name);
             Assert.IsTrue(results[0].IsPricePerHour);
             Assert.AreEqual(60, results[0].DurationMinutes);
-            Assert.AreEqual(35, results[0].BasePrice);
-            Assert.IsFalse(results[0].IsOnline);
-            Assert.AreEqual(7, results[0].TravelAllowance);
-            Assert.IsTrue(results[0].IsWeekendOrHoliday);
-            Assert.AreEqual(15, results[0].WeekendFee);
+            Assert.AreEqual(42, results[0].BasePrice);
+            Assert.IsTrue(results[0].IsOnline);
+            Assert.AreEqual(5, results[0].TravelAllowance);
+            Assert.IsFalse(results[0].IsWeekendOrHoliday);
+            Assert.AreEqual(10, results[0].WeekendFee);
             Assert.IsNull(results[0].Notes);
             Assert.IsFalse(results[0].IsPaid);
-        }
-
-        [TestMethod]
-        public async Task GetLessonsAsync_FilterByMonths_FiltersOldData()
-        {
-            var now = DateTimeOffset.UtcNow;
-            var months = ((now.Year - 2025) * 12) + now.Month - 8;            
-            var results = (await _repository.GetLessonsAsync(showOnlyUnpaid: false, months: months)).ToList();
-
-            // Assert
-            Assert.HasCount(9, results);
-            Assert.AreEqual("French Lessons - Chloe", results[0].Name);
+            Assert.AreEqual(2, results[0].Tip);
         }
 
         // --- CREATE TESTS ---

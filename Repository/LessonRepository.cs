@@ -12,19 +12,46 @@ namespace Repository
             _db = db;
         }
 
-        public async Task<IEnumerable<LessonSummary>> GetLessonsAsync(bool showOnlyUnpaid, int? months)
+        public async Task<IEnumerable<LessonSummary>> GetLessonsAsync(string studentName,
+            string payerName,
+            bool? isPaid, // Null = All, True = Paid, False = Unpaid
+            DateOnly? startDate,
+            DateOnly? endDate)
         {
-            // 2. Start the query with AsNoTracking (crucial for read-only performance)
+            // 1. Start the query with AsNoTracking for optimal read-only performance
             var query = _db.Lessons.AsNoTracking();
 
-            // 3. Apply Filters
-            if (showOnlyUnpaid)
-                query = query.Where(l => !l.IsPaid);
-
-            if (months is not null)
+            // 2. Filter by Student Name (case-insensitive text check)
+            if (!string.IsNullOrWhiteSpace(studentName))
             {
-                var dateThreshold = DateOnly.FromDateTime(DateTime.Now.AddMonths(-months.Value));
-                query = query.Where(l => l.Date >= dateThreshold);
+                var formattedSearch = $"%{studentName.Trim()}%";
+                query = query.Where(l => EF.Functions.Like(
+                    l.Student.FirstName + " " + l.Student.LastName, formattedSearch));
+            }
+
+            // 3. Filter by Payer Name 
+            if (!string.IsNullOrWhiteSpace(payerName))
+            {
+                var formattedSearch = $"%{payerName.Trim()}%";
+                query = query.Where(l => EF.Functions.Like(
+                    l.Student.Payer.FirstName + " " + l.Student.Payer.LastName, formattedSearch));
+            }
+
+            // 4. Handle Payment Status (Replaces your old showOnlyUnpaid bool)
+            if (isPaid.HasValue)
+            {
+                query = query.Where(l => l.IsPaid == isPaid.Value);
+            }
+
+            // 5. Handle Start and End Date Ranges
+            if (startDate.HasValue)
+            {
+                query = query.Where(l => l.Date >= startDate.Value);
+            }
+
+            if (endDate.HasValue)
+            {
+                query = query.Where(l => l.Date <= endDate.Value);
             }
 
             return await query
