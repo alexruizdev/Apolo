@@ -51,13 +51,16 @@ namespace Apolo.Tests.ViewModels
                 _mockPDFWriter.Object, _mockLessonRepo.Object);
         }
 
-        void VerifyAction(string? message, InfoBarType severity, bool isOpen, int payersCount, int count, decimal totalSelected, decimal total, bool isBusy = false)
+        void VerifyAction(string? message, InfoBarType severity, bool isOpen, int payersCount, int count, decimal totalSelected, decimal total, bool isBusy = false, bool infoMessageContains = false)
         {
             Assert.HasCount(payersCount, _viewModel.Payers);
             Assert.HasCount(count, _viewModel.Lessons);
             Assert.AreEqual(totalSelected, _viewModel.TotalSelected);
             Assert.AreEqual(total, _viewModel.TotalAll);
-            Assert.AreEqual(message, _viewModel.InfoMessage);
+            if (infoMessageContains)
+                Assert.IsTrue(_viewModel.InfoMessage?.Contains(message ?? string.Empty) ?? false);
+            else
+                Assert.AreEqual(message, _viewModel.InfoMessage);
             Assert.AreEqual(isBusy, _viewModel.IsBusy);
         }
 
@@ -495,6 +498,119 @@ namespace Apolo.Tests.ViewModels
 
             AssertForGenerateInvoice(ids, infoMessage: $"Invoice saved to: {path}.", 
                 severity: InfoBarType.Success, success: true);
+        }
+
+        // Print Document
+
+        private void ArrangeForPrintDocument(bool invalidDirectory = false, bool isInvoice = true)
+        {
+            // Create a temporary path so we don't clutter the machine
+            string tempPath = Path.Combine(Path.GetTempPath(), invalidDirectory ? "invalid" : "valid");
+            if (Directory.Exists(tempPath) && invalidDirectory)
+                Directory.Delete(tempPath);
+            if (!invalidDirectory)
+                Directory.CreateDirectory(tempPath);
+            _viewModel.Profile.BillingFolder = tempPath;
+
+            _viewModel.Bill = new BillSummary(Guid.NewGuid(), Guid.NewGuid(), 
+                isInvoice ? DocumentType.Invoice : DocumentType.Ticket, "2024-01-E-0007",
+                new DateOnly(2024, 1, 1).ToString("dd/MM/yyyy"));
+
+            _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
+                "Old Lesson", "Student 1", 50, false)));
+            _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
+                "Old Lesson", "Student 1", 30, false)));
+            _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
+                "Old Lesson", "Student 1", 35.5m, false)));
+            _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
+                "Old Lesson", "Student 1", 192.1m, false)));
+        }
+
+        private async Task ActForForPrintDocument()
+        {
+            var payerId = _viewModel.Bill.payerId;
+
+            _mockPayerRepo.Setup(r => r.GetPayerSummaryNoOutstandingAsync(payerId))
+                .ReturnsAsync(new PayerSummary(payerId, "Payer", "1", 0, null, null, null, null));
+
+
+            await _viewModel.PrintDocument();
+        }
+
+        private void AssertForPrintDocument(string? infoMessage, InfoBarType severity, bool success,
+            bool isBusy = false, bool isInvoice = true, bool invalidDirectory = false)
+        {
+            var lessons = _viewModel.Lessons.Select(l => l.Data).ToList();
+
+            // Get payer summary
+            if (isBusy || invalidDirectory)
+            {
+                _mockPayerRepo.Verify(r => r.GetPayerSummaryNoOutstandingAsync(It.IsAny<Guid>()), Times.Never);
+            }
+            else
+            {
+                _mockPayerRepo.Verify(r => r.GetPayerSummaryNoOutstandingAsync(_viewModel.Bill.payerId), Times.Once);
+            }
+
+            // Create invoice
+            if (isInvoice && success)
+            {
+                _mockPDFWriter.Verify(r => r.GenerateInvoice("2024-01-E-0007", It.IsAny<PayerSummary>(), lessons, _viewModel.Profile,
+                    It.IsAny<string>(), _viewModel.Bill.Date),
+                    Times.Once);
+                _mockPDFWriter.Verify(r => r.GenerateTicket(It.IsAny<string>(), It.IsAny<PayerSummary>(), It.IsAny<List<LessonLine>>(), It.IsAny<UserProfile>(),
+                    It.IsAny<string>(), It.IsAny<string>()),
+                    Times.Never);
+            }
+            if (!isInvoice && success)
+            {
+                _mockPDFWriter.Verify(r => r.GenerateTicket("2024-01-E-0007", It.IsAny<PayerSummary>(), lessons, _viewModel.Profile,
+                    It.IsAny<string>(), _viewModel.Bill.Date),
+                    Times.Once);
+                _mockPDFWriter.Verify(r => r.GenerateInvoice(It.IsAny<string>(), It.IsAny<PayerSummary>(), It.IsAny<List<LessonLine>>(), It.IsAny<UserProfile>(),
+                    It.IsAny<string>(), It.IsAny<string>()),
+                    Times.Never);
+            }
+
+            VerifyAction(infoMessage, severity, isOpen: true, payersCount: 0, count: 4,
+                totalSelected: 0, total: 307.6m, isBusy: isBusy, infoMessageContains: success);
+        }
+
+        [TestMethod]
+        public async Task PrintDocument_IsBusy()
+        {
+            _viewModel.IsBusy = true;
+            ArrangeForPrintDocument();
+            await ActForForPrintDocument();
+            AssertForPrintDocument(infoMessage: "Can't print bill while busy.", severity: InfoBarType.Warning,
+                isBusy: true, success: false);
+        }
+
+        [TestMethod]
+        public async Task PrintDocument_InvalidDirectory()
+        {
+            ArrangeForPrintDocument(invalidDirectory: true);
+            await ActForForPrintDocument();
+            AssertForPrintDocument(infoMessage: "Billing folder does not exist, please configure it properly in the settings view.",
+                severity: InfoBarType.Error, success: false, invalidDirectory: true);
+        }
+
+        [TestMethod]
+        public async Task PrintDocument_Invoice()
+        {
+            ArrangeForPrintDocument(isInvoice: true);
+            await ActForForPrintDocument();
+            AssertForPrintDocument(infoMessage: $"2024-01-E-0007 saved to: ", 
+                severity: InfoBarType.Success, success: true, isInvoice: true);
+        }
+
+        [TestMethod]
+        public async Task PrintDocument_Ticket()
+        {
+            ArrangeForPrintDocument(isInvoice: false);
+            await ActForForPrintDocument();
+            AssertForPrintDocument(infoMessage: $"2024-01-E-0007 saved to: ",
+                severity: InfoBarType.Success, success: true, isInvoice: false);
         }
     }
 }

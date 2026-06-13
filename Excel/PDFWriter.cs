@@ -8,14 +8,14 @@ namespace PDF
     public interface IWriter
     {
         public void GenerateInvoice(string invoiceName, PayerSummary payer, IEnumerable<LessonLine> lessons,
-            UserProfile user, string filename);
+            UserProfile user, string filename, string dateText);
         public void GenerateTicket(string ticketName, PayerSummary payer, IEnumerable<LessonLine> lessons,
-            UserProfile user, string filename);
+            UserProfile user, string filename, string dateText);
     }
     public class Writer : IWriter
     {
         public void GenerateInvoice(string invoiceName, PayerSummary payer, IEnumerable<LessonLine> lessons, 
-            UserProfile user, string filename)
+            UserProfile user, string filename, string dateText)
         {
             QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
@@ -26,8 +26,6 @@ namespace PDF
             decimal ivaPercent = (decimal)user.IvaPercent;
             decimal ivaAmount = Math.Round(subTotal * ivaPercent / 100m, 2, MidpointRounding.AwayFromZero);
             var total = subTotal + ivaAmount;
-
-            var dateText = DateTime.Now.ToString("dd'/'MM'/'yyyy");
 
             var doc = Document.Create(container =>
             {
@@ -164,7 +162,7 @@ namespace PDF
         }
 
         public void GenerateTicket(string ticketName, PayerSummary payer, IEnumerable<LessonLine> lessons,
-            UserProfile user, string filename)
+            UserProfile user, string filename, string dateText)
         {
             QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
@@ -172,8 +170,6 @@ namespace PDF
 
             var list = lessons.ToArray();
             decimal total = list.Sum(l => l.FinalPrice); // No taxes, just the direct sum
-
-            var dateText = DateTime.Now.ToString("dd'/'MM'/'yyyy");
 
             var doc = Document.Create(container =>
             {

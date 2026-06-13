@@ -1,5 +1,4 @@
-﻿using static System.Runtime.InteropServices.JavaScript.JSType;
-
+﻿
 namespace Models
 {
     public static class Helper
@@ -66,6 +65,15 @@ namespace Models
             new Student { FirstName = "Chloe", LastName = "Dubois", PayerId = payers[7].Id }, // Olivia Dubois
             new Student { FirstName = "Lucia", LastName = "Garcia", PayerId = payers[9].Id } // David Garcia
         };
+
+        public static StudentOption ConvertToStudentOption(Student student) =>
+            new StudentOption(student.Id, student.FullName);
+
+        public static List<StudentOption> GetDummyStudentOptions()
+        {
+            var payers = GetDummyPayers();
+            return GetDummyStudents(ref payers).Select(s => ConvertToStudentOption(s)).ToList();
+        }
 
         public static List<Specification> GetDummySpecifications(ref List<Student> students, ref List<Service> services)
             => new List<Specification>
@@ -168,6 +176,32 @@ namespace Models
             new Lesson(new DateOnly(2025, 7, 22), "French Lessons - Chloe", false, students[9].Id, billingDocuments[22].Id, true, 60, 35.00m, false, 7, true, 15, 3, null), // Olivia Dubois
             new Lesson(new DateOnly(2026, 3, 18), "French Lessons - Chloe", false, students[9].Id, billingDocuments[23].Id, true, 60, 35.00m, false, 7, true, 15, 2, null) // Olivia Dubois
         };
+
+        public static LessonSummary ConvertToLessonSummary(Lesson l) => new LessonSummary(
+            l.Id,
+            l.Date,
+            l.Name,
+            l.FinalPrice,
+            l.IsPaid,
+            l.StudentId,
+            l.Student == null ? string.Empty : l.Student.FullName,
+            l.BillingDocumentId,
+            l.BillingDocument == null ? string.Empty : l.BillingDocument.DocumentNumber,
+            l.IsPricePerHour,
+            l.DurationMinutes,
+            l.BasePrice,
+            l.IsOnline,
+            l.TravelAllowance,
+            l.IsWeekendOrHoliday,
+            l.WeekendFee,
+            l.Tip,
+            l.Notes);
+
+        public static List<LessonSummary> GetDummyLessonSummaries()
+        {
+            var data = GetDummyData();
+            return data.Lessons.Select(ConvertToLessonSummary).ToList();
+        }
 
         public static (List<Service> Services, List<Payer> Payers, List<Student> Students,
             List<Specification> Specifications, List<Lesson> Lessons, List<BillingDocument> Invoices)

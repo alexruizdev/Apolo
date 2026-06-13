@@ -113,7 +113,7 @@
                     <AppBarButton Label="New invoice" Icon="Document" Click="CreateInvoice_Click" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
                     <AppBarButton Label="New ticket" Icon="Tag" Click="CreateTicket_Click" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
                     <AppBarSeparator />
-                    <AppBarButton Label="PDF" Icon="Print" Click="PrintInvoice_Click" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    <AppBarButton Label="PDF" Icon="Print" Command="{x:Bind ViewModel.PrintDocumentCommand}" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     <AppBarButton Label="Delete" Icon="Delete" Foreground="{ThemeResource SystemFillColorCriticalBrush}" Click="DeleteBill_Click" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
                 </CommandBar>
 

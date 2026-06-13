@@ -46,20 +46,6 @@ namespace Apolo.Views
             await ViewModel.GenerateInvoice(isInvoice: true);
         }
 
-        private async void PrintInvoice_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is not Button button) return;
-
-            // Ask where to save
-            var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
-            picker.CommitButtonText = "Pick a folder";
-
-            var folder = await picker.PickSingleFolderAsync();
-            if (folder == null) return;
-
-            await ViewModel.PrintDocument(folder.Path);
-        }
-
         private async void CreateTicket_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not Button button) return;
