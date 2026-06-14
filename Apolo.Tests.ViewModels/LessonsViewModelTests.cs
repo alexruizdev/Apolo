@@ -9,17 +9,17 @@ using ViewModels;
 namespace Apolo.Tests.ViewModels
 {
     [TestClass]
-    public class LessonsViewModelTests
+    public class LessonViewModelBaseTests
     {
-        private Mock<ILessonRepository> _mockLessonRepo = null!;
-        private Mock<IStudentRepository> _mockStudentRepo = null!;
-        private Mock<IServiceRepository> _mockServiceRepo = null!;
-        private Mock<ISpecificationRepository> _mockSpecificationRepo = null!;
-        private Mock<IUserProfileService> _mockUserProfileService = null!;
-        private LessonsViewModel _viewModel = null!;
+        protected Mock<ILessonRepository> _mockLessonRepo = null!;
+        protected Mock<IStudentRepository> _mockStudentRepo = null!;
+        protected Mock<IServiceRepository> _mockServiceRepo = null!;
+        protected Mock<ISpecificationRepository> _mockSpecificationRepo = null!;
+        protected Mock<IUserProfileService> _mockUserProfileService = null!;
+        protected LessonsViewModel _viewModel = null!;
 
         [TestInitialize]
-        public void TestInit()
+        public virtual void TestInit()
         {
             _mockLessonRepo = new Mock<ILessonRepository>();
             _mockStudentRepo = new Mock<IStudentRepository>();
@@ -43,7 +43,11 @@ namespace Apolo.Tests.ViewModels
                 _mockSpecificationRepo.Object,
                 _mockUserProfileService.Object);
         }
+    }
 
+    [TestClass]
+    public class LessonsViewModelTests : LessonViewModelBaseTests
+    {
         void VerifyAction(string? message, InfoBarType severity, bool isOpen, int lessonCount, int studentsCount, int servicesCount, bool isBusy = false)
         {
             Assert.HasCount(lessonCount, _viewModel.Lessons);
@@ -526,6 +530,7 @@ namespace Apolo.Tests.ViewModels
                 Assert.IsTrue(addedLesson.IsWeekendOrHoliday);
                 Assert.AreEqual(20, addedLesson.WeekendFee);
                 Assert.AreEqual(notes, addedLesson.Notes);
+                Assert.AreEqual(50, addedLesson.FinalPrice);
             }
         }
 

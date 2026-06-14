@@ -99,15 +99,20 @@ namespace Models
             return true;
         }
 
-        private decimal GetPrice()
+        private decimal GetPrice() => GetPrice(IsOnline, TravelAllowance, IsWeekendOrHoliday, WeekendFee,
+            BasePrice, IsPricePerHour, DurationMinutes);
+
+        public static decimal GetPrice(bool isOnline, decimal travelAllowance,
+            bool isWeekend, decimal weekendFee, 
+            decimal basePrice, bool isPricePerHour, int? duration)
         {
-            decimal travel = IsOnline ? 0 : TravelAllowance;
-            decimal price = IsWeekendOrHoliday ? WeekendFee + BasePrice : BasePrice;
-            if (IsPricePerHour)
+            decimal travel = isOnline ? 0 : travelAllowance;
+            decimal price = isWeekend ? weekendFee + basePrice : basePrice;
+            if (isPricePerHour)
             {
-                if (DurationMinutes is null) 
+                if (duration is null)
                     throw new ArgumentException("Duration is required when price is per hour.");
-                price = price * (DurationMinutes.Value / 60m);
+                price = price * (duration.Value / 60m);
             }
             decimal total = travel + price;
             return Math.Round(total * 2m, MidpointRounding.AwayFromZero) / 2m;

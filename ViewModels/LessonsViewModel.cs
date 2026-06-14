@@ -199,7 +199,7 @@ namespace Apolo.ViewModels
                     lesson.StudentId,
                     student.item.FullName,
                     lesson.BillingDocumentId,
-                    string.Empty,  // TODO
+                    string.Empty, 
                     lesson.IsPricePerHour,
                     lesson.DurationMinutes,
                     lesson.BasePrice,
@@ -275,7 +275,7 @@ namespace Apolo.ViewModels
         }
 
         public async Task UpdateLessonAsync(Guid id, DateOnly date, string name,
-            bool isPricePerHour, int? duration, decimal pricePerLesson,
+            bool isPricePerHour, int? duration, decimal basePrice,
             bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip, string? note)
         {
             if (IsBusy)
@@ -286,7 +286,7 @@ namespace Apolo.ViewModels
 
             SetEnterFunction();
 
-            if (!ValidateLessonInput(ref name, ref duration, isPricePerHour, pricePerLesson, tip))
+            if (!ValidateLessonInput(ref name, ref duration, isPricePerHour, basePrice, tip))
                 return;
 
             var (oldItem, idx) = GetLesson(id);
@@ -294,7 +294,7 @@ namespace Apolo.ViewModels
             try
             {
                 var entity = await _lessonRepository.UpdateLesson(id, date, name, 
-                    isPricePerHour, duration, pricePerLesson,
+                    isPricePerHour, duration, basePrice,
                     isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, tip, note);
 
                 // Update item in UI list
@@ -302,6 +302,7 @@ namespace Apolo.ViewModels
                 {
                     Name = entity.Name,
                     Date = entity.Date,
+                    FinalPrice = entity.FinalPrice,
                     IsPricePerHour = entity.IsPricePerHour,
                     DurationMinutes = entity.DurationMinutes,
                     BasePrice = entity.BasePrice,
