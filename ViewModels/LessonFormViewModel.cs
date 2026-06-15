@@ -41,15 +41,13 @@ namespace ViewModels
         [ObservableProperty] private bool _isPrimaryButtonEnabled;
         [ObservableProperty] private bool _isEditMode = false;
 
-        [ObservableProperty] private string _dialogTitle;
+        [ObservableProperty] private string _dialogTitle = string.Empty;
         private Guid? _studentId;
 
         public LessonFormViewModel(LessonsViewModel parentViewModel)
         {
             _parentViewModel = parentViewModel;
             IsEditMode = false;
-
-            DialogTitle = $"New Lesson — Total: €-.--";
 
             TravelAllowance = _parentViewModel.Profile.TravelAllowance;
             WeekendFee = _parentViewModel.Profile.WeekendFee;
@@ -81,7 +79,6 @@ namespace ViewModels
             Notes = lesson.Notes ?? string.Empty;
 
             _studentId = lesson.Id;
-            DialogTitle = $"Edit Lesson — Total: €-.--";
 
             Validate();
         }
@@ -139,6 +136,8 @@ namespace ViewModels
             SetEnterFunction();
 
             SelectedSpecification = null; // Clear specification selection to avoid confusion
+
+            SetExitFunction();
 
             Validate();
         }
@@ -252,7 +251,7 @@ namespace ViewModels
             IsPricePerHour = SelectedService != null && SelectedService.IsPricePerHour;
 
             if (SelectedStudent == null)
-                errors.Add("• Select at least one student.");
+                errors.Add("• Select one student.");
             if (SelectedService == null)
                 errors.Add("• Select a service.");
         }

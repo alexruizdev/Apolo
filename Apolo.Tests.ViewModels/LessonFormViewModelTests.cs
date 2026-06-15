@@ -5,7 +5,7 @@ using ViewModels;
 namespace Apolo.Tests.ViewModels
 {
     [TestClass]
-    public class LessonNewFormViewModelTests : LessonViewModelBaseTests
+    public class LessonNewFormViewModelTests : LessonsViewModelBaseTests
     {
         private LessonFormViewModel _formViewModel = null!;
 
@@ -27,7 +27,7 @@ namespace Apolo.Tests.ViewModels
             Assert.IsFalse(_formViewModel.IsEditMode);
 
             // Default student - empty
-            Assert.AreEqual("• Select at least one student.", _formViewModel.InfoMessage);
+            Assert.AreEqual("• Select one student.", _formViewModel.InfoMessage);
             Assert.AreEqual(InfoBarType.Error, _formViewModel.InfoBarType);
             Assert.IsTrue(_formViewModel.OpenInfoBar);
             Assert.IsNull(_formViewModel.SelectedStudent);
@@ -92,7 +92,7 @@ namespace Apolo.Tests.ViewModels
     }
 
     [TestClass]
-    public class LessonEditFormViewModelTests : LessonViewModelBaseTests
+    public class LessonEditFormViewModelTests : LessonsViewModelBaseTests
     {
         private LessonFormViewModel _formViewModel = null!;
 

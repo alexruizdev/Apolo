@@ -9,7 +9,7 @@ using ViewModels;
 namespace Apolo.Tests.ViewModels
 {
     [TestClass]
-    public class LessonViewModelBaseTests
+    public class LessonsViewModelBaseTests
     {
         protected Mock<ILessonRepository> _mockLessonRepo = null!;
         protected Mock<IStudentRepository> _mockStudentRepo = null!;
@@ -46,7 +46,7 @@ namespace Apolo.Tests.ViewModels
     }
 
     [TestClass]
-    public class LessonsViewModelTests : LessonViewModelBaseTests
+    public class LessonsViewModelTests : LessonsViewModelBaseTests
     {
         void VerifyAction(string? message, InfoBarType severity, bool isOpen, int lessonCount, int studentsCount, int servicesCount, bool isBusy = false)
         {

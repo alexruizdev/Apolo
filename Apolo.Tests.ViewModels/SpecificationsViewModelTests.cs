@@ -9,17 +9,17 @@ using ViewModels;
 namespace Apolo.Tests.ViewModels
 {
     [TestClass]
-    public class SpecificationsViewModelTests
+    public class SpecificationsViewModelBaseTests
     {
-        private Mock<ISpecificationRepository> _mockSpecificationRepo = null!;
-        private Mock<IStudentRepository> _mockStudentRepo = null!;
-        private Mock<IServiceRepository> _mockServiceRepo = null!;
-        private Mock<ILessonRepository> _mockLessonRepo = null!;
-        private Mock<IUserProfileService> _mockUserProfileService = null!;
-        private SpecificationsViewModel _viewModel = null!;
+        protected Mock<ISpecificationRepository> _mockSpecificationRepo = null!;
+        protected Mock<IStudentRepository> _mockStudentRepo = null!;
+        protected Mock<IServiceRepository> _mockServiceRepo = null!;
+        protected Mock<ILessonRepository> _mockLessonRepo = null!;
+        protected Mock<IUserProfileService> _mockUserProfileService = null!;
+        protected SpecificationsViewModel _viewModel = null!;
 
         [TestInitialize]
-        public void TestInit()
+        public virtual void TestInit()
         {
             _mockSpecificationRepo = new Mock<ISpecificationRepository>();
             _mockStudentRepo = new Mock<IStudentRepository>();
@@ -43,6 +43,12 @@ namespace Apolo.Tests.ViewModels
                 _mockLessonRepo.Object,
                 _mockUserProfileService.Object);
         }
+    }
+
+    [TestClass]
+    public class SpecificationsViewModelTests : SpecificationsViewModelBaseTests
+    {
+        
 
         void VerifyAction(string? message, InfoBarType severity, bool isOpen, int specCount, int studentsCount, int servicesCount, bool isBusy = false)
         {
