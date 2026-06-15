@@ -1,5 +1,6 @@
 ﻿using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Models;
 
 namespace Excel
@@ -171,7 +172,7 @@ namespace Excel
                     billName = billLookup[id].DocumentNumber;
                     billId = id.ToString();
                 }
-                table.DataRange.Cell(row, 1).Value = lesson.Date.ToString("yyyy-MM-dd");
+                table.DataRange.Cell(row, 1).Value = lesson.Date.ToString("dd-MM-yyyy", System.Globalization.CultureInfo.InvariantCulture); ;
                 table.DataRange.Cell(row, 2).Value = lesson.Name;
                 table.DataRange.Cell(row, 3).Value = studentLookup[lesson.StudentId].FullName;
                 table.DataRange.Cell(row, 4).Value = lesson.FinalPrice;
@@ -216,7 +217,7 @@ namespace Excel
             {
                 table.DataRange.Cell(row, 1).Value = bill.DocumentNumber;
                 table.DataRange.Cell(row, 2).Value = bill.Type.ToString();
-                table.DataRange.Cell(row, 3).Value = bill.CreatedUTC.ToString();
+                table.DataRange.Cell(row, 3).Value = bill.CreatedUTC.ToString("dd-MM-yyyy HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
                 table.DataRange.Cell(row, 4).Value = payerLookup[bill.PayerId];
                 table.DataRange.Cell(row, 5).Value = billLookup[bill.Id];
                 table.DataRange.Cell(row, 6).Value = bill.PayerId.ToString();
