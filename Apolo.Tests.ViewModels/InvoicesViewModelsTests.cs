@@ -88,7 +88,7 @@ namespace Apolo.Tests.ViewModels
             VerifyAction("Can't load payers while busy.", InfoBarType.Warning, isOpen: true,
                 payersCount: 0, count: 0, isBusy: true, total: 0, totalSelected: 0);
 
-            _mockPayerRepo.Verify(r => r.GetPayerOptionsAsync(), Times.Never);
+            _mockPayerRepo.Verify(r => r.GetPayerOptionsByUnbilledLessons(), Times.Never);
         }
 
         [TestMethod]
@@ -101,14 +101,14 @@ namespace Apolo.Tests.ViewModels
             secondLoad.Add(new PayerOption(Guid.NewGuid(), "New payer 1"));
             secondLoad.Add(new PayerOption(Guid.NewGuid(), "New payer 2"));
 
-            _mockPayerRepo.SetupSequence(r => r.GetPayerOptionsAsync())
+            _mockPayerRepo.SetupSequence(r => r.GetPayerOptionsByUnbilledLessons())
                 .ReturnsAsync(firstLoad)
                 .ReturnsAsync(secondLoad);
 
             await _viewModel.LoadAsync(); // test that Payers.Clear() is working
             await _viewModel.LoadAsync(); // If LoadAsync is called twice, you should not have duplicate items in your list
 
-            _mockPayerRepo.Verify(r => r.GetPayerOptionsAsync(), Times.Exactly(2));
+            _mockPayerRepo.Verify(r => r.GetPayerOptionsByUnbilledLessons(), Times.Exactly(2));
 
             VerifyAction(null, InfoBarType.Success, isOpen: false,
                 payersCount: 2, count: 0, isBusy: false, total: 0, totalSelected: 0);
@@ -119,12 +119,12 @@ namespace Apolo.Tests.ViewModels
         [TestMethod]
         public async Task LoadAsync_EmptyCollection()
         {
-            _mockPayerRepo.SetupSequence(r => r.GetPayerOptionsAsync())
+            _mockPayerRepo.SetupSequence(r => r.GetPayerOptionsByUnbilledLessons())
                 .ReturnsAsync(new List<PayerOption>());
 
             await _viewModel.LoadAsync(); 
 
-            _mockPayerRepo.Verify(r => r.GetPayerOptionsAsync(), Times.Once);
+            _mockPayerRepo.Verify(r => r.GetPayerOptionsByUnbilledLessons(), Times.Once);
 
             VerifyAction(null, InfoBarType.Success, isOpen: false,
                 payersCount: 0, count: 0, isBusy: false, total: 0, totalSelected: 0);

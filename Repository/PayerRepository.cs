@@ -67,6 +67,30 @@ namespace Repository
                  .ToListAsync();
         }
 
+        public async Task<IEnumerable<PayerOption>> GetPayerOptionsByUnbilledLessons()
+        {
+            return await _db.Payers
+                 .AsNoTracking()
+                 .Select(p => new
+                 {
+                     Payer = p,
+                     UnbilledCount = p.Students
+                         .SelectMany(s => s.Lessons)
+                         .Count(l => l.BillingDocumentId == null && !l.IsPaid)
+                 })
+                 .OrderByDescending(x => x.UnbilledCount)
+                 .ThenBy(x => x.Payer.FirstName)
+                 .ThenBy(x => x.Payer.LastName)
+                 .Select(x => new PayerOption
+                 (
+                     x.Payer.Id,
+                     x.UnbilledCount > 0
+                         ? $"{x.Payer.FirstName} {x.Payer.LastName} - {x.UnbilledCount} lesson{(x.UnbilledCount == 1 ? "" : "s")}"
+                         : $"{x.Payer.FirstName} {x.Payer.LastName}"
+                 ))
+                 .ToListAsync();
+        }
+
         public async Task AddAsync(Payer payer)
         {
             try

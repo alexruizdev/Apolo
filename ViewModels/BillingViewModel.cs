@@ -141,7 +141,7 @@ namespace Apolo.ViewModels
 
             SetEnterFunction();
 
-            var payers = await _payerRepository.GetPayerOptionsAsync();
+            var payers = await _payerRepository.GetPayerOptionsByUnbilledLessons();
 
             Payers.Clear();
             foreach (var payer in payers) Payers.Add(payer);

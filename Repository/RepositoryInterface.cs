@@ -16,6 +16,7 @@ namespace Repository
         Task<PayerSummary> GetPayerSummaryNoOutstandingAsync(Guid payerId);
         Task<IEnumerable<PayerSummary>> GetPayersAsync();
         Task<IEnumerable<PayerOption>> GetPayerOptionsAsync();
+        Task<IEnumerable<PayerOption>> GetPayerOptionsByUnbilledLessons();
         Task AddAsync(Payer payer);
         Task DeleteAsync(Guid id);
         Task UpdateAsync(Guid payerId, string firstName, string lastName, 

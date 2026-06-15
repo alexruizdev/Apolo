@@ -172,5 +172,17 @@ namespace Apolo.Tests.Data
             Assert.AreEqual("David Garcia", options[1].FullName);
             Assert.AreEqual("Emma Brown", options[2].FullName);
         }
+
+        [TestMethod]
+        public async Task GetPayerOptionsByUnbilledLessons_ReturnsAlphabeticalPayers()
+        {
+            // Act
+            var options = (await _repository.GetPayerOptionsByUnbilledLessons()).ToList();
+
+            // Assert
+            Assert.AreEqual("Carlos Gomez - 1 lesson", options[0].FullName);
+            Assert.AreEqual("David Garcia", options[1].FullName);
+            Assert.AreEqual("Emma Brown", options[2].FullName);
+        }
     }
 }
