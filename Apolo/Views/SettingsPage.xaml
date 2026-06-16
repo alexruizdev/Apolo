@@ -16,6 +16,9 @@
             <!-- ========================================== -->
             <TextBlock Text="{x:Bind loc:Loc.Menu_Settings}" Style="{ThemeResource TitleLargeTextBlockStyle}" />
 
+            <HyperlinkButton Content="User manual"
+                             NavigateUri="https://github.com/alexruizdev/Apolo/wiki/Manual" />
+
             <StackPanel Spacing="4">
                 <ProgressBar IsIndeterminate="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
                 <InfoBar IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}"
