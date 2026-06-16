@@ -13,7 +13,7 @@ namespace Models
         bool IsPaid)
     { }
 
-    public sealed record LessonSummary(
+    public sealed record LessonSummary (
         Guid Id,
         DateOnly Date,
         string Name,
@@ -31,7 +31,7 @@ namespace Models
         bool IsWeekendOrHoliday,
         decimal WeekendFee,
         decimal Tip,
-        string? Notes)
+        string? Notes) : ISummary
     {
         public string ShortNote => Lesson.Truncate(Notes, 70);
     }

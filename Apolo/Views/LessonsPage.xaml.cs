@@ -63,9 +63,11 @@ namespace Apolo.Views
 
         private async void DeleteLesson_Click(object sender, RoutedEventArgs e)
         {
+            Guid? id = await ConfirmationDialog.ConfirmItemAction(sender, "delete lesson");
+            if (id is not null)
+                await ViewModel.DeleteLessonAsync(id.Value);
             if (sender is not Button b || b.DataContext is not LessonSummary row) return;
 
-            await ViewModel.DeleteLessonAsync(row.Id);
         }
 
         private async void ChangePayment_Click(object sender, RoutedEventArgs e)

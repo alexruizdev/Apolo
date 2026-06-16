@@ -56,7 +56,7 @@ namespace ViewModels
                 Price = specification.Price.Value;
             IsOnline = specification.IsOnline;
             IsWeekendOrHoliday = specification.IsWeekendOrHoliday;
-            Name = specification.SpecificationName;
+            Name = specification.Name;
 
             _specificationId = specification.Id;
 

@@ -65,7 +65,7 @@
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <TextBlock Text="{x:Bind StudentName}" Style="{ThemeResource BodyStrongTextBlockStyle}" />
                                 <TextBlock Text="•" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
-                                <TextBlock Text="{x:Bind SpecificationName}" Style="{ThemeResource BodyTextBlockStyle}" />
+                                <TextBlock Text="{x:Bind Name}" Style="{ThemeResource BodyTextBlockStyle}" />
                             </StackPanel>
 
                             <!-- Service, Duration, and Price Sub-Details -->

@@ -9,7 +9,7 @@ namespace Apolo.Tests.Models
         public void TestPayerSummaryFullName()
         {
             var payer = new PayerSummary(new System.Guid(), "First", "Name", 0, null, null, null, null);
-            Assert.AreEqual("First Name", payer.FullName);
+            Assert.AreEqual("First Name", payer.Name);
         }
 
         [TestMethod]
@@ -33,7 +33,7 @@ namespace Apolo.Tests.Models
         public void TestStudentSummaryFullName()
         {
             var student = new StudentSummary(new System.Guid(), "First", "Name", new System.Guid(), "Payer Name");
-            Assert.AreEqual("First Name", student.FullName);
+            Assert.AreEqual("First Name", student.Name);
         }
 
         [TestMethod]

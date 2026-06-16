@@ -24,7 +24,7 @@ namespace Apolo.Tests.Data
             // Assert
             Assert.HasCount(10, results);
 
-            Assert.AreEqual("Spanish Practice - Sofia", results[0].SpecificationName);
+            Assert.AreEqual("Spanish Practice - Sofia", results[0].Name);
             Assert.AreEqual("Sofia Lopez", results[0].StudentName);
             Assert.AreEqual("Math Tutoring", results[0].ServiceName);
             Assert.AreEqual(45, results[0].DurationMinutes);

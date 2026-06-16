@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Models
 {
-    public sealed record ServiceSummary (Guid Id, string Name, bool IsPricePerHour, double Price);
+    public sealed record ServiceSummary (Guid Id, string Name, bool IsPricePerHour, double Price) : ISummary;
     public sealed class Service
     {
         public Guid Id { get; set; } = Guid.NewGuid();

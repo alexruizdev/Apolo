@@ -9,9 +9,9 @@ namespace Models
         string? Address,
         string? Zip, 
         string? City, 
-        string? TaxId)
+        string? TaxId) : ISummary
     {
-        public string FullName => Helper.GetFullName(FirstName, LastName);
+        public string Name => Helper.GetFullName(FirstName, LastName);
     }
 
     public class PayerActivityInfo

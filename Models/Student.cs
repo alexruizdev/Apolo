@@ -3,9 +3,9 @@
     public sealed record StudentOption(Guid Id, string FullName);
 
     public sealed record StudentSummary(Guid Id, string FirstName, string LastName,
-        Guid PayerId, string PayerName)
+        Guid PayerId, string PayerName) : ISummary
     {
-        public string FullName => Helper.GetFullName(FirstName, LastName);
+        public string Name => Helper.GetFullName(FirstName, LastName);
     }
 
     public sealed class Student

@@ -1,10 +1,10 @@
+using Apolo.Controls;
 using Apolo.Services;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Models;
 using System;
-using Windows.Devices.Enumeration;
 
 namespace Apolo.ViewModels
 {
@@ -22,26 +22,10 @@ namespace Apolo.ViewModels
 
         private async void DeleteStudent_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not Button btn)
-                return;
-            if (btn.DataContext is not StudentSummary item)
-                return;
-
-            var dialog = new ContentDialog()
+            Guid? id = await ConfirmationDialog.ConfirmItemAction(sender, "delete student");
+            if (id is not null)
             {
-                Title = "Delete student?",
-                Content = $"This will delete student '{item.FullName}'. \n"
-                 + $"Note: related specifications and lessons will also be removed.",
-                PrimaryButtonText = Loc.Buttons_Delete,
-                CloseButtonText = Loc.Buttons_Cancel,
-                DefaultButton = ContentDialogButton.Close,
-                XamlRoot = Content.XamlRoot
-            };
-
-            var result = await dialog.ShowAsync();
-            if (result == ContentDialogResult.Primary)
-            {
-                await ViewModel.DeleteStudentAsync(item.Id);
+                await ViewModel.DeleteStudentAsync(id.Value);
             }
         }
 
@@ -53,7 +37,7 @@ namespace Apolo.ViewModels
             {
                 Header = "Payer (optional if student is payer)",
                 ItemsSource = ViewModel.Payers,
-                DisplayMemberPath = "FullName",
+                DisplayMemberPath = "Name",
                 SelectedValuePath = "Id"
             };
 
@@ -98,7 +82,7 @@ namespace Apolo.ViewModels
                 Header = Loc.Box_Payer,
                 ItemsSource = ViewModel.Payers,
                 SelectedValuePath = "Id",
-                DisplayMemberPath = "FullName",
+                DisplayMemberPath = "Name",
                 SelectedValue = item.PayerId
             };
 

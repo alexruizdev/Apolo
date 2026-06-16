@@ -171,7 +171,7 @@ namespace Apolo.ViewModels
                 await _specificationRepository.DeleteAsync(id);
 
                 Specifications.Remove(oldSpec.value);
-                SetExitFunction($"Specification '{oldSpec.value.SpecificationName}' deleted for {oldSpec.value.StudentName}.",
+                SetExitFunction($"Specification '{oldSpec.value.Name}' deleted for {oldSpec.value.StudentName}.",
                     InfoBarType.Success);
             }
             catch (DbUpdateException ex)
@@ -226,7 +226,7 @@ namespace Apolo.ViewModels
                 var serviceName = Services.First(s => s.Id == serviceId).Name;
                 Specifications[oldSpec.index] = oldSpec.value with
                 {
-                    SpecificationName = name,
+                    Name = name,
                     DurationMinutes = durationMinutes,
                     Price = price,
                     IsOnline = isOnline,
@@ -234,7 +234,7 @@ namespace Apolo.ViewModels
                     ServiceId = serviceId,
                     ServiceName = serviceName
                 };
-                SetExitFunction($"Specification '{oldSpec.value.SpecificationName}' updated for {oldSpec.value.StudentName}.",
+                SetExitFunction($"Specification '{oldSpec.value.Name}' updated for {oldSpec.value.StudentName}.",
                     InfoBarType.Success);
             }
             catch (DbUpdateException ex)

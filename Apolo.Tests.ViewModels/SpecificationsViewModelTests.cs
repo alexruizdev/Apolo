@@ -104,7 +104,7 @@ namespace Apolo.Tests.ViewModels
                 "Student", Guid.NewGuid(), "Service", 60, null, false, false, 0);
             _viewModel.Specifications.Add(spec);
             var result = _viewModel.GetSpecification(spec.Id);
-            Assert.AreEqual(spec.SpecificationName, result.value.SpecificationName);
+            Assert.AreEqual(spec.Name, result.value.Name);
             Assert.AreEqual(0, result.index);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.IsNull(_viewModel.InfoMessage);
@@ -175,7 +175,7 @@ namespace Apolo.Tests.ViewModels
             var addedSpecification = _viewModel.Specifications.First();
             Assert.AreEqual("New Man", addedStudent.FullName);
             Assert.AreEqual("New Service", addedService.Name);
-            Assert.AreEqual("New Default", addedSpecification.SpecificationName);
+            Assert.AreEqual("New Default", addedSpecification.Name);
         }
 
         [TestMethod]
@@ -328,7 +328,7 @@ namespace Apolo.Tests.ViewModels
             _mockSpecificationRepo.Verify(r => r.AddSpecificationAsync(It.IsAny<Specification>()), Times.Once);
 
             var addedSpecification = _viewModel.Specifications.First();
-            Assert.AreEqual("Specification", addedSpecification.SpecificationName);
+            Assert.AreEqual("Specification", addedSpecification.Name);
             Assert.AreEqual(student.Id, addedSpecification.StudentId);
             Assert.AreEqual(student.FullName, addedSpecification.StudentName);
             Assert.AreEqual(service.Id, addedSpecification.ServiceId);
@@ -412,7 +412,7 @@ namespace Apolo.Tests.ViewModels
             VerifyAction("Specification 'Spec' deleted for Student.", InfoBarType.Success, isOpen: true,
                 studentsCount: 1, servicesCount: 1, specCount: 1);
             _mockSpecificationRepo.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Once);
-            Assert.AreEqual("Spec to keep", _viewModel.Specifications[0].SpecificationName); // Only the kept item remains
+            Assert.AreEqual("Spec to keep", _viewModel.Specifications[0].Name); // Only the kept item remains
         }
 
         // --- UpdateSpecificationAsync Tests ---
@@ -461,11 +461,11 @@ namespace Apolo.Tests.ViewModels
 
             // The item at index 0 should be our updated record
             var updatedItem = _viewModel.Specifications[0];
-            Assert.AreEqual(success ? "Specification" : "Spec", updatedItem.SpecificationName);
+            Assert.AreEqual(success ? "Specification" : "Spec", updatedItem.Name);
             Assert.AreEqual(success ? "Service2" : "Service1", updatedItem.ServiceName);
 
             // Unrelated item should be untouched
-            Assert.AreEqual("Keep Specification", _viewModel.Specifications[1].SpecificationName);
+            Assert.AreEqual("Keep Specification", _viewModel.Specifications[1].Name);
         }
 
         [TestMethod]

@@ -1,3 +1,4 @@
+using Apolo.Controls;
 using Apolo.Services;
 using Apolo.ViewModels;
 using CommunityToolkit.Mvvm.DependencyInjection;
@@ -22,44 +23,14 @@ namespace Apolo.Views
 
         private async void DeleteDatabaseButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not Button button) return;
-
-            var dialog = new ContentDialog
-            {
-                Title = "Confirm Deletion",
-                Content = "Are you sure you want to delete the entire database? This action cannot be undone.",
-                PrimaryButtonText = "Delete",
-                CloseButtonText = "Cancel",
-                XamlRoot = this.XamlRoot
-            };
-
-            var result = await dialog.ShowAsync();
-
-            if (result != ContentDialogResult.Primary)
-                return;
-            
-            await ViewModel.ClearDatabaseAsync();
+            if (await ConfirmationDialog.ConfirmAction(sender, "delete database"))
+                await ViewModel.ClearDatabaseAsync();
         }
 
         private async void DeleteArchiveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not Button button) return;
-
-            var dialog = new ContentDialog
-            {
-                Title = "Confirm Deletion",
-                Content = "Are you sure you want to delete the entire archive? This action cannot be undone.",
-                PrimaryButtonText = "Delete",
-                CloseButtonText = "Cancel",
-                XamlRoot = this.XamlRoot
-            };
-
-            var result = await dialog.ShowAsync();
-
-            if (result != ContentDialogResult.Primary)
-                return;
-
-            await ViewModel.ClearArchiveAsync();
+            if (await ConfirmationDialog.ConfirmAction(sender, "delete archive"))
+                await ViewModel.ClearArchiveAsync();
         }
 
         private async void ExportExcelButton_Click(object sender, RoutedEventArgs e)
@@ -173,7 +144,7 @@ namespace Apolo.Views
                 ItemsSource = payers,
                 MaxHeight = 240
             };
-            payersList.DisplayMemberPath = "FullName";
+            payersList.DisplayMemberPath = "Name";
 
             var panel = new StackPanel { Spacing = 8 };
             panel.Children.Add(payersList);

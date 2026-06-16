@@ -221,5 +221,11 @@ namespace Models
 
             return (services, payers, students, specs, lessons, billingDocuments);
         }
+
+    }
+    public interface ISummary
+    {
+        Guid Id { get; }
+        string Name { get; }
     }
 }

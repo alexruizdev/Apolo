@@ -68,7 +68,7 @@ namespace PDF
                             r.RelativeItem().Border(1).Padding(8).Column(c =>
                             {
                                 c.Item().Text("Invoice to:").SemiBold();
-                                c.Item().Text(payer.FullName);
+                                c.Item().Text(payer.Name);
                                 if (!string.IsNullOrWhiteSpace(payer.Address))
                                     c.Item().Text(payer.Address);
                                 if (!string.IsNullOrWhiteSpace(payer.Zip) || !string.IsNullOrWhiteSpace(payer.City))

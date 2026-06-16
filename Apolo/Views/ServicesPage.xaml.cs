@@ -1,3 +1,4 @@
+using Apolo.Controls;
 using Apolo.Services;
 using Apolo.ViewModels;
 using CommunityToolkit.Mvvm.DependencyInjection;
@@ -23,27 +24,9 @@ public sealed partial class ServicesPage : Page
 
     private async void DeleteService_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not Button btn)
-            return;
-        if (btn.DataContext is not ServiceSummary item)
-            return;
-
-        var dialog = new ContentDialog()
-        {
-            Title = "Delete service?",
-            Content = $"This will delete service '{item.Name}'. \n"
-             + $"Note: related specifications will also be removed.",
-            PrimaryButtonText = Loc.Buttons_Delete,
-            CloseButtonText = Loc.Buttons_Cancel,
-            DefaultButton = ContentDialogButton.Close,
-            XamlRoot = Content.XamlRoot
-        };
-
-        var result = await dialog.ShowAsync();
-        if (result == ContentDialogResult.Primary)
-        {
-            await ViewModel.DeleteServiceAsync(item.Id);
-        }
+        Guid? id = await ConfirmationDialog.ConfirmItemAction(sender, "delete service");
+        if (id is not null)
+            await ViewModel.DeleteServiceAsync(id.Value);
     }
 
     private async void EditService_Click(object sender, RoutedEventArgs e)

@@ -129,7 +129,7 @@ namespace Apolo.ViewModels
                 await _payerRepository.DeleteAsync(id);
 
                 Payers.Remove(oldPayer);
-                SetExitFunction($"Payer '{oldPayer.FullName}' deleted successfully.", InfoBarType.Success);
+                SetExitFunction($"Payer '{oldPayer.Name}' deleted successfully.", InfoBarType.Success);
             }
             catch (DbUpdateException ex)
             {
@@ -169,7 +169,7 @@ namespace Apolo.ViewModels
                     City = city,
                     TaxId = taxId
                 }; 
-                SetExitFunction($"Payer '{oldPayer.FullName}' updated successfully.", InfoBarType.Success);
+                SetExitFunction($"Payer '{oldPayer.Name}' updated successfully.", InfoBarType.Success);
             }
             catch (DbUpdateException ex)
             {

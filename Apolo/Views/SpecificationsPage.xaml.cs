@@ -25,25 +25,10 @@ public sealed partial class SpecificationsPage : Page
 
     private async void DeleteSpecification_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not Button btn)
-            return;
-        if (btn.DataContext is not SpecificationSummary item)
-            return;
-
-        var dialog = new ContentDialog()
+        Guid? id = await ConfirmationDialog.ConfirmItemAction(sender, "delete specification");
+        if (id is not null)
         {
-            Title = "Delete specification?",
-            Content = $"This will delete specification '{item.StudentName} {item.ServiceName}'.",
-            PrimaryButtonText = Loc.Buttons_Delete,
-            CloseButtonText = Loc.Buttons_Cancel,
-            DefaultButton = ContentDialogButton.Close,
-            XamlRoot = Content.XamlRoot
-        };
-
-        var result = await dialog.ShowAsync();
-        if (result == ContentDialogResult.Primary)
-        {
-            await ViewModel.DeleteSpecificationAsync(item.Id);
+            await ViewModel.DeleteSpecificationAsync(id.Value);
         }
     }
 
@@ -121,7 +106,7 @@ public sealed partial class SpecificationsPage : Page
 
         var dialog = new ContentDialog()
         {
-Title = "Create lesson",
+            Title = "Create lesson",
             Content = viewer,
             PrimaryButtonText = "Create",
             CloseButtonText = Loc.Buttons_Cancel,
@@ -133,14 +118,14 @@ Title = "Create lesson",
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
         {
-var dto = datePicker.Date ?? DateTimeOffset.Now;
+            var dto = datePicker.Date ?? DateTimeOffset.Now;
             var date = DateOnly.FromDateTime(dto.Date);
             var notes = string.IsNullOrWhiteSpace(noteBox.Text) ? null : noteBox.Text;
             decimal tip = 0;
             if (!double.IsNaN(tipBox.Value))
                 tip = (decimal)tipBox.Value;
             await ViewModel.CreateLessonFromSpecificationAsync(item.Id, date, tip, notes);
-await ViewModel.RefreshSpecifications(); // Refresh the specifications to update the usage count
+            await ViewModel.RefreshSpecifications(); // Refresh the specifications to update the usage count
         }
     }
 
