@@ -96,7 +96,7 @@ namespace Apolo.Tests.ViewModels
             var payer = new PayerSummary(Guid.NewGuid(), "First", "Last", 0, null, null, null, null);
             _viewModel.Payers.Add(payer);
             var result = _viewModel.GetPayer(payer.Id);
-            Assert.AreEqual("First Last", payer.FullName);
+            Assert.AreEqual("First Last", payer.Name);
             Assert.AreEqual(0, result.index);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.IsNull(_viewModel.InfoMessage);
@@ -285,7 +285,7 @@ namespace Apolo.Tests.ViewModels
             // 2. Verify the UI list was updated correctly
             VerifyAction("Payer 'Old Man' deleted successfully.", InfoBarType.Success, isOpen: true, count: 1);
             _mockRepo.Verify(r => r.DeleteAsync(targetId), Times.Once);
-            Assert.AreEqual("New Man", _viewModel.Payers[0].FullName); // Only the kept item remains
+            Assert.AreEqual("New Man", _viewModel.Payers[0].Name); // Only the kept item remains
         }
 
         // --- UpdatePayerAsync Tests ---
@@ -367,7 +367,7 @@ namespace Apolo.Tests.ViewModels
 
             // The item at index 0 should be our updated record
             var updatedItem = _viewModel.Payers[0];
-            Assert.AreEqual("New Name", updatedItem.FullName);
+            Assert.AreEqual("New Name", updatedItem.Name);
             Assert.AreEqual(55.0m, updatedItem.Outstanding);
             Assert.AreEqual("Address", updatedItem.Address);
             Assert.AreEqual("ZipCode", updatedItem.Zip);
@@ -375,7 +375,7 @@ namespace Apolo.Tests.ViewModels
             Assert.AreEqual("TaxId", updatedItem.TaxId);
 
             // Unrelated item should be untouched
-            Assert.AreEqual("Payer Name", _viewModel.Payers[1].FullName);
+            Assert.AreEqual("Payer Name", _viewModel.Payers[1].Name);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Apolo.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Models;
 using Moq;
 using Repository;
@@ -75,13 +76,13 @@ namespace Apolo.Tests.ViewModels
         [TestMethod]
         public void GetService()
         {
-            var service = new ServiceSummary(Guid.NewGuid(), "Old Service", false, 30);
-            _viewModel.Services.Add(service);
-            var result = _viewModel.GetService(service.Id);
-            Assert.AreEqual(service.Name, result.service.Name);
-            Assert.AreEqual(0, result.index);
-            Assert.IsFalse(_viewModel.IsBusy);
-            Assert.IsNull(_viewModel.InfoMessage);
+            var services = Helper.GetDummyServiceSummaries();
+            foreach (var service in services)
+                _viewModel.Services.Add(service);
+            var result = _viewModel.GetService(services[2].Id);
+            Assert.AreEqual("Language Lessons", result.service.Name);
+            Assert.AreEqual(2, result.index);
+            VerifyAction(null, InfoBarType.Success, isOpen: false, count: 6);
         }
 
         // --- LoadAsync Tests ---
@@ -100,12 +101,9 @@ namespace Apolo.Tests.ViewModels
         [TestMethod]
         public async Task LoadAsync_ValidInput_PopulatesServicesCollection()
         {
-            var firstLoad = new List<ServiceSummary>();
-            firstLoad.Add(new ServiceSummary(Guid.NewGuid(), "Old Math", true, 50.0));
-            firstLoad.Add(new ServiceSummary(Guid.NewGuid(), "Old Science", false, 40.0));
-            var secondLoad = new List<ServiceSummary>();
-            secondLoad.Add(new ServiceSummary(Guid.NewGuid(), "Math", true, 50.0));
-            secondLoad.Add(new ServiceSummary(Guid.NewGuid(), "Science", false, 40.0));
+            var services = Helper.GetDummyServiceSummaries();
+            var firstLoad = services.Take(3).ToList();
+            var secondLoad = services.Skip(3).ToList();
 
             _mockRepo.SetupSequence(r => r.GetServicesAsync())
              .ReturnsAsync(firstLoad)
@@ -120,9 +118,9 @@ namespace Apolo.Tests.ViewModels
             _mockRepo.Verify(r => r.GetServicesAsync(), Times.Exactly(2));
 
             // 2. Verify the UI collection was updated correctly
-            VerifyAction(null, InfoBarType.Success, isOpen: false, count: 2);
+            VerifyAction(null, InfoBarType.Success, isOpen: false, count: 3);
             var addedSummary = _viewModel.Services.First();
-            Assert.AreEqual("Math", addedSummary.Name);
+            Assert.AreEqual("Personal Coaching", addedSummary.Name);
             Assert.AreEqual(50.0, addedSummary.Price);
             Assert.IsTrue(addedSummary.IsPricePerHour);
         }

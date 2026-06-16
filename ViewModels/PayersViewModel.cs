@@ -102,15 +102,7 @@ namespace Apolo.ViewModels
                 await _payerRepository.AddAsync(payer);
 
                 // Append to UI (no unpaid items yet)
-                Payers.Add(new PayerSummary(
-                    payer.Id, 
-                    payer.FirstName, 
-                    payer.LastName, 
-                    0m, 
-                    payer.Address, 
-                    payer.ZipCode, 
-                    payer.City, 
-                    payer.TaxId));
+                Payers.Add(Helper.ConvertToPayerSummary(payer, 0));
                 SetExitFunction($"Payer '{payer.FullName}' added successfully.", InfoBarType.Success);
             }
             catch (DbUpdateException ex)
@@ -137,7 +129,7 @@ namespace Apolo.ViewModels
                 await _payerRepository.DeleteAsync(id);
 
                 Payers.Remove(oldPayer);
-                SetExitFunction($"Payer '{oldPayer.FullName}' deleted successfully.", InfoBarType.Success);
+                SetExitFunction($"Payer '{oldPayer.Name}' deleted successfully.", InfoBarType.Success);
             }
             catch (DbUpdateException ex)
             {
@@ -177,7 +169,7 @@ namespace Apolo.ViewModels
                     City = city,
                     TaxId = taxId
                 }; 
-                SetExitFunction($"Payer '{oldPayer.FullName}' updated successfully.", InfoBarType.Success);
+                SetExitFunction($"Payer '{oldPayer.Name}' updated successfully.", InfoBarType.Success);
             }
             catch (DbUpdateException ex)
             {

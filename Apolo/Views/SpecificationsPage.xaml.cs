@@ -1,12 +1,13 @@
+using Apolo.Controls;
 using Apolo.Services;
 using Apolo.ViewModels;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Navigation;
 using Models;
 using System;
-using System.Linq;
 
 namespace Apolo.Views;
 
@@ -24,79 +25,52 @@ public sealed partial class SpecificationsPage : Page
 
     private async void DeleteSpecification_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not Button btn)
-            return;
-        if (btn.DataContext is not SpecificationSummary item)
-            return;
-
-        var dialog = new ContentDialog()
+        Guid? id = await ConfirmationDialog.ConfirmItemAction(sender, "delete specification");
+        if (id is not null)
         {
-            Title = "Delete specification?",
-            Content = $"This will delete specification '{item.StudentName} {item.ServiceName}'.",
-            PrimaryButtonText = Loc.Buttons_Delete,
-            CloseButtonText = Loc.Buttons_Cancel,
-            DefaultButton = ContentDialogButton.Close,
-            XamlRoot = Content.XamlRoot
-        };
-
-        var result = await dialog.ShowAsync();
-        if (result == ContentDialogResult.Primary)
-        {
-            await ViewModel.DeleteSpecificationAsync(item.Id);
+            await ViewModel.DeleteSpecificationAsync(id.Value);
         }
     }
 
     private async void EditSpecification_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not Button btn)
-            return;
-        if (btn.DataContext is not SpecificationSummary item)
+        if (sender is not Button b || b.DataContext is not SpecificationSummary s)
             return;
 
-        // Prefill with the current names
-        var nameBox = new TextBox { Header = "Specification name", Text = item.SpecificationName, MinWidth = 320, MaxLength = 120 };
-        var durationBox = new NumberBox { Header = "Duration (minutes):", Value = item.DurationMinutes, SmallChange = 15, LargeChange = 30 };
-        var priceBox = new NumberBox { Header = "Price:", PlaceholderText = "leave empty to use service price", SmallChange = 15, LargeChange = 30 };
-        var onlineBox = new CheckBox { Content = "Online", IsChecked = item.IsOnline };
-        var weekendBox = new CheckBox { Content = "Weekend or holiday", IsChecked = item.IsWeekendOrHoliday };
-
-        if (item.Price is not null)
-            priceBox.Value = item.Price.Value;
-
-        var serviceBox = new ComboBox
-        {
-            Header = "Service",
-            ItemsSource = ViewModel.Services,
-            SelectedValuePath = "Id",
-            DisplayMemberPath = "Name",
-            SelectedValue = item.ServiceId
-        };
-
-        var panel = new StackPanel { Spacing = 8 };
-        panel.Children.Add(nameBox);
-        panel.Children.Add(durationBox);
-        panel.Children.Add(priceBox);
-        panel.Children.Add(onlineBox);
-        panel.Children.Add(weekendBox);
-        panel.Children.Add(serviceBox);
+        var formControl = new SpecificationFormDialog(ViewModel, s);
 
         var dialog = new ContentDialog()
         {
-            Title = "Edit specification",
-            Content = panel,
-            PrimaryButtonText = "Save",
+            PrimaryButtonText = "Edit",
             CloseButtonText = Loc.Buttons_Cancel,
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = Content.XamlRoot
         };
 
+        Binding operationsBinding = new Binding
+        {
+            Source = formControl.ViewModel,
+            Path = new PropertyPath("IsPrimaryButtonEnabled"),
+            Mode = BindingMode.OneWay
+        };
+        BindingOperations.SetBinding(dialog, ContentDialog.IsPrimaryButtonEnabledProperty, operationsBinding);
+
+        Binding dynamicTitleBinding = new Binding
+        {
+            Source = formControl.ViewModel,
+            Path = new PropertyPath("DialogTitle"),
+            Mode = BindingMode.OneWay
+        };
+        BindingOperations.SetBinding(dialog, ContentDialog.TitleProperty, dynamicTitleBinding);
+
+        dialog.Content = formControl;
+
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
         {
-            double? price = priceBox.Value == double.NaN ? null : priceBox.Value;
-            await ViewModel.UpdateSpecificationAsync(item.Id, nameBox.Text, (int)durationBox.Value, price,
-                onlineBox.IsChecked == true, weekendBox.IsChecked == true, (Guid)serviceBox.SelectedValue);
+            await formControl.ViewModel.EditSpecificationAsync();
         }
+
     }
 
     private async void CreateLesson_Click(object sender, RoutedEventArgs e)
@@ -140,7 +114,7 @@ public sealed partial class SpecificationsPage : Page
             XamlRoot = Content.XamlRoot
         };
 
-
+        
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
         {
@@ -157,85 +131,38 @@ public sealed partial class SpecificationsPage : Page
 
     private async void NewSpecification_Click(object sender, RoutedEventArgs e)
     {
-        var nameBox = new TextBox { Header = "Specification name", MinWidth = 320 };
-        var studentBox = new ComboBox
-        {
-            Header = "Student",
-            ItemsSource = ViewModel.Students,
-            DisplayMemberPath = "FullName",
-            SelectedValuePath = "Id"
-        };
-        var serviceBox = new ComboBox
-        {
-            Header = "Service",
-            ItemsSource = ViewModel.Services,
-            SelectedValuePath = "Id",
-            DisplayMemberPath = "Name"
-        };
-        var durationBox = new NumberBox { Header = "Duration (minutes):", Value = 60, SmallChange = 15, LargeChange = 30 };
-        var priceBox = new NumberBox { Header = "Price:", PlaceholderText = "leave empty to use service price", SmallChange = 15, LargeChange = 30 };
-        var onlineBox = new CheckBox { Content = "Online" };
-        var weekendBox = new CheckBox { Content = "Weekend or Holiday" };
-
-        var errorBar = new InfoBar
-        {
-            Severity = InfoBarSeverity.Error,
-            Title = "Missing Information",
-            Message = "Please select both a student and a service before creating.",
-            IsOpen = false,
-            Margin = new Thickness(0, 0, 0, 10)
-        };
-
-        var panel = new StackPanel { Spacing = 8 };
-        panel.Children.Add(errorBar);
-        panel.Children.Add(nameBox);
-        panel.Children.Add(studentBox);
-        panel.Children.Add(serviceBox);
-        panel.Children.Add(durationBox);
-        panel.Children.Add(priceBox);
-        panel.Children.Add(onlineBox);
-        panel.Children.Add(weekendBox);
+        var formControl = new SpecificationFormDialog(ViewModel);
 
         var dialog = new ContentDialog()
         {
-            Title = "Create specification",
-            Content = panel,
             PrimaryButtonText = "Create",
             CloseButtonText = Loc.Buttons_Cancel,
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = Content.XamlRoot
         };
 
-        // This event fires BEFORE the dialog closes
-        dialog.PrimaryButtonClick += (s, args) =>
+        Binding operationsBinding = new Binding
         {
-            bool isInvalid = studentBox.SelectedValue == null || serviceBox.SelectedValue == null;
-
-            if (isInvalid)
-            {
-                // 1. Stop the dialog from closing
-                args.Cancel = true;
-
-                // 2. Show the error message
-                errorBar.IsOpen = true;
-
-                // Optional: Visually highlight the missing fields
-                if (studentBox.SelectedValue == null) studentBox.Header = "Student (Required)";
-                if (serviceBox.SelectedValue == null) serviceBox.Header = "Service (Required)";
-            }
+            Source = formControl.ViewModel,
+            Path = new PropertyPath("IsPrimaryButtonEnabled"),
+            Mode = BindingMode.OneWay
         };
+        BindingOperations.SetBinding(dialog, ContentDialog.IsPrimaryButtonEnabledProperty, operationsBinding);
+
+        Binding dynamicTitleBinding = new Binding
+        {
+            Source = formControl.ViewModel,
+            Path = new PropertyPath("DialogTitle"),
+            Mode = BindingMode.OneWay
+        };
+        BindingOperations.SetBinding(dialog, ContentDialog.TitleProperty, dynamicTitleBinding);
+
+        dialog.Content = formControl;
 
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
         {
-            await ViewModel.AddSpecificationAsync(
-                nameBox.Text,
-                (int)durationBox.Value,
-                priceBox.Value == double.NaN ? null : priceBox.Value,
-                onlineBox.IsChecked == true,
-                weekendBox.IsChecked == true,
-                (Guid)studentBox.SelectedValue,
-                (Guid)serviceBox.SelectedValue);
+            await formControl.ViewModel.SaveSpecificationAsync();
         }
     }
 

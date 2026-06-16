@@ -84,8 +84,8 @@ namespace Apolo.ViewModels
                     Price = price
                 };
                 await _repository.AddAsync(entity);
-
-                Services.Add(new ServiceSummary(entity.Id, entity.Name, entity.IsPricePerHour, (double)entity.Price));
+                
+                Services.Add(Helper.ConvertToServiceSummary(entity));
                 SetExitFunction($"Service '{name}' added successfully.", InfoBarType.Success);
             }
             catch (DbUpdateException ex)

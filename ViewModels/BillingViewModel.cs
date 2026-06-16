@@ -1,5 +1,6 @@
 ﻿using Apolo.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
@@ -140,7 +141,7 @@ namespace Apolo.ViewModels
 
             SetEnterFunction();
 
-            var payers = await _payerRepository.GetPayerOptionsAsync();
+            var payers = await _payerRepository.GetPayerOptionsByUnbilledLessons();
 
             Payers.Clear();
             foreach (var payer in payers) Payers.Add(payer);
@@ -355,13 +356,14 @@ namespace Apolo.ViewModels
 
                 var filePath = Path.Combine(Profile.BillingFolder, $"{document.DocumentNumber}.pdf");
 
-                if (isInvoice)
-                    _pdfWriter.GenerateInvoice(document.DocumentNumber, payer, lessons, Profile, filePath);
-                else
-                    _pdfWriter.GenerateTicket(document.DocumentNumber, payer, lessons, Profile, filePath);
+                var dateText = document.CreatedUTC.ToString("dd/MM/yyyy");
 
-                Bill = new BillSummary(document.Id, document.PayerId, document.Type, document.DocumentNumber,
-                    document.CreatedUTC.ToString("dd/MM/yyyy"));
+                if (isInvoice)
+                    _pdfWriter.GenerateInvoice(document.DocumentNumber, payer, lessons, Profile, filePath, dateText);
+                else
+                    _pdfWriter.GenerateTicket(document.DocumentNumber, payer, lessons, Profile, filePath, dateText);
+
+                Bill = new BillSummary(document.Id, document.PayerId, document.Type, document.DocumentNumber, dateText);
                 EditMode = true;
                 SearchBillText = document.DocumentNumber;
 
@@ -373,6 +375,12 @@ namespace Apolo.ViewModels
                 foreach (var item in Lessons)
                     item.IsSelected = false;
 
+                // Update payers options
+                var payers = await _payerRepository.GetPayerOptionsByUnbilledLessons();
+
+                Payers.Clear();
+                foreach (var p in payers) Payers.Add(p);
+
                 var documentName = (isInvoice ? DocumentType.Invoice : DocumentType.Ticket).ToString();
                 SetExitFunction($"{documentName} saved to: {filePath}.", InfoBarType.Info);
             }
@@ -382,21 +390,32 @@ namespace Apolo.ViewModels
             }
         }
 
-        public async Task PrintDocument(string folderPath)
+        [RelayCommand]
+        public async Task PrintDocument()
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't print invoice while busy.", InfoBarType.Warning, false);
+                SetExitFunction("Can't print bill while busy.", InfoBarType.Warning, false);
                 return;
             }
+
+            SetEnterFunction();
+
+            if (!Path.Exists(Profile.BillingFolder))
+            {
+                SetExitFunction("Billing folder does not exist, please configure it properly in the settings view.",
+                    InfoBarType.Error);
+                return;
+            }
+
             var lessons = Lessons .Select(l => l.Data).ToList();
-            var filePath = Path.Combine(folderPath, $"{Bill.Name}.pdf");
+            var filePath = Path.Combine(Profile.BillingFolder, $"{Bill.Name}.pdf");
             var payer = await _payerRepository.GetPayerSummaryNoOutstandingAsync(Bill.payerId);
 
             if (Bill.type is DocumentType.Invoice)
-                _pdfWriter.GenerateInvoice(Bill.Name, payer, lessons, Profile, filePath);
+                _pdfWriter.GenerateInvoice(Bill.Name, payer, lessons, Profile, filePath, Bill.Date);
             else
-                _pdfWriter.GenerateTicket(Bill.Name, payer, lessons, Profile, filePath);
+                _pdfWriter.GenerateTicket(Bill.Name, payer, lessons, Profile, filePath, Bill.Date);
 
             SetExitFunction($"{Bill.Name} saved to: {filePath}.", InfoBarType.Info);
         }

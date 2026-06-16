@@ -173,6 +173,87 @@ namespace Apolo.ViewModels
             SetExitFunction($"Import completed ({elapsedTime}). Summary saved to {path}", InfoBarType.Success);
         }
 
+        public async Task ImportArchiveFromExcel(string file)
+        {
+            if (IsBusy)
+            {
+                SetExitFunction("Can't import archive from Excel while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            SetEnterFunction();
+
+            if (string.IsNullOrWhiteSpace(file))
+            {
+                SetExitFunction("No file selected.", InfoBarType.Warning);
+                return;
+            }
+
+            var root = Path.GetDirectoryName(file);
+            if (!Directory.Exists(root))
+            {
+                SetExitFunction($"Directory '{root}' does not exist.", InfoBarType.Error);
+                return;
+            }
+
+            var watch = Stopwatch.StartNew();
+
+            await Task.Run(async () => await _excelReader.ReadExcel(file));
+
+            // Insert data into database
+            await _repository.ImportArchiveAsync(
+                _excelReader.Payers,
+                _excelReader.Students,
+                _excelReader.Lessons,
+                _excelReader.Invoices);
+
+            string path = await GenerateExportSummary(root,
+                _excelReader.Services.Count,
+                _excelReader.Payers.Count,
+                _excelReader.Students.Count,
+                _excelReader.Specifications.Count,
+                _excelReader.Lessons.Count,
+                _excelReader.Invoices.Count);
+
+            watch.Stop();
+            TimeSpan ts = watch.Elapsed;
+            string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}",
+                ts.Hours, ts.Minutes, ts.Seconds);
+
+            SetExitFunction($"Import completed ({elapsedTime}). Summary saved to {path}", InfoBarType.Success);
+        }
+
+        public async Task ExportArchiveToExcel(string installedPath)
+        {
+            if (IsBusy)
+            {
+                SetExitFunction("Can't export archive while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            SetEnterFunction();
+
+            if (!Directory.Exists(Profile.BackupFolder))
+            {
+                SetExitFunction($"Directory '{Profile.BackupFolder}' does not exist.", InfoBarType.Error);
+                return;
+            }
+
+            var watch = Stopwatch.StartNew();
+
+            string templatePath = Path.Combine(installedPath, "Assets", "Excel", "Template.xlsx");
+
+            var data = await _repository.ExportArchiveAsync();
+            _excelWriter.WriteExcel(templatePath, Profile.BackupFolder, in data, archive: true);
+
+            watch.Stop();
+            TimeSpan ts = watch.Elapsed;
+            string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}",
+                ts.Hours, ts.Minutes, ts.Seconds);
+
+            SetExitFunction($"Export completed ({elapsedTime}). File saved to {Profile.BackupFolder}", InfoBarType.Success);
+        }
+
         public async Task ExportDatabaseToExcel(string installedPath)
         {
             if (IsBusy)

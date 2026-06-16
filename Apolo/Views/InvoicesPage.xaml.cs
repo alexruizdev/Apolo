@@ -1,11 +1,10 @@
+using Apolo.Controls;
 using Apolo.ViewModels;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
-using Microsoft.Windows.Storage.Pickers;
 using Models;
-using System;
 
 namespace Apolo.Views
 {
@@ -34,30 +33,22 @@ namespace Apolo.Views
             => await ViewModel.MarkSelectedPaymentAsync(markAsPaid: false);
 
         private async void RemoveLesson_Click(object sender, RoutedEventArgs e)
-            => await ViewModel.RemoveSelectedLessonsAsync();
+        {
+            if (await ConfirmationDialog.ConfirmAction(sender, "remove selected lessons"))
+                await ViewModel.RemoveSelectedLessonsAsync();
+        }
 
         private async void DeleteBill_Click(object sender, RoutedEventArgs e)
-            => await ViewModel.DeleteBillAsync();
+        {
+            if (await ConfirmationDialog.ConfirmAction(sender, $"delete bill {ViewModel.Bill.Name}"))
+                await ViewModel.DeleteBillAsync();
+        }
 
         private async void CreateInvoice_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not Button button) return;
 
             await ViewModel.GenerateInvoice(isInvoice: true);
-        }
-
-        private async void PrintInvoice_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is not Button button) return;
-
-            // Ask where to save
-            var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
-            picker.CommitButtonText = "Pick a folder";
-
-            var folder = await picker.PickSingleFolderAsync();
-            if (folder == null) return;
-
-            await ViewModel.PrintDocument(folder.Path);
         }
 
         private async void CreateTicket_Click(object sender, RoutedEventArgs e)

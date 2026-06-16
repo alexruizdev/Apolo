@@ -97,7 +97,7 @@ namespace Apolo.ViewModels
                     };
 
                     await _payerRepository.AddAsync(payer);
-                    Payers.Add(new PayerOption(payer.Id, payer.FullName));
+                    Payers.Add(Helper.ConvertToPayerOption(payer));
                     payerId = payer.Id;
                     additionalMessage = " Created payer with same name.";
                 }
@@ -140,7 +140,7 @@ namespace Apolo.ViewModels
                 await _studentRepository.DeleteAsync(id);
 
                 Students.Remove(oldStudent);
-                SetExitFunction($"Student '{oldStudent.FullName}' deleted successfully.", InfoBarType.Success);
+                SetExitFunction($"Student '{oldStudent.Name}' deleted successfully.", InfoBarType.Success);
             }
             catch (DbUpdateException ex)
             {
@@ -175,7 +175,7 @@ namespace Apolo.ViewModels
                     PayerId = newPayerId,
                     PayerName = payerName
                 }; 
-                SetExitFunction($"Student '{oldStudent.FullName}' updated successfully.", InfoBarType.Success);
+                SetExitFunction($"Student '{oldStudent.Name}' updated successfully.", InfoBarType.Success);
             }
             catch (DbUpdateException ex)
             {

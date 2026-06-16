@@ -56,7 +56,7 @@
                         
                         <!-- INFO -->
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Spacing="10">
-                            <TextBlock Text="{x:Bind FullName}" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                            <TextBlock Text="{x:Bind Name}" Style="{ThemeResource BodyStrongTextBlockStyle}" />
                             <TextBlock Text="•" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
                             <TextBlock Style="{ThemeResource BodyTextBlockStyle}">
                                 <Run Text="Payer: "  Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />

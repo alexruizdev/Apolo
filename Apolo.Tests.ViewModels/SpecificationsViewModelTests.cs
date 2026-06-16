@@ -9,17 +9,17 @@ using ViewModels;
 namespace Apolo.Tests.ViewModels
 {
     [TestClass]
-    public class SpecificationsViewModelTests
+    public class SpecificationsViewModelBaseTests
     {
-        private Mock<ISpecificationRepository> _mockSpecificationRepo = null!;
-        private Mock<IStudentRepository> _mockStudentRepo = null!;
-        private Mock<IServiceRepository> _mockServiceRepo = null!;
-        private Mock<ILessonRepository> _mockLessonRepo = null!;
-        private Mock<IUserProfileService> _mockUserProfileService = null!;
-        private SpecificationsViewModel _viewModel = null!;
+        protected Mock<ISpecificationRepository> _mockSpecificationRepo = null!;
+        protected Mock<IStudentRepository> _mockStudentRepo = null!;
+        protected Mock<IServiceRepository> _mockServiceRepo = null!;
+        protected Mock<ILessonRepository> _mockLessonRepo = null!;
+        protected Mock<IUserProfileService> _mockUserProfileService = null!;
+        protected SpecificationsViewModel _viewModel = null!;
 
         [TestInitialize]
-        public void TestInit()
+        public virtual void TestInit()
         {
             _mockSpecificationRepo = new Mock<ISpecificationRepository>();
             _mockStudentRepo = new Mock<IStudentRepository>();
@@ -43,6 +43,12 @@ namespace Apolo.Tests.ViewModels
                 _mockLessonRepo.Object,
                 _mockUserProfileService.Object);
         }
+    }
+
+    [TestClass]
+    public class SpecificationsViewModelTests : SpecificationsViewModelBaseTests
+    {
+        
 
         void VerifyAction(string? message, InfoBarType severity, bool isOpen, int specCount, int studentsCount, int servicesCount, bool isBusy = false)
         {
@@ -98,7 +104,7 @@ namespace Apolo.Tests.ViewModels
                 "Student", Guid.NewGuid(), "Service", 60, null, false, false, 0);
             _viewModel.Specifications.Add(spec);
             var result = _viewModel.GetSpecification(spec.Id);
-            Assert.AreEqual(spec.SpecificationName, result.value.SpecificationName);
+            Assert.AreEqual(spec.Name, result.value.Name);
             Assert.AreEqual(0, result.index);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.IsNull(_viewModel.InfoMessage);
@@ -163,13 +169,13 @@ namespace Apolo.Tests.ViewModels
             _mockSpecificationRepo.Verify(r => r.GetSpecificationsAsync(), Times.Exactly(2));
 
             // 2. Verify the UI collection was updated correctly
-            VerifyAction(null, InfoBarType.Success, isOpen: false, specCount: 2, studentsCount: 2, servicesCount: 2);
+            VerifyAction("2 loaded.", InfoBarType.Success, isOpen: true, specCount: 2, studentsCount: 2, servicesCount: 2);
             var addedStudent = _viewModel.Students.First();
             var addedService = _viewModel.Services.First();
             var addedSpecification = _viewModel.Specifications.First();
             Assert.AreEqual("New Man", addedStudent.FullName);
             Assert.AreEqual("New Service", addedService.Name);
-            Assert.AreEqual("New Default", addedSpecification.SpecificationName);
+            Assert.AreEqual("New Default", addedSpecification.Name);
         }
 
         [TestMethod]
@@ -189,7 +195,7 @@ namespace Apolo.Tests.ViewModels
             _mockServiceRepo.Verify(r => r.GetServicesAsync(), Times.Once);
             _mockSpecificationRepo.Verify(r => r.GetSpecificationsAsync(), Times.Once);
 
-            VerifyAction(null, InfoBarType.Success, isOpen: false, specCount: 0, studentsCount: 0, servicesCount: 0);
+            VerifyAction("0 loaded.", InfoBarType.Success, isOpen: true, specCount: 0, studentsCount: 0, servicesCount: 0);
         }
 
         // --- Refresh specifications Tests ---
@@ -322,7 +328,7 @@ namespace Apolo.Tests.ViewModels
             _mockSpecificationRepo.Verify(r => r.AddSpecificationAsync(It.IsAny<Specification>()), Times.Once);
 
             var addedSpecification = _viewModel.Specifications.First();
-            Assert.AreEqual("Specification", addedSpecification.SpecificationName);
+            Assert.AreEqual("Specification", addedSpecification.Name);
             Assert.AreEqual(student.Id, addedSpecification.StudentId);
             Assert.AreEqual(student.FullName, addedSpecification.StudentName);
             Assert.AreEqual(service.Id, addedSpecification.ServiceId);
@@ -406,7 +412,7 @@ namespace Apolo.Tests.ViewModels
             VerifyAction("Specification 'Spec' deleted for Student.", InfoBarType.Success, isOpen: true,
                 studentsCount: 1, servicesCount: 1, specCount: 1);
             _mockSpecificationRepo.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Once);
-            Assert.AreEqual("Spec to keep", _viewModel.Specifications[0].SpecificationName); // Only the kept item remains
+            Assert.AreEqual("Spec to keep", _viewModel.Specifications[0].Name); // Only the kept item remains
         }
 
         // --- UpdateSpecificationAsync Tests ---
@@ -455,11 +461,11 @@ namespace Apolo.Tests.ViewModels
 
             // The item at index 0 should be our updated record
             var updatedItem = _viewModel.Specifications[0];
-            Assert.AreEqual(success ? "Specification" : "Spec", updatedItem.SpecificationName);
+            Assert.AreEqual(success ? "Specification" : "Spec", updatedItem.Name);
             Assert.AreEqual(success ? "Service2" : "Service1", updatedItem.ServiceName);
 
             // Unrelated item should be untouched
-            Assert.AreEqual("Keep Specification", _viewModel.Specifications[1].SpecificationName);
+            Assert.AreEqual("Keep Specification", _viewModel.Specifications[1].Name);
         }
 
         [TestMethod]

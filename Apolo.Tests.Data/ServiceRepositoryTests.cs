@@ -20,24 +20,17 @@ namespace Apolo.Tests.Data
         [TestMethod]
         public async Task GetServicesAsync_ReturnsAlphabeticalOrder()
         {
-            // Arrange
-            _context.Services.AddRange(
-                TestGenerator.CreateService1(),
-                TestGenerator.CreateService2()
-            );
-            await _context.SaveChangesAsync();
-
             // Act
             var results = (await _repository.GetServicesAsync()).ToList();
 
             // Assert
-            Assert.HasCount(2, results);
-            Assert.AreEqual(TestGenerator.ServiceName1, results[1].Name);
-            Assert.AreEqual(TestGenerator.ServiceName2, results[0].Name);
-            Assert.AreEqual(TestGenerator.ServicePrice1, (decimal)results[1].Price);
-            Assert.AreEqual(TestGenerator.ServicePrice2, (decimal)results[0].Price);
-            Assert.IsTrue(results[1].IsPricePerHour);
+            Assert.HasCount(6, results);
+            Assert.AreEqual("Exam Preparation Package", results[0].Name);
+            Assert.AreEqual(300, results[0].Price);
             Assert.IsFalse(results[0].IsPricePerHour);
+            Assert.AreEqual("Language Lessons", results[1].Name);
+            Assert.AreEqual(35, results[1].Price);
+            Assert.IsTrue(results[1].IsPricePerHour);
         }
 
         // --- ADD TESTS ---
@@ -46,31 +39,28 @@ namespace Apolo.Tests.Data
         public async Task AddAsync_ValidService_SavesSuccessfully()
         {
             // Arrange
-            var service = TestGenerator.CreateService1();
+            var service = new Service { Name = "Test Service", IsPricePerHour = true, Price = 45.50m };
 
             // Act
             await _repository.AddAsync(service);
 
             // Assert
-            var saved = _context.Services.FirstOrDefault(s => s.Name == TestGenerator.ServiceName1);
+            var saved = _context.Services.FirstOrDefault(s => s.Id == service.Id);
             Assert.IsNotNull(saved);
-            Assert.AreEqual(TestGenerator.ServiceName1, saved.Name);
-            Assert.AreEqual(TestGenerator.ServicePrice1, (decimal)saved.Price);
+            Assert.AreEqual("Test Service", saved.Name);
+            Assert.AreEqual(45.50m, saved.Price);
             Assert.IsTrue(saved.IsPricePerHour);
         }
 
         [TestMethod]
         public async Task AddAsync_DuplicateName_ThrowsException()
         {
-            // Arrange
-            _context.Services.Add(TestGenerator.CreateService1());
-            await _context.SaveChangesAsync();
-            var duplicate = TestGenerator.CreateServiceDuplicate1();
+            var service = new Service { Name = "Math Tutoring", IsPricePerHour = true, Price = 45.50m };
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidDataException>(async () =>
             {
-                await _repository.AddAsync(duplicate);
+                await _repository.AddAsync(service);
             });
         }
 
@@ -80,9 +70,7 @@ namespace Apolo.Tests.Data
         public async Task DeleteAsync_ExistingId_RemovesFromDb()
         {
             // Arrange
-            var id = Guid.NewGuid();
-            _context.Services.Add(TestGenerator.CreateTemporaryService(id));
-            await _context.SaveChangesAsync();
+            var id = _data.Services[0].Id;
 
             // Act
             await _repository.DeleteAsync(id);
@@ -107,9 +95,7 @@ namespace Apolo.Tests.Data
         public async Task UpdateAsync_ValidChanges_UpdatesProperties()
         {
             // Arrange
-            var id = Guid.NewGuid();
-            _context.Services.Add(new Service { Id = id, Name = "Old Name", IsPricePerHour = false, Price = 10 });
-            await _context.SaveChangesAsync();
+            var id = _data.Services[0].Id;
 
             // Act
             await _repository.UpdateAsync(id, "New Name", true, 99.99m);
@@ -125,19 +111,12 @@ namespace Apolo.Tests.Data
         [TestMethod]
         public async Task UpdateAsync_ChangingToExistingName_ThrowsException()
         {
-            // Arrange
-            var id1 = Guid.NewGuid();
-            var id2 = Guid.NewGuid();
-            _context.Services.AddRange(
-                new Service { Id = id1, Name = "Service A" },
-                new Service { Id = id2, Name = "Service B" }
-            );
-            await _context.SaveChangesAsync();
+            var id = _data.Services[0].Id;
+            var name = _data.Services[1].Name;
 
-            // Act: Try to rename Service B to "Service A"
             await Assert.ThrowsAsync<InvalidDataException>(async () =>
             {
-                await _repository.UpdateAsync(id2, "service a", false, 10);
+                await _repository.UpdateAsync(id, name, false, 10);
             });
         }
     }

@@ -18,134 +18,64 @@ namespace Apolo.Tests.Data
         [TestMethod]
         public async Task GetSpecificationsAsync_IncludesJoinedNames()
         {
-            // Arrange
-            var service = TestGenerator.CreateService1();
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student1 = TestGenerator.CreateStudent1(payer.Id);
-            var student2 = TestGenerator.CreateStudent2(payer.Id);
-
-            var spec1 = TestGenerator.CreateSpecification1(student1.Id, service.Id);
-            var spec2 = TestGenerator.CreateSpecification2(student2.Id, service.Id);
-
-            _context.Services.Add(service);
-            _context.Payers.Add(payer);
-            _context.Students.Add(student1);
-            _context.Students.Add(student2);
-            _context.Specifications.Add(spec1);
-            _context.Specifications.Add(spec2);
-            await _context.SaveChangesAsync();
-
             // Act
             var results = (await _repository.GetSpecificationsAsync()).ToList();
 
             // Assert
-            Assert.HasCount(2, results);
+            Assert.HasCount(10, results);
 
-            Assert.AreEqual(TestGenerator.SpecificationName2, results[0].SpecificationName);
-            Assert.AreEqual(student2.FullName, results[0].StudentName);
-            Assert.AreEqual(TestGenerator.ServiceName1, results[0].ServiceName);
-            Assert.AreEqual(TestGenerator.ShortDuration, results[0].DurationMinutes);
-            Assert.IsNull(results[0].Price);
+            Assert.AreEqual("Spanish Practice - Sofia", results[0].Name);
+            Assert.AreEqual("Sofia Lopez", results[0].StudentName);
+            Assert.AreEqual("Math Tutoring", results[0].ServiceName);
+            Assert.AreEqual(45, results[0].DurationMinutes);
+            Assert.AreEqual(35, results[0].Price);
             Assert.IsTrue(results[0].IsOnline);
             Assert.IsFalse(results[0].IsWeekendOrHoliday);
-            Assert.AreEqual(TestGenerator.specificationUsage2, results[0].UsageCount);
-
-            Assert.AreEqual(TestGenerator.SpecificationName1, results[1].SpecificationName);
-            Assert.AreEqual(student1.FullName, results[1].StudentName);
-            Assert.AreEqual(TestGenerator.ServiceName1, results[1].ServiceName);
-            Assert.AreEqual(TestGenerator.LongDuration, results[1].DurationMinutes);
-            Assert.IsNotNull(results[1].Price);
-            Assert.AreEqual((double)TestGenerator.ServicePrice2, results[1].Price!.Value);
-            Assert.IsFalse(results[1].IsOnline);
-            Assert.IsTrue(results[1].IsWeekendOrHoliday);
-            Assert.AreEqual(TestGenerator.specificationUsage1, results[1].UsageCount);
+            Assert.AreEqual(10, results[0].UsageCount);
         }
 
         [TestMethod]
         public async Task GetSpecificationsForStudentAsync()
         {
-            // Arrange
-            var service = TestGenerator.CreateService1();
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student1 = TestGenerator.CreateStudent1(payer.Id);
-            var student2 = TestGenerator.CreateStudent2(payer.Id);
-
-            var spec1 = TestGenerator.CreateSpecification1(student1.Id, service.Id);
-            var spec2 = TestGenerator.CreateSpecification2(student2.Id, service.Id);
-
-            _context.Services.Add(service);
-            _context.Payers.Add(payer);
-            _context.Students.Add(student1);
-            _context.Students.Add(student2);
-            _context.Specifications.Add(spec1);
-            _context.Specifications.Add(spec2);
-            await _context.SaveChangesAsync();
-
             // Act
-            var results = (await _repository.GetSpecificationsForStudentAsync([student1.Id])).ToList();
+            var results = (await _repository.GetSpecificationsForStudentAsync([_data.Students[9].Id])).ToList();
 
             // Assert
             Assert.HasCount(1, results);
 
-            Assert.AreEqual($"{TestGenerator.SpecificationName1} - {student1.FullName}", results[0].Display);
-            Assert.AreEqual(service.Id, results[0].ServiceId);
-            Assert.AreEqual((double)TestGenerator.ServicePrice2, results[0].Price!.Value);
-            Assert.AreEqual(TestGenerator.LongDuration, results[0].DurationMinutes);
-            Assert.IsFalse(results[0].IsOnline);
-            Assert.IsTrue(results[0].IsWeekend);
+            Assert.AreEqual($"French Lessons - Chloe - Chloe Dubois", results[0].Display);
+            Assert.AreEqual(_data.Services[0].Id, results[0].ServiceId);
+            Assert.AreEqual(55, results[0].Price!.Value);
+            Assert.AreEqual(60, results[0].DurationMinutes);
+            Assert.IsTrue(results[0].IsOnline);
+            Assert.IsFalse(results[0].IsWeekend);
         }
 
         [TestMethod]
         public async Task UpdateAsync_ModifiesAllFieldsSuccessfully()
         {
-            // Arrange
-            var service1 = TestGenerator.CreateService1();
-            var service2 = TestGenerator.CreateService2();
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student1 = TestGenerator.CreateStudent1(payer.Id);
-
-            var spec = TestGenerator.CreateSpecification1(student1.Id, service1.Id);
-
-            _context.Services.Add(service1);
-            _context.Services.Add(service2);
-            _context.Payers.Add(payer);
-            _context.Students.Add(student1);
-            _context.Specifications.Add(spec);
-            await _context.SaveChangesAsync();
 
             // Act
-            await _repository.UpdateAsync(spec.Id, service2.Id, "New Name", 90, 75.5m, true, false);
+            await _repository.UpdateAsync(_data.Specifications[0].Id, _data.Services[1].Id, "New Name", 90, 75.5m, true, false);
 
             // Assert
-            var updated = await _context.Specifications.FindAsync(spec.Id);
+            var updated = await _context.Specifications.FindAsync(_data.Specifications[0].Id);
             Assert.AreEqual("New Name", updated!.Name);
-            Assert.AreEqual(service2.Id, updated.ServiceId);
+            Assert.AreEqual(_data.Services[1].Id, updated.ServiceId);
             Assert.AreEqual(90, updated.DurationMinutes);
             Assert.AreEqual(75.5m, updated.Price);
             Assert.IsTrue(updated.IsOnline);
             Assert.IsFalse(updated.IsWeekendOrHoliday);
+            Assert.AreEqual(5, updated.UsageCount);
         }
 
         [TestMethod]
         public async Task UpdateAsync_InvalidServiceId_ThrowsDbUpdateException()
         {
-            // Arrange
-            var service1 = TestGenerator.CreateService1();
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student1 = TestGenerator.CreateStudent1(payer.Id);
-
-            var spec = TestGenerator.CreateSpecification1(student1.Id, service1.Id);
-
-            _context.Services.Add(service1);
-            _context.Payers.Add(payer);
-            _context.Students.Add(student1);
-            _context.Specifications.Add(spec);
-            await _context.SaveChangesAsync();
-
             // Act & Assert
             await Assert.ThrowsAsync<Microsoft.EntityFrameworkCore.DbUpdateException>(async () =>
             {
-                await _repository.UpdateAsync(spec.Id, Guid.NewGuid(), "New Name", 90, 75.5m, true, false);
+                await _repository.UpdateAsync(_data.Specifications[0].Id, Guid.NewGuid(), "New Name", 90, 75.5m, true, false);
             });
         }
 
@@ -178,44 +108,24 @@ namespace Apolo.Tests.Data
         [TestMethod]
         public async Task DeleteAsync()
         {
-            // Arrange: Create a Payer first because Student depends on PayerId
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student = TestGenerator.CreateStudent1(payer.Id);
-            var service = TestGenerator.CreateService1();
-            var spec = TestGenerator.CreateSpecification1(student.Id, service.Id);
-
-            _context.Payers.Add(payer);
-            _context.Students.Add(student);
-            _context.Services.Add(service);
-            _context.Specifications.Add(spec);
-            await _context.SaveChangesAsync();
-
             // Act
-            await _repository.DeleteAsync(spec.Id);
+            await _repository.DeleteAsync(_data.Specifications[0].Id);
 
             // Assert
-            Assert.HasCount(0, _context.Specifications);
+            Assert.HasCount(9, _context.Specifications);
         }
 
         [TestMethod]
         public async Task AddSpecificationAsync()
         {
-            // Arrange: Create a Payer first because Student depends on PayerId
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student = TestGenerator.CreateStudent1(payer.Id);
-            var service = TestGenerator.CreateService1();
-            var spec = TestGenerator.CreateSpecification1(student.Id, service.Id);
-
-            _context.Payers.Add(payer);
-            _context.Students.Add(student);
-            _context.Services.Add(service);
-            await _context.SaveChangesAsync();
-
+            var studentId = _data.Students[1].Id;
+            var serviceId = _data.Services[1].Id;
+            var spec = new Specification { Name = "Test", StudentId = studentId, ServiceId = serviceId, DurationMinutes = 60, Price = null, IsOnline = true, IsWeekendOrHoliday = false, UsageCount = 5 };
             // Act
             await _repository.AddSpecificationAsync(spec);
 
             // Assert
-            Assert.HasCount(1, _context.Specifications);
+            Assert.HasCount(11, _context.Specifications);
         }
 
         [TestMethod]
@@ -230,25 +140,13 @@ namespace Apolo.Tests.Data
         [TestMethod]
         public async Task IncreaseUsage()
         {
-            // Arrange: Create a Payer first because Student depends on PayerId
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student = TestGenerator.CreateStudent1(payer.Id);
-            var service = TestGenerator.CreateService1();
-            var spec = TestGenerator.CreateSpecification1(student.Id, service.Id);
-
-            _context.Payers.Add(payer);
-            _context.Students.Add(student);
-            _context.Services.Add(service);
-            _context.Specifications.Add(spec);
-            await _context.SaveChangesAsync();
-
             // Act
-            await _repository.IncrementUsageAsync(spec.Id);
+            await _repository.IncrementUsageAsync(_data.Specifications[0].Id);
 
             // Assert
-            var databaseSpec = await _context.Specifications.FindAsync(spec.Id);
+            var databaseSpec = await _context.Specifications.FindAsync(_data.Specifications[0].Id);
             Assert.IsNotNull(databaseSpec);
-            Assert.AreEqual(TestGenerator.specificationUsage1+1, databaseSpec.UsageCount);
+            Assert.AreEqual(6, databaseSpec.UsageCount);
         }
     }
 }

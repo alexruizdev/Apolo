@@ -82,7 +82,7 @@ namespace Apolo.Tests.ViewModels
             var student = new StudentSummary(Guid.NewGuid(), "First", "Last", Guid.NewGuid(), "Payer");
             _viewModel.Students.Add(student);
             var result = _viewModel.GetStudent(student.Id);
-            Assert.AreEqual("First Last", student.FullName);
+            Assert.AreEqual("First Last", student.Name);
             Assert.AreEqual(0, result.index);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.IsNull(_viewModel.InfoMessage);
@@ -138,7 +138,7 @@ namespace Apolo.Tests.ViewModels
             VerifyAction("2 loaded", InfoBarType.Success, isOpen: true, payersCount: 2, studentsCount: 2);
             var addedStudent = _viewModel.Students.First();
             var addedPayer = _viewModel.Payers.First();
-            Assert.AreEqual("New Human", addedStudent.FullName);
+            Assert.AreEqual("New Human", addedStudent.Name);
             Assert.AreEqual("New Man", addedPayer.FullName);
         }
 
@@ -327,7 +327,7 @@ namespace Apolo.Tests.ViewModels
             VerifyAction("Student 'Student Name' deleted successfully.", InfoBarType.Success, isOpen: true,
                 studentsCount: 1, payersCount: 1);
             _mockStudentRepo.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Once);
-            Assert.AreEqual("Keep Student", _viewModel.Students[0].FullName); // Only the kept item remains
+            Assert.AreEqual("Keep Student", _viewModel.Students[0].Name); // Only the kept item remains
         }
 
         // --- UpdateStudentAsync Tests ---
@@ -419,11 +419,11 @@ namespace Apolo.Tests.ViewModels
 
             // The item at index 0 should be our updated record
             var updatedItem = _viewModel.Students[0];
-            Assert.AreEqual("New Name", updatedItem.FullName);
+            Assert.AreEqual("New Name", updatedItem.Name);
             Assert.AreEqual(p2.FullName, updatedItem.PayerName);
 
             // Unrelated item should be untouched
-            Assert.AreEqual("Keep Student", _viewModel.Students[1].FullName);
+            Assert.AreEqual("Keep Student", _viewModel.Students[1].Name);
         }
     }
 }

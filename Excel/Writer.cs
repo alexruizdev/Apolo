@@ -1,4 +1,6 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Models;
 
 namespace Excel
@@ -7,15 +9,15 @@ namespace Excel
     {
         void WriteExcel(in string templatePath, in string folder, in (List<Service> services, List<Payer> payers,
             List<Student> students, List<Specification> specifications, List<Lesson> lessons, 
-            List<BillingDocument> bills) data);
+            List<BillingDocument> bills) data, bool archive = false);
     }
     public class Writer : IWriter
     {
         public void WriteExcel(in string templatePath, in string folder, in (List<Service> services, 
             List<Payer> payers, List<Student> students, List<Specification> specifications,
-            List<Lesson> lessons, List<BillingDocument> bills) data)
+            List<Lesson> lessons, List<BillingDocument> bills) data, bool archive = false)
         {
-            string destinationPath = Path.Combine(folder, $"Apolo_Export_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
+            string destinationPath = Path.Combine(folder, $"Apolo_{(archive ? "Archive" : "Export")}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
             try
             {
 
@@ -75,8 +77,8 @@ namespace Excel
 
                 row++;
             }
-
-            ResizeTable(table, services.Count());
+            if (services.Count > 0) 
+                ResizeTable(table, services.Count());
         }
 
         private void WritePayers(XLWorkbook workbook, in List<Payer> payers)
@@ -96,8 +98,8 @@ namespace Excel
 
                 row++;
             }
-
-            ResizeTable(table, payers.Count());
+            if (payers.Count > 0)
+                ResizeTable(table, payers.Count());
         }
 
         private void WriteStudents(XLWorkbook workbook, in List<Student> students, in List<Payer> payers)
@@ -117,8 +119,8 @@ namespace Excel
 
                 row++;
             }
-
-            ResizeTable(table, students.Count());
+            if (students.Count > 0)
+                ResizeTable(table, students.Count());
         }
 
         private void WriteSpecifications(XLWorkbook workbook, in List<Specification> specifications,
@@ -148,7 +150,8 @@ namespace Excel
                 row++;
             }
 
-            ResizeTable(table, specifications.Count());
+            if (specifications.Count > 0)
+                ResizeTable(table, specifications.Count());
         }
 
         private void WriteLessons(XLWorkbook workbook, in List<Lesson> lessons, in List<Student> students,
@@ -169,7 +172,7 @@ namespace Excel
                     billName = billLookup[id].DocumentNumber;
                     billId = id.ToString();
                 }
-                table.DataRange.Cell(row, 1).Value = lesson.Date.ToString("yyyy-MM-dd");
+                table.DataRange.Cell(row, 1).Value = lesson.Date.ToString("dd-MM-yyyy", System.Globalization.CultureInfo.InvariantCulture); ;
                 table.DataRange.Cell(row, 2).Value = lesson.Name;
                 table.DataRange.Cell(row, 3).Value = studentLookup[lesson.StudentId].FullName;
                 table.DataRange.Cell(row, 4).Value = lesson.FinalPrice;
@@ -191,7 +194,8 @@ namespace Excel
                 row++;
             }
 
-            ResizeTable(table, lessons.Count());
+            if (lessons.Count > 0)
+                ResizeTable(table, lessons.Count());
         }
 
         private void WriteInvoices(XLWorkbook workbook, in List<BillingDocument> bills,
@@ -213,7 +217,7 @@ namespace Excel
             {
                 table.DataRange.Cell(row, 1).Value = bill.DocumentNumber;
                 table.DataRange.Cell(row, 2).Value = bill.Type.ToString();
-                table.DataRange.Cell(row, 3).Value = bill.CreatedUTC.ToString();
+                table.DataRange.Cell(row, 3).Value = bill.CreatedUTC.ToString("dd-MM-yyyy HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
                 table.DataRange.Cell(row, 4).Value = payerLookup[bill.PayerId];
                 table.DataRange.Cell(row, 5).Value = billLookup[bill.Id];
                 table.DataRange.Cell(row, 6).Value = bill.PayerId.ToString();
@@ -223,7 +227,8 @@ namespace Excel
                 row++;
             }
 
-            ResizeTable(table, bills.Count());
+            if (bills.Count > 0)
+                ResizeTable(table, bills.Count());
         }
     }
 }

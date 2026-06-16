@@ -13,8 +13,18 @@
 		<EnableMsixTooling>true</EnableMsixTooling>
     <Nullable>enable</Nullable>
 	</PropertyGroup>
+	<ItemGroup>
+	  <Content Remove="Assets\BadgeLogo.scale-100.png" />
+	  <Content Remove="Assets\BadgeLogo.scale-125.png" />
+	  <Content Remove="Assets\BadgeLogo.scale-150.png" />
+	  <Content Remove="Assets\BadgeLogo.scale-200.png" />
+	  <Content Remove="Assets\BadgeLogo.scale-400.png" />
+	  <Content Remove="Assets\Excel\DummyData.xlsx" />
+	</ItemGroup>
 	
 	<ItemGroup>
+		<None Remove="Controls\LessonFormDialog.xaml" />
+		<None Remove="Controls\SpecificationFormDialog.xaml" />
 		<None Remove="CurstomersPage.xaml" />
 		<None Remove="HomePage.xaml" />
 		<None Remove="Themes\Styles.xaml" />
@@ -78,6 +88,12 @@
 	</ItemGroup>
 	
 	<ItemGroup>
+	  <Page Update="Controls\SpecificationFormDialog.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
+	</ItemGroup>
+	
+	<ItemGroup>
 		<Page Update="Views\SettingsPage.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</Page>
@@ -124,6 +140,11 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <Page Update="Styles\Styles.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
+	</ItemGroup>
+	<ItemGroup>
+	  <Page Update="Controls\LessonFormDialog.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </Page>
 	</ItemGroup>

@@ -20,8 +20,19 @@ namespace Apolo.ViewModels
         public ObservableCollection<StudentOption> Students { get; } = new();
         public ObservableCollection<ServiceSummary> Services { get; } = new();
 
-        [ObservableProperty] private bool shownOnlyUnpaid;
-        [ObservableProperty] private DateTimeOffset dateFiler;
+        // Filter
+        [ObservableProperty] private string _filterStudentName = string.Empty;
+        [ObservableProperty] private string _filterPayerName = string.Empty;
+        [ObservableProperty] private int _selectedPaymentStatusIndex = 0; // 0 = All, 1 = Paid, 2 = Unpaid
+        [ObservableProperty] private DateTimeOffset? _filterStartDate;
+        [ObservableProperty] private DateTimeOffset? _filterEndDate;
+        [ObservableProperty] private bool _areFiltersActive;
+        public bool CheckFilters =>
+            !string.IsNullOrWhiteSpace(FilterStudentName) ||
+            !string.IsNullOrWhiteSpace(FilterPayerName) ||
+            SelectedPaymentStatusIndex != 0 ||
+            FilterStartDate.HasValue ||
+            FilterEndDate.HasValue;
 
 
         public LessonsViewModel(ILessonRepository lessonRepository, IStudentRepository studentRepository, 
@@ -34,7 +45,7 @@ namespace Apolo.ViewModels
             _specificationRepository = specificationRepository;
             _userProfileService = userProfile;
             profile = userProfile.LoadProfileAsync().Result;
-            DateFiler = DateTimeOffset.Now.AddMonths(-2);
+            FilterStartDate = DateTimeOffset.Now.AddMonths(-2);
         }
 
         [RelayCommand]
@@ -58,12 +69,35 @@ namespace Apolo.ViewModels
             Services.Clear();
             foreach (var s in serviceItems) Services.Add(s);
 
-            var now = DateTimeOffset.UtcNow;
-            var months = ((now.Year - DateFiler.Year) * 12) + now.Month - DateFiler.Month;
-            var items = await _lessonRepository.GetLessonsAsync(ShownOnlyUnpaid, months > 0 ? months : null);
+            // Filters
+
+            // 1. Map ComboBox Index (0=All, 1=Paid, 2=Unpaid) to nullable bool
+            bool? repoIsPaid = SelectedPaymentStatusIndex switch
+            {
+                1 => true,
+                2 => false,
+                _ => null
+            };
+
+            // 2. Map DateTimeOffset? from WinUI DatePickers to EF-friendly DateOnly?
+            DateOnly? repoStartDate = FilterStartDate.HasValue
+                ? DateOnly.FromDateTime(FilterStartDate.Value.DateTime)
+                : null;
+
+            DateOnly? repoEndDate = FilterEndDate.HasValue
+                ? DateOnly.FromDateTime(FilterEndDate.Value.DateTime)
+                : null;
+
+            var items = await _lessonRepository.GetLessonsAsync(FilterStudentName,
+                FilterPayerName,
+                repoIsPaid,
+                repoStartDate,
+                repoEndDate);
 
             Lessons.Clear();
             foreach (var item in items) Lessons.Add(item);
+
+            AreFiltersActive = CheckFilters;
 
             SetExitFunction($"{Lessons.Count} loaded", InfoBarType.Success);
         }
@@ -165,7 +199,7 @@ namespace Apolo.ViewModels
                     lesson.StudentId,
                     student.item.FullName,
                     lesson.BillingDocumentId,
-                    string.Empty,  // TODO
+                    string.Empty, 
                     lesson.IsPricePerHour,
                     lesson.DurationMinutes,
                     lesson.BasePrice,
@@ -241,7 +275,7 @@ namespace Apolo.ViewModels
         }
 
         public async Task UpdateLessonAsync(Guid id, DateOnly date, string name,
-            bool isPricePerHour, int? duration, decimal pricePerLesson,
+            bool isPricePerHour, int? duration, decimal basePrice,
             bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip, string? note)
         {
             if (IsBusy)
@@ -252,7 +286,7 @@ namespace Apolo.ViewModels
 
             SetEnterFunction();
 
-            if (!ValidateLessonInput(ref name, ref duration, isPricePerHour, pricePerLesson, tip))
+            if (!ValidateLessonInput(ref name, ref duration, isPricePerHour, basePrice, tip))
                 return;
 
             var (oldItem, idx) = GetLesson(id);
@@ -260,7 +294,7 @@ namespace Apolo.ViewModels
             try
             {
                 var entity = await _lessonRepository.UpdateLesson(id, date, name, 
-                    isPricePerHour, duration, pricePerLesson,
+                    isPricePerHour, duration, basePrice,
                     isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, tip, note);
 
                 // Update item in UI list
@@ -268,6 +302,7 @@ namespace Apolo.ViewModels
                 {
                     Name = entity.Name,
                     Date = entity.Date,
+                    FinalPrice = entity.FinalPrice,
                     IsPricePerHour = entity.IsPricePerHour,
                     DurationMinutes = entity.DurationMinutes,
                     BasePrice = entity.BasePrice,
@@ -290,5 +325,26 @@ namespace Apolo.ViewModels
         {
             return await _specificationRepository.GetSpecificationsForStudentAsync(studentsIds);
         }
-    }
-}
+
+        [RelayCommand]
+        public async Task ClearFiltersAsync()
+        {
+            if (IsBusy)
+            {
+                SetExitFunction("Can't clear filters while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            SetEnterFunction();
+
+            FilterStudentName = string.Empty;
+            FilterPayerName = string.Empty;
+            SelectedPaymentStatusIndex = 0;
+            FilterStartDate = null;
+            FilterEndDate = null;
+
+            SetExitFunction();
+
+            await LoadAsync();
+        }
+}}

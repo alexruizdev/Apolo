@@ -136,4 +136,28 @@
         <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
     </Style>
 
+    <!-- ================================================================= -->
+    <!-- ROW INTERACTION BUTTONS                                           -->
+    <!-- ================================================================= -->
+
+    <!-- Scroll Viewer -->
+    <Style x:Key="MainScrollStyle" TargetType="ScrollViewer">
+        <Setter Property="Padding" Value="24" />
+        <Setter Property="MaxHeight" Value="600" />
+        <Setter Property="VerticalScrollMode" Value="Enabled" />
+        <Setter Property="VerticalScrollBarVisibility" Value="Hidden" />
+    </Style>
+
+    <Style x:Key="PriceNumberBox" TargetType="NumberBox">
+        <Setter Property="SpinButtonPlacementMode" Value="Inline"/>
+        <Setter Property="SmallChange" Value="2.5" />
+        <Setter Property="LargeChange" Value="5" />
+        <Setter Property="MaxWidth" Value="200" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+    </Style>
+    <Style x:Key="TimeNumberBox" TargetType="NumberBox">
+    <Setter Property="SpinButtonPlacementMode" Value="Inline"/>
+    <Setter Property="SmallChange" Value="15" />
+    <Setter Property="LargeChange" Value="30" />
+</Style>
 </ResourceDictionary>

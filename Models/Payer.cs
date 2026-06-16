@@ -1,4 +1,6 @@
-﻿namespace Models
+﻿using System.Globalization;
+
+namespace Models
 {
     public sealed record PayerSummary(Guid Id, 
         string FirstName, 
@@ -7,9 +9,9 @@
         string? Address,
         string? Zip, 
         string? City, 
-        string? TaxId)
+        string? TaxId) : ISummary
     {
-        public string FullName => Helper.GetFullName(FirstName, LastName);
+        public string Name => Helper.GetFullName(FirstName, LastName);
     }
 
     public class PayerActivityInfo
@@ -20,7 +22,7 @@
 
         // Helper to show a friendly string in the UI
         public string Display => PayerName + (LastLessonDate.HasValue
-            ? $" - Last activity: {LastLessonDate.Value:dd/MM/yyyy}"
+            ? string.Create(CultureInfo.InvariantCulture, $" - Last activity: {LastLessonDate.Value:dd/MM/yyyy}")
             : " - No recorded activity");
     }
 

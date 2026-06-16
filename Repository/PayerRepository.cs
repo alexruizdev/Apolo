@@ -20,16 +20,7 @@ namespace Repository
                 .FirstOrDefaultAsync(p => p.Id == payerId)
                 ?? throw new InvalidDataException("Payer not found.");
 
-            return new PayerSummary(
-                payerId,
-                payer.FirstName,
-                payer.LastName,
-                0m,
-                payer.Address,
-                payer.ZipCode,
-                payer.City,
-                payer.TaxId
-            );
+            return Helper.ConvertToPayerSummary(payer, 0);
         }
 
         public async Task<IEnumerable<PayerSummary>> GetPayersAsync()
@@ -72,9 +63,31 @@ namespace Repository
                  .AsNoTracking()
                  .OrderBy(s => s.FirstName)
                  .ThenBy(s => s.LastName)
-                 .Select(p => new PayerOption(
-                     p.Id,
-                     p.FullName))
+                 .Select(p => Helper.ConvertToPayerOption(p))
+                 .ToListAsync();
+        }
+
+        public async Task<IEnumerable<PayerOption>> GetPayerOptionsByUnbilledLessons()
+        {
+            return await _db.Payers
+                 .AsNoTracking()
+                 .Select(p => new
+                 {
+                     Payer = p,
+                     UnbilledCount = p.Students
+                         .SelectMany(s => s.Lessons)
+                         .Count(l => l.BillingDocumentId == null && !l.IsPaid)
+                 })
+                 .OrderByDescending(x => x.UnbilledCount)
+                 .ThenBy(x => x.Payer.FirstName)
+                 .ThenBy(x => x.Payer.LastName)
+                 .Select(x => new PayerOption
+                 (
+                     x.Payer.Id,
+                     x.UnbilledCount > 0
+                         ? $"{x.Payer.FirstName} {x.Payer.LastName} - {x.UnbilledCount} lesson{(x.UnbilledCount == 1 ? "" : "s")}"
+                         : $"{x.Payer.FirstName} {x.Payer.LastName}"
+                 ))
                  .ToListAsync();
         }
 

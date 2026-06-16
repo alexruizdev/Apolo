@@ -16,82 +16,35 @@ namespace Apolo.Tests.Data
             _repository = new LessonRepository(_context);
         }
 
-        
-
-
         // --- GET TESTS (Filtering & Projections) ---
 
         [TestMethod]
         public async Task GetLessonsAsync_FilterByUnpaid_ReturnsCorrectLessons()
         {
-            // Arrange
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student = TestGenerator.CreateStudent1(payer.Id);
-            var lesson1 = TestGenerator.CreateLesson(student.Id, paid: true);
-            var lesson2 = TestGenerator.CreateLesson(student.Id, paid: false);
-
-            _context.Payers.Add(payer);
-            _context.Students.Add(student);
-            _context.Lessons.AddRange(lesson1, lesson2);
-            await _context.SaveChangesAsync();
+            // Filter
+            var studentName = "alice";
+            var payerName = "doe";
+            var isPaid = false;
+            var startDate = new DateOnly(2024, 1, 1);
+            var endDate = new DateOnly(2024, 12, 1);
 
             // Act
-            var results = (await _repository.GetLessonsAsync(showOnlyUnpaid: true, months: null)).ToList();
+            var results = (await _repository.GetLessonsAsync(
+                studentName, payerName, isPaid, startDate, endDate)).ToList();
 
             // Assert
             Assert.HasCount(1, results);
-            Assert.AreEqual(TestGenerator.LessonNameUnpaid, results[0].Name);
-            Assert.IsFalse(results[0].IsPricePerHour);
-            Assert.IsNull(results[0].DurationMinutes);
-            Assert.AreEqual(TestGenerator.BasePrice, results[0].BasePrice);
+            Assert.AreEqual("Math Tutoring - Alice", results[0].Name);
+            Assert.IsTrue(results[0].IsPricePerHour);
+            Assert.AreEqual(60, results[0].DurationMinutes);
+            Assert.AreEqual(42, results[0].BasePrice);
             Assert.IsTrue(results[0].IsOnline);
-            Assert.AreEqual(TestGenerator.LessonTravelAllowance, results[0].TravelAllowance);
+            Assert.AreEqual(5, results[0].TravelAllowance);
             Assert.IsFalse(results[0].IsWeekendOrHoliday);
-            Assert.AreEqual(TestGenerator.LessonWeekendFee, results[0].WeekendFee);
+            Assert.AreEqual(10, results[0].WeekendFee);
             Assert.IsNull(results[0].Notes);
             Assert.IsFalse(results[0].IsPaid);
-        }
-
-        [TestMethod]
-        public async Task GetLessonsAsync_FilterByMonths_FiltersOldData()
-        {
-            // Arrange
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student = TestGenerator.CreateStudent1(payer.Id);
-            var lesson1 = TestGenerator.CreateLesson(student.Id, paid: true);
-            var lesson2 = TestGenerator.CreateLesson(student.Id, paid: false);
-
-            _context.Payers.Add(payer);
-            _context.Students.Add(student);
-            _context.Lessons.AddRange(lesson1, lesson2);
-            await _context.SaveChangesAsync();
-
-            // Act (Filter for last 3 months)
-            var results = (await _repository.GetLessonsAsync(showOnlyUnpaid: false, months: 3)).ToList();
-
-            // Assert
-            Assert.HasCount(1, results);
-            Assert.AreEqual(TestGenerator.LessonNameUnpaid, results[0].Name);
-        }
-
-        [TestMethod]
-        public async Task AddLessonsAsync()
-        {
-            // Arrange
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student = TestGenerator.CreateStudent1(payer.Id);
-            var lesson1 = TestGenerator.CreateLesson(student.Id, paid: true);
-            var lesson2 = TestGenerator.CreateLesson(student.Id, paid: false);
-
-            _context.Payers.Add(payer);
-            _context.Students.Add(student);
-            await _context.SaveChangesAsync();
-
-            // Act (Filter for last 3 months)
-            await _repository.AddLessonsAsync([ lesson1, lesson2]);
-
-            // Assert
-            Assert.HasCount(2, _context.Lessons);
+            Assert.AreEqual(2, results[0].Tip);
         }
 
         // --- CREATE TESTS ---
@@ -99,16 +52,9 @@ namespace Apolo.Tests.Data
         [TestMethod]
         public async Task AddLessonAsync_CreatesLessonAndLessons()
         {
-            // Arrange
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student = TestGenerator.CreateStudent1(payer.Id);
-            _context.Payers.Add(payer);
-            _context.Students.Add(student);
-            await _context.SaveChangesAsync();
-
             // Act
             var lesson = await _repository.AddLessonAsync(DateOnly.FromDateTime(DateTime.Now), "Guitar Class", isPaid: false, 
-                student.Id, null, false, 60, 25.0m, false, 0, false, 0, 10, "Note");
+                _data.Students[0].Id, null, false, 60, 25.0m, false, 0, false, 0, 10, "Note");
 
             // Assert
             Assert.AreEqual("Guitar Class", lesson.Name);
@@ -123,7 +69,7 @@ namespace Apolo.Tests.Data
             Assert.AreEqual(10, lesson.Tip);
             Assert.AreEqual("Note", lesson.Notes);
             var dbLesson = await _context.Lessons.FirstAsync(l => l.Id == lesson.Id);
-            Assert.AreEqual(student.Id, dbLesson.StudentId);
+            Assert.AreEqual(_data.Students[0].Id, dbLesson.StudentId);
         }
 
         // --- UPDATE TESTS ---
@@ -143,28 +89,9 @@ namespace Apolo.Tests.Data
         [TestMethod]
         public async Task UpdateLessonAsync()
         {
-            // Arrange
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student = TestGenerator.CreateStudent1(payer.Id);
-            var lesson = TestGenerator.CreateLesson(student.Id, paid: false);
-
-            _context.Payers.Add(payer);
-            _context.Students.Add(student);
-            _context.Lessons.Add(lesson);
-            await _context.SaveChangesAsync();
-
-            var updatedLesson = await _repository.UpdateLesson(lesson.Id, TestGenerator.LessonNewDate, "Guitar Class",
+            var updatedLesson = await _repository.UpdateLesson(_data.Lessons[19].Id, DateOnly.FromDateTime(DateTime.Now), "Guitar Class",
                 false, 60, 25.0m, false, 0, false, 0, 15.5m, "Updated note");
-            Assert.AreEqual("Guitar Class", updatedLesson.Name);
-            Assert.IsFalse(updatedLesson.IsPricePerHour);
-            Assert.AreEqual("Updated note", updatedLesson.Notes);
-            Assert.AreEqual(60, updatedLesson.DurationMinutes);
-            Assert.AreEqual(25.0m, updatedLesson.BasePrice);
-            Assert.IsFalse(updatedLesson.IsOnline);
-            Assert.AreEqual(0, updatedLesson.TravelAllowance);
-            Assert.IsFalse(updatedLesson.IsWeekendOrHoliday);
-            Assert.AreEqual(0, updatedLesson.WeekendFee);
-            var dbLesson = await _context.Lessons.FirstAsync(l => l.Id == lesson.Id);
+            var dbLesson = await _context.Lessons.FirstAsync(l => l.Id == updatedLesson.Id);
             Assert.AreEqual("Guitar Class", dbLesson.Name);
             Assert.IsFalse(dbLesson.IsPricePerHour);
             Assert.AreEqual("Updated note", dbLesson.Notes);
@@ -180,69 +107,29 @@ namespace Apolo.Tests.Data
         [TestMethod]
         public async Task UpdateLessonsAsync()
         {
-            // Arrange
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student = TestGenerator.CreateStudent1(payer.Id);
-            var lessons = new List<Lesson> { TestGenerator.CreateRandomLesson(student.Id, "Lesson 1", paid: true, months: 6),
-                            TestGenerator.CreateRandomLesson(student.Id, "Lesson 2", paid: true, months: 6),
-                            TestGenerator.CreateRandomLesson(student.Id, "Lesson 3", paid: false, months: 6),
-                            TestGenerator.CreateRandomLesson(student.Id, "Lesson 4", paid: false, months: 6) };
-            var invoice = TestGenerator.CreateInvoice(lessons, payer.Id);
-
-            _context.Payers.Add(payer);
-            _context.Students.Add(student);
-            _context.Lessons.AddRange(lessons);
-            _context.BillingDocuments.Add(invoice);
-            await _context.SaveChangesAsync();
-
-            var lessonIds = lessons.Select(l => l.Id).ToList();
+            var lessonIds = _data.Lessons.
+                Where(l => l.StudentId == _data.Students[0].Id).
+                Select(l => l.Id).ToList();
 
             await _repository.UpdateLessonsPayment(lessonIds, isPaid: true);
 
-
-            Assert.AreEqual(4, _context.Lessons.Count(a => a.IsPaid));
+            Assert.AreEqual(20, _context.Lessons.Count(a => a.IsPaid));
 
         }
 
         [TestMethod]
         public async Task UpdateLessonsAsyncEmpty()
         {
-            // Arrange
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student = TestGenerator.CreateStudent1(payer.Id);
-            var invoice = TestGenerator.CreateInvoice([], payer.Id);
-
-            _context.Payers.Add(payer);
-            _context.Students.Add(student);
-            _context.BillingDocuments.Add(invoice);
-            await _context.SaveChangesAsync();
-
             await _repository.UpdateLessonsPayment([], isPaid: true);
 
-
-            Assert.AreEqual(0, _context.Lessons.Count(l => l.IsPaid));
+            Assert.AreEqual(19, _context.Lessons.Count(l => l.IsPaid));
 
         }
 
         [TestMethod]
         public async Task UnassignBillToLessons()
         {
-            // Arrange
-            var payer = TestGenerator.CreatePayer1(emptyInfo: true);
-            var student = TestGenerator.CreateStudent1(payer.Id);
-            var lessons = new List<Lesson> { TestGenerator.CreateRandomLesson(student.Id, "Lesson 1", paid: true, months: 6),
-                            TestGenerator.CreateRandomLesson(student.Id, "Lesson 2", paid: true, months: 6),
-                            TestGenerator.CreateRandomLesson(student.Id, "Lesson 3", paid: false, months: 6),
-                            TestGenerator.CreateRandomLesson(student.Id, "Lesson 4", paid: false, months: 6) };
-            var invoice = TestGenerator.CreateInvoice(lessons, payer.Id);
-
-            _context.Payers.Add(payer);
-            _context.Students.Add(student);
-            _context.Lessons.AddRange(lessons);
-            _context.BillingDocuments.Add(invoice);
-            await _context.SaveChangesAsync();
-
-            var lessonIds = lessons.Select(l => l.Id).ToList();
+            var lessonIds = _data.Lessons.Select(l => l.Id).ToList();
 
             await _repository.UnassignBillToLessons(lessonIds);
 

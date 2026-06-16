@@ -16,6 +16,7 @@ namespace Repository
         Task<PayerSummary> GetPayerSummaryNoOutstandingAsync(Guid payerId);
         Task<IEnumerable<PayerSummary>> GetPayersAsync();
         Task<IEnumerable<PayerOption>> GetPayerOptionsAsync();
+        Task<IEnumerable<PayerOption>> GetPayerOptionsByUnbilledLessons();
         Task AddAsync(Payer payer);
         Task DeleteAsync(Guid id);
         Task UpdateAsync(Guid payerId, string firstName, string lastName, 
@@ -43,7 +44,11 @@ namespace Repository
 
     public interface ILessonRepository
     {
-        Task<IEnumerable<LessonSummary>> GetLessonsAsync(bool showOnlyUnpaid, int? months);
+        Task<IEnumerable<LessonSummary>> GetLessonsAsync(string studentName,
+            string payerName,
+            bool? isPaid, 
+            DateOnly? startDate,
+            DateOnly? endDate);
         Task<Lesson> AddLessonAsync(DateOnly date, string name, bool isPaid, Guid studentId,
             Guid? billingDocumentId, bool isPricePerHour, int? duration, decimal basePrice,
             bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip, string? notes);
@@ -76,8 +81,16 @@ namespace Repository
             List<Lesson> lessons,
             List<BillingDocument> invoices);
 
+        Task ImportArchiveAsync(
+            List<Payer> payers,
+            List<Student> students,
+            List<Lesson> lessons,
+            List<BillingDocument> invoices);
+
         Task<(List<Service> Services, List<Payer> Payers, List<Student> Students,
             List<Specification> Specifications, List<Lesson> Lessons, List<BillingDocument> Invoices)> GetAllDataAsync();
+        Task<(List<Service> Services, List<Payer> Payers, List<Student> Students,
+            List<Specification> Specifications, List<Lesson> Lessons, List<BillingDocument> Invoices)> ExportArchiveAsync();
         Task<List<PayerActivityInfo>> GetPayersWithActivityAsync();
         Task ArchiveOldDataAsync(List<Guid> payerIds);
         Task<List<PayerOption>> GetPayersFromArchiveAsync();

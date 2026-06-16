@@ -10,7 +10,7 @@
         bool IsWeekend);
     public sealed record SpecificationSummary(
         Guid Id,
-        string SpecificationName,
+        string Name,
         Guid StudentId,
         string StudentName,
         Guid ServiceId,
@@ -20,7 +20,7 @@
         bool IsOnline,
         bool IsWeekendOrHoliday,
         int UsageCount
-        );
+        ) : ISummary;
     public sealed class Specification
     {
         public Guid Id { get; set; } = Guid.NewGuid();

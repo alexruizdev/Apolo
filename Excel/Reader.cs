@@ -1,4 +1,6 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
 using Models;
 
 namespace Excel
@@ -33,6 +35,28 @@ namespace Excel
             return table;
         }
 
+        private DateTime ReadDate(IXLCell cell)
+        {
+            string dateRawString = cell.GetValue<string>().Trim();
+
+            // Define acceptable strict formats to parse against
+            string[] formats = { "dd-MM-yyyy", "dd-MM-yyyy HH:mm:ss" };
+
+            if (DateTime.TryParseExact(dateRawString,
+                                       formats,
+                                       System.Globalization.CultureInfo.InvariantCulture,
+                                       System.Globalization.DateTimeStyles.None,
+                                       out DateTime dtValue))
+            {
+                return dtValue;
+            }
+            else
+            {
+                // Handle or throw a readable error detailing exactly which row broke
+                throw new InvalidDataException($"Cell has an invalid date format: '{dateRawString}'. Expected 'yyyy-MM-dd'.");
+            }
+        }
+
         public async Task ReadExcel(string filePath)
         {
             try
@@ -43,7 +67,7 @@ namespace Excel
                     ReadPayers(workbook);
                     ReadStudents(workbook);
                     ReadSpecification(workbook);
-                    ReadPayment(workbook);
+                    ReadBills(workbook);
                     ReadLessons(workbook);
                 }
             }
@@ -177,8 +201,7 @@ namespace Excel
 
             foreach (var row in rows)
             {
-                string date = row.Cell(1).GetValue<string>().Trim();
-                var dtValue = DateTime.ParseExact(date, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+                var dtValue = ReadDate(row.Cell(1));
                 DateOnly lessonDate = DateOnly.FromDateTime(dtValue);
                 string serviceName = row.Cell(2).GetValue<string>().Trim();
                 string studentName = row.Cell(3).GetValue<string>().Trim();
@@ -199,13 +222,14 @@ namespace Excel
                 string id = row.Cell(16).GetValue<string>().Trim();
                 string studentId = row.Cell(17).GetValue<string>().Trim();
                 string billId = row.Cell(18).GetValue<string>().Trim();
+                Guid? parsedBillId = Guid.TryParse(billId, out var bId) ? bId : null;
 
                 var lesson = new Lesson(
                     lessonDate,
                     serviceName,
                     isPaid: paid,
                     Guid.Parse(studentId),
-                    string.IsNullOrEmpty(billId) ? null : Guid.Parse(billId),
+                    parsedBillId,
                     isPricePerHour: pricePerHour,
                     durationMinutes: durationMinutes,
                     basePrice: basePrice,
@@ -223,7 +247,7 @@ namespace Excel
             }
         }
 
-        private void ReadPayment(XLWorkbook workbook)
+        private void ReadBills(XLWorkbook workbook)
         {
             var table = GetTable(workbook, "Bills");
             var rows = table.DataRange.RowsUsed();
@@ -231,8 +255,7 @@ namespace Excel
             {
                 string name = row.Cell(1).GetValue<string>().Trim();
                 string type = row.Cell(2).GetValue<string>().Trim();
-                string date = row.Cell(3).GetValue<string>().Trim();
-                var dtValue = DateTime.Parse(date);
+                var dtValue = ReadDate(row.Cell(3));
                 string payer = row.Cell(4).GetValue<string>().Trim();
                 string total = row.Cell(5).GetValue<string>().Trim();
                 string payerId = row.Cell(6).GetValue<string>().Trim();

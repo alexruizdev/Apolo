@@ -1,8 +1,5 @@
 ﻿using Apolo.Services;
 using Apolo.ViewModels;
-using DocumentFormat.OpenXml.Drawing.Charts;
-using DocumentFormat.OpenXml.Office2010.Excel;
-using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Moq;
@@ -12,17 +9,17 @@ using ViewModels;
 namespace Apolo.Tests.ViewModels
 {
     [TestClass]
-    public class LessonsViewModelTests
+    public class LessonsViewModelBaseTests
     {
-        private Mock<ILessonRepository> _mockLessonRepo = null!;
-        private Mock<IStudentRepository> _mockStudentRepo = null!;
-        private Mock<IServiceRepository> _mockServiceRepo = null!;
-        private Mock<ISpecificationRepository> _mockSpecificationRepo = null!;
-        private Mock<IUserProfileService> _mockUserProfileService = null!;
-        private LessonsViewModel _viewModel = null!;
+        protected Mock<ILessonRepository> _mockLessonRepo = null!;
+        protected Mock<IStudentRepository> _mockStudentRepo = null!;
+        protected Mock<IServiceRepository> _mockServiceRepo = null!;
+        protected Mock<ISpecificationRepository> _mockSpecificationRepo = null!;
+        protected Mock<IUserProfileService> _mockUserProfileService = null!;
+        protected LessonsViewModel _viewModel = null!;
 
         [TestInitialize]
-        public void TestInit()
+        public virtual void TestInit()
         {
             _mockLessonRepo = new Mock<ILessonRepository>();
             _mockStudentRepo = new Mock<IStudentRepository>();
@@ -46,7 +43,11 @@ namespace Apolo.Tests.ViewModels
                 _mockSpecificationRepo.Object,
                 _mockUserProfileService.Object);
         }
+    }
 
+    [TestClass]
+    public class LessonsViewModelTests : LessonsViewModelBaseTests
+    {
         void VerifyAction(string? message, InfoBarType severity, bool isOpen, int lessonCount, int studentsCount, int servicesCount, bool isBusy = false)
         {
             Assert.HasCount(lessonCount, _viewModel.Lessons);
@@ -59,121 +60,104 @@ namespace Apolo.Tests.ViewModels
         }
 
         // Load Async 
+
+        private void ArrangeForLoadTests()
+        {
+            _viewModel.FilterStudentName = "alice";
+            _viewModel.FilterPayerName = "doe";
+            _viewModel.SelectedPaymentStatusIndex = 1;
+            _viewModel.FilterStartDate = new DateTimeOffset(new DateTime(2024, 1, 1));
+            _viewModel.FilterEndDate = new DateTimeOffset(new DateTime(2024, 12, 1));
+        }
+
+        private async Task ActForLoadAsyncTests(bool clear = false)
+        {
+            var services = Helper.GetDummyServiceSummaries();
+            var students = Helper.GetDummyStudentOptions();
+            var lessons = Helper.GetDummyLessonSummaries();
+
+            string student = clear ? string.Empty : "alice";
+            string payer = clear ? string.Empty : "doe";
+            bool? status = clear ? null : true;
+            DateOnly? start = clear ? null : new DateOnly(2024, 1, 1);
+            DateOnly? end = clear ? null : new DateOnly(2024, 12, 1);
+
+            _mockStudentRepo.Setup(r => r.GetStudentOptionsAsync())
+             .ReturnsAsync(students);
+
+            _mockServiceRepo.Setup(r => r.GetServicesAsync())
+             .ReturnsAsync(services);
+
+            _mockLessonRepo.Setup(r => r.GetLessonsAsync(student, payer, status, start, end))
+             .ReturnsAsync(lessons);
+
+            if (clear)
+                await _viewModel.ClearFiltersAsync();
+            else
+                await _viewModel.LoadAsync();
+        }
+
+        private void AssertForLoadAsyncTests(bool success, string? infoMessage, InfoBarType severity, 
+            bool isBusy = false, bool clear = false, bool dbError = false)
+        {
+            int lessonCount = success ? 40 : 0;
+            int studentsCount = success ? 11 : 0;
+            int servicesCount = success ? 6 : 0;
+
+            string student = clear ? string.Empty : "alice";
+            string payer = clear ? string.Empty : "doe";
+            bool? status = clear ? null : true;
+            DateOnly? start = clear ? null : new DateOnly(2024, 1, 1);
+            DateOnly? end = clear ? null : new DateOnly(2024, 12, 1);
+
+            if (success)
+            {
+                _mockStudentRepo.Verify(r => r.GetStudentOptionsAsync(), Times.Once);
+                _mockServiceRepo.Verify(r => r.GetServicesAsync(), Times.Once);
+                _mockLessonRepo.Verify(r => r.GetLessonsAsync(
+                    student, payer, status, start, end), Times.Once);
+            }
+            else
+            {
+                _mockStudentRepo.Verify(r => r.GetStudentOptionsAsync(), Times.Never);
+                _mockServiceRepo.Verify(r => r.GetServicesAsync(), Times.Never);
+                _mockLessonRepo.Verify(r => r.GetLessonsAsync(It.IsAny<string>(), It.IsAny<string>(), 
+                    It.IsAny<bool?>(), It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>()), Times.Never);
+            }
+
+            VerifyAction(infoMessage, severity, isOpen: true, lessonCount: lessonCount, 
+                studentsCount: studentsCount, servicesCount: servicesCount, isBusy: isBusy);
+
+        }
+
         [TestMethod]
         public async Task LoadAsync_WhenAlreadyBusy()
         {
             _viewModel.IsBusy = true;
 
-            await _viewModel.LoadAsync();
-
-            VerifyAction("Can't load lessons while busy.", InfoBarType.Warning, isOpen: true, 
-                lessonCount: 0, studentsCount: 0, servicesCount: 0, isBusy: true);
-            _mockStudentRepo.Verify(r => r.GetStudentOptionsAsync(), Times.Never);
-            _mockServiceRepo.Verify(r => r.GetServicesAsync(), Times.Never);
-            _mockLessonRepo.Verify(r => r.GetLessonsAsync(It.IsAny<bool>(), It.IsAny<int>()), Times.Never);
+            ArrangeForLoadTests();
+            await ActForLoadAsyncTests();
+            AssertForLoadAsyncTests(success: false, infoMessage: "Can't load lessons while busy.", 
+                severity: InfoBarType.Warning, isBusy: true);
         }
 
         [TestMethod]
         public async Task LoadAsync_ValidInput_PopulatesCollection()
         {
-            var date = new DateOnly(2025, 12, 13);
-            var firstStudentLoad = new List<StudentOption>();
-            firstStudentLoad.Add(new StudentOption(Guid.NewGuid(), "Old Man"));
-            firstStudentLoad.Add(new StudentOption(Guid.NewGuid(), "Old Kid"));
-            var secondStudentLoad = new List<StudentOption>();
-            secondStudentLoad.Add(new StudentOption(Guid.NewGuid(), "New Man"));
-            secondStudentLoad.Add(new StudentOption(Guid.NewGuid(), "New Kid"));
-            var firstServiceLoad = new List<ServiceSummary>();
-            firstServiceLoad.Add(new ServiceSummary(Guid.NewGuid(), "Old Service", false, 30));
-            firstServiceLoad.Add(new ServiceSummary(Guid.NewGuid(), "Old Contract", false, 30));
-            var secondServiceLoad = new List<ServiceSummary>();
-            secondServiceLoad.Add(new ServiceSummary(Guid.NewGuid(), "New Service", true, 50));
-            secondServiceLoad.Add(new ServiceSummary(Guid.NewGuid(), "New Contract", true, 50));
-            var firstLessonLoad = new List<LessonSummary>();
-            firstLessonLoad.Add(new LessonSummary(Guid.NewGuid(), date, "Old Lesson 1", 30, false, firstStudentLoad[0].Id, firstStudentLoad[0].FullName, null, string.Empty, false, null, 30, false, 5, false, 5, 0, null));
-            firstLessonLoad.Add(new LessonSummary(Guid.NewGuid(), date, "Old Lesson 2", 30, false, firstStudentLoad[1].Id, firstStudentLoad[1].FullName, null, string.Empty, false, null, 30, false, 5, false, 5, 0, null));
-            var secondLessonLoad = new List<LessonSummary>();
-            secondLessonLoad.Add(new LessonSummary(Guid.NewGuid(), date, "New Lesson 1", 40, false, secondStudentLoad[0].Id, secondStudentLoad[0].FullName, null, string.Empty, true, 60, 30, true, 5, true, 5, 0, null));
-            secondLessonLoad.Add(new LessonSummary(Guid.NewGuid(), date, "New Lesson 2", 40, false, secondStudentLoad[1].Id, secondStudentLoad[1].FullName, null, string.Empty, true, 60, 30, true, 5, true, 5, 0, null));
-            _mockStudentRepo.SetupSequence(r => r.GetStudentOptionsAsync())
-             .ReturnsAsync(firstStudentLoad)
-             .ReturnsAsync(secondStudentLoad);
-
-            _mockServiceRepo.SetupSequence(r => r.GetServicesAsync())
-             .ReturnsAsync(firstServiceLoad)
-             .ReturnsAsync(secondServiceLoad);
-
-            _mockLessonRepo.SetupSequence(r => r.GetLessonsAsync(false, 1))
-             .ReturnsAsync(firstLessonLoad)
-             .ReturnsAsync(secondLessonLoad);
-
-            _viewModel.DateFiler = DateTimeOffset.Now.AddMonths(-1);
-
-            await _viewModel.LoadAsync(); // test that Specifications.Clear() is working
-            await _viewModel.LoadAsync(); // If LoadAsync is called twice, you should not have duplicate items in your list
-
-            // 1. Verify repository was called with correct data
-            _mockStudentRepo.Verify(r => r.GetStudentOptionsAsync(), Times.Exactly(2));
-            _mockServiceRepo.Verify(r => r.GetServicesAsync(), Times.Exactly(2));
-            _mockLessonRepo.Verify(r => r.GetLessonsAsync(false, 1), Times.Exactly(2));
-
-            // 2. Verify the UI collection was updated correctly
-            VerifyAction("2 loaded", InfoBarType.Success, isOpen: true, lessonCount: 2, studentsCount: 2, servicesCount: 2);
-            var addedStudent = _viewModel.Students.First();
-            var addedService = _viewModel.Services.First();
-            var addedLesson = _viewModel.Lessons.First();
-            Assert.AreEqual("New Man", addedStudent.FullName);
-            Assert.AreEqual("New Service", addedService.Name);
-            Assert.AreEqual("New Lesson 1", addedLesson.Name);
+            ArrangeForLoadTests();
+            await ActForLoadAsyncTests();
+            AssertForLoadAsyncTests(success: true, infoMessage: "40 loaded", 
+                severity: InfoBarType.Success, isBusy: false);
         }
 
-        [TestMethod]
-        public async Task LoadAsync_EmptyRepository_ResultingCollectionIsEmpty()
-        {
-            _mockStudentRepo.SetupSequence(r => r.GetStudentOptionsAsync())
-                .ReturnsAsync(new List<StudentOption>());
-            _mockServiceRepo.SetupSequence(r => r.GetServicesAsync())
-                .ReturnsAsync(new List<ServiceSummary>());
-            _mockLessonRepo.SetupSequence(r => r.GetLessonsAsync(false, 1))
-                .ReturnsAsync(new List<LessonSummary>());
-
-            _viewModel.DateFiler = DateTimeOffset.Now.AddMonths(-1);
-
-            await _viewModel.LoadAsync();
-
-            _mockStudentRepo.Verify(r => r.GetStudentOptionsAsync(), Times.Once);
-            _mockServiceRepo.Verify(r => r.GetServicesAsync(), Times.Once);
-            _mockLessonRepo.Verify(r => r.GetLessonsAsync(false, 1), Times.Once);
-
-            VerifyAction("0 loaded", InfoBarType.Success, isOpen: true, lessonCount: 0, studentsCount: 0, servicesCount: 0);
-        }
 
         [TestMethod]
         public async Task LoadAsync_UpdateFilter()
         {
-            _mockStudentRepo.SetupSequence(r => r.GetStudentOptionsAsync())
-                .ReturnsAsync(new List<StudentOption>())
-                .ReturnsAsync(new List<StudentOption>());
-            _mockServiceRepo.SetupSequence(r => r.GetServicesAsync())
-                .ReturnsAsync(new List<ServiceSummary>())
-                .ReturnsAsync(new List<ServiceSummary>());
-            _mockLessonRepo.SetupSequence(r => r.GetLessonsAsync(It.IsAny<bool>(), It.IsAny<int>()))
-                .ReturnsAsync(new List<LessonSummary>())
-                .ReturnsAsync(new List<LessonSummary>());
-
-
-            _viewModel.ShownOnlyUnpaid = true;
-            _viewModel.DateFiler = DateTimeOffset.Now.AddMonths(-13);
-            await _viewModel.LoadAsync();
-            _viewModel.DateFiler = DateTimeOffset.Now.AddMonths(3);
-            await _viewModel.LoadAsync();
-
-            _mockStudentRepo.Verify(r => r.GetStudentOptionsAsync(), Times.Exactly(2));
-            _mockServiceRepo.Verify(r => r.GetServicesAsync(), Times.Exactly(2));
-            _mockLessonRepo.Verify(r => r.GetLessonsAsync(true, 13), Times.Once);
-            _mockLessonRepo.Verify(r => r.GetLessonsAsync(true, null), Times.Once);
-
-            VerifyAction("0 loaded", InfoBarType.Success, isOpen: true, lessonCount: 0, studentsCount: 0, servicesCount: 0);
+            ArrangeForLoadTests();
+            await ActForLoadAsyncTests(clear: true);
+            AssertForLoadAsyncTests(success: true, infoMessage: "40 loaded",
+                severity: InfoBarType.Success, isBusy: false, clear: true);
         }
 
         // Get student ID
@@ -546,6 +530,7 @@ namespace Apolo.Tests.ViewModels
                 Assert.IsTrue(addedLesson.IsWeekendOrHoliday);
                 Assert.AreEqual(20, addedLesson.WeekendFee);
                 Assert.AreEqual(notes, addedLesson.Notes);
+                Assert.AreEqual(50, addedLesson.FinalPrice);
             }
         }
 

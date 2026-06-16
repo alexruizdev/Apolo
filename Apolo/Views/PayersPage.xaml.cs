@@ -1,10 +1,11 @@
-using Microsoft.UI.Xaml.Controls;
-using CommunityToolkit.Mvvm.DependencyInjection;
+using Apolo.Controls;
+using Apolo.Services;
 using Apolo.ViewModels;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Models;
 using System;
-using Apolo.Services;
 
 namespace Apolo.Pages
 {
@@ -23,26 +24,10 @@ namespace Apolo.Pages
 
         private async void DeletePayer_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not Button btn)
-                return;
-            if (btn.DataContext is not PayerSummary item)
-                return;
-
-            var dialog = new ContentDialog()
+            Guid? id = await ConfirmationDialog.ConfirmItemAction(sender, "delete payer");
+            if (id is not null)
             {
-                Title = "Delete payer?",
-                Content = $"This will delete payer '{item.FullName}'. \n"
-                 + $"Note: You can only delete payers with no students.",
-                PrimaryButtonText = Loc.Buttons_Delete,
-                CloseButtonText = Loc.Buttons_Cancel,
-                DefaultButton = ContentDialogButton.Close,
-                XamlRoot = Content.XamlRoot
-            };
-
-            var result = await dialog.ShowAsync();
-            if (result == ContentDialogResult.Primary)
-            {
-                await ViewModel.DeletePayerAsync(item.Id);
+                await ViewModel.DeletePayerAsync(id.Value);
             }
         }
 
