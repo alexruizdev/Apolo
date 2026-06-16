@@ -169,7 +169,7 @@ namespace Apolo.Tests.ViewModels
             _mockSpecificationRepo.Verify(r => r.GetSpecificationsAsync(), Times.Exactly(2));
 
             // 2. Verify the UI collection was updated correctly
-            VerifyAction(null, InfoBarType.Success, isOpen: false, specCount: 2, studentsCount: 2, servicesCount: 2);
+            VerifyAction("2 loaded.", InfoBarType.Success, isOpen: true, specCount: 2, studentsCount: 2, servicesCount: 2);
             var addedStudent = _viewModel.Students.First();
             var addedService = _viewModel.Services.First();
             var addedSpecification = _viewModel.Specifications.First();
@@ -195,7 +195,7 @@ namespace Apolo.Tests.ViewModels
             _mockServiceRepo.Verify(r => r.GetServicesAsync(), Times.Once);
             _mockSpecificationRepo.Verify(r => r.GetSpecificationsAsync(), Times.Once);
 
-            VerifyAction(null, InfoBarType.Success, isOpen: false, specCount: 0, studentsCount: 0, servicesCount: 0);
+            VerifyAction("0 loaded.", InfoBarType.Success, isOpen: true, specCount: 0, studentsCount: 0, servicesCount: 0);
         }
 
         // --- Refresh specifications Tests ---

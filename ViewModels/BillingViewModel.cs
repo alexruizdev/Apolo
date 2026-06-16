@@ -375,6 +375,12 @@ namespace Apolo.ViewModels
                 foreach (var item in Lessons)
                     item.IsSelected = false;
 
+                // Update payers options
+                var payers = await _payerRepository.GetPayerOptionsByUnbilledLessons();
+
+                Payers.Clear();
+                foreach (var p in payers) Payers.Add(p);
+
                 var documentName = (isInvoice ? DocumentType.Invoice : DocumentType.Ticket).ToString();
                 SetExitFunction($"{documentName} saved to: {filePath}.", InfoBarType.Info);
             }

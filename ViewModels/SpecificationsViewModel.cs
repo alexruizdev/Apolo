@@ -81,7 +81,7 @@ namespace Apolo.ViewModels
             Specifications.Clear();
             foreach (var item in items) Specifications.Add(item);
 
-            SetExitFunction();
+            SetExitFunction($"{Specifications.Count} loaded.", InfoBarType.Success);
         }
 
         public async Task RefreshSpecifications()
@@ -96,8 +96,6 @@ namespace Apolo.ViewModels
 
             Specifications.Clear();
             foreach (var item in items) Specifications.Add(item);
-
-            SetExitFunction();
         }
 
 
@@ -274,7 +272,7 @@ namespace Apolo.ViewModels
                 await _specificationRepository.IncrementUsageAsync(id);
 
                 SetExitFunction($"Lesson '{spec.value.ServiceName}' created for {spec.value.StudentName}.",
-                    InfoBarType.Success); ;
+                    InfoBarType.Success); 
             }
             catch (DbUpdateException ex)
             {

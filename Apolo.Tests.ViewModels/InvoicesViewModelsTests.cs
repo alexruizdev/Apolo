@@ -438,7 +438,7 @@ namespace Apolo.Tests.ViewModels
                 selected = 65.5m;
             decimal total = success ? 65.5m : 307.6m;
 
-            VerifyAction(infoMessage, severity, isOpen: true, payersCount: 1, count: success ? 2 : 4,
+            VerifyAction(infoMessage, severity, isOpen: true, payersCount: success ? 0 : 1, count: success ? 2 : 4,
                 totalSelected: selected, total: total, isBusy: isBusy);
         }
 
