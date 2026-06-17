@@ -71,6 +71,13 @@
                 <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Specifications}"
                                        Icon="Favorite"
                                        Tag="specifications" />
+                <!--Dashboard-->
+                <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Dashboard}"
+                                       Tag="dashboard">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE9D2;" />
+                    </NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
                 <!--Settings-->
                 <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Settings}"
                                        Icon="Setting"

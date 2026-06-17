@@ -17,6 +17,7 @@ namespace Apolo.Services
         public static string Menu_Settings => S("Menu/Settings");
         public static string Menu_Specifications => S("Menu/Specifications");
         public static string Menu_Students => S("Menu/Students");
+        public static string Menu_Dashboard => S("Menu/Dashboard");
 
         // Buttons
         public static string Buttons_Delete => S("Buttons/Delete");

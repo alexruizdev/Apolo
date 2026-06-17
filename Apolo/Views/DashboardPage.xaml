@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page x:Class="Apolo.Views.DashboardPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="using:Apolo.Views"
+      xmlns:vm="using:Apolo.ViewModels"
+      xmlns:lvc="using:LiveChartsCore.SkiaSharpView.WinUI"
+      Loaded="Page_Loaded">
+
+    <Grid Style="{StaticResource MainGridStyle}">
+        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            
+            <!--Title-->
+            <TextBlock Text="Dashboard" Style="{ThemeResource TitleLargeTextBlockStyle}" />
+
+            <!--Filter-->
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        Spacing="12"
+                        VerticalAlignment="Center">
+                <ProgressRing IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}"
+                              Width="24"
+                              Height="24"
+                              Margin="0,0,12,0" />
+
+                <ComboBox ItemsSource="{x:Bind ViewModel.AvailableMonths, Mode=OneWay}"
+                          SelectedItem="{x:Bind ViewModel.SelectedMonth, Mode=TwoWay}"
+                          DisplayMemberPath="Name"
+                          Width="150" />
+
+                <ComboBox ItemsSource="{x:Bind ViewModel.AvailableYears, Mode=OneWay}"
+                          SelectedItem="{x:Bind ViewModel.SelectedYear, Mode=TwoWay}"
+                          Width="100" />
+                
+                <Button Content="Apply Filters"
+                        Style="{StaticResource AccentButtonStyle}"
+                        HorizontalAlignment="Stretch"
+                        Command="{x:Bind ViewModel.LoadCommand}" />
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="1"
+              ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            
+            <!--Earnings (selected month)-->
+            <Border Grid.Column="0" Style="{StaticResource MetricBorder}">
+                <StackPanel>
+                    <TextBlock Text="Earnings (Selected Month)"
+                               Style="{StaticResource BodyStrongTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock Text="{x:Bind ViewModel.CurrentMonthEarnings, Mode=OneWay}"
+                               Style="{StaticResource TitleTextBlockStyle}"
+                               Margin="0,4,0,0" />
+                    <TextBlock Text="{x:Bind ViewModel.EarningsTrend, Mode=OneWay}"
+                               Style="{StaticResource BaseTextBlockStyle}"
+                               Foreground="{x:Bind ViewModel.EarningsTrend, Mode=OneWay, Converter={StaticResource NumberSignToColorConverter}}"
+                               Margin="0,4,0,0" />
+                </StackPanel>
+            </Border>
+            
+            <!-- Total unpaid -->
+            <Border Grid.Column="1" Style="{StaticResource MetricBorder}">
+                <StackPanel>
+                    <TextBlock Text="Total Unpaid (All Time)"
+                               Style="{StaticResource BodyStrongTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock Text="{x:Bind ViewModel.TotalUnpaidAmount, Mode=OneWay}"
+                               Style="{StaticResource TitleTextBlockStyle}"
+                               Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                               Margin="0,4,0,0" />
+                </StackPanel>
+            </Border>
+            
+            <!-- # Lessons -->
+            <Border Grid.Column="2" Style="{StaticResource MetricBorder}">
+                <StackPanel>
+                    <TextBlock Text="Lessons (Selected Month)"
+                               Style="{StaticResource BodyStrongTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock Text="{x:Bind ViewModel.LessonsThisMonth, Mode=OneWay}"
+                               Style="{StaticResource TitleTextBlockStyle}"
+                               Margin="0,4,0,0" />
+                </StackPanel>
+            </Border>
+        </Grid>
+        <ScrollViewer Grid.Row="2"
+                      VerticalScrollMode="Enabled"
+                      VerticalScrollBarVisibility="Hidden">
+            <Grid Grid.Row="2"
+                  ColumnSpacing="16"
+                  RowSpacing="16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="2*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                
+                <!--Incomes per year-->
+                <Border Grid.Row="0"
+                        Grid.Column="0"
+                        Style="{StaticResource MetricBorder}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Incomes per Year Comparison"
+                                   Style="{StaticResource SubtitleTextBlockStyle}"
+                                   Margin="0,0,0,12" />
+                        <lvc:CartesianChart Grid.Row="1"
+                                            Series="{x:Bind ViewModel.IncomeTrendSeries, Mode=OneWay}"
+                                            XAxes="{Binding XAxes}"
+                                            TooltipPosition="Top" />
+                    </Grid>
+                </Border>
+                
+                <!--Paid vs Unpaid-->
+                <Border Grid.Row="0"
+                        Grid.Column="1"
+                        Style="{StaticResource MetricBorder}"
+                        Height="400">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Paid vs Unpaid (Selected Month)"
+                                   Style="{StaticResource SubtitleTextBlockStyle}"
+                                   Margin="0,0,0,12" />
+                        <lvc:PieChart Grid.Row="1"
+                                      Series="{x:Bind ViewModel.PaidVsUnpaidSeries, Mode=OneWay}" />
+                    </Grid>
+                </Border>
+                
+                <!--Top 5 payers-->
+                <Border Grid.Row="1"
+                        Grid.ColumnSpan="2"
+                        Height="400"
+                        Style="{StaticResource MetricBorder}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Top 5 Payers (Selected Month)"
+                                   Style="{StaticResource SubtitleTextBlockStyle}"
+                                   Margin="0,0,0,12" />
+                        <lvc:CartesianChart Grid.Row="1"
+                                            Series="{x:Bind ViewModel.TopPayersSeries, Mode=OneWay}"
+                                            XAxes="{ Binding TopPayersYAxes}"
+                                            YAxes="{ Binding TopPayersXAxes}" />
+                    </Grid>
+                </Border>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Page>

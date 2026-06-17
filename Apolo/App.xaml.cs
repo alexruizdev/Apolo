@@ -61,6 +61,7 @@ namespace Apolo
             builder.AddTransient<ILessonRepository, LessonRepository>();
             builder.AddTransient<IBillingRepository, BillingRepository>();
             builder.AddTransient<IGeneralRepository, GeneralRepository>();
+            builder.AddTransient<IDashboardRepository, DashboardRepository>();
 
             // Utilities
             builder.AddSingleton<PDF.IWriter, PDF.Writer>();
@@ -75,6 +76,7 @@ namespace Apolo
             builder.AddTransient<LessonsViewModel>();
             builder.AddTransient<BillingViewModel>();
             builder.AddTransient<SettingsViewModel>();
+            builder.AddTransient<DashboardViewModel>();
 
             builder.AddSingleton<MainWindow>();
 

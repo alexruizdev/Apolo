@@ -18,9 +18,7 @@
             <conv:DecimalToCurrencyConverter x:Key="DecimalToCurrencyConverter" />
             <conv:DateFormatConverter x:Key="DateFormatConverter" />
             <conv:InfoBarTypeConverter x:Key="InfoBarTypeConverter" />
-            
-            
-
+            <conv:NumberSignToColorConverter x:Key="NumberSignToColorConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
