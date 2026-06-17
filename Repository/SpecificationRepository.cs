@@ -5,22 +5,22 @@ namespace Repository
 {
     public sealed class SpecificationRepository : ISpecificationRepository
     {
-        private readonly ApoloContext _db;
+        private readonly ApoloContext _context;
 
-        public SpecificationRepository(ApoloContext db)
+        public SpecificationRepository(ApoloContext context)
         {
-            _db = db;
+            _context = context;
         }
 
         public async Task AddSpecificationAsync(Specification specification)
         {
-            _db.Specifications.Add(specification);
-            await _db.SaveChangesAsync();
+            _context.Specifications.Add(specification);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<SpecificationSummary>> GetSpecificationsAsync()
         {
-            return await _db.Specifications
+            return await _context.Specifications
                 .AsNoTracking()
                 .OrderByDescending(sp => sp.UsageCount)
                 .Select(sp => new SpecificationSummary(
@@ -41,12 +41,12 @@ namespace Repository
 
         public async Task IncrementUsageAsync(Guid id)
         {
-            var entity = await _db.Specifications.FirstOrDefaultAsync(s => s.Id == id);
+            var entity = await _context.Specifications.FirstOrDefaultAsync(s => s.Id == id);
             if (entity is null)
                 throw new ArgumentNullException("Specification not found.");
             
             entity.UsageCount++;
-            await _db.SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<SpecificationOption>> GetSpecificationsForStudentAsync(IEnumerable<Guid> studentsIds)
@@ -54,7 +54,7 @@ namespace Repository
             var ids = studentsIds.Distinct().ToList();
             if (ids.Count == 0) return new List<SpecificationOption>();
 
-            return await _db.Specifications
+            return await _context.Specifications
                 .AsNoTracking()
                 .Where(sp => ids.Contains(sp.StudentId))
                 .Select(sp => new SpecificationOption(
@@ -71,20 +71,20 @@ namespace Repository
 
         public async Task DeleteAsync(Guid id)
         {
-            var entity = await _db.Specifications.FirstOrDefaultAsync(s => s.Id == id);
+            var entity = await _context.Specifications.FirstOrDefaultAsync(s => s.Id == id);
 
             if (entity is null)
             {
                 throw new ArgumentNullException("Specification not found.");
             }
 
-            _db.Specifications.Remove(entity);
-            await _db.SaveChangesAsync();
+            _context.Specifications.Remove(entity);
+            await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(Guid id, Guid serviceId, string name, int duration, decimal? price, bool isOnline, bool isWeekend)
         {
-            var entity = await _db.Specifications.FirstOrDefaultAsync(sp => sp.Id == id);
+            var entity = await _context.Specifications.FirstOrDefaultAsync(sp => sp.Id == id);
 
             if (entity is null)
             {
@@ -98,7 +98,7 @@ namespace Repository
             entity.IsOnline = isOnline;
             entity.IsWeekendOrHoliday = isWeekend;
 
-            await _db.SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
     }
 }

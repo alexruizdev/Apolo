@@ -5,15 +5,13 @@ using Models;
 
 namespace Apolo.Tests.Data
 {
-    [TestClass]
     public abstract class RepositoryTests
     {
         private SqliteConnection _connection = null!;
         private SqliteConnection _archiveConnection = null!;
         protected ApoloContext _context = null!;
         protected ApoloArchiveContext _archiveContext = null!;
-        protected (List<Service> Services, List<Payer> Payers, List<Student> Students,
-            List<Specification> Specifications, List<Lesson> Lessons, List<BillingDocument> Invoices) _data = Helper.GetDummyData();
+        protected DummyData _data = new();
 
         [TestInitialize]
         public virtual void Setup()
@@ -46,9 +44,16 @@ namespace Apolo.Tests.Data
             _context.Payers.AddRange(_data.Payers);
             _context.Students.AddRange(_data.Students);
             _context.Specifications.AddRange(_data.Specifications);
-            _context.BillingDocuments.AddRange(_data.Invoices);
+            _context.BillingDocuments.AddRange(_data.Bills);
             _context.Lessons.AddRange(_data.Lessons);
             _context.SaveChangesAsync().Wait();
+
+            // Include dummy data to ensure tests are not relying on an empty database
+            _archiveContext.Payers.AddRange(_data.ArchivePayers);
+            _archiveContext.Students.AddRange(_data.ArchiveStudents);
+            _archiveContext.BillingDocuments.AddRange(_data.ArchiveBills);
+            _archiveContext.Lessons.AddRange(_data.ArchiveLessons);
+            _archiveContext.SaveChangesAsync().Wait();
         }
 
         [TestCleanup]

@@ -14,8 +14,10 @@ namespace Apolo.Tests.ViewModels
         {
             base.TestInit();
 
-            foreach (var s in Helper.GetDummyServiceSummaries()) _viewModel.Services.Add(s);
-            foreach (var s in Helper.GetDummyStudentOptions()) _viewModel.Students.Add(s);
+            var data = new DummyData();
+
+            foreach (var s in data.ServiceSummaries) _viewModel.Services.Add(s);
+            foreach (var s in data.StudentOptions) _viewModel.Students.Add(s);
 
             _formViewModel = new LessonFormViewModel(_viewModel);
         }
@@ -52,7 +54,7 @@ namespace Apolo.Tests.ViewModels
             var specification = new SpecificationOption(Guid.NewGuid(), "Exam Preparation Package - Alice", 
                 _formViewModel.Services[5].Id, 150, 90, true, true);
             _mockSpecificationRepo.Setup(r => r.GetSpecificationsForStudentAsync(It.IsAny<List<Guid>>()))
-                .ReturnsAsync(new List<SpecificationOption> { specification });
+                .ReturnsAsync([specification]);
 
             // Search student
             _formViewModel.StudentSearchText = "doe";
@@ -101,8 +103,10 @@ namespace Apolo.Tests.ViewModels
         {
             base.TestInit();
 
-            foreach (var s in Helper.GetDummyServiceSummaries()) _viewModel.Services.Add(s);
-            foreach (var s in Helper.GetDummyStudentOptions()) _viewModel.Students.Add(s);
+            var data = new DummyData();
+
+            foreach (var s in data.ServiceSummaries) _viewModel.Services.Add(s);
+            foreach (var s in data.StudentOptions) _viewModel.Students.Add(s);
 
             var lesson = new LessonSummary(Guid.NewGuid(), new DateOnly(2024, 6, 10), "Math Tutoring - Alice", 45, false, _viewModel.Students[0].Id,
                 "Alice Doe", null, string.Empty, true, 90, 30, true, 5, false, 10, 2.5m, "Small note.");

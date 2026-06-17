@@ -118,12 +118,16 @@ namespace Apolo.Tests.ViewModels
         [TestMethod]
         public async Task LoadAsync_ValidInput_PopulatesPayersCollection()
         {
-            var firstLoad = new List<PayerSummary>();
-            firstLoad.Add(new PayerSummary(Guid.NewGuid(), "Old", "Man", 0, null, null, null, null));
-            firstLoad.Add(new PayerSummary(Guid.NewGuid(), "Old", "Kid", 0, null, null, null, null));
-            var secondLoad = new List<PayerSummary>();
-            secondLoad.Add(new PayerSummary(Guid.NewGuid(), "New", "Man", 0, null, null, null, null));
-            secondLoad.Add(new PayerSummary(Guid.NewGuid(), "New", "Kid", 0, null, null, null, null));
+            var firstLoad = new List<PayerSummary>
+            {
+                new(Guid.NewGuid(), "Old", "Man", 0, null, null, null, null),
+                new(Guid.NewGuid(), "Old", "Kid", 0, null, null, null, null)
+            };
+            var secondLoad = new List<PayerSummary>
+            {
+                new(Guid.NewGuid(), "New", "Man", 0, null, null, null, null),
+                new(Guid.NewGuid(), "New", "Kid", 0, null, null, null, null)
+            };
 
             _mockRepo.SetupSequence(r => r.GetPayersAsync())
              .ReturnsAsync(firstLoad)
@@ -149,7 +153,7 @@ namespace Apolo.Tests.ViewModels
         {
             // Arrange
             _mockRepo.Setup(r => r.GetPayersAsync())
-                .ReturnsAsync(new List<PayerSummary>());
+                .ReturnsAsync([]);
 
             // Act
             await _viewModel.LoadAsync();

@@ -5,11 +5,11 @@ namespace Repository
 {
     public sealed class LessonRepository : ILessonRepository
     {
-        private readonly ApoloContext _db;
+        private readonly ApoloContext _context;
 
-        public LessonRepository(ApoloContext db)
+        public LessonRepository(ApoloContext context)
         {
-            _db = db;
+            _context = context;
         }
 
         public async Task<IEnumerable<LessonSummary>> GetLessonsAsync(string studentName,
@@ -19,7 +19,7 @@ namespace Repository
             DateOnly? endDate)
         {
             // 1. Start the query with AsNoTracking for optimal read-only performance
-            var query = _db.Lessons.AsNoTracking();
+            var query = _context.Lessons.AsNoTracking();
 
             // 2. Filter by Student Name (case-insensitive text check)
             if (!string.IsNullOrWhiteSpace(studentName))
@@ -86,8 +86,8 @@ namespace Repository
             var lesson = new Lesson(date, name, isPaid, studentId, billingDocumentId, isPricePerHour, duration, basePrice,
                 isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, tip, notes);
 
-            _db.Lessons.Add(lesson);
-            await _db.SaveChangesAsync();
+            _context.Lessons.Add(lesson);
+            await _context.SaveChangesAsync();
 
             return lesson;
         }
@@ -96,7 +96,7 @@ namespace Repository
             bool isPricePerHour, int? duration, decimal pricePerStudent,
             bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip, string? note)
         {
-            var entity = await _db.Lessons.FirstOrDefaultAsync(i => i.Id == id);
+            var entity = await _context.Lessons.FirstOrDefaultAsync(i => i.Id == id);
 
             if (entity is null)
                 throw new InvalidDataException("Lesson not found.");
@@ -113,7 +113,7 @@ namespace Repository
             entity.Tip = tip;
             entity.Notes = note;
 
-            await _db.SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
             return entity;
         }
@@ -122,32 +122,32 @@ namespace Repository
         {
             if (!lessonsIds.Any()) return;
 
-            await _db.Lessons
+            await _context.Lessons
                 .Where(l => lessonsIds.Contains(l.Id))
                 .ExecuteUpdateAsync(s => s.SetProperty(l => l.IsPaid, isPaid));
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            var entity = await _db.Lessons.FindAsync(id)
+            var entity = await _context.Lessons.FindAsync(id)
                          ?? throw new ArgumentNullException("Lesson not found.");
 
-            _db.Lessons.Remove(entity);
-            await _db.SaveChangesAsync();
+            _context.Lessons.Remove(entity);
+            await _context.SaveChangesAsync();
         }
 
         public async Task UnassignBillToLessons(IEnumerable<Guid> lessonsIds)
         {
             if (!lessonsIds.Any()) return;
 
-            var lesssons = await _db.Lessons
+            var lesssons = await _context.Lessons
                 .Where(l => lessonsIds.Contains(l.Id))
                 .ToListAsync();
             
             foreach(var lesson in lesssons)
                 lesson.BillingDocumentId = null;
 
-            await _db.SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
     }
 }

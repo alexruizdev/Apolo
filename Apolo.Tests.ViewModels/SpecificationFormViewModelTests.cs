@@ -12,8 +12,10 @@ namespace Apolo.Tests.ViewModels
         {
             base.TestInit();
 
-            foreach (var s in Helper.GetDummyServiceSummaries()) _viewModel.Services.Add(s);
-            foreach (var s in Helper.GetDummyStudentOptions()) _viewModel.Students.Add(s);
+            var data = new DummyData();
+
+            foreach (var s in data.ServiceSummaries) _viewModel.Services.Add(s);
+            foreach (var s in data.StudentOptions) _viewModel.Students.Add(s);
 
             _formViewModel = new SpecificationFormViewModel(_viewModel);
 
@@ -87,8 +89,10 @@ namespace Apolo.Tests.ViewModels
         {
             base.TestInit();
 
-            foreach (var s in Helper.GetDummyServiceSummaries()) _viewModel.Services.Add(s);
-            foreach (var s in Helper.GetDummyStudentOptions()) _viewModel.Students.Add(s);
+            var data = new DummyData();
+
+            foreach (var s in data.ServiceSummaries) _viewModel.Services.Add(s);
+            foreach (var s in data.StudentOptions) _viewModel.Students.Add(s);
 
             var specification = new SpecificationSummary(Guid.NewGuid(), "Test Specification",
                 _viewModel.Students[0].Id, _viewModel.Students[0].FullName, _viewModel.Services[0].Id,

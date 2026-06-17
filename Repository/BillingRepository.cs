@@ -6,17 +6,17 @@ namespace Repository
 {
     public sealed class BillingRepository : IBillingRepository
     {
-        private readonly ApoloContext _db;
+        private readonly ApoloContext _context;
 
-        public BillingRepository(ApoloContext db)
+        public BillingRepository(ApoloContext context)
         {
-            _db = db;
+            _context = context;
         }
 
         public async Task<IEnumerable<LessonLine>> GetUnbilledLessonsAsync(Guid payerId)
         {
             // 1. Fetch only the raw 'ingredients' from SQL
-            return await _db.Lessons
+            return await _context.Lessons
                 .AsNoTracking()
                 .Where(l => l.Student.PayerId == payerId && l.BillingDocumentId == null && !l.IsPaid)
                 .OrderBy(l => l.Date)
@@ -27,7 +27,7 @@ namespace Repository
         public async Task<IEnumerable<LessonLine>> GetLessonsFromBillAsync(Guid billId)
         {
             // 1. Fetch only the raw 'ingredients' from SQL
-            return await _db.Lessons
+            return await _context.Lessons
                 .AsNoTracking()
                 .Where(l => l.BillingDocumentId == billId)
                 .OrderBy(l => l.Date)
@@ -40,7 +40,7 @@ namespace Repository
             if (ids.Count == 0)
                 throw new ArgumentException($"Cannot create {type.ToString()} without any lesson.");
 
-            var lessonsToBill = await _db.Lessons
+            var lessonsToBill = await _context.Lessons
                 .Where(l => ids.Contains(l.Id) && l.BillingDocumentId == null)
                 .ToListAsync();
 
@@ -49,7 +49,7 @@ namespace Repository
 
 
             var now = DateTime.UtcNow;
-            var maxSequence = await _db.BillingDocuments
+            var maxSequence = await _context.BillingDocuments
                 .Where(bd => bd.Type == type && bd.CreatedUTC.Year == now.Year)
                 .MaxAsync(bd => (int?)bd.SequenceNumber) ?? 0;
 
@@ -63,24 +63,24 @@ namespace Repository
             foreach ( var lesson in lessonsToBill )
                 doc.Lines.Add( lesson );
 
-            _db.BillingDocuments.Add(doc);
-            await _db.SaveChangesAsync();
+            _context.BillingDocuments.Add(doc);
+            await _context.SaveChangesAsync();
 
             return doc;
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            var entity = await _db.BillingDocuments.FindAsync(id)
+            var entity = await _context.BillingDocuments.FindAsync(id)
                 ?? throw new ArgumentNullException("Billing document not found");
 
-            _db.BillingDocuments.Remove(entity);
-            await _db.SaveChangesAsync();
+            _context.BillingDocuments.Remove(entity);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<BillingDocument>> GetBillSuggestionsAsync(string searchTerm)
         {
-            return await _db.BillingDocuments
+            return await _context.BillingDocuments
                 .Where(b => b.SequenceNumber.ToString().Contains(searchTerm) || b.Year.ToString().Contains(searchTerm))
                 .Take(10)
                 .ToListAsync();

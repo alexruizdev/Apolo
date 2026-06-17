@@ -44,24 +44,34 @@
                            SelectionChanged="NavView_SelectionChanged">
 
             <ui:NavigationView.MenuItems>
+                <!--Lesson-->
                 <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Lessons}"
                                        Icon="Calendar"
                                        Tag="lessons" />
+                <!--Invoicing-->
                 <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Invoicing}"
-                                       Icon="Calculator"
+                                       Icon="Tag"
                                        Tag="invoicing" />
+                <!--Payers-->
                 <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Payers}"
-                                       Icon="People"
+                                       Icon="ContactInfo"
                                        Tag="payers" />
+                <!--Students-->
                 <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Students}"
                                        Icon="Contact"
                                        Tag="students" />
+                <!--Service-->
                 <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Services}"
-                                       Icon="Edit"
-                                       Tag="services" />
+                                       Tag="services">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE821;" />
+                    </NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+                <!--Specifications-->
                 <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Specifications}"
-                                       Icon="SolidStar"
+                                       Icon="Favorite"
                                        Tag="specifications" />
+                <!--Settings-->
                 <ui:NavigationViewItem Content="{x:Bind loc:Loc.Menu_Settings}"
                                        Icon="Setting"
                                        Tag="settings" />

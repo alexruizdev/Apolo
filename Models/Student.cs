@@ -20,8 +20,8 @@
         public Guid PayerId { get; set; }
         public Payer Payer { get; set; } = null!;
 
-        public ICollection<Specification> Specifications { get; set; } = new List<Specification>();
-        public ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();
+        public ICollection<Specification> Specifications { get; set; } = [];
+        public ICollection<Lesson> Lessons { get; set; } = [];
 
         
     }

@@ -46,6 +46,6 @@ namespace Models
         public string? City { get; set; }
         public string? TaxId { get; set; }
 
-        public ICollection<Student> Students { get; set; } = new List<Student>();
+        public ICollection<Student> Students { get; set; } = [];
     }
 }

@@ -52,7 +52,7 @@ namespace Apolo.Tests.Data
 
             var entity = await _repository.CreateBillAsync(_data.Payers[2].Id, lessonIds, DocumentType.Invoice);
 
-            var result = await _context.BillingDocuments.ToListAsync();
+            var result = await _context.BillingDocuments.ToListAsync(TestContext.CancellationToken);
 
             Assert.HasCount(25, result);
             Assert.HasCount(1, result.Last().Lines);
@@ -69,7 +69,7 @@ namespace Apolo.Tests.Data
 
             var entity = await _repository.CreateBillAsync(_data.Payers[2].Id, lessonIds, DocumentType.Ticket);
 
-            var result = await _context.BillingDocuments.ToListAsync();
+            var result = await _context.BillingDocuments.ToListAsync(TestContext.CancellationToken);
 
             Assert.HasCount(25, result);
             Assert.HasCount(1, result.Last().Lines);
@@ -83,7 +83,7 @@ namespace Apolo.Tests.Data
 
             Assert.HasCount(24, _context.BillingDocuments);
 
-            await _repository.DeleteAsync(_data.Invoices[0].Id);
+            await _repository.DeleteAsync(_data.Bills[0].Id);
 
             Assert.HasCount(23, _context.BillingDocuments);
         }
@@ -96,5 +96,7 @@ namespace Apolo.Tests.Data
                 await _repository.DeleteAsync(Guid.NewGuid());
             });
         }
+
+        public TestContext TestContext { get; set; }
     }
 }

@@ -76,7 +76,7 @@ namespace Apolo.Tests.ViewModels
         [TestMethod]
         public void GetService()
         {
-            var services = Helper.GetDummyServiceSummaries();
+            var services = new DummyData().ServiceSummaries;
             foreach (var service in services)
                 _viewModel.Services.Add(service);
             var result = _viewModel.GetService(services[2].Id);
@@ -101,7 +101,7 @@ namespace Apolo.Tests.ViewModels
         [TestMethod]
         public async Task LoadAsync_ValidInput_PopulatesServicesCollection()
         {
-            var services = Helper.GetDummyServiceSummaries();
+            var services = new DummyData().ServiceSummaries;
             var firstLoad = services.Take(3).ToList();
             var secondLoad = services.Skip(3).ToList();
 
@@ -130,7 +130,7 @@ namespace Apolo.Tests.ViewModels
         {
             // Arrange
             _mockRepo.Setup(r => r.GetServicesAsync())
-                .ReturnsAsync(new List<ServiceSummary>()); 
+                .ReturnsAsync([]);
 
             // Act
             await _viewModel.LoadAsync();

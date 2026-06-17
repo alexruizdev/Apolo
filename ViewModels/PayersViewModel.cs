@@ -7,16 +7,11 @@ using ViewModels;
 
 namespace Apolo.ViewModels
 {
-    public partial class PayersViewModel : BaseViewModel
+    public partial class PayersViewModel(IPayerRepository payerRepository) : BaseViewModel
     {
-        IPayerRepository _payerRepository;
+        readonly IPayerRepository _payerRepository = payerRepository;
 
-        public ObservableCollection<PayerSummary> Payers { get; } = new();
-
-        public PayersViewModel(IPayerRepository payerRepository)
-        {
-            _payerRepository = payerRepository;
-        }
+        public ObservableCollection<PayerSummary> Payers { get; } = [];
 
         public bool ValidatePayerInput(ref string firstName, ref string lastName, 
             ref string address, ref string zipCode, ref string city, ref string taxId)
@@ -121,8 +116,7 @@ namespace Apolo.ViewModels
             }
 
             SetEnterFunction();
-
-            var (oldPayer, index) = GetPayer(id);
+            var (oldPayer, _) = GetPayer(id);
 
             try
             {

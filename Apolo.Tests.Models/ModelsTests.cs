@@ -174,19 +174,102 @@ namespace Apolo.Tests.Models
         }
 
         [TestMethod]
-        public void TestConvertToPayerActivityInfo()
+        public void TestDummyData()
         {
-            var data = Helper.GetDummyData();
-            var payer = data.Payers.First();
-            var students = data.Students.Where(s => s.PayerId == payer.Id).ToList();
-            foreach (var student in students)
-                student.Lessons = data.Lessons.Where(l => l.StudentId == student.Id).ToList();
-            payer.Students = students;
+            var data = new DummyData();
 
-            var payerActivity = Helper.ConvertToPayerActivityInfo(payer);
-            Assert.AreEqual(payer.Id, payerActivity.PayerId);
-            Assert.AreEqual(payer.FullName, payerActivity.PayerName);
-            Assert.AreEqual(new DateOnly(2025, 8, 18), payerActivity.LastLessonDate);
+            // Services
+            {
+                Assert.HasCount(6, data.Services);
+                Assert.AreEqual(1, data.Services.Count(s => !s.IsPricePerHour));
+            }
+
+            // Payers
+            {
+                Assert.HasCount(10, data.Payers);
+                var payerActivities = data.PayerActivities;
+                var payerSummaries = data.StudentSummaries;
+                Assert.HasCount(5, data.ArchivePayers);
+            }
+
+            // Students
+            {
+                Assert.HasCount(11, data.Students);
+                var studentOption = data.StudentOptions.First();
+                var studentSummary = data.StudentSummaries.Last();
+                Assert.AreEqual("Alice Doe", studentOption.FullName);
+                Assert.AreEqual("Lucia", studentSummary.FirstName);
+                Assert.AreEqual("Garcia", studentSummary.LastName);
+                Assert.AreEqual("David Garcia", studentSummary.PayerName);
+                
+                Assert.HasCount(8, data.ArchiveStudents);
+                var archiveStudentOption = data.ArchiveStudentOptions.First();
+                var archiveStudentSummary = data.ArchiveStudentSummaries.Last();
+                Assert.AreEqual("Ethan Clark", studentOption.FullName);
+                Assert.AreEqual("Layla", archiveStudentSummary.FirstName);
+                Assert.AreEqual("Al-Farsi", archiveStudentSummary.LastName);
+                Assert.AreEqual("Fatima Al-Farsi", archiveStudentSummary.PayerName);
+            }
+
+            // Specifications
+            {
+                Assert.HasCount(10, data.SpecificationOptions);
+                var spec = data.SpecificationOptions.First();
+                Assert.AreEqual("Math Tutoring - Alice", spec.Display);
+                Assert.IsNull(spec.Price);
+                Assert.AreEqual(60, spec.DurationMinutes);
+                Assert.IsTrue(spec.IsOnline);
+                Assert.IsFalse(spec.IsWeekend);
+
+                var specSummary = data.SpecificationSummaries[1];
+                Assert.AreEqual("Science Tutoring - Bob", specSummary.Name);
+                Assert.AreEqual("Bob Doe", specSummary.StudentName);
+                Assert.AreEqual("Science Tutoring", specSummary.ServiceName);
+                Assert.AreEqual(90, specSummary.DurationMinutes);
+                Assert.IsNotNull(specSummary.Price);
+                Assert.AreEqual(75, specSummary.Price.Value);
+                Assert.IsFalse(specSummary.IsOnline);
+                Assert.IsTrue(specSummary.IsWeekendOrHoliday);
+                Assert.AreEqual(3, specSummary.UsageCount);
+            }
+
+            // Bills
+            {
+                Assert.HasCount(24, data.Bills);
+                var bill = data.BillSummaries.First();
+                Assert.AreEqual(DocumentType.Invoice, bill.Type);
+                Assert.AreEqual("2024-06-E-0004", bill.Name);
+                Assert.AreEqual("", bill.Date);
+
+                Assert.HasCount(10, data.ArchiveBills);
+                var archiveBill = data.BillSummaries[1];
+                Assert.AreEqual(DocumentType.Ticket, archiveBill.Type);
+                Assert.AreEqual("TCK-2025-12-0008", archiveBill.Name);
+                Assert.AreEqual("", archiveBill.Date);
+            }
+
+            // Lessons
+            {
+                Assert.HasCount(38, data.Lessons);
+
+                var lessonsByPayer = data.LessonLinesByPayer(data.Payers[0].Id);
+                Assert.HasCount(8, lessonsByPayer);
+                Assert.AreEqual(new DateOnly(2024, 06, 10), lessonsByPayer[0].Date);
+                Assert.AreEqual("Math Tutoring - Alice", lessonsByPayer[0].Name);
+                Assert.AreEqual("Alice Doe", lessonsByPayer[0].StudentName);
+                Assert.AreEqual(60, lessonsByPayer[0].FinalPrice);
+                Assert.IsTrue(lessonsByPayer[0].IsPaid);
+
+                var lessonsByBill = data.LessonsLinesByBill(data.Bills[2].Id);
+                Assert.HasCount(4, lessonsByPayer);
+                Assert.AreEqual(new DateOnly(2025, 03, 05), lessonsByPayer[0].Date);
+                Assert.AreEqual("Math Tutoring - Alice", lessonsByPayer[0].Name);
+                Assert.AreEqual("Alice Doe", lessonsByPayer[0].StudentName);
+                Assert.AreEqual(60, lessonsByPayer[0].FinalPrice);
+                Assert.IsTrue(lessonsByPayer[0].IsPaid);
+
+                Assert.HasCount(23, data.ArchiveLessons);
+            }
         }
 }
 }

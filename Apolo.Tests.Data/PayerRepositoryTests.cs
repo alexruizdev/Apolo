@@ -92,7 +92,7 @@ namespace Apolo.Tests.Data
                 await _repository.AddAsync(payer);
             });
 
-            var payerInDb = await _context.Payers.FindAsync(payer.Id);
+            var payerInDb = await _context.Payers.FindAsync([payer.Id], cancellationToken: TestContext.CancellationToken);
 
             Assert.HasCount(10, _context.Payers);
             Assert.IsNotNull(payerInDb);
@@ -184,5 +184,7 @@ namespace Apolo.Tests.Data
             Assert.AreEqual("David Garcia", options[1].FullName);
             Assert.AreEqual("Emma Brown", options[2].FullName);
         }
+
+        public TestContext TestContext { get; set; }
     }
 }

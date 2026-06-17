@@ -1,5 +1,5 @@
-﻿using Repository;
-using Models;
+﻿using Models;
+using Repository;
 
 namespace Apolo.Tests.Data
 {
@@ -23,8 +23,8 @@ namespace Apolo.Tests.Data
             Assert.HasCount(10, _context.Payers);
             Assert.HasCount(11, _context.Students);
             Assert.HasCount(10, _context.Specifications);
-            Assert.HasCount(40, _context.Lessons);
             Assert.HasCount(24, _context.BillingDocuments);
+            Assert.HasCount(44, _context.Lessons);
 
             await _repository.ClearDatabaseAsync();
 
@@ -36,7 +36,7 @@ namespace Apolo.Tests.Data
             Assert.HasCount(0, _context.BillingDocuments);
 
             await _repository.ImportAllDataAsync(_data.Services, _data.Payers, _data.Students, _data.Specifications,
-                _data.Lessons, _data.Invoices);
+                _data.Lessons, _data.Bills);
             Assert.HasCount(6, _context.Services);
             Assert.HasCount(10, _context.Payers);
             Assert.HasCount(11, _context.Students);
@@ -51,8 +51,8 @@ namespace Apolo.Tests.Data
             _archiveContext.Payers.AddRange(_data.Payers);
             _archiveContext.Students.AddRange(_data.Students);
             _archiveContext.Lessons.AddRange(_data.Lessons);
-            _archiveContext.BillingDocuments.AddRange(_data.Invoices);
-            await _archiveContext.SaveChangesAsync();
+            _archiveContext.BillingDocuments.AddRange(_data.Bills);
+            await _archiveContext.SaveChangesAsync(TestContext.CancellationToken);
 
             Assert.HasCount(10, _archiveContext.Payers);
             Assert.HasCount(11, _archiveContext.Students);
@@ -66,7 +66,7 @@ namespace Apolo.Tests.Data
             Assert.HasCount(0, _archiveContext.Lessons);
             Assert.HasCount(0, _archiveContext.BillingDocuments);
 
-            await _repository.ImportArchiveAsync(_data.Payers, _data.Students, _data.Lessons, _data.Invoices);
+            await _repository.ImportArchiveAsync(_data.Payers, _data.Students, _data.Lessons, _data.Bills);
             Assert.HasCount(10, _archiveContext.Payers);
             Assert.HasCount(11, _archiveContext.Students);
             Assert.HasCount(40, _archiveContext.Lessons);
@@ -77,7 +77,7 @@ namespace Apolo.Tests.Data
         [TestMethod]
         public async Task Export()
         {
-            var newData = await _repository.GetAllDataAsync();
+            _ = await _repository.GetAllDataAsync();
             Assert.HasCount(6, _context.Services);
             Assert.HasCount(10, _context.Payers);
             Assert.HasCount(11, _context.Students);
@@ -92,10 +92,10 @@ namespace Apolo.Tests.Data
             _archiveContext.Payers.AddRange(_data.Payers);
             _archiveContext.Students.AddRange(_data.Students);
             _archiveContext.Lessons.AddRange(_data.Lessons);
-            _archiveContext.BillingDocuments.AddRange(_data.Invoices);
-            await _archiveContext.SaveChangesAsync();
+            _archiveContext.BillingDocuments.AddRange(_data.Bills);
+            await _archiveContext.SaveChangesAsync(TestContext.CancellationToken);
 
-            var newData = await _repository.ExportArchiveAsync();
+            _ = await _repository.ExportArchiveAsync();
             Assert.HasCount(10, _archiveContext.Payers);
             Assert.HasCount(11, _archiveContext.Students);
             Assert.HasCount(40, _archiveContext.Lessons);
@@ -117,7 +117,7 @@ namespace Apolo.Tests.Data
         public async Task GetPayersFromArchive()
         {
             _archiveContext.Payers.AddRange(_data.Payers);
-            await _archiveContext.SaveChangesAsync();
+            await _archiveContext.SaveChangesAsync(TestContext.CancellationToken);
 
             var payers = await _repository.GetPayersFromArchiveAsync();
 
@@ -181,5 +181,7 @@ namespace Apolo.Tests.Data
             Assert.HasCount(8, _archiveContext.Lessons);
             Assert.HasCount(3, _archiveContext.BillingDocuments);
         }
+
+        public TestContext TestContext { get; set; }
     }
 }
