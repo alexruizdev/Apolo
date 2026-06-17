@@ -23,6 +23,11 @@
 	</ItemGroup>
 	
 	<ItemGroup>
+		<None Remove="Assets\BadgeLogo.scale-100.png" />
+		<None Remove="Assets\BadgeLogo.scale-125.png" />
+		<None Remove="Assets\BadgeLogo.scale-150.png" />
+		<None Remove="Assets\BadgeLogo.scale-200.png" />
+		<None Remove="Assets\BadgeLogo.scale-400.png" />
 		<None Remove="Controls\LessonFormDialog.xaml" />
 		<None Remove="Controls\SpecificationFormDialog.xaml" />
 		<None Remove="CurstomersPage.xaml" />
