@@ -1,4 +1,6 @@
-﻿namespace Models
+﻿using System.Reflection.Metadata;
+
+namespace Models
 {
     public enum DocumentType
     {
@@ -6,7 +8,7 @@
         Ticket
     }
 
-    public sealed record BillSummary(Guid? Id, Guid payerId, DocumentType type, string Name, string Date);
+    public sealed record BillSummary(Guid? Id, Guid PayerId, DocumentType Type, string Name, string Date);
 
     public sealed class BillingDocument
     {
@@ -27,10 +29,10 @@
         public string DocumentNumber => Type == DocumentType.Invoice
         ? $"{CreatedUTC:yyyy-MM}-E-{SequenceNumber:D4}"
         : $"TCK-{CreatedUTC:yyyy-MM}-{SequenceNumber:D4}";
-
+    
         public Guid PayerId { get; set; }
         public Payer Payer { get; set; } = null!;
 
-        public ICollection<Lesson> Lines { get; set; } = new List<Lesson>();
+        public ICollection<Lesson> Lines { get; set; } = [];
     }
 }

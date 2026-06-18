@@ -190,29 +190,29 @@ namespace Apolo.Tests.ViewModels
             {
 
                 // Arrange
-                var data = Helper.GetDummyData();
+                var data = new DummyData();
 
                 _readerMock.Setup(r => r.Services).Returns(data.Services);
                 _readerMock.Setup(r => r.Payers).Returns(data.Payers);
                 _readerMock.Setup(r => r.Students).Returns(data.Students);
                 _readerMock.Setup(r => r.Specifications).Returns(data.Specifications);
                 _readerMock.Setup(r => r.Lessons).Returns(data.Lessons);
-                _readerMock.Setup(r => r.Invoices).Returns(data.Invoices);
+                _readerMock.Setup(r => r.Invoices).Returns(data.Bills);
 
                 // --- Act ---
                 await _viewModel.ImportDatabaseFromExcel(file);
 
                 _repositoryMock.Verify(r => r.ImportAllDataAsync(data.Services, data.Payers, data.Students, data.Specifications,
-                    data.Lessons, data.Invoices), Times.Once);
+                    data.Lessons, data.Bills), Times.Once);
 
-                string fileContent = await File.ReadAllTextAsync(resultPath);
+                string fileContent = await File.ReadAllTextAsync(resultPath, TestContext.CancellationToken);
                 VerifyAction($"Summary saved to {resultPath}", InfoBarType.Success, isOpen: true, contains: true);
 
                 // 3. Verify specific data points are inside the string
-                StringAssert.Contains(fileContent, "APOLO APP - IMPORT SUMMARY");
-                StringAssert.Contains(fileContent, $"- Services Imported: 6");
-                StringAssert.Contains(fileContent, $"- Invoices Processed: 24");
-                StringAssert.Contains(fileContent, "STATUS: Success");
+                Assert.Contains("APOLO APP - IMPORT SUMMARY", fileContent);
+                Assert.Contains($"- Services Imported: 6", fileContent);
+                Assert.Contains($"- Invoices Processed: 24", fileContent);
+                Assert.Contains("STATUS: Success", fileContent);
             }
             finally
             {
@@ -278,9 +278,16 @@ namespace Apolo.Tests.ViewModels
             Directory.CreateDirectory(tempPath);
             _viewModel.Profile.BackupFolder = tempPath;
 
-            var data = Helper.GetDummyData();
+            var data = new DummyData();
 
-            _repositoryMock.Setup(r => r.GetAllDataAsync()).ReturnsAsync(data);
+            _repositoryMock.Setup(r => r.GetAllDataAsync()).ReturnsAsync((
+                data.Services,
+                data.Payers,
+                data.Students,
+                data.Specifications,
+                data.Lessons,
+                data.Bills
+            ));
 
             await _viewModel.ExportDatabaseToExcel("installed_path");
 
@@ -317,9 +324,16 @@ namespace Apolo.Tests.ViewModels
             Directory.CreateDirectory(tempPath);
             _viewModel.Profile.BackupFolder = tempPath;
 
-            var data = Helper.GetDummyData();
+            var data = new DummyData();
 
-            _repositoryMock.Setup(r => r.ExportArchiveAsync()).ReturnsAsync(data);
+            _repositoryMock.Setup(r => r.ExportArchiveAsync()).ReturnsAsync((
+                [],
+                data.ArchivePayers,
+                data.ArchiveStudents,
+                [],
+                data.ArchiveLessons,
+                data.ArchiveBills
+            ));
 
             await _viewModel.ExportArchiveToExcel("installed_path");
 
@@ -449,5 +463,7 @@ namespace Apolo.Tests.ViewModels
 
             _repositoryMock.Verify(r => r.RetrieveDataFromArchiveAsync(ids), Times.Once);
         }
+
+        public TestContext TestContext { get; set; }
     }
 }

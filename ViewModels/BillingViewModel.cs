@@ -10,15 +10,11 @@ using ViewModels;
 
 namespace Apolo.ViewModels
 {
-    public partial class InvoiceLine : ObservableObject
+    public partial class InvoiceLine(LessonLine lesson) : ObservableObject
     {
-        public LessonLine Data { get; set; }
+        public LessonLine Data { get; set; } = lesson;
 
         [ObservableProperty] private bool isSelected;
-        public InvoiceLine(LessonLine lesson)
-        {
-            this.Data = lesson;
-        }
 
         public void RefreshDataUI()
         {
@@ -27,14 +23,14 @@ namespace Apolo.ViewModels
     }
     public partial class BillingViewModel : UserProfileViewModel
     {
-        IBillingRepository _billingRepository;
-        IPayerRepository _payerRepository;
-        ILessonRepository _lessonRepository;
-        PDF.IWriter _pdfWriter;
+        readonly IBillingRepository _billingRepository;
+        readonly IPayerRepository _payerRepository;
+        readonly ILessonRepository _lessonRepository;
+        readonly PDF.IWriter _pdfWriter;
 
-        public ObservableCollection<PayerOption> Payers { get; } = new();
-        public ObservableCollection<InvoiceLine> Lessons { get; } = new();
-        public ObservableCollection<BillingDocument> BillSuggestions { get; } = new(); 
+        public ObservableCollection<PayerOption> Payers { get; } = [];
+        public ObservableCollection<InvoiceLine> Lessons { get; } = [];
+        public ObservableCollection<BillingDocument> BillSuggestions { get; } = []; 
 
         [ObservableProperty] private Guid? selectedPayerId;
         [ObservableProperty] private string? searchBillText;
@@ -43,7 +39,7 @@ namespace Apolo.ViewModels
         [ObservableProperty] private bool editMode;
         [ObservableProperty] private BillSummary bill;
 
-        public BillSummary ResetBill() => new BillSummary(null, Guid.NewGuid(), DocumentType.Ticket, "", "");
+        public static BillSummary ResetBill() => new(null, Guid.NewGuid(), DocumentType.Ticket, "", "");
 
         public BillingViewModel(IBillingRepository billingRepository, IPayerRepository payerRepository,  
             IUserProfileService userProfile, PDF.IWriter pdfWriter, ILessonRepository lessonRepository)
@@ -410,9 +406,9 @@ namespace Apolo.ViewModels
 
             var lessons = Lessons .Select(l => l.Data).ToList();
             var filePath = Path.Combine(Profile.BillingFolder, $"{Bill.Name}.pdf");
-            var payer = await _payerRepository.GetPayerSummaryNoOutstandingAsync(Bill.payerId);
+            var payer = await _payerRepository.GetPayerSummaryNoOutstandingAsync(Bill.PayerId);
 
-            if (Bill.type is DocumentType.Invoice)
+            if (Bill.Type is DocumentType.Invoice)
                 _pdfWriter.GenerateInvoice(Bill.Name, payer, lessons, Profile, filePath, Bill.Date);
             else
                 _pdfWriter.GenerateTicket(Bill.Name, payer, lessons, Profile, filePath, Bill.Date);

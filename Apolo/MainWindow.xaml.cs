@@ -67,6 +67,9 @@ namespace Apolo
                 case "specifications":
                     RootFrame.Navigate(typeof(SpecificationsPage));
                     break;
+                case "dashboard":
+                    RootFrame.Navigate(typeof(DashboardPage));
+                    break;
                 case "settings":
                     RootFrame.Navigate(typeof(SettingsPage));
                     break;

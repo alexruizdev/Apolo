@@ -47,16 +47,16 @@ namespace Apolo.Tests.Data
         public async Task CreateInvoiceAsync()
         {
             var lessonIds = _data.Lessons
-                .Where(l => l.BillingDocumentId == null)
+                .Where(l => l.BillingDocumentId == null && l.StudentId == _data.Students[9].Id)
                 .Select(l => l.Id).ToList();
 
-            var entity = await _repository.CreateBillAsync(_data.Payers[2].Id, lessonIds, DocumentType.Invoice);
+            var entity = await _repository.CreateBillAsync(_data.Payers[7].Id, lessonIds, DocumentType.Invoice);
 
-            var result = await _context.BillingDocuments.ToListAsync();
+            var result = await _context.BillingDocuments.ToListAsync(TestContext.CancellationToken);
 
             Assert.HasCount(25, result);
-            Assert.HasCount(1, result.Last().Lines);
-            var count = DateTimeOffset.UtcNow.Year > 2026 ? 1 : 6;
+            Assert.HasCount(4, result.Last().Lines);
+            var count = DateTimeOffset.UtcNow.Year > 2026 ? 1 : 4;
             Assert.AreEqual($"{DateTime.Now:yyyy-MM}-E-000{count}", entity.DocumentNumber);
         }
 
@@ -64,16 +64,16 @@ namespace Apolo.Tests.Data
         public async Task CreateTicketAsync()
         {
             var lessonIds = _data.Lessons
-                .Where(l => l.BillingDocumentId == null)
+                .Where(l => l.BillingDocumentId == null && l.StudentId == _data.Students[9].Id)
                 .Select(l => l.Id).ToList();
 
             var entity = await _repository.CreateBillAsync(_data.Payers[2].Id, lessonIds, DocumentType.Ticket);
 
-            var result = await _context.BillingDocuments.ToListAsync();
+            var result = await _context.BillingDocuments.ToListAsync(TestContext.CancellationToken);
 
             Assert.HasCount(25, result);
-            Assert.HasCount(1, result.Last().Lines);
-            var count = DateTimeOffset.UtcNow.Year > 2026 ? 1 : 5;
+            Assert.HasCount(4, result.Last().Lines);
+            var count = DateTimeOffset.UtcNow.Year > 2026 ? 1 : 3;
             Assert.AreEqual($"TCK-{DateTime.Now:yyyy-MM}-000{count}", entity.DocumentNumber);
         }
 
@@ -83,7 +83,7 @@ namespace Apolo.Tests.Data
 
             Assert.HasCount(24, _context.BillingDocuments);
 
-            await _repository.DeleteAsync(_data.Invoices[0].Id);
+            await _repository.DeleteAsync(_data.Bills[0].Id);
 
             Assert.HasCount(23, _context.BillingDocuments);
         }
@@ -91,10 +91,12 @@ namespace Apolo.Tests.Data
         [TestMethod]
         public async Task DeleteInvoiceAsyncInvalidInvoice()
         {
-            await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            await Assert.ThrowsAsync<KeyNotFoundException>(async () =>
             {
                 await _repository.DeleteAsync(Guid.NewGuid());
             });
         }
+
+        public TestContext TestContext { get; set; }
     }
 }

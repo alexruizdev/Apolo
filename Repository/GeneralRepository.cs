@@ -3,16 +3,10 @@ using Models;
 
 namespace Repository
 {
-    public sealed class GeneralRepository : IGeneralRepository
+    public sealed class GeneralRepository(ApoloContext context, ApoloArchiveContext archiveDb) : IGeneralRepository
     {
-        private readonly ApoloContext _db;
-        private readonly ApoloArchiveContext _archiveDb;
-
-        public GeneralRepository(ApoloContext db, ApoloArchiveContext archiveDb)
-        {
-            _db = db;
-            _archiveDb = archiveDb;
-        }
+        private readonly ApoloContext _context = context;
+        private readonly ApoloArchiveContext _archiveDb = archiveDb;
 
         public async Task ImportAllDataAsync(
             List<Service> services,
@@ -22,16 +16,16 @@ namespace Repository
             List<Lesson> lessons,
             List<BillingDocument> invoices)
         {
-            using var transaction = await _db.Database.BeginTransactionAsync();
+            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                _db.Services.AddRange(services);
-                _db.Payers.AddRange(payers);
-                _db.Students.AddRange(students);
-                _db.Specifications.AddRange(specifications);
-                _db.BillingDocuments.AddRange(invoices);
-                _db.Lessons.AddRange(lessons);
-                await _db.SaveChangesAsync();
+                _context.Services.AddRange(services);
+                _context.Payers.AddRange(payers);
+                _context.Students.AddRange(students);
+                _context.Specifications.AddRange(specifications);
+                _context.BillingDocuments.AddRange(invoices);
+                _context.Lessons.AddRange(lessons);
+                await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
             catch
@@ -69,12 +63,12 @@ namespace Repository
             GetAllDataAsync()
         {
             return (
-                await _db.Services.AsNoTracking().ToListAsync(),
-                await _db.Payers.AsNoTracking().ToListAsync(),
-                await _db.Students.AsNoTracking().ToListAsync(),
-                await _db.Specifications.AsNoTracking().ToListAsync(),
-                await _db.Lessons.AsNoTracking().ToListAsync(),
-                await _db.BillingDocuments.AsNoTracking().ToListAsync()
+                await _context.Services.AsNoTracking().ToListAsync(),
+                await _context.Payers.AsNoTracking().ToListAsync(),
+                await _context.Students.AsNoTracking().ToListAsync(),
+                await _context.Specifications.AsNoTracking().ToListAsync(),
+                await _context.Lessons.AsNoTracking().ToListAsync(),
+                await _context.BillingDocuments.AsNoTracking().ToListAsync()
             );
         }
 
@@ -94,8 +88,8 @@ namespace Repository
 
         public async Task ClearDatabaseAsync()
         {
-            await _db.Database.EnsureDeletedAsync();
-            await _db.Database.EnsureCreatedAsync();
+            await _context.Database.EnsureDeletedAsync();
+            await _context.Database.EnsureCreatedAsync();
         }
 
         public async Task ClearArchiveAsync()
@@ -106,15 +100,12 @@ namespace Repository
 
         public async Task<List<PayerActivityInfo>> GetPayersWithActivityAsync()
         {
-            return await _db.Payers
+            return await _context.Payers
                 .Select(p => new PayerActivityInfo
                 {
                     PayerId = p.Id,
                     PayerName = p.FullName,
-                    LastLessonDate = p.Students
-                .SelectMany(s => s.Lessons)
-                .Select(l => (DateOnly?)l.Date)
-                .Max()
+                    LastLessonDate = p.Students.SelectMany(s => s.Lessons).Max(l => (DateOnly?)l.Date)
                 })
                 .AsNoTracking()
                 .OrderBy(p => p.LastLessonDate) // Show oldest/inactive first
@@ -133,11 +124,11 @@ namespace Repository
 
         public async Task RetrieveDataFromArchiveAsync(List<Guid> payerIds)
         {
-            using var transaction = await _db.Database.BeginTransactionAsync();
+            using var transaction = await _context.Database.BeginTransactionAsync();
             using var archiveTransaction = await _archiveDb.Database.BeginTransactionAsync();
             try
             {
-                _db.ChangeTracker.Clear();
+                _context.ChangeTracker.Clear();
                 _archiveDb.ChangeTracker.Clear();
 
                 // 1. Identify Payers and Students
@@ -164,12 +155,12 @@ namespace Repository
                     .Where(b => payerIds.Contains(b.PayerId))
                     .ToListAsync();
 
-                _db.Payers.AddRange(payersToMove);
-                _db.Students.AddRange(studentsToMove);
-                _db.Lessons.AddRange(lessonsToMove);
-                _db.BillingDocuments.AddRange(billsToMove);
+                _context.Payers.AddRange(payersToMove);
+                _context.Students.AddRange(studentsToMove);
+                _context.Lessons.AddRange(lessonsToMove);
+                _context.BillingDocuments.AddRange(billsToMove);
 
-                await _db.SaveChangesAsync();
+                await _context.SaveChangesAsync();
 
                 // 4. MAIN SIDE: Clean up
                 await _archiveDb.BillingDocuments.Where(i => payerIds.Contains(i.PayerId)).ExecuteDeleteAsync();
@@ -190,20 +181,20 @@ namespace Repository
 
         public async Task ArchiveOldDataAsync(List<Guid> payerIds)
         {
-            using var transaction = await _db.Database.BeginTransactionAsync();
+            using var transaction = await _context.Database.BeginTransactionAsync();
             using var archiveTransaction = await _archiveDb.Database.BeginTransactionAsync();
             try
             {
-                _db.ChangeTracker.Clear();
+                _context.ChangeTracker.Clear();
                 _archiveDb.ChangeTracker.Clear();
 
                 // 1. Identify Payers and Students
-                var payersToMove = await _db.Payers
+                var payersToMove = await _context.Payers
                     .AsNoTracking()
                     .Where(p => payerIds.Contains(p.Id))
                     .ToListAsync();
 
-                var studentsToMove = await _db.Students
+                var studentsToMove = await _context.Students
                     .AsNoTracking()
                     .Where(s => payerIds.Contains(s.PayerId))
                     .ToListAsync();
@@ -211,17 +202,17 @@ namespace Repository
                 var studentIds = studentsToMove.Select(s => s.Id).ToList();
 
                 // 2. Identify Lessons and Invoices linked to these students
-                var lessonsToMove = await _db.Lessons
+                var lessonsToMove = await _context.Lessons
                     .AsNoTracking()
                     .Where(l => studentIds.Contains(l.StudentId))
                     .ToListAsync();
 
-                var billsToMove = await _db.BillingDocuments
+                var billsToMove = await _context.BillingDocuments
                     .AsNoTracking()
                     .Where(b => payerIds.Contains(b.PayerId))
                     .ToListAsync();
 
-                var specsToRemove = await _db.Specifications
+                var specsToRemove = await _context.Specifications
                     .AsNoTracking()
                     .Where(s => studentIds.Contains(s.StudentId))
                     .ToListAsync();
@@ -234,10 +225,10 @@ namespace Repository
                 await _archiveDb.SaveChangesAsync();
 
                 // 4. MAIN SIDE: Clean up
-                await _db.BillingDocuments.Where(i => payerIds.Contains(i.PayerId)).ExecuteDeleteAsync();
-                await _db.Lessons.Where(l => studentIds.Contains(l.StudentId)).ExecuteDeleteAsync();
-                await _db.Students.Where(s => payerIds.Contains(s.PayerId)).ExecuteDeleteAsync();
-                await _db.Payers.Where(p => payerIds.Contains(p.Id)).ExecuteDeleteAsync();
+                await _context.BillingDocuments.Where(i => payerIds.Contains(i.PayerId)).ExecuteDeleteAsync();
+                await _context.Lessons.Where(l => studentIds.Contains(l.StudentId)).ExecuteDeleteAsync();
+                await _context.Students.Where(s => payerIds.Contains(s.PayerId)).ExecuteDeleteAsync();
+                await _context.Payers.Where(p => payerIds.Contains(p.Id)).ExecuteDeleteAsync();
 
                 await transaction.CommitAsync();
                 await archiveTransaction.CommitAsync();

@@ -1,21 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Models;
 
 namespace Repository
 {
-    public sealed class PayerRepository : IPayerRepository
+    public sealed class PayerRepository(ApoloContext context) : IPayerRepository
     {
-        private readonly ApoloContext _db;
-
-        public PayerRepository(ApoloContext db)
-        {
-            _db = db;
-        }
+        private readonly ApoloContext _context = context;
 
         public async Task<PayerSummary> GetPayerSummaryNoOutstandingAsync(Guid payerId)
         {
-            var payer = await _db.Payers
+            var payer = await _context.Payers
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.Id == payerId)
                 ?? throw new InvalidDataException("Payer not found.");
@@ -25,7 +19,7 @@ namespace Repository
 
         public async Task<IEnumerable<PayerSummary>> GetPayersAsync()
         {
-            var rawData = await _db.Payers
+            var rawData = await _context.Payers
                 .AsNoTracking()
                 .Select(p => new
                 {
@@ -45,6 +39,8 @@ namespace Repository
 
             return rawData
                 .OrderByDescending(x => x.Outstanding) 
+                .ThenBy(x => x.FirstName)
+                .ThenBy(x => x.LastName)
                 .Select(x => new PayerSummary(
                     x.Id,
                     x.FirstName,
@@ -59,7 +55,7 @@ namespace Repository
 
         public async Task<IEnumerable<PayerOption>> GetPayerOptionsAsync()
         {
-            return await _db.Payers
+            return await _context.Payers
                  .AsNoTracking()
                  .OrderBy(s => s.FirstName)
                  .ThenBy(s => s.LastName)
@@ -69,7 +65,7 @@ namespace Repository
 
         public async Task<IEnumerable<PayerOption>> GetPayerOptionsByUnbilledLessons()
         {
-            return await _db.Payers
+            return await _context.Payers
                  .AsNoTracking()
                  .Select(p => new
                  {
@@ -81,13 +77,7 @@ namespace Repository
                  .OrderByDescending(x => x.UnbilledCount)
                  .ThenBy(x => x.Payer.FirstName)
                  .ThenBy(x => x.Payer.LastName)
-                 .Select(x => new PayerOption
-                 (
-                     x.Payer.Id,
-                     x.UnbilledCount > 0
-                         ? $"{x.Payer.FirstName} {x.Payer.LastName} - {x.UnbilledCount} lesson{(x.UnbilledCount == 1 ? "" : "s")}"
-                         : $"{x.Payer.FirstName} {x.Payer.LastName}"
-                 ))
+                 .Select(x => Helper.ConvertToPayerOptionWithCount(x.Payer, x.UnbilledCount))
                  .ToListAsync();
         }
 
@@ -95,8 +85,8 @@ namespace Repository
         {
             try
             {
-                _db.Payers.Add(payer);
-                await _db.SaveChangesAsync();
+                _context.Payers.Add(payer);
+                await _context.SaveChangesAsync();
             }
             catch (DbUpdateException ex)
             {
@@ -107,28 +97,24 @@ namespace Repository
         public async Task DeleteAsync(Guid id)
         {
             // Check for existence and relations without loading all student objects
-            var hasStudents = await _db.Students.AnyAsync(s => s.PayerId == id);
+            var hasStudents = await _context.Students.AnyAsync(s => s.PayerId == id);
 
             if (hasStudents)
             {
                 throw new InvalidOperationException("Cannot delete: Payer has associated students.");
             }
 
-            var entity = await _db.Payers.FindAsync(id)
-                         ?? throw new ArgumentNullException("Payer not found.");
+            var entity = await _context.Payers.FindAsync(id)
+                         ?? throw new KeyNotFoundException($"Payer with ID {id} was not found.");
 
-            _db.Payers.Remove(entity);
-            await _db.SaveChangesAsync();
+            _context.Payers.Remove(entity);
+            await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(Guid payerId, string firstName, string lastName, string address, string zipCode, string city, string taxId)
         {
-            var entity = await _db.Payers.FirstOrDefaultAsync(p => p.Id == payerId);
-
-            if (entity is null)
-            {
-                throw new ArgumentNullException("Payer not found.");
-            }
+            var entity = await _context.Payers.FirstOrDefaultAsync(p => p.Id == payerId) ??
+                throw new KeyNotFoundException($"Payer with ID {payerId} was not found.");
 
             entity.FirstName = firstName;
             entity.LastName = lastName;
@@ -137,7 +123,7 @@ namespace Repository
             entity.City = city;
             entity.TaxId = taxId;
 
-            await _db.SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
     }
 }

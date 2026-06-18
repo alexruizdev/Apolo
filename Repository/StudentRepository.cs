@@ -5,16 +5,16 @@ namespace Repository
 {
     public sealed class StudentRepository : IStudentRepository
     {
-        private readonly ApoloContext _db;
+        private readonly ApoloContext _context;
 
-        public StudentRepository(ApoloContext db)
+        public StudentRepository(ApoloContext context)
         {
-            _db = db;
+            _context = context;
         }
 
         public async Task<IEnumerable<StudentSummary>> GetSudentsAsync()
         {
-            return await _db.Students
+            return await _context.Students
                 .AsNoTracking()
                 .OrderBy(s => s.FirstName)
                 .ThenBy(s => s.LastName)
@@ -30,7 +30,7 @@ namespace Repository
         public async Task AddAsync(Student student)
         {
             // A student must have a valid Payer
-            var payerExists = await _db.Payers.AnyAsync(p => p.Id == student.PayerId);
+            var payerExists = await _context.Payers.AnyAsync(p => p.Id == student.PayerId);
             if (!payerExists)
             {
                 throw new InvalidOperationException($"Cannot save student: Payer with ID {student.PayerId} does not exist.");
@@ -38,8 +38,8 @@ namespace Repository
 
             try
             {
-                _db.Students.Add(student);
-                await _db.SaveChangesAsync();
+                _context.Students.Add(student);
+                await _context.SaveChangesAsync();
             }
             catch (DbUpdateException ex)
             {
@@ -50,20 +50,20 @@ namespace Repository
 
         public async Task DeleteAsync(Guid id)
         {
-            var entity = await _db.Students.FirstOrDefaultAsync(s => s.Id == id);
+            var entity = await _context.Students.FirstOrDefaultAsync(s => s.Id == id);
 
             if (entity is null)
             {
                 throw new ArgumentNullException("Student not found.");
             }
 
-            _db.Students.Remove(entity);
-            await _db.SaveChangesAsync();
+            _context.Students.Remove(entity);
+            await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(Guid studentId, Guid payerId, string firstName, string lastName)
         {
-            var entity = await _db.Students.FirstOrDefaultAsync(s => s.Id == studentId);
+            var entity = await _context.Students.FirstOrDefaultAsync(s => s.Id == studentId);
 
             if (entity is null)
             {
@@ -74,12 +74,12 @@ namespace Repository
             entity.LastName = lastName;
             entity.PayerId = payerId;
 
-            await _db.SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<StudentOption>> GetStudentOptionsAsync()
         {
-            return await _db.Students
+            return await _context.Students
                  .AsNoTracking()
                  .OrderBy(s => s.FirstName)
                  .ThenBy(s => s.LastName)

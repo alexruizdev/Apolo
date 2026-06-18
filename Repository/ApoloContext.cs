@@ -3,10 +3,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Repository
 {
-    public class ApoloArchiveContext : DbContext
+    public class ApoloArchiveContext(DbContextOptions<ApoloArchiveContext> options) : DbContext(options)
     {
-        public ApoloArchiveContext(DbContextOptions<ApoloArchiveContext> options) : base(options) { }
-
         public DbSet<Payer> Payers { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Lesson> Lessons { get; set; }
@@ -41,10 +39,8 @@ namespace Repository
                 .OnDelete(DeleteBehavior.SetNull);
         }
     }
-    public class ApoloContext : DbContext
+    public class ApoloContext(DbContextOptions<ApoloContext> options) : DbContext(options)
     {
-        public ApoloContext(DbContextOptions<ApoloContext> options) : base(options) { }
-
         public DbSet<Payer> Payers { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Service> Services { get; set; }

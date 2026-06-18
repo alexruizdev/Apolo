@@ -138,6 +138,9 @@
   <data name="Menu/Specifications" xml:space="preserve">
     <value>Specifications</value>
   </data>
+	<data name="Menu/Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
   <data name="Menu/Settings" xml:space="preserve">
     <value>Settings</value>
   </data>

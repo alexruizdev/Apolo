@@ -112,7 +112,7 @@ namespace Models
             {
                 if (duration is null)
                     throw new ArgumentException("Duration is required when price is per hour.");
-                price = price * (duration.Value / 60m);
+                price *= duration.Value / 60m;
             }
             decimal total = travel + price;
             return Math.Round(total * 2m, MidpointRounding.AwayFromZero) / 2m;

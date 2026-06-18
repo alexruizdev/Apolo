@@ -528,7 +528,7 @@ namespace Apolo.Tests.ViewModels
 
         private async Task ActForForPrintDocument()
         {
-            var payerId = _viewModel.Bill.payerId;
+            var payerId = _viewModel.Bill.PayerId;
 
             _mockPayerRepo.Setup(r => r.GetPayerSummaryNoOutstandingAsync(payerId))
                 .ReturnsAsync(new PayerSummary(payerId, "Payer", "1", 0, null, null, null, null));
@@ -549,7 +549,7 @@ namespace Apolo.Tests.ViewModels
             }
             else
             {
-                _mockPayerRepo.Verify(r => r.GetPayerSummaryNoOutstandingAsync(_viewModel.Bill.payerId), Times.Once);
+                _mockPayerRepo.Verify(r => r.GetPayerSummaryNoOutstandingAsync(_viewModel.Bill.PayerId), Times.Once);
             }
 
             // Create invoice

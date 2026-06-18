@@ -35,7 +35,7 @@ namespace Apolo.Views
                 XamlRoot = Content.XamlRoot
             };
 
-            Binding operationsBinding = new Binding
+            Binding operationsBinding = new()
             {
                 Source = formControl.ViewModel,
                 Path = new PropertyPath("IsPrimaryButtonEnabled"),
@@ -43,7 +43,7 @@ namespace Apolo.Views
             };
             BindingOperations.SetBinding(dialog, ContentDialog.IsPrimaryButtonEnabledProperty, operationsBinding);
 
-            Binding dynamicTitleBinding = new Binding
+            Binding dynamicTitleBinding = new()
             {
                 Source = formControl.ViewModel,
                 Path = new PropertyPath("DialogTitle"),
@@ -66,7 +66,6 @@ namespace Apolo.Views
             Guid? id = await ConfirmationDialog.ConfirmItemAction(sender, "delete lesson");
             if (id is not null)
                 await ViewModel.DeleteLessonAsync(id.Value);
-            if (sender is not Button b || b.DataContext is not LessonSummary row) return;
 
         }
 
@@ -90,7 +89,7 @@ namespace Apolo.Views
                 XamlRoot = Content.XamlRoot
             };
 
-            Binding operationsBinding = new Binding
+            Binding operationsBinding = new()
             {
                 Source = formControl.ViewModel,
                 Path = new PropertyPath("IsPrimaryButtonEnabled"),
@@ -98,7 +97,7 @@ namespace Apolo.Views
             };
             BindingOperations.SetBinding(dialog, ContentDialog.IsPrimaryButtonEnabledProperty, operationsBinding);
 
-            Binding dynamicTitleBinding = new Binding
+            Binding dynamicTitleBinding = new()
             {
                 Source = formControl.ViewModel,
                 Path = new PropertyPath("DialogTitle"),

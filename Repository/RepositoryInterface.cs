@@ -1,5 +1,4 @@
 ﻿using Models;
-using System.ComponentModel;
 
 namespace Repository
 {
@@ -95,5 +94,15 @@ namespace Repository
         Task ArchiveOldDataAsync(List<Guid> payerIds);
         Task<List<PayerOption>> GetPayersFromArchiveAsync();
         Task RetrieveDataFromArchiveAsync(List<Guid> payerIds);
+    }
+
+    public interface IDashboardRepository
+    {
+        Task<decimal> GetTotalUnpaidAmountAsync();
+        Task<decimal> GetMonthlyEarningsAsync(int year, int month);
+        Task<int> GetMonthlyLessonCountAsync(int year, int month);
+        Task<List<decimal>> GetYearlyIncomeTrendAsync(int year);
+        Task<Dictionary<string, decimal>> GetTopPayersThisMonthAsync(int year, int month, int limit = 5);
+        Task<(int Paid, int Unpaid)> GetPaidVsUnpaidCountThisMonthAsync(int year, int month);
     }
 }

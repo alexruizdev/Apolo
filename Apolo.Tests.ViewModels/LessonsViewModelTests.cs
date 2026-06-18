@@ -8,7 +8,6 @@ using ViewModels;
 
 namespace Apolo.Tests.ViewModels
 {
-    [TestClass]
     public class LessonsViewModelBaseTests
     {
         protected Mock<ILessonRepository> _mockLessonRepo = null!;
@@ -72,9 +71,10 @@ namespace Apolo.Tests.ViewModels
 
         private async Task ActForLoadAsyncTests(bool clear = false)
         {
-            var services = Helper.GetDummyServiceSummaries();
-            var students = Helper.GetDummyStudentOptions();
-            var lessons = Helper.GetDummyLessonSummaries();
+            var data = new DummyData();
+            var services = data.ServiceSummaries;
+            var students = data.StudentOptions;
+            var lessons = data.LessonSummaries;
 
             string student = clear ? string.Empty : "alice";
             string payer = clear ? string.Empty : "doe";
@@ -98,9 +98,9 @@ namespace Apolo.Tests.ViewModels
         }
 
         private void AssertForLoadAsyncTests(bool success, string? infoMessage, InfoBarType severity, 
-            bool isBusy = false, bool clear = false, bool dbError = false)
+            bool isBusy = false, bool clear = false)
         {
-            int lessonCount = success ? 40 : 0;
+            int lessonCount = success ? 44 : 0;
             int studentsCount = success ? 11 : 0;
             int servicesCount = success ? 6 : 0;
 
@@ -146,7 +146,7 @@ namespace Apolo.Tests.ViewModels
         {
             ArrangeForLoadTests();
             await ActForLoadAsyncTests();
-            AssertForLoadAsyncTests(success: true, infoMessage: "40 loaded", 
+            AssertForLoadAsyncTests(success: true, infoMessage: "44 loaded", 
                 severity: InfoBarType.Success, isBusy: false);
         }
 
@@ -156,7 +156,7 @@ namespace Apolo.Tests.ViewModels
         {
             ArrangeForLoadTests();
             await ActForLoadAsyncTests(clear: true);
-            AssertForLoadAsyncTests(success: true, infoMessage: "40 loaded",
+            AssertForLoadAsyncTests(success: true, infoMessage: "44 loaded",
                 severity: InfoBarType.Success, isBusy: false, clear: true);
         }
 
@@ -178,9 +178,9 @@ namespace Apolo.Tests.ViewModels
             var studentId = Guid.NewGuid();
             _viewModel.Students.Add(new StudentOption(studentId, "Old Student"));
             _viewModel.Students.Add(new StudentOption(Guid.NewGuid(), "New Student"));
-            var result = _viewModel.GetStudent(studentId);
-            Assert.AreEqual(0, result.index);
-            Assert.AreEqual("Old Student", result.item.FullName);
+            var (item, index) = _viewModel.GetStudent(studentId);
+            Assert.AreEqual(0, index);
+            Assert.AreEqual("Old Student", item.FullName);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.IsNull(_viewModel.InfoMessage);
         }
@@ -288,7 +288,6 @@ namespace Apolo.Tests.ViewModels
         public void GetLesson()
         {
             var student = new StudentOption(Guid.NewGuid(), "Old Man");
-            var service = new ServiceSummary(Guid.NewGuid(), "Old Service", false, 30);
             var lesson = new LessonSummary(Guid.NewGuid(), DateOnly.FromDateTime(DateTime.Today), "Old Lesson 1", 30, false, student.Id, student.FullName, null, string.Empty, false, null, 30, false, 5, false, 5, 0, null);
             _viewModel.Lessons.Add(lesson);
             var result = _viewModel.GetLesson(lesson.Id);
@@ -307,14 +306,14 @@ namespace Apolo.Tests.ViewModels
             _viewModel.Services.Add(service);
         }
 
-        private async Task ActForAddLessonTests(Guid studentId, ServiceSummary service, Guid lessonId,
+        private async Task ActForAddLessonTests(Guid studentId, ServiceSummary service,
             bool invalidLesson = false, bool dbError = false, bool invalidStudent = false)
         {
             var date = DateOnly.FromDateTime(new DateTime(1993, 8, 17));
             var name = invalidLesson ? "" : "Lesson";
             decimal tip = 10;
             string notes = "Some notes";
-            Lesson result = new Lesson(date, name, isPaid: false, studentId, null, service.IsPricePerHour, null, 30, true, 10, false, 20, 10, notes);
+            Lesson result = new(date, name, isPaid: false, studentId, null, service.IsPricePerHour, null, 30, true, 10, false, 20, 10, notes);
             if (invalidStudent)
                 studentId = Guid.NewGuid();
 
@@ -341,7 +340,7 @@ namespace Apolo.Tests.ViewModels
                 await _viewModel.AddLessonAsync(date, name, service, 60, 30, true, false, tip, notes, studentId);
         }
 
-        private void AssertForAddLessonTests(Guid studentId, Guid lessonId, bool success, 
+        private void AssertForAddLessonTests(Guid studentId, bool success, 
             string? infoMessage, InfoBarType severity,  bool isBusy = false, bool dbError = false, bool invalidStudent = false)
         {
             var date = DateOnly.FromDateTime(new DateTime(1993, 8, 17));
@@ -384,55 +383,50 @@ namespace Apolo.Tests.ViewModels
         [TestMethod]
         public async Task AddLesson_WhenAlreadyBusy()
         {
-            var lessonId = Guid.NewGuid();
             var studentId = Guid.NewGuid();
             ArrangeForAddLessonTests(studentId);
             _viewModel.IsBusy = true;
-            await ActForAddLessonTests(studentId, _viewModel.Services[0], lessonId);
-            AssertForAddLessonTests(_viewModel.Students[0].Id, lessonId, success: false, 
+            await ActForAddLessonTests(studentId, _viewModel.Services[0]);
+            AssertForAddLessonTests(_viewModel.Students[0].Id, success: false, 
                 infoMessage: "Can't add lesson while busy.", severity: InfoBarType.Warning, isBusy: true);
         }
 
         [TestMethod]
         public async Task AddLesson_InvalidStudent()
         {
-            var lessonId = Guid.NewGuid();
             var studentId = Guid.NewGuid();
             ArrangeForAddLessonTests(studentId);
-            await ActForAddLessonTests(studentId, _viewModel.Services[0], lessonId, invalidStudent: true);
-            AssertForAddLessonTests(studentId, lessonId, success: false, infoMessage: null,
+            await ActForAddLessonTests(studentId, _viewModel.Services[0], invalidStudent: true);
+            AssertForAddLessonTests(studentId, success: false, infoMessage: null,
                 severity: InfoBarType.Success, invalidStudent: true);
         }
 
         [TestMethod]
         public async Task AddLesson_InvalidName()
         {
-            var lessonId = Guid.NewGuid();
             var studentId = Guid.NewGuid();
             ArrangeForAddLessonTests(studentId);
-            await ActForAddLessonTests(studentId, _viewModel.Services[0], lessonId, invalidLesson: true);
-            AssertForAddLessonTests(studentId, lessonId, success: false, infoMessage: "Lesson name is required.",
+            await ActForAddLessonTests(studentId, _viewModel.Services[0], invalidLesson: true);
+            AssertForAddLessonTests(studentId, success: false, infoMessage: "Lesson name is required.",
                 severity: InfoBarType.Warning);
         }
         [TestMethod]
         public async Task AddLesson_DBException()
         {
-            var lessonId = Guid.NewGuid();
             var studentId = Guid.NewGuid();
             ArrangeForAddLessonTests(studentId);
-            await ActForAddLessonTests(studentId, _viewModel.Services[0], lessonId, dbError: true);
-            AssertForAddLessonTests(studentId, lessonId, success: false, dbError: true,
+            await ActForAddLessonTests(studentId, _viewModel.Services[0], dbError: true);
+            AssertForAddLessonTests(studentId, success: false, dbError: true,
                 infoMessage: "Constraint failed.", severity: InfoBarType.Error);
         }
 
         [TestMethod]
         public async Task AddLesson()
         {
-            var lessonId = Guid.NewGuid();
             var studentId = Guid.NewGuid();
             ArrangeForAddLessonTests(studentId);
-            await ActForAddLessonTests(studentId, _viewModel.Services[0], lessonId);
-            AssertForAddLessonTests(studentId, lessonId, success: true, 
+            await ActForAddLessonTests(studentId, _viewModel.Services[0]);
+            AssertForAddLessonTests(studentId, success: true, 
                 infoMessage: "Lesson 'Lesson' added successfully.", severity: InfoBarType.Success);
         }
 
@@ -467,7 +461,7 @@ namespace Apolo.Tests.ViewModels
             decimal weekendFee = 20;
             decimal tip = 0;
             string notes = "Some notes";
-            Lesson result = new Lesson(date, name, false, studentId, null, isPricePerHour, duration, basePrice, isOnline, 
+            Lesson result = new(date, name, false, studentId, null, isPricePerHour, duration, basePrice, isOnline, 
                 travelAllowance, isWeekendOrHoliday, weekendFee, tip, notes);
 
             //Mock
@@ -488,7 +482,7 @@ namespace Apolo.Tests.ViewModels
                 travelAllowance, isWeekendOrHoliday, weekendFee, tip, notes);
         }
 
-        private void AssertForUpdateLessonTests(Guid lessonId, Guid studentId, bool success, 
+        private void AssertForUpdateLessonTests(Guid lessonId, bool success, 
             string? infoMessage, InfoBarType severity, bool isBusy = false, bool dbError = false)
         {
             var date = DateOnly.FromDateTime(new DateTime(1999, 8, 17));
@@ -543,7 +537,7 @@ namespace Apolo.Tests.ViewModels
             ArrangeForUpdateLessonTests(lessonId, studentId);
             _viewModel.IsBusy = true;
             await ActForUpdateLessonTests(lessonId, studentId);
-            AssertForUpdateLessonTests(lessonId, studentId, success: false, 
+            AssertForUpdateLessonTests(lessonId, success: false, 
                 infoMessage: "Can't update lesson while busy.", severity: InfoBarType.Warning, isBusy: true);
         }
 
@@ -555,7 +549,7 @@ namespace Apolo.Tests.ViewModels
 
             ArrangeForUpdateLessonTests(lessonId, studentId);
             await ActForUpdateLessonTests(lessonId, studentId, invalidLesson: true);
-            AssertForUpdateLessonTests(lessonId, studentId, success: false, 
+            AssertForUpdateLessonTests(lessonId, success: false, 
                 infoMessage: "Lesson name is required.", severity: InfoBarType.Warning);
         }
 
@@ -567,7 +561,7 @@ namespace Apolo.Tests.ViewModels
 
             ArrangeForUpdateLessonTests(lessonId, studentId);
             await ActForUpdateLessonTests(lessonId, studentId, dbError: true);
-            AssertForUpdateLessonTests(lessonId, studentId, success: false, dbError: true, 
+            AssertForUpdateLessonTests(lessonId, success: false, dbError: true, 
                 infoMessage: "Constraint failed.", severity: InfoBarType.Error);
         }
 
@@ -579,7 +573,7 @@ namespace Apolo.Tests.ViewModels
 
             ArrangeForUpdateLessonTests(lessonId, studentId);
             await ActForUpdateLessonTests(lessonId, studentId);
-            AssertForUpdateLessonTests(lessonId, studentId, success: true, 
+            AssertForUpdateLessonTests(lessonId, success: true, 
                 infoMessage: "Lesson 'Lesson' updated successfully.", severity: InfoBarType.Success);
         }
 
@@ -594,7 +588,7 @@ namespace Apolo.Tests.ViewModels
             var spec3 = new SpecificationOption(Guid.NewGuid(), "Spec3", serviceId, 30, 60, false, false);
 
             _mockSpecificationRepo.Setup(r => r.GetSpecificationsForStudentAsync(ids))
-                .ReturnsAsync(new List<SpecificationOption> { spec1, spec2, spec3 });
+                .ReturnsAsync([spec1, spec2, spec3]);
 
             var result = await _viewModel.GetSpecificationOptionsAsync(ids);
 
