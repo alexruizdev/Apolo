@@ -48,7 +48,7 @@ namespace Apolo.Tests.Data
             Assert.AreEqual(55, results[0].Price!.Value);
             Assert.AreEqual(60, results[0].DurationMinutes);
             Assert.IsTrue(results[0].IsOnline);
-            Assert.IsFalse(results[0].IsWeekend);
+            Assert.IsTrue(results[0].IsWeekend);
         }
 
         [TestMethod]
@@ -59,7 +59,7 @@ namespace Apolo.Tests.Data
             await _repository.UpdateAsync(_data.Specifications[0].Id, _data.Services[1].Id, "New Name", 90, 75.5m, true, false);
 
             // Assert
-            var updated = await _context.Specifications.FindAsync(_data.Specifications[0].Id);
+            var updated = await _context.Specifications.FindAsync([_data.Specifications[0].Id], cancellationToken: TestContext.CancellationToken);
             Assert.AreEqual("New Name", updated!.Name);
             Assert.AreEqual(_data.Services[1].Id, updated.ServiceId);
             Assert.AreEqual(90, updated.DurationMinutes);
@@ -89,7 +89,7 @@ namespace Apolo.Tests.Data
             });
 
             // Verify the message contains the specific text we expect
-            StringAssert.Contains(exception.Message, "Specification not found");
+            Assert.Contains("Specification not found", exception.Message);
         }
 
         [TestMethod]
@@ -102,7 +102,7 @@ namespace Apolo.Tests.Data
             });
 
             // Verify the message contains the specific text we expect
-            StringAssert.Contains(exception.Message, "Specification not found");
+            Assert.Contains("Specification not found", exception.Message);
         }
 
         [TestMethod]
@@ -144,9 +144,11 @@ namespace Apolo.Tests.Data
             await _repository.IncrementUsageAsync(_data.Specifications[0].Id);
 
             // Assert
-            var databaseSpec = await _context.Specifications.FindAsync(_data.Specifications[0].Id);
+            var databaseSpec = await _context.Specifications.FindAsync([_data.Specifications[0].Id], cancellationToken: TestContext.CancellationToken);
             Assert.IsNotNull(databaseSpec);
             Assert.AreEqual(6, databaseSpec.UsageCount);
         }
+
+        public TestContext TestContext { get; set; }
     }
 }

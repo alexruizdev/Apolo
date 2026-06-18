@@ -105,10 +105,7 @@ namespace Repository
                 {
                     PayerId = p.Id,
                     PayerName = p.FullName,
-                    LastLessonDate = p.Students
-                .SelectMany(s => s.Lessons)
-                .Select(l => (DateOnly?)l.Date)
-                .Max()
+                    LastLessonDate = p.Students.SelectMany(s => s.Lessons).Max(l => (DateOnly?)l.Date)
                 })
                 .AsNoTracking()
                 .OrderBy(p => p.LastLessonDate) // Show oldest/inactive first

@@ -18,20 +18,38 @@ namespace Apolo.Tests.Data
         [TestMethod]
         public async Task GetPayersAsync_CalculatesUnpaidTotalsCorrectly()
         {
-            var id = _data.Payers[0].Id;
             // Act
             var results = await _repository.GetPayersAsync();
-            var payerSummary = results.First(p => p.Id == id);
 
             // Assert
-            // Verify the debt is calculated (assuming 50 is the price)
-            Assert.AreEqual("John", payerSummary.FirstName);
-            Assert.AreEqual("Doe", payerSummary.LastName);
-            Assert.AreEqual(297, payerSummary.Outstanding);
-            Assert.AreEqual("123 Main St", payerSummary.Address);
-            Assert.AreEqual("10001", payerSummary.Zip);
-            Assert.AreEqual("New York", payerSummary.City);
-            Assert.AreEqual("TX123456", payerSummary.TaxId);
+            
+            Assert.AreEqual(260, results.ElementAt(0).Outstanding);
+            Assert.AreEqual("Olivia Dubois", results.ElementAt(0).Name);
+            Assert.AreEqual(110, results.ElementAt(1).Outstanding);
+            Assert.AreEqual("Emma Brown", results.ElementAt(1).Name);
+            Assert.AreEqual(90, results.ElementAt(2).Outstanding);
+            Assert.AreEqual("Carlos Gomez", results.ElementAt(2).Name);
+            Assert.AreEqual(65, results.ElementAt(3).Outstanding);
+            Assert.AreEqual("Luca Rossi", results.ElementAt(3).Name);
+            Assert.AreEqual(35, results.ElementAt(4).Outstanding);
+            Assert.AreEqual("Maria Lopez", results.ElementAt(4).Name);
+            Assert.AreEqual(35, results.ElementAt(5).Outstanding);
+            Assert.AreEqual("Noah Müller", results.ElementAt(5).Name);
+            Assert.AreEqual(0, results.ElementAt(6).Outstanding);
+            Assert.AreEqual("David Garcia", results.ElementAt(6).Name);
+            Assert.AreEqual(0, results.ElementAt(7).Outstanding);
+            Assert.AreEqual("Isabel Fernandez", results.ElementAt(7).Name);
+            Assert.AreEqual(0, results.ElementAt(8).Outstanding);
+            Assert.AreEqual("Jane Smith", results.ElementAt(8).Name);
+            Assert.AreEqual(0, results.ElementAt(9).Outstanding);
+            Assert.AreEqual("John Doe", results.ElementAt(9).Name);
+
+            Assert.AreEqual("John", results.ElementAt(9).FirstName);
+            Assert.AreEqual("Doe", results.ElementAt(9).LastName);
+            Assert.AreEqual("123 Main St", results.ElementAt(9).Address);
+            Assert.AreEqual("10001", results.ElementAt(9).Zip);
+            Assert.AreEqual("New York", results.ElementAt(9).City);
+            Assert.AreEqual("TX123456", results.ElementAt(9).TaxId);
         }
 
         [TestMethod]
@@ -115,7 +133,7 @@ namespace Apolo.Tests.Data
         public async Task DeleteAsync_NonExistentId_ThrowsException()
         {
             // Act
-            await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            await Assert.ThrowsAsync<KeyNotFoundException>(async () =>
             {
                 await _repository.DeleteAsync(Guid.NewGuid());
             });
@@ -154,7 +172,7 @@ namespace Apolo.Tests.Data
         public async Task UpdateAsync_NonExistentId_ThrowsException()
         {
             // Act
-            await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            await Assert.ThrowsAsync<KeyNotFoundException>(async () =>
             {
                 await _repository.UpdateAsync(Guid.NewGuid(), 
                     "New Name", "New Last Name", "New Address", "New Zip", "New City", "New Tax");
@@ -180,9 +198,9 @@ namespace Apolo.Tests.Data
             var options = (await _repository.GetPayerOptionsByUnbilledLessons()).ToList();
 
             // Assert
-            Assert.AreEqual("Carlos Gomez - 1 lesson", options[0].FullName);
-            Assert.AreEqual("David Garcia", options[1].FullName);
-            Assert.AreEqual("Emma Brown", options[2].FullName);
+            Assert.AreEqual("Olivia Dubois - 4 lessons", options[0].FullName);
+            Assert.AreEqual("Carlos Gomez - 1 lesson", options[1].FullName);
+            Assert.AreEqual("David Garcia", options[2].FullName);
         }
 
         public TestContext TestContext { get; set; }

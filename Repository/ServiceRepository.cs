@@ -3,25 +3,16 @@ using Models;
 
 namespace Repository
 {
-    public sealed class ServiceRepository : IServiceRepository
+    public sealed class ServiceRepository(ApoloContext context) : IServiceRepository
     {
-        private readonly ApoloContext _context;
-
-        public ServiceRepository(ApoloContext context)
-        {
-            _context = context;
-        }
+        private readonly ApoloContext _context = context;
 
         public async Task<IEnumerable<ServiceSummary>> GetServicesAsync()
         {
             return await _context.Services
                 .AsNoTracking()
                 .OrderBy(s => s.Name)
-                .Select(s => new ServiceSummary(
-                    s.Id,
-                    s.Name,
-                    s.IsPricePerHour,
-                    (double)s.Price))
+                .Select(Helper.AsServiceSummary)
                 .ToListAsync();
         }
 
@@ -41,12 +32,8 @@ namespace Repository
 
         public async Task DeleteAsync(Guid id)
         {
-            var entity = await _context.Services.FirstOrDefaultAsync(s => s.Id == id);
-
-            if (entity is null)
-            {
-                throw new ArgumentNullException("Service not found.");
-            }
+            var entity = await _context.Services.FirstOrDefaultAsync(s => s.Id == id) ??
+                throw new KeyNotFoundException($"Service with ID {id} was not found.");
 
             _context.Services.Remove(entity);
             await _context.SaveChangesAsync();
@@ -55,12 +42,12 @@ namespace Repository
         public async Task UpdateAsync (Guid id, string name, bool isPricePerHour, decimal price)
         {
             var entity = await _context.Services.FirstOrDefaultAsync(s => s.Id == id)
-                 ?? throw new ArgumentNullException("Service not found.");
+                 ?? throw new KeyNotFoundException($"Service with ID {id} was not found.");
 
             // Only check uniqueness if the name is DIFFERENT from the current one
             if (!string.Equals(entity.Name, name, StringComparison.OrdinalIgnoreCase))
             {
-                var nameTaken = await _context.Services.AnyAsync(s => s.Name.ToLower() == name.ToLower());
+                var nameTaken = await _context.Services.AnyAsync(s => EF.Functions.Like(s.Name, name));
                 if (nameTaken) throw new InvalidDataException($"Another service already uses: {name}.");
             }
 

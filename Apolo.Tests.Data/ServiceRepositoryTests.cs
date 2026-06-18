@@ -83,7 +83,7 @@ namespace Apolo.Tests.Data
         public async Task DeleteAsync_NonExistentId_ThrowsException()
         {
             // Act
-            await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            await Assert.ThrowsAsync<KeyNotFoundException>(async () =>
             {
                 await _repository.DeleteAsync(Guid.NewGuid());
             });
@@ -114,7 +114,7 @@ namespace Apolo.Tests.Data
             var id = _data.Services[0].Id;
             var name = _data.Services[1].Name;
 
-            await Assert.ThrowsAsync<InvalidDataException>(async () =>
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
                 await _repository.UpdateAsync(id, name, false, 10);
             });

@@ -100,7 +100,7 @@ namespace Apolo.Tests.ViewModels
         private void AssertForLoadAsyncTests(bool success, string? infoMessage, InfoBarType severity, 
             bool isBusy = false, bool clear = false)
         {
-            int lessonCount = success ? 40 : 0;
+            int lessonCount = success ? 44 : 0;
             int studentsCount = success ? 11 : 0;
             int servicesCount = success ? 6 : 0;
 
@@ -146,7 +146,7 @@ namespace Apolo.Tests.ViewModels
         {
             ArrangeForLoadTests();
             await ActForLoadAsyncTests();
-            AssertForLoadAsyncTests(success: true, infoMessage: "40 loaded", 
+            AssertForLoadAsyncTests(success: true, infoMessage: "44 loaded", 
                 severity: InfoBarType.Success, isBusy: false);
         }
 
@@ -156,7 +156,7 @@ namespace Apolo.Tests.ViewModels
         {
             ArrangeForLoadTests();
             await ActForLoadAsyncTests(clear: true);
-            AssertForLoadAsyncTests(success: true, infoMessage: "40 loaded",
+            AssertForLoadAsyncTests(success: true, infoMessage: "44 loaded",
                 severity: InfoBarType.Success, isBusy: false, clear: true);
         }
 

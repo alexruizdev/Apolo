@@ -24,7 +24,7 @@ namespace Apolo.Tests.Data
             // Filter
             var studentName = "alice";
             var payerName = "doe";
-            var isPaid = false;
+            var isPaid = true;
             var startDate = new DateOnly(2024, 1, 1);
             var endDate = new DateOnly(2024, 12, 1);
 
@@ -33,7 +33,7 @@ namespace Apolo.Tests.Data
                 studentName, payerName, isPaid, startDate, endDate)).ToList();
 
             // Assert
-            Assert.HasCount(1, results);
+            Assert.HasCount(2, results);
             Assert.AreEqual("Math Tutoring - Alice", results[0].Name);
             Assert.IsTrue(results[0].IsPricePerHour);
             Assert.AreEqual(60, results[0].DurationMinutes);
@@ -41,9 +41,9 @@ namespace Apolo.Tests.Data
             Assert.IsTrue(results[0].IsOnline);
             Assert.AreEqual(5, results[0].TravelAllowance);
             Assert.IsFalse(results[0].IsWeekendOrHoliday);
-            Assert.AreEqual(10, results[0].WeekendFee);
+            Assert.AreEqual(0, results[0].WeekendFee);
             Assert.IsNull(results[0].Notes);
-            Assert.IsFalse(results[0].IsPaid);
+            Assert.IsTrue(results[0].IsPaid);
             Assert.AreEqual(2, results[0].Tip);
         }
 
@@ -68,7 +68,7 @@ namespace Apolo.Tests.Data
             Assert.AreEqual(0, lesson.WeekendFee);
             Assert.AreEqual(10, lesson.Tip);
             Assert.AreEqual("Note", lesson.Notes);
-            var dbLesson = await _context.Lessons.FirstAsync(l => l.Id == lesson.Id);
+            var dbLesson = await _context.Lessons.FirstAsync(l => l.Id == lesson.Id, TestContext.CancellationToken);
             Assert.AreEqual(_data.Students[0].Id, dbLesson.StudentId);
         }
 
@@ -91,7 +91,7 @@ namespace Apolo.Tests.Data
         {
             var updatedLesson = await _repository.UpdateLesson(_data.Lessons[19].Id, DateOnly.FromDateTime(DateTime.Now), "Guitar Class",
                 false, 60, 25.0m, false, 0, false, 0, 15.5m, "Updated note");
-            var dbLesson = await _context.Lessons.FirstAsync(l => l.Id == updatedLesson.Id);
+            var dbLesson = await _context.Lessons.FirstAsync(l => l.Id == updatedLesson.Id, TestContext.CancellationToken);
             Assert.AreEqual("Guitar Class", dbLesson.Name);
             Assert.IsFalse(dbLesson.IsPricePerHour);
             Assert.AreEqual("Updated note", dbLesson.Notes);
@@ -108,12 +108,14 @@ namespace Apolo.Tests.Data
         public async Task UpdateLessonsAsync()
         {
             var lessonIds = _data.Lessons.
-                Where(l => l.StudentId == _data.Students[0].Id).
+                Where(l => l.StudentId == _data.Students[9].Id).
                 Select(l => l.Id).ToList();
+
+            Assert.AreEqual(34, _context.Lessons.Count(a => a.IsPaid));
 
             await _repository.UpdateLessonsPayment(lessonIds, isPaid: true);
 
-            Assert.AreEqual(20, _context.Lessons.Count(a => a.IsPaid));
+            Assert.AreEqual(39, _context.Lessons.Count(a => a.IsPaid));
 
         }
 
@@ -122,7 +124,7 @@ namespace Apolo.Tests.Data
         {
             await _repository.UpdateLessonsPayment([], isPaid: true);
 
-            Assert.AreEqual(19, _context.Lessons.Count(l => l.IsPaid));
+            Assert.AreEqual(34, _context.Lessons.Count(l => l.IsPaid));
 
         }
 
@@ -139,5 +141,6 @@ namespace Apolo.Tests.Data
             }
         }
 
+        public TestContext TestContext { get; set; }
     }
 }

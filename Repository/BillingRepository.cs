@@ -4,14 +4,9 @@ using System.Data;
 
 namespace Repository
 {
-    public sealed class BillingRepository : IBillingRepository
+    public sealed class BillingRepository(ApoloContext context) : IBillingRepository
     {
-        private readonly ApoloContext _context;
-
-        public BillingRepository(ApoloContext context)
-        {
-            _context = context;
-        }
+        private readonly ApoloContext _context = context;
 
         public async Task<IEnumerable<LessonLine>> GetUnbilledLessonsAsync(Guid payerId)
         {
@@ -38,7 +33,7 @@ namespace Repository
         public async Task<BillingDocument> CreateBillAsync(Guid payerId, List<Guid> ids, DocumentType type)
         {
             if (ids.Count == 0)
-                throw new ArgumentException($"Cannot create {type.ToString()} without any lesson.");
+                throw new ArgumentException($"Cannot create {type} without any lesson.");
 
             var lessonsToBill = await _context.Lessons
                 .Where(l => ids.Contains(l.Id) && l.BillingDocumentId == null)
@@ -72,7 +67,7 @@ namespace Repository
         public async Task DeleteAsync(Guid id)
         {
             var entity = await _context.BillingDocuments.FindAsync(id)
-                ?? throw new ArgumentNullException("Billing document not found");
+                         ?? throw new KeyNotFoundException($"Billing document with ID {id} was not found.");
 
             _context.BillingDocuments.Remove(entity);
             await _context.SaveChangesAsync();

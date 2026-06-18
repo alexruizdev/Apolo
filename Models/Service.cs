@@ -15,6 +15,6 @@ namespace Models
         [Precision(18, 2)]
         public decimal Price { get; set; }
 
-        public ICollection<Specification> Specifications { get; set; } = new List<Specification>();
+        public ICollection<Specification> Specifications { get; set; } = [];
     }
 }

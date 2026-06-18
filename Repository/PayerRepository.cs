@@ -39,6 +39,8 @@ namespace Repository
 
             return rawData
                 .OrderByDescending(x => x.Outstanding) 
+                .ThenBy(x => x.FirstName)
+                .ThenBy(x => x.LastName)
                 .Select(x => new PayerSummary(
                     x.Id,
                     x.FirstName,
@@ -75,13 +77,7 @@ namespace Repository
                  .OrderByDescending(x => x.UnbilledCount)
                  .ThenBy(x => x.Payer.FirstName)
                  .ThenBy(x => x.Payer.LastName)
-                 .Select(x => new PayerOption
-                 (
-                     x.Payer.Id,
-                     x.UnbilledCount > 0
-                         ? $"{x.Payer.FirstName} {x.Payer.LastName} - {x.UnbilledCount} lesson{(x.UnbilledCount == 1 ? "" : "s")}"
-                         : $"{x.Payer.FirstName} {x.Payer.LastName}"
-                 ))
+                 .Select(x => Helper.ConvertToPayerOptionWithCount(x.Payer, x.UnbilledCount))
                  .ToListAsync();
         }
 
@@ -109,7 +105,7 @@ namespace Repository
             }
 
             var entity = await _context.Payers.FindAsync(id)
-                         ?? throw new ArgumentNullException("Payer not found.");
+                         ?? throw new KeyNotFoundException($"Payer with ID {id} was not found.");
 
             _context.Payers.Remove(entity);
             await _context.SaveChangesAsync();
@@ -117,8 +113,8 @@ namespace Repository
 
         public async Task UpdateAsync(Guid payerId, string firstName, string lastName, string address, string zipCode, string city, string taxId)
         {
-            var entity = await _context.Payers.FirstOrDefaultAsync(p => p.Id == payerId) ?? 
-                throw new ArgumentNullException("Payer not found.");
+            var entity = await _context.Payers.FirstOrDefaultAsync(p => p.Id == payerId) ??
+                throw new KeyNotFoundException($"Payer with ID {payerId} was not found.");
 
             entity.FirstName = firstName;
             entity.LastName = lastName;

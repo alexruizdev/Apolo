@@ -1,4 +1,6 @@
 ﻿
+using System.Linq.Expressions;
+
 namespace Models
 {
     public class DummyData
@@ -22,6 +24,18 @@ namespace Models
         //  PAYERS : 10 | 5                                                  //
         // ================================================================= //
         public List<PayerOption> PayerOptions => [.. Payers.Select(Helper.ConvertToPayerOption)];
+        public List<PayerOption> PayerOptionsByUnbilledLessons ()
+        {
+            List<PayerOption> result = [];
+            foreach (var p in Payers)
+            {
+                List<Guid> ids = [.. Students.Where(s => s.PayerId == p.Id).Select(s => s.Id)];
+                int count = Lessons.Count(l => !l.IsPaid && l.BillingDocumentId == null && ids.Contains(l.StudentId));
+                result.Add(Helper.ConvertToPayerOptionWithCount(p, count));
+            }
+            return result;
+        }
+
         public List<PayerActivityInfo> PayerActivities()
         {
             List<PayerActivityInfo> result = [];
@@ -202,111 +216,111 @@ namespace Models
             [
                 new BillingDocument(new DateTime(2024, 06, 30)) { Type = DocumentType.Invoice, SequenceNumber = 04, PayerId = Payers[0].Id }, // John Doe
                 new BillingDocument(new DateTime(2025, 02, 28)) { Type = DocumentType.Invoice, SequenceNumber = 01, PayerId = Payers[0].Id }, // John Doe
-                new BillingDocument(new DateTime(2025, 10, 31)) { Type = DocumentType.Ticket, SequenceNumber = 07, PayerId = Payers[0].Id }, // John Doe
+                new BillingDocument(new DateTime(2025, 10, 31)) { Type = DocumentType.Ticket,  SequenceNumber = 07, PayerId = Payers[0].Id }, // John Doe
 
                 new BillingDocument(new DateTime(2024, 07, 31)) { Type = DocumentType.Invoice, SequenceNumber = 05, PayerId = Payers[1].Id }, // Jane Smith
                 new BillingDocument(new DateTime(2025, 03, 31)) { Type = DocumentType.Invoice, SequenceNumber = 02, PayerId = Payers[1].Id },// Jane Smith
                 new BillingDocument(new DateTime(2025, 11, 30)) { Type = DocumentType.Invoice, SequenceNumber = 08, PayerId = Payers[1].Id },// Jane Smith
 
-                new BillingDocument(new DateTime(2024, 08, 31)) { Type = DocumentType.Ticket, SequenceNumber = 01, PayerId = Payers[2].Id }, // Carlos Gomez
-                new BillingDocument(new DateTime(2025, 04, 30)) { Type = DocumentType.Ticket, SequenceNumber = 04, PayerId = Payers[2].Id }, // Carlos Gomez
+                new BillingDocument(new DateTime(2024, 08, 31)) { Type = DocumentType.Ticket,  SequenceNumber = 01, PayerId = Payers[2].Id }, // Carlos Gomez
+                new BillingDocument(new DateTime(2025, 04, 30)) { Type = DocumentType.Ticket,  SequenceNumber = 04, PayerId = Payers[2].Id }, // Carlos Gomez
                 new BillingDocument(new DateTime(2025, 12, 31)) { Type = DocumentType.Invoice, SequenceNumber = 09, PayerId = Payers[2].Id }, // Carlos Gomez
 
                 new BillingDocument(new DateTime(2024, 09, 30)) { Type = DocumentType.Invoice, SequenceNumber = 07, PayerId = Payers[3].Id }, // Maria Lopez
                 new BillingDocument(new DateTime(2025, 05, 31)) { Type = DocumentType.Invoice, SequenceNumber = 03, PayerId = Payers[3].Id }, // Maria Lopez
-                new BillingDocument(new DateTime(2026, 01, 31)) { Type = DocumentType.Ticket, SequenceNumber = 01, PayerId = Payers[3].Id }, // Maria Lopez
+                new BillingDocument(new DateTime(2026, 01, 31)) { Type = DocumentType.Ticket,  SequenceNumber = 01, PayerId = Payers[3].Id }, // Maria Lopez
 
-                new BillingDocument(new DateTime(2024, 10, 31)) { Type = DocumentType.Ticket, SequenceNumber = 03, PayerId = Payers[4].Id }, // Luca Rossi
+                new BillingDocument(new DateTime(2024, 10, 31)) { Type = DocumentType.Ticket,  SequenceNumber = 03, PayerId = Payers[4].Id }, // Luca Rossi
                 new BillingDocument(new DateTime(2025, 06, 30)) { Type = DocumentType.Invoice, SequenceNumber = 05, PayerId = Payers[4].Id }, // Luca Rossi
                 new BillingDocument(new DateTime(2026, 02, 28)) { Type = DocumentType.Invoice, SequenceNumber = 01, PayerId = Payers[4].Id }, // Luca Rossi
 
                 new BillingDocument(new DateTime(2024, 11, 30)) { Type = DocumentType.Invoice, SequenceNumber = 08, PayerId = Payers[5].Id }, // Emma Brown
-                new BillingDocument(new DateTime(2025, 07, 31)) { Type = DocumentType.Ticket, SequenceNumber = 06, PayerId = Payers[5].Id }, // Emma Brown
+                new BillingDocument(new DateTime(2025, 07, 31)) { Type = DocumentType.Ticket,  SequenceNumber = 06, PayerId = Payers[5].Id }, // Emma Brown
                 new BillingDocument(new DateTime(2026, 03, 31)) { Type = DocumentType.Invoice, SequenceNumber = 02, PayerId = Payers[5].Id }, // Emma Brown
 
                 new BillingDocument(new DateTime(2024, 12, 31)) { Type = DocumentType.Invoice, SequenceNumber = 09, PayerId = Payers[6].Id }, // Noah Muller
                 new BillingDocument(new DateTime(2025, 08, 31)) { Type = DocumentType.Invoice, SequenceNumber = 06, PayerId = Payers[6].Id }, // Noah Muller
-                new BillingDocument(new DateTime(2026, 04, 30)) { Type = DocumentType.Ticket, SequenceNumber = 02, PayerId = Payers[6].Id }, // Noah Muller
+                new BillingDocument(new DateTime(2026, 04, 30)) { Type = DocumentType.Ticket,  SequenceNumber = 02, PayerId = Payers[6].Id }, // Noah Muller
 
-                new BillingDocument(new DateTime(2025, 01, 31)) { Type = DocumentType.Ticket, SequenceNumber = 01, PayerId = Payers[7].Id }, // Olivia Dubois
+                new BillingDocument(new DateTime(2025, 01, 31)) { Type = DocumentType.Ticket,  SequenceNumber = 01, PayerId = Payers[7].Id }, // Olivia Dubois
                 new BillingDocument(new DateTime(2025, 09, 30)) { Type = DocumentType.Invoice, SequenceNumber = 07, PayerId = Payers[7].Id }, // Olivia Dubois
                 new BillingDocument(new DateTime(2026, 05, 31)) { Type = DocumentType.Invoice, SequenceNumber = 03, PayerId = Payers[7].Id }, // Olivia Dubois
             ];
 
             ArchiveBills =
             [
-                new BillingDocument(new DateTime(2024, 3, 15)) { Type = DocumentType.Invoice, SequenceNumber = 01, PayerId = ArchivePayers[0].Id }, // Aiden Clarck
-                new BillingDocument(new DateTime(2025, 12, 15)) { Type = DocumentType.Ticket, SequenceNumber = 08, PayerId = ArchivePayers[0].Id }, // Aiden Clarck
+                new BillingDocument(new DateTime(2024, 03, 15)) { Type = DocumentType.Invoice, SequenceNumber = 01, PayerId = ArchivePayers[0].Id }, // Aiden Clarck
+                new BillingDocument(new DateTime(2025, 12, 15)) { Type = DocumentType.Ticket,  SequenceNumber = 08, PayerId = ArchivePayers[0].Id }, // Aiden Clarck
 
-                new BillingDocument(new DateTime(2024, 4, 31)) { Type = DocumentType.Invoice, SequenceNumber = 02, PayerId = ArchivePayers[1].Id }, // Sofia Martinez
-                new BillingDocument(new DateTime(2025, 03, 31)) { Type = DocumentType.Ticket, SequenceNumber = 02, PayerId = ArchivePayers[1].Id },// Sofia Martinez
+                new BillingDocument(new DateTime(2024, 04, 30)) { Type = DocumentType.Invoice, SequenceNumber = 02, PayerId = ArchivePayers[1].Id }, // Sofia Martinez
+                new BillingDocument(new DateTime(2025, 03, 30)) { Type = DocumentType.Ticket,  SequenceNumber = 02, PayerId = ArchivePayers[1].Id },// Sofia Martinez
 
-                new BillingDocument(new DateTime(2024, 5, 31)) { Type = DocumentType.Invoice, SequenceNumber = 03, PayerId = ArchivePayers[2].Id }, // Yuki Tanaza
-                new BillingDocument(new DateTime(2025, 04, 30)) { Type = DocumentType.Ticket, SequenceNumber = 03, PayerId = ArchivePayers[2].Id }, // Yuki Tanaza
+                new BillingDocument(new DateTime(2024, 05, 30)) { Type = DocumentType.Invoice, SequenceNumber = 03, PayerId = ArchivePayers[2].Id }, // Yuki Tanaza
+                new BillingDocument(new DateTime(2025, 04, 30)) { Type = DocumentType.Ticket,  SequenceNumber = 03, PayerId = ArchivePayers[2].Id }, // Yuki Tanaza
 
-                new BillingDocument(new DateTime(2024, 9, 15)) { Type = DocumentType.Invoice, SequenceNumber = 06, PayerId = ArchivePayers[3].Id }, // Oliver Wilson
-                new BillingDocument(new DateTime(2025, 05, 31)) { Type = DocumentType.Ticket, SequenceNumber = 05, PayerId = ArchivePayers[3].Id }, // Oliver Wilson
+                new BillingDocument(new DateTime(2024, 09, 15)) { Type = DocumentType.Invoice, SequenceNumber = 06, PayerId = ArchivePayers[3].Id }, // Oliver Wilson
+                new BillingDocument(new DateTime(2025, 05, 30)) { Type = DocumentType.Ticket,  SequenceNumber = 05, PayerId = ArchivePayers[3].Id }, // Oliver Wilson
 
-                new BillingDocument(new DateTime(2024, 10, 15)) { Type = DocumentType.Ticket, SequenceNumber = 02, PayerId = ArchivePayers[4].Id }, // Fatima Al-Farsi
-                new BillingDocument(new DateTime(2025, 6, 15)) { Type = DocumentType.Invoice, SequenceNumber = 04, PayerId = ArchivePayers[4].Id }, // Fatima Al-Farsi
+                new BillingDocument(new DateTime(2024, 10, 15)) { Type = DocumentType.Ticket,  SequenceNumber = 02, PayerId = ArchivePayers[4].Id }, // Fatima Al-Farsi
+                new BillingDocument(new DateTime(2025, 06, 15)) { Type = DocumentType.Invoice, SequenceNumber = 04, PayerId = ArchivePayers[4].Id }, // Fatima Al-Farsi
             ];
 
             Lessons =
             [
                 // ----------- date --- yyyy  mm  dd -- lesson name --------------- paid -- student ------- bill ---------- p/h --  min --- price - online travel - hols - fee - tip ----- notes
 
-                new Lesson(new DateOnly(2024, 06, 10), "Math Tutoring - Alice",     true,   Students[0].Id, Bills[0].Id,    true,   60,     40.00m, true,   5,      false,  0,      2,      null), // John Doe
-                new Lesson(new DateOnly(2024, 06, 15), "Science Tutoring - Bob",    true,   Students[1].Id, Bills[0].Id,    true,   90,     45.00m, false,  5,      true,   0,      0,      null), // John Doe
-                new Lesson(new DateOnly(2024, 10, 05), "Math Tutoring - Alice",     true,   Students[0].Id, Bills[1].Id,    true,   60,     42.00m, true,   5,      false,  0,      2,      null), // John Doe
-                new Lesson(new DateOnly(2024, 10, 20), "Science Tutoring - Bob",    true,   Students[1].Id, Bills[1].Id,    true,   90,     45.00m, false,  5,      false,  0,      0,      null), // John Doe
-                new Lesson(new DateOnly(2025, 03, 05), "Math Tutoring - Alice",     true,   Students[0].Id, Bills[2].Id,    true,   90,     40.00m, true,   7.5m,   false,  0,      2,      null), // John Doe
-                new Lesson(new DateOnly(2025, 03, 20), "Science Tutoring - Bob",    true,   Students[1].Id, Bills[2].Id,    true,   60,     45.00m, false,  7.5m,   false,  0,      0,      null), // John Doe
-                new Lesson(new DateOnly(2025, 08, 03), "Math Tutoring - Alice",     true,   Students[0].Id, Bills[2].Id,    true,   60,     42.00m, true,   7.5m,   false,  0,      2,      null), // John Doe
-                new Lesson(new DateOnly(2025, 08, 18), "Science Tutoring - Bob",    true,   Students[1].Id, Bills[2].Id,    true,   90,     45.00m, false,  7.5m,   true,   0,      0,      null), // John Doe
+                new Lesson(new DateOnly(2024, 06, 10), "Math Tutoring - Alice",     true,   Students[0].Id, Bills[0].Id,    true,   60,     40.00m, true,   5,      false,  0,      2,      null), // John Doe      - 40
+                new Lesson(new DateOnly(2024, 06, 15), "Science Tutoring - Bob",    true,   Students[1].Id, Bills[0].Id,    true,   90,     45.00m, false,  5,      true,   0,      0,      null), // John Doe      - 72.5 
+                new Lesson(new DateOnly(2024, 10, 05), "Math Tutoring - Alice",     true,   Students[0].Id, Bills[1].Id,    true,   60,     42.00m, true,   5,      false,  0,      2,      null), // John Doe      - 42
+                new Lesson(new DateOnly(2024, 10, 20), "Science Tutoring - Bob",    true,   Students[1].Id, Bills[1].Id,    true,   90,     45.00m, false,  5,      false,  0,      0,      null), // John Doe      - 72.5
+                new Lesson(new DateOnly(2025, 03, 05), "Math Tutoring - Alice",     true,   Students[0].Id, Bills[2].Id,    true,   90,     40.00m, true,   7.5m,   false,  0,      2,      null), // John Doe      - 60
+                new Lesson(new DateOnly(2025, 03, 20), "Science Tutoring - Bob",    true,   Students[1].Id, Bills[2].Id,    true,   60,     45.00m, false,  7.5m,   false,  0,      0,      null), // John Doe      - 52.5
+                new Lesson(new DateOnly(2025, 08, 03), "Math Tutoring - Alice",     true,   Students[0].Id, Bills[2].Id,    true,   60,     42.00m, true,   7.5m,   false,  0,      2,      null), // John Doe      - 42
+                new Lesson(new DateOnly(2025, 08, 18), "Science Tutoring - Bob",    true,   Students[1].Id, Bills[2].Id,    true,   90,     45.00m, false,  7.5m,   true,   0,      0,      null), // John Doe      - 75
 
-                new Lesson(new DateOnly(2024, 07, 01), "English Lessons - Charlie", true,   Students[2].Id, Bills[3].Id,    true,   60,     35.00m, true,   5,      false,  0,      3,      null), // Jane Smith
-                new Lesson(new DateOnly(2024, 07, 12), "Physics Coaching - Diana",  true,   Students[3].Id, Bills[3].Id,    true,   120,    45.00m, false,  5,      true,   0,      5,      null), // Jane Smith
-                new Lesson(new DateOnly(2024, 11, 01), "English Lessons - Charlie", true,   Students[2].Id, Bills[4].Id,    true,   60,     35.00m, true,   5,      false,  0,      1,      null), // Jane Smith
-                new Lesson(new DateOnly(2024, 11, 15), "Physics Coaching - Diana",  true,   Students[3].Id, Bills[4].Id,    true,   120,    48.00m, false,  5,      true,   0,      4,      null), // Jane Smith
-                new Lesson(new DateOnly(2025, 04, 02), "English Lessons - Charlie", true,   Students[2].Id, Bills[5].Id,    true,   60,     35.00m, true,   7.5m,   false,  0,      2,      null), // Jane Smith
-                new Lesson(new DateOnly(2025, 04, 15), "Physics Coaching - Diana",  true,   Students[3].Id, Bills[5].Id,    true,   120,    50.00m, false,  7.5m,   true,   0,      5,      null), // Jane Smith
-                new Lesson(new DateOnly(2025, 09, 01), "English Lessons - Charlie", true,   Students[2].Id, Bills[5].Id,    true,   60,     35.00m, true,   7.5m,   false,  0,      2,      null), // Jane Smith
-                new Lesson(new DateOnly(2025, 09, 15), "Physics Coaching - Diana",  true,   Students[3].Id, Bills[5].Id,    true,   120,    50.00m, false,  7.5m,   true,   0,      4,      null), // Jane Smith
+                new Lesson(new DateOnly(2024, 07, 01), "English Lessons - Charlie", true,   Students[2].Id, Bills[3].Id,    true,   60,     35.00m, true,   5,      false,  0,      3,      null), // Jane Smith    - 35
+                new Lesson(new DateOnly(2024, 07, 12), "Physics Coaching - Diana",  true,   Students[3].Id, Bills[3].Id,    true,   120,    45.00m, false,  5,      true,   0,      5,      null), // Jane Smith    - 95
+                new Lesson(new DateOnly(2024, 11, 01), "English Lessons - Charlie", true,   Students[2].Id, Bills[4].Id,    true,   60,     35.00m, true,   5,      false,  0,      1,      null), // Jane Smith    - 35
+                new Lesson(new DateOnly(2024, 11, 15), "Physics Coaching - Diana",  true,   Students[3].Id, Bills[4].Id,    true,   120,    48.00m, false,  5,      true,   0,      4,      null), // Jane Smith    - 101 
+                new Lesson(new DateOnly(2025, 04, 02), "English Lessons - Charlie", true,   Students[2].Id, Bills[5].Id,    true,   60,     35.00m, true,   7.5m,   false,  0,      2,      null), // Jane Smith    - 35
+                new Lesson(new DateOnly(2025, 04, 15), "Physics Coaching - Diana",  true,   Students[3].Id, Bills[5].Id,    true,   120,    50.00m, false,  7.5m,   true,   0,      5,      null), // Jane Smith    - 107.5
+                new Lesson(new DateOnly(2025, 09, 01), "English Lessons - Charlie", true,   Students[2].Id, Bills[5].Id,    true,   60,     35.00m, true,   7.5m,   false,  0,      2,      null), // Jane Smith    - 35  
+                new Lesson(new DateOnly(2025, 09, 15), "Physics Coaching - Diana",  true,   Students[3].Id, Bills[5].Id,    true,   120,    50.00m, false,  7.5m,   true,   0,      4,      null), // Jane Smith    - 107.5
 
-                new Lesson(new DateOnly(2024, 07, 20), "Programming Basics - Luis", true,   Students[4].Id, Bills[6].Id,    true,   90,     60.00m, true,   5,      false,  0,      0,      null), // Carlos Gomez
-                new Lesson(new DateOnly(2024, 12, 01), "Programming Basics - Luis", true,   Students[4].Id, Bills[7].Id,    true,   90,     60.00m, true,   5,      false,  0,      0,      null), // Carlos Gomez
-                new Lesson(new DateOnly(2025, 05, 3), "Programming Basics - Luis",  true,   Students[4].Id, Bills[8].Id,    true,   90,     60.00m, true,   7.5m,   false,  0,      0,      null), // Carlos Gomez
-                new Lesson(new DateOnly(2026, 01, 10), "Programming Basics - Luis", false,  Students[4].Id, null,           true,   90,     60.00m, true,   5,      false,  5,      0,      null), // Carlos Gomez
+                new Lesson(new DateOnly(2024, 07, 20), "Programming Basics - Luis", true,   Students[4].Id, Bills[6].Id,    true,   90,     60.00m, true,   5,      false,  0,      0,      null), // Carlos Gomez  - 90
+                new Lesson(new DateOnly(2024, 12, 01), "Programming Basics - Luis", true,   Students[4].Id, Bills[7].Id,    true,   90,     60.00m, true,   5,      false,  0,      0,      null), // Carlos Gomez  - 90  
+                new Lesson(new DateOnly(2025, 05, 3), "Programming Basics - Luis",  true,   Students[4].Id, Bills[8].Id,    true,   90,     60.00m, true,   7.5m,   false,  0,      0,      null), // Carlos Gomez  - 90
+                new Lesson(new DateOnly(2026, 01, 10), "Programming Basics - Luis", false,  Students[4].Id, null,           true,   90,     60.00m, true,   5,      false,  5,      0,      null), // Carlos Gomez  - 90
 
-                new Lesson(new DateOnly(2024, 08, 05), "Spanish Practice - Sofia",  true,   Students[5].Id, Bills[9].Id,    false,  null,   35.00m, true,   5,      false,  0,      1.5m,   null), // Maria Lopez
-                new Lesson(new DateOnly(2024, 12, 18), "Spanish Practice - Sofia",  true,   Students[5].Id, Bills[10].Id,   false,  null,   35.00m, true,   5,      false,  0,      2,      null), // Maria Lopez
-                new Lesson(new DateOnly(2025, 05, 18), "Spanish Practice - Sofia",  true,   Students[5].Id, Bills[10].Id,   false,  null,   35.00m, true,   7.5m,   false,  0,      1,      null), // Maria Lopez
-                new Lesson(new DateOnly(2026, 01, 25), "Spanish Practice - Sofia",  false,  Students[5].Id, Bills[11].Id,   false,  null,   35.00m, true,   10,     false,  5,      2,      null), // Maria Lopez
+                new Lesson(new DateOnly(2024, 08, 05), "Spanish Practice - Sofia",  true,   Students[5].Id, Bills[9].Id,    false,  null,   35.00m, true,   5,      false,  0,      1.5m,   null), // Maria Lopez   - 35
+                new Lesson(new DateOnly(2024, 12, 18), "Spanish Practice - Sofia",  true,   Students[5].Id, Bills[10].Id,   false,  null,   35.00m, true,   5,      false,  0,      2,      null), // Maria Lopez   - 35
+                new Lesson(new DateOnly(2025, 05, 18), "Spanish Practice - Sofia",  true,   Students[5].Id, Bills[10].Id,   false,  null,   35.00m, true,   7.5m,   false,  0,      1,      null), // Maria Lopez   - 35
+                new Lesson(new DateOnly(2026, 01, 25), "Spanish Practice - Sofia",  false,  Students[5].Id, Bills[11].Id,   false,  null,   35.00m, true,   10,     false,  5,      2,      null), // Maria Lopez   - 35
 
-                new Lesson(new DateOnly(2024, 08, 18), "Fitness Session - Marco",   true,   Students[6].Id, Bills[12].Id,   true,   60,     50.00m, false,  5,      true,   0,      2,      null), // Luca Rossi
-                new Lesson(new DateOnly(2025, 01, 05), "Fitness Session - Marco",   true,   Students[6].Id, Bills[13].Id,   true,   60,     50.00m, false,  7.5m,   false,  0,      2,      null), // Luca Rossi
-                new Lesson(new DateOnly(2025, 06, 02), "Fitness Session - Marco",   true,   Students[6].Id, Bills[13].Id,   true,   60,     50.00m, false,  7.5m,   true,   0,      2,      null), // Luca Rossi
-                new Lesson(new DateOnly(2026, 02, 05), "Fitness Session - Marco",   false,  Students[6].Id, Bills[14].Id,   true,   60,     50.00m, false,  10,     true,   5,      3,      null), // Luca Rossi
+                new Lesson(new DateOnly(2024, 08, 18), "Fitness Session - Marco",   true,   Students[6].Id, Bills[12].Id,   true,   60,     50.00m, false,  5,      true,   0,      2,      null), // Luca Rossi    - 55
+                new Lesson(new DateOnly(2025, 01, 05), "Fitness Session - Marco",   true,   Students[6].Id, Bills[13].Id,   true,   60,     50.00m, false,  7.5m,   false,  0,      2,      null), // Luca Rossi    - 57.5
+                new Lesson(new DateOnly(2025, 06, 02), "Fitness Session - Marco",   true,   Students[6].Id, Bills[13].Id,   true,   60,     50.00m, false,  7.5m,   true,   0,      2,      null), // Luca Rossi    - 57.5
+                new Lesson(new DateOnly(2026, 02, 05), "Fitness Session - Marco",   false,  Students[6].Id, Bills[14].Id,   true,   60,     50.00m, false,  10,     true,   5,      3,      null), // Luca Rossi    - 65  
 
-                new Lesson(new DateOnly(2024, 09, 02), "Business Coaching - Emily", true,   Students[7].Id, Bills[15].Id,   true,   120,    50.00m, true,   5,      false,  0,      0,      null), // Emma Brown 
-                new Lesson(new DateOnly(2025, 01, 15), "Business Coaching - Emily", true,   Students[7].Id, Bills[16].Id,   true,   120,    55.00m, true,   7.5m,   false,  0,      0,      null), // Emma Brown 
-                new Lesson(new DateOnly(2025, 06, 20), "Business Coaching - Emily", true,   Students[7].Id, Bills[16].Id,   true,   120,    55.00m, true,   7.5m,   false,  0,      0,      null), // Emma Brown 
-                new Lesson(new DateOnly(2026, 02, 20), "Business Coaching - Emily", false,  Students[7].Id, Bills[17].Id,   true,   120,    55.00m, true,   10,     false,  5,      0,      null), // Emma Brown 
+                new Lesson(new DateOnly(2024, 09, 02), "Business Coaching - Emily", true,   Students[7].Id, Bills[15].Id,   true,   120,    50.00m, true,   5,      false,  0,      0,      null), // Emma Brown    - 100
+                new Lesson(new DateOnly(2025, 01, 15), "Business Coaching - Emily", true,   Students[7].Id, Bills[16].Id,   true,   120,    55.00m, true,   7.5m,   false,  0,      0,      null), // Emma Brown    - 110
+                new Lesson(new DateOnly(2025, 06, 20), "Business Coaching - Emily", true,   Students[7].Id, Bills[16].Id,   true,   120,    55.00m, true,   7.5m,   false,  0,      0,      null), // Emma Brown    - 110
+                new Lesson(new DateOnly(2026, 02, 20), "Business Coaching - Emily", false,  Students[7].Id, Bills[17].Id,   true,   120,    55.00m, true,   10,     false,  5,      0,      null), // Emma Brown    - 110
 
-                new Lesson(new DateOnly(2024, 09, 10), "German Lessons - Leon",     true,   Students[8].Id, Bills[18].Id,   true,   60,     35.00m, true,   5,      false,  0,      1,      null), // Noah Muller
-                new Lesson(new DateOnly(2025, 02, 02), "German Lessons - Leon",     true,   Students[8].Id, Bills[19].Id,   true,   60,     35.00m, true,   7.5m,   false,  0,      1,      null), // Noah Muller
-                new Lesson(new DateOnly(2025, 07, 05), "German Lessons - Leon",     true,   Students[8].Id, Bills[19].Id,   true,   60,     35.00m, true,   7.5m,   false,  0,      2,      null), // Noah Muller
-                new Lesson(new DateOnly(2026, 03, 05), "German Lessons - Leon",     false,  Students[8].Id, Bills[20].Id,   true,   60,     35.00m, true,   10,     false,  5,      1,      null), // Noah Muller
+                new Lesson(new DateOnly(2024, 09, 10), "German Lessons - Leon",     true,   Students[8].Id, Bills[18].Id,   true,   60,     35.00m, true,   5,      false,  0,      1,      null), // Noah Muller   - 35
+                new Lesson(new DateOnly(2025, 02, 02), "German Lessons - Leon",     true,   Students[8].Id, Bills[19].Id,   true,   60,     35.00m, true,   7.5m,   false,  0,      1,      null), // Noah Muller   - 35
+                new Lesson(new DateOnly(2025, 07, 05), "German Lessons - Leon",     true,   Students[8].Id, Bills[19].Id,   true,   60,     35.00m, true,   7.5m,   false,  0,      2,      null), // Noah Muller   - 35
+                new Lesson(new DateOnly(2026, 03, 05), "German Lessons - Leon",     false,  Students[8].Id, Bills[20].Id,   true,   60,     35.00m, true,   10,     false,  5,      1,      null), // Noah Muller   - 35
 
-                new Lesson(new DateOnly(2024, 09, 25), "French Lessons - Chloe",    true,   Students[9].Id, Bills[21].Id,   true,   60,     35.00m, false,  5,      true,   0,      2,      null), // Olivia Dubois
-                new Lesson(new DateOnly(2025, 02, 18), "French Lessons - Chloe",    true,   Students[9].Id, Bills[22].Id,   true,   60,     35.00m, false,  7.5m,   true,   0,      3,      null), // Olivia Dubois
-                new Lesson(new DateOnly(2025, 07, 22), "French Lessons - Chloe",    true,   Students[9].Id, Bills[22].Id,   true,   60,     35.00m, false,  7.5m,   true,   0,      3,      null), // Olivia Dubois
-                new Lesson(new DateOnly(2026, 03, 18), "French Lessons - Chloe",    false,  Students[9].Id, Bills[23].Id,   true,   60,     35.00m, false,  10,     true,   5,      2,      null), // Olivia Dubois
+                new Lesson(new DateOnly(2024, 09, 25), "French Lessons - Chloe",    true,   Students[9].Id, Bills[21].Id,   true,   60,     35.00m, false,  5,      true,   0,      2,      null), // Olivia Dubois - 40
+                new Lesson(new DateOnly(2025, 02, 18), "French Lessons - Chloe",    true,   Students[9].Id, Bills[22].Id,   true,   60,     35.00m, false,  7.5m,   true,   0,      3,      null), // Olivia Dubois - 42.5
+                new Lesson(new DateOnly(2025, 07, 22), "French Lessons - Chloe",    true,   Students[9].Id, Bills[22].Id,   true,   60,     35.00m, false,  7.5m,   true,   0,      3,      null), // Olivia Dubois - 42.5
+                new Lesson(new DateOnly(2026, 03, 18), "French Lessons - Chloe",    false,  Students[9].Id, Bills[23].Id,   true,   60,     35.00m, false,  10,     true,   5,      2,      null), // Olivia Dubois - 50
 
-                new Lesson(new DateOnly(2026, 04, 01), "French Lessons - Chloe",    false,  Students[9].Id, null,           true,   60,     37.5m, false,  10,      true,   5,      2,      null), // Olivia Dubois
-                new Lesson(new DateOnly(2026, 04, 10), "French Lessons - Chloe",    false,  Students[9].Id, null,           true,   60,     37.5m, false,  10,      true,   5,      3,      null), // Olivia Dubois
-                new Lesson(new DateOnly(2026, 04, 15), "French Lessons - Chloe",    false,  Students[9].Id, null,           true,   60,     37.5m, false,  10,      true,   5,      3,      null), // Olivia Dubois
-                new Lesson(new DateOnly(2026, 04, 23), "French Lessons - Chloe",    false,  Students[9].Id, null,           true,   60,     37.5m, false,  10,      true,   5,      2,      null), // Olivia Dubois
+                new Lesson(new DateOnly(2026, 04, 01), "French Lessons - Chloe",    false,  Students[9].Id, null,           true,   60,     37.5m, false,  10,      true,   5,      2,      null), // Olivia Dubois - 52.5
+                new Lesson(new DateOnly(2026, 04, 10), "French Lessons - Chloe",    false,  Students[9].Id, null,           true,   60,     37.5m, false,  10,      true,   5,      3,      null), // Olivia Dubois - 52.5
+                new Lesson(new DateOnly(2026, 04, 15), "French Lessons - Chloe",    false,  Students[9].Id, null,           true,   60,     37.5m, false,  10,      true,   5,      3,      null), // Olivia Dubois - 52.5
+                new Lesson(new DateOnly(2026, 04, 23), "French Lessons - Chloe",    false,  Students[9].Id, null,           true,   60,     37.5m, false,  10,      true,   5,      2,      null), // Olivia Dubois - 52.5
             ];
 
             ArchiveLessons =
@@ -351,9 +365,17 @@ namespace Models
         public static ServiceSummary ConvertToServiceSummary(Service service) =>
             new(service.Id, service.Name, service.IsPricePerHour, (double)service.Price);
 
+        public static Expression<Func<Service, ServiceSummary>> AsServiceSummary =>
+            s => ConvertToServiceSummary(s);
+
         // Payer
         public static PayerOption ConvertToPayerOption(Payer payer) =>
             new(payer.Id, payer.FullName);
+
+        public static PayerOption ConvertToPayerOptionWithCount(Payer p, int c) =>
+            new(p.Id, c > 0
+                ? $"{p.FirstName} {p.LastName} - {c} lesson{(c == 1 ? "" : "s")}"
+                : $"{p.FirstName} {p.LastName}");
 
         public static PayerActivityInfo ConvertToPayerActivityInfo(Payer payer, List<Lesson> lessons) 
             => new()
@@ -378,7 +400,7 @@ namespace Models
             => new(s.Id, s.Name, s.ServiceId, (double?)s.Price, s.DurationMinutes, s.IsOnline, s.IsWeekendOrHoliday);
 
         public static SpecificationSummary ConvertToSpecificationSummary(Specification spec, Student student, Service service) =>
-            new(spec.Id, spec.Name, student.Id, student.FullName, service.Id, service.Name, spec.DurationMinutes, (double?)spec.Price, spec.IsOnline, spec.IsOnline, spec.UsageCount);
+            new(spec.Id, spec.Name, student.Id, student.FullName, service.Id, service.Name, spec.DurationMinutes, (double?)spec.Price, spec.IsOnline, spec.IsWeekendOrHoliday, spec.UsageCount);
 
         // Invoices
         public static BillSummary ConverToBillSumary(BillingDocument? b) => b is null ?
