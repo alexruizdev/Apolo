@@ -13,7 +13,7 @@ namespace ViewModels
     public record MonthOption(int Value, string Name);
     public partial class DashboardViewModel : BaseViewModel
     {
-        IDashboardRepository _dashboardRepository;
+        readonly IDashboardRepository _dashboardRepository;
 
         // Filters
         [ObservableProperty] private int _selectedYear;
@@ -31,13 +31,13 @@ namespace ViewModels
 
         // Charts
         [ObservableProperty] private ISeries[] _incomeTrendSeries = null!;
-        [ObservableProperty] private List<Axis> _xAxes = new List<Axis>
-        {
+        [ObservableProperty] private List<Axis> _xAxes =
+        [
             new Axis
             {
                 Labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
             }
-        };
+        ];
         [ObservableProperty] private ISeries[] _topPayersSeries = null!;
         [ObservableProperty] private Axis[] _topPayersYAxes = null!;
         [ObservableProperty] private Axis[] _topPayersXAxes = null!;
@@ -49,10 +49,8 @@ namespace ViewModels
 
             // Initialize Filters
             var now = DateTime.Now;
-            AvailableYears = Enumerable.Range(now.Year - 5, 6).OrderByDescending(y => y).ToList(); // Last 5 years + current
-            AvailableMonths = Enumerable.Range(1, 12)
-                .Select(m => new MonthOption(m, CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(m)))
-                .ToList();
+            AvailableYears = [.. Enumerable.Range(now.Year - 5, 6).OrderByDescending(y => y)]; // Last 5 years + current
+            AvailableMonths = [.. Enumerable.Range(1, 12).Select(m => new MonthOption(m, CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(m)))];
 
             SelectedYear = now.Year;
             SelectedMonth = AvailableMonths.First(m => m.Value == now.Month);
@@ -118,7 +116,7 @@ namespace ViewModels
             [
                 new ColumnSeries<decimal>
                 {
-                    Values = topPayers.Values.ToArray(),
+                    Values = [.. topPayers.Values],
                     Name = "Total Amount",
                     MaxBarWidth = 40, // Keeps the bars from getting too thick
                     DataLabelsPaint = new SolidColorPaint(new SKColor(30, 30, 30)),
@@ -131,7 +129,7 @@ namespace ViewModels
             [
                 new Axis
                 {
-                    Labels = topPayers.Keys.ToArray(),
+                    Labels = [.. topPayers.Keys],
                     IsInverted = true, // CRITICAL: Puts the #1 highest payer at the TOP of the chart
                     LabelsPaint = new SolidColorPaint(new SKColor(100, 100, 100)),
                     TextSize = 14,
@@ -162,7 +160,7 @@ namespace ViewModels
         {
             if (PreviousMonthEarnings == 0)
             {
-                EarningsTrend = CurrentMonthEarnings > 0 ? "+100%" : "0%";
+                EarningsTrend = CurrentMonthEarnings > 0 ? "New" : "0%";
                 return;
             }
 

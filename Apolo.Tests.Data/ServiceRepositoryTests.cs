@@ -114,7 +114,7 @@ namespace Apolo.Tests.Data
             var id = _data.Services[0].Id;
             var name = _data.Services[1].Name;
 
-            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await Assert.ThrowsAsync<InvalidDataException>(async () =>
             {
                 await _repository.UpdateAsync(id, name, false, 10);
             });
