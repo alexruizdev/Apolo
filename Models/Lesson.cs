@@ -112,11 +112,16 @@ namespace Models
             {
                 if (duration is null)
                     throw new ArgumentException("Duration is required when price is per hour.");
+                if (duration <= 0)
+                    throw new ArgumentException("Duration must be a positive value.");
                 price *= duration.Value / 60m;
             }
             decimal total = travel + price;
             return Math.Round(total * 2m, MidpointRounding.AwayFromZero) / 2m;
         }
+
+        public static string GetRate(bool isPricePerHour, int duration)
+            => isPricePerHour ? $"{Math.Round(duration / 60m, 2)}" : "1";  
 
         public static string Truncate(string? input, int maxLength)
         {

@@ -65,6 +65,7 @@ namespace Apolo
 
             // Utilities
             builder.AddSingleton<PDF.IWriter, PDF.Writer>();
+            builder.AddSingleton<PDF.IReportWriter, PDF.ReportWriter>();
             builder.AddSingleton<Excel.IReader, Excel.Reader>();
             builder.AddSingleton<Excel.IWriter, Excel.Writer>();
 
@@ -77,6 +78,7 @@ namespace Apolo
             builder.AddTransient<BillingViewModel>();
             builder.AddTransient<SettingsViewModel>();
             builder.AddTransient<DashboardViewModel>();
+            builder.AddTransient<ProposalViewModel>();
 
             builder.AddSingleton<MainWindow>();
 
