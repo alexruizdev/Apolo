@@ -62,6 +62,8 @@ namespace Apolo.Tests.ViewModels
             else
                 Assert.AreEqual(message, _viewModel.InfoMessage);
             Assert.AreEqual(isBusy, _viewModel.IsBusy);
+            Assert.AreEqual(severity, _viewModel.InfoBarType);
+            Assert.AreEqual(isOpen, _viewModel.OpenInfoBar);
         }
 
         [TestMethod]
@@ -94,12 +96,16 @@ namespace Apolo.Tests.ViewModels
         [TestMethod]
         public async Task LoadAsync_PopulatesCollection()
         { 
-            var firstLoad = new List<PayerOption>();
-            firstLoad.Add(new PayerOption(Guid.NewGuid(), "Old payer 1"));
-            firstLoad.Add(new PayerOption(Guid.NewGuid(), "Old payer 2"));
-            var secondLoad = new List<PayerOption>();
-            secondLoad.Add(new PayerOption(Guid.NewGuid(), "New payer 1"));
-            secondLoad.Add(new PayerOption(Guid.NewGuid(), "New payer 2"));
+            var firstLoad = new List<PayerOption>
+            {
+                new(Guid.NewGuid(), "Old payer 1"),
+                new(Guid.NewGuid(), "Old payer 2")
+            };
+            var secondLoad = new List<PayerOption>
+            {
+                new(Guid.NewGuid(), "New payer 1"),
+                new(Guid.NewGuid(), "New payer 2")
+            };
 
             _mockPayerRepo.SetupSequence(r => r.GetPayerOptionsByUnbilledLessons())
                 .ReturnsAsync(firstLoad)
@@ -120,7 +126,7 @@ namespace Apolo.Tests.ViewModels
         public async Task LoadAsync_EmptyCollection()
         {
             _mockPayerRepo.SetupSequence(r => r.GetPayerOptionsByUnbilledLessons())
-                .ReturnsAsync(new List<PayerOption>());
+                .ReturnsAsync([]);
 
             await _viewModel.LoadAsync(); 
 
@@ -155,15 +161,19 @@ namespace Apolo.Tests.ViewModels
             _viewModel.Payers.Add(payer);
             _viewModel.SelectedPayerId = payer.Id;
 
-            var firstLoad = new List<LessonLine>();
-            firstLoad.Add(new LessonLine(lessonId, studentId1, new DateOnly(2024, 1, 1), "Old Lesson", "Student 1", 100, false));
-            firstLoad.Add(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 2), "Old Lesson", "Student 2", 200, false));
-            firstLoad.Add(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 3), "Old Lesson", "Student 3", 300, false));
+            var firstLoad = new List<LessonLine>
+            {
+                new(lessonId, studentId1, new DateOnly(2024, 1, 1), "Old Lesson", "Student 1", 100, false),
+                new(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 2), "Old Lesson", "Student 2", 200, false),
+                new(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 3), "Old Lesson", "Student 3", 300, false)
+            };
 
-            var secondLoad = new List<LessonLine>();
-            secondLoad.Add(new LessonLine(lessonId, studentId1, new DateOnly(2025, 1, 1), "New Lesson", "Student 1", 50, false));
-            secondLoad.Add(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2025, 1, 2), "New Lesson", "Student 2", 500, false));
-            secondLoad.Add(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2025, 1, 3), "New Lesson", "Student 3", 25, false));
+            var secondLoad = new List<LessonLine>
+            {
+                new(lessonId, studentId1, new DateOnly(2025, 1, 1), "New Lesson", "Student 1", 50, false),
+                new(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2025, 1, 2), "New Lesson", "Student 2", 500, false),
+                new(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2025, 1, 3), "New Lesson", "Student 3", 25, false)
+            };
 
             _mockInvoiceRepo.SetupSequence(r => r.GetUnbilledLessonsAsync(payer.Id))
                 .ReturnsAsync(firstLoad)
@@ -230,7 +240,7 @@ namespace Apolo.Tests.ViewModels
             _viewModel.SelectedPayerId = payer.Id;
 
             _mockInvoiceRepo.SetupSequence(r => r.GetUnbilledLessonsAsync(payer.Id))
-                .ReturnsAsync(new List<LessonLine>());
+                .ReturnsAsync([]);
 
             await _viewModel.LoadLessonsAsync(); // test that Lessons.Clear() is working
             VerifyAction("Loaded 0 lessons unbilled and unpaid", InfoBarType.Success, isOpen: true,
@@ -384,7 +394,7 @@ namespace Apolo.Tests.ViewModels
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
                 "Old Lesson", "Student 1", 192.1m, false)));
 
-            return _viewModel.Lessons.Where(l => l.IsSelected).Select(l => l.Data.Id).ToList();
+            return [.. _viewModel.Lessons.Where(l => l.IsSelected).Select(l => l.Data.Id)];
         }
 
         private async Task ActForForGenerateInvoice(List<Guid> ids, bool dbError = false)
@@ -497,7 +507,7 @@ namespace Apolo.Tests.ViewModels
             string path = Path.Combine(_viewModel.Profile.BillingFolder, $"{_viewModel.Bill.Name}.pdf");
 
             AssertForGenerateInvoice(ids, infoMessage: $"Invoice saved to: {path}.", 
-                severity: InfoBarType.Success, success: true);
+                severity: InfoBarType.Info, success: true);
         }
 
         // Print Document
@@ -601,7 +611,7 @@ namespace Apolo.Tests.ViewModels
             ArrangeForPrintDocument(isInvoice: true);
             await ActForForPrintDocument();
             AssertForPrintDocument(infoMessage: $"2024-01-E-0007 saved to: ", 
-                severity: InfoBarType.Success, success: true, isInvoice: true);
+                severity: InfoBarType.Info, success: true, isInvoice: true);
         }
 
         [TestMethod]
@@ -610,7 +620,7 @@ namespace Apolo.Tests.ViewModels
             ArrangeForPrintDocument(isInvoice: false);
             await ActForForPrintDocument();
             AssertForPrintDocument(infoMessage: $"2024-01-E-0007 saved to: ",
-                severity: InfoBarType.Success, success: true, isInvoice: false);
+                severity: InfoBarType.Info, success: true, isInvoice: false);
         }
     }
 }

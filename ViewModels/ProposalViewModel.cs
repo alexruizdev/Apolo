@@ -8,10 +8,9 @@ using System.Collections.ObjectModel;
 
 namespace ViewModels
 {
-    public partial class ProposalViewModel : UserProfileViewModel
+    public partial class ProposalViewModel(IServiceRepository serviceRepository, IUserProfileService userProfile,
+        IReportWriter reportWriter) : UserProfileViewModel(userProfile)
     {
-        readonly IServiceRepository _serviceRepository;
-        private IReportWriter _pdfWriter;
 
         // Input
         [ObservableProperty] private ServiceSummary? _selectedService;
@@ -30,6 +29,8 @@ namespace ViewModels
         [ObservableProperty] private bool _isPricePerHour = false;
         [ObservableProperty] private bool _isPrimaryButtonEnabled;
 
+        private readonly ProposalInput _input = new();
+
         // Descriptive UI formatting tags matching unit values
         public string BudgetMinusFrequencyString => FormatFreq(Report.BudgetMinus);
         public string BudgetRequestedFrequencyString => FormatFreq(Report.BudgetRequested);
@@ -37,15 +38,7 @@ namespace ViewModels
         public string AlternativeTravelFrequencyString => FormatFreq(Report.AlternativeTravel);
         public string AlternativeFeeFrequencyString => FormatFreq(Report.AlternativeFee);
 
-        public ObservableCollection<ServiceSummary> Services { get; } = new();
-
-        public ProposalViewModel(IServiceRepository serviceRepository, IUserProfileService userProfile,
-            IReportWriter reportWriter)
-            : base(userProfile)
-        {
-            _serviceRepository = serviceRepository;
-            _pdfWriter = reportWriter;
-        }
+        public ObservableCollection<ServiceSummary> Services { get; } = [];
 
         // --- COMMANDS ---
         [RelayCommand]
@@ -59,7 +52,10 @@ namespace ViewModels
 
             SetEnterFunction();
 
-            var serviceItems = await _serviceRepository.GetServicesAsync();
+            _input.TravelAllowance = (decimal)Profile.TravelAllowance;
+            _input.WeekendFee = (decimal)Profile.WeekendFee;
+
+            var serviceItems = await serviceRepository.GetServicesAsync();
 
             Services.Clear();
             foreach (var s in serviceItems) Services.Add(s);
@@ -92,7 +88,7 @@ namespace ViewModels
             var filename = Path.Combine(directoryPath, $"Proposal_{date}.pdf");
             try
             {
-                _pdfWriter.GenerateProposal(filename, Report);
+                reportWriter.GenerateProposal(filename, Report);
 
                 SetExitFunction($"Generated proposal successfully: {filename}.", InfoBarType.Success);
             }
@@ -102,7 +98,7 @@ namespace ViewModels
             }
         }
 
-        private string FormatFreq(BudgetColumn col) =>
+        private static string FormatFreq(BudgetColumn col) =>
             $"{col.Frequency} time(s) / {(col.Unit == FrequencyUnit.PerWeek ? "week" : "month")} ({col.SessionsPerMonth:F1} total sessions)";
 
         // --- UPDATING FORM LOGIC ---
@@ -113,11 +109,13 @@ namespace ViewModels
             {
                 IsPricePerHour = s.IsPricePerHour;
                 BasePrice = s.Price;
+                _input.ServiceName = s.Name;
             }
             else
             {
                 IsPricePerHour = false;
                 BasePrice = 0;
+                _input.ServiceName = string.Empty;
             }
 
             Validate();
@@ -133,16 +131,39 @@ namespace ViewModels
             }
         }
 
-        partial void OnBasePriceChanged(double value) => Validate();
-        partial void OnIsWeekendOrHolidayChanged(bool value) => Validate();
-        partial void OnIsOnlineChanged(bool value) => Validate();
-        partial void OnDurationChanged(double value) => Validate();
+        partial void OnBasePriceChanged(double value)
+        {
+            _input.BasePrice = value;
+            Validate();
+        }
+        partial void OnIsOnlineChanged(bool value) { 
+            _input.IsOnline = value;
+            Validate();
+        }
+        partial void OnIsWeekendOrHolidayChanged(bool value) {
+            _input.IsWeekendOrHoliday = value;
+            Validate();
+        } 
+        partial void OnDurationChanged(double value)
+        {
+            _input.Duration = value;
+            Validate();
+        }
         partial void OnIsPricePerHourChanged(bool value)
         {
             PriceHeader = IsPricePerHour ? "Price/Hour:" : "Price:";
+            _input.IsPricePerHour = value;
         }
-        partial void OnFrequencyChanged(int value) => Validate();
-        partial void OnUnitChanged(FrequencyUnit value) => Validate();
+        partial void OnFrequencyChanged(int value)
+        {
+            _input.Frequency = value;
+            Validate();
+        }
+        partial void OnUnitChanged(FrequencyUnit value)
+        {
+            _input.Unit = value;
+            Validate();
+        }
 
         // --- VALIDATION LOGIC ---
 
@@ -161,7 +182,7 @@ namespace ViewModels
             if (Frequency <= 0)
                 errors.Add("• Frequency must be a positive integer.");
 
-            IsPrimaryButtonEnabled = !errors.Any();
+            IsPrimaryButtonEnabled = errors.Count == 0;
 
             if (!IsPrimaryButtonEnabled)
             {
@@ -170,19 +191,7 @@ namespace ViewModels
             }
             else
             {
-                var input = new ProposalInput(){
-                    ServiceName = SelectedService!.Name, 
-                    BasePrice = BasePrice, 
-                    IsOnline = IsOnline, 
-                    TravelAllowance = (decimal)Profile.TravelAllowance,
-                    IsWeekendOrHoliday = IsWeekendOrHoliday, 
-                    WeekendFee = (decimal) Profile.WeekendFee, 
-                    Duration = Duration, 
-                    IsPricePerHour = IsPricePerHour,
-                    Frequency = Frequency,
-                    Unit = Unit
-                };
-                Report = ProposalService.CalculateProposal(input);
+                Report = ProposalService.CalculateProposal(_input);
                 // Broadcast format string evaluations to columns
                 OnPropertyChanged(nameof(BudgetMinusFrequencyString));
                 OnPropertyChanged(nameof(BudgetRequestedFrequencyString));
