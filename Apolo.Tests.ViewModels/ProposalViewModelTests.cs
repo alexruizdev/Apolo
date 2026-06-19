@@ -1,5 +1,4 @@
 ﻿using Apolo.Services;
-using Microsoft.EntityFrameworkCore;
 using Models;
 using Moq;
 using PDF;
@@ -79,6 +78,18 @@ namespace Apolo.Tests.ViewModels
             Assert.AreEqual(0, _viewModel.BasePrice);
             Assert.AreEqual("Price:", _viewModel.PriceHeader);
 
+            // Input
+            Assert.AreEqual(string.Empty, _viewModel._input.ServiceName);
+            Assert.AreEqual(0, _viewModel._input.BasePrice);
+            Assert.IsFalse(_viewModel._input.IsOnline);
+            Assert.AreEqual(10, _viewModel._input.TravelAllowance);
+            Assert.IsFalse(_viewModel._input.IsWeekendOrHoliday);
+            Assert.AreEqual(20, _viewModel._input.WeekendFee);
+            Assert.IsFalse(_viewModel._input.IsPricePerHour);
+            Assert.AreEqual(0, _viewModel._input.Duration);
+            Assert.AreEqual(1, _viewModel._input.Frequency);
+            Assert.AreEqual(FrequencyUnit.PerWeek, _viewModel._input.Unit);
+
             // Select service
             _viewModel.SelectedService =_viewModel.Services.First();
             Assert.IsNotNull(_viewModel.InfoMessage);
@@ -102,6 +113,26 @@ namespace Apolo.Tests.ViewModels
             Assert.IsFalse(_viewModel.OpenInfoBar);
             Assert.AreEqual(InfoBarType.Success, _viewModel.InfoBarType);
             Assert.AreEqual("1 time(s) / week (4.3 total sessions)", _viewModel.BudgetMinusFrequencyString);
+
+            _viewModel.BasePrice = 50;
+            _viewModel.IsOnline = true;
+            _viewModel.IsWeekendOrHoliday = true;
+            _viewModel.Frequency = 2;
+            _viewModel.Unit = FrequencyUnit.PerMonth;
+
+            // Input
+            Assert.AreEqual("Math Tutoring", _viewModel._input.ServiceName);
+            Assert.AreEqual(50, _viewModel._input.BasePrice);
+            Assert.IsTrue(_viewModel._input.IsOnline);
+            Assert.AreEqual(10, _viewModel._input.TravelAllowance);
+            Assert.IsTrue(_viewModel._input.IsWeekendOrHoliday);
+            Assert.AreEqual(20, _viewModel._input.WeekendFee);
+            Assert.IsTrue(_viewModel._input.IsPricePerHour);
+            Assert.AreEqual(90, _viewModel._input.Duration);
+            Assert.AreEqual(2, _viewModel._input.Frequency);
+            Assert.AreEqual(FrequencyUnit.PerMonth, _viewModel._input.Unit);
+
+
         }
 
         [TestMethod]

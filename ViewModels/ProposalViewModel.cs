@@ -29,7 +29,7 @@ namespace ViewModels
         [ObservableProperty] private bool _isPricePerHour = false;
         [ObservableProperty] private bool _isPrimaryButtonEnabled;
 
-        private readonly ProposalInput _input = new();
+        public readonly ProposalInput _input = new();
 
         // Descriptive UI formatting tags matching unit values
         public string BudgetMinusFrequencyString => FormatFreq(Report.BudgetMinus);
