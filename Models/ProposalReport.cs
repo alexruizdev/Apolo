@@ -33,7 +33,7 @@
     {
         public string ServiceName { get; set; } = string.Empty;
         public decimal BasePrice { get; set; }
-        public string RateMultiplier { get; set; } = "x1";
+        public string RateMultiplier { get; set; } = "1";
         public decimal Subtotal { get; set; }
         public double Duration { get; set; }
         public decimal WeekendFeeApplied { get; set; }

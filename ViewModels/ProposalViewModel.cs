@@ -11,7 +11,7 @@ namespace ViewModels
     public partial class ProposalViewModel : UserProfileViewModel
     {
         readonly IServiceRepository _serviceRepository;
-        PDF.IReportWriter _pdfWriter;
+        private IReportWriter _pdfWriter;
 
         // Input
         [ObservableProperty] private ServiceSummary? _selectedService;
