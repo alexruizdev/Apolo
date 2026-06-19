@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ViewModels", "ViewModels\Vi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Apolo.Tests.ViewModels", "Apolo.Tests.ViewModels\Apolo.Tests.ViewModels.csproj", "{0A4B79C5-F613-4EB7-B1E3-AFAEE84ECE86}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDF", "PDF\PDF.csproj", "{32586967-E506-47BB-A118-AD4FE9A3A55C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -131,6 +133,18 @@ Global
 		{0A4B79C5-F613-4EB7-B1E3-AFAEE84ECE86}.Release|x64.Build.0 = Release|Any CPU
 		{0A4B79C5-F613-4EB7-B1E3-AFAEE84ECE86}.Release|x86.ActiveCfg = Release|Any CPU
 		{0A4B79C5-F613-4EB7-B1E3-AFAEE84ECE86}.Release|x86.Build.0 = Release|Any CPU
+		{32586967-E506-47BB-A118-AD4FE9A3A55C}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{32586967-E506-47BB-A118-AD4FE9A3A55C}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{32586967-E506-47BB-A118-AD4FE9A3A55C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{32586967-E506-47BB-A118-AD4FE9A3A55C}.Debug|x64.Build.0 = Debug|Any CPU
+		{32586967-E506-47BB-A118-AD4FE9A3A55C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{32586967-E506-47BB-A118-AD4FE9A3A55C}.Debug|x86.Build.0 = Debug|Any CPU
+		{32586967-E506-47BB-A118-AD4FE9A3A55C}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{32586967-E506-47BB-A118-AD4FE9A3A55C}.Release|ARM64.Build.0 = Release|Any CPU
+		{32586967-E506-47BB-A118-AD4FE9A3A55C}.Release|x64.ActiveCfg = Release|Any CPU
+		{32586967-E506-47BB-A118-AD4FE9A3A55C}.Release|x64.Build.0 = Release|Any CPU
+		{32586967-E506-47BB-A118-AD4FE9A3A55C}.Release|x86.ActiveCfg = Release|Any CPU
+		{32586967-E506-47BB-A118-AD4FE9A3A55C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

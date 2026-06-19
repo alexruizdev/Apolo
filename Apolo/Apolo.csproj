@@ -75,6 +75,7 @@
 	
 	<ItemGroup>
 		<ProjectReference Include="..\Excel\Excel.csproj" />
+		<ProjectReference Include="..\PDF\PDF.csproj" />
 		<ProjectReference Include="..\Repository\Repository.csproj" />
 		<ProjectReference Include="..\ViewModels\ViewModels.csproj" />
 	</ItemGroup>
