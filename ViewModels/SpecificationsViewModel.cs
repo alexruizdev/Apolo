@@ -30,8 +30,6 @@ namespace Apolo.ViewModels
             _studentRepository = studentRepository;
             _serviceRepository = serviceRepository;
             _lessonRepository = lessonRepository;
-            _userProfileService = userProfileService;
-            profile = userProfileService.LoadProfileAsync().Result;
         }
 
         public (SpecificationSummary value, int index) GetSpecification(Guid id)

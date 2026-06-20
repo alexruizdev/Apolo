@@ -43,8 +43,6 @@ namespace Apolo.ViewModels
             _studentRepository = studentRepository;
             _serviceRepository = serviceRepository;
             _specificationRepository = specificationRepository;
-            _userProfileService = userProfile;
-            profile = userProfile.LoadProfileAsync().Result;
             FilterStartDate = DateTimeOffset.Now.AddMonths(-2);
         }
 

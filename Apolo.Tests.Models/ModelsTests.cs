@@ -57,7 +57,7 @@ namespace Apolo.Tests.Models
             var shortNote = "This is a long note, more than 70 characters, enough to test the funct...";
             var lesson = new LessonSummary(Id: Guid.NewGuid(), DateOnly.FromDateTime(DateTime.Today), "Lesson",
                 FinalPrice: 65, IsPaid: true, StudentId: Guid.NewGuid(), "Student", BillingDocumentId: Guid.NewGuid(),
-                "2025-09-E-0001", IsPricePerHour: true, DurationMinutes: 60, BasePrice: 30, IsOnline: false, TravelAllowance: 5, 
+                "2025-09-E-0001", IsPricePerHour: true, DurationMinutes: 60, BasePrice: 30, IsOnline: false, TravelAllowance: 5,
                 IsWeekendOrHoliday: false, WeekendFee: 5, Tip: 0, longNote);
 
             Assert.AreEqual(shortNote, lesson.ShortNote);
@@ -76,11 +76,11 @@ namespace Apolo.Tests.Models
                 shortNote);
             Assert.AreEqual(95, lesson.FinalPrice);
 
-            Assert.Throws<ArgumentException>(() => lesson.Set(isPricePerHour: true, duration: null, price: 35, online: false, 
-                travel: 5, weekend: false, fee:5));
+            Assert.Throws<ArgumentException>(() => lesson.Set(isPricePerHour: true, duration: null, price: 35, online: false,
+                travel: 5, weekend: false, fee: 5));
 
             Assert.IsEmpty(Lesson.Truncate(null, 10));
-            Assert.AreEqual(shortNote,Lesson.Truncate(shortNote, 70));
+            Assert.AreEqual(shortNote, Lesson.Truncate(shortNote, 70));
 
             Assert.IsTrue(lesson.Set(isPricePerHour: true, duration: 64, price: 35, online: false, travel: 7.5m,
                 weekend: false, fee: 7.5m));
@@ -106,10 +106,10 @@ namespace Apolo.Tests.Models
                 weekend: false, fee: 7.5m));
             Assert.IsNotNull(lesson.DurationMinutes);
             Assert.AreEqual(64, lesson.DurationMinutes.Value);
-        }   
+        }
 
         [TestMethod]
-        public void TestUserProfile ()
+        public void TestUserProfile()
         {
             var profile = new UserProfile();
             Assert.IsEmpty(profile.FullName);
@@ -138,7 +138,7 @@ namespace Apolo.Tests.Models
             fullName = Helper.GetFullName("", "");
             Assert.AreEqual("", fullName);
         }
-        
+
         [TestMethod]
         public void TestConvertToServiceSummary()
         {
@@ -208,7 +208,7 @@ namespace Apolo.Tests.Models
                 Assert.AreEqual("Lucia", studentSummary.FirstName);
                 Assert.AreEqual("Garcia", studentSummary.LastName);
                 Assert.AreEqual("David Garcia", studentSummary.PayerName);
-                
+
                 Assert.HasCount(8, data.ArchiveStudents);
                 var archiveStudentOption = data.ArchiveStudentOptions.First();
                 var archiveStudentSummary = data.ArchiveStudentSummaries.Last();
@@ -302,7 +302,7 @@ namespace Apolo.Tests.Models
                 Assert.AreEqual(52.5m, data.Lessons[40].FinalPrice);
                 Assert.AreEqual(52.5m, data.Lessons[41].FinalPrice);
                 Assert.AreEqual(52.5m, data.Lessons[42].FinalPrice);
-                Assert.AreEqual(52.5m, data.Lessons[43].FinalPrice); 
+                Assert.AreEqual(52.5m, data.Lessons[43].FinalPrice);
 
                 var lessonsByPayer = data.LessonLinesByPayer(data.Payers[0].Id);
                 Assert.HasCount(8, lessonsByPayer);
@@ -323,5 +323,126 @@ namespace Apolo.Tests.Models
                 Assert.HasCount(23, data.ArchiveLessons);
             }
         }
-}
+        [TestMethod]
+        public void GenerateReport()
+        {
+            // online, weekend, price per hour, 2 weekly
+            ProposalInput input = new()
+            {
+                ServiceName = "Test",
+                BasePrice = 30,
+                IsOnline = true,
+                TravelAllowance = 10,
+                IsWeekendOrHoliday = true,
+                WeekendFee = 5,
+                IsPricePerHour = true,
+                Duration = 90,
+                Frequency = 2,
+                Unit = FrequencyUnit.PerWeek
+            };
+
+            ProposalReport report = ProposalService.CalculateProposal(input);
+            Assert.AreEqual("Test", report.ServiceName);
+            Assert.AreEqual(35, report.BasePrice);
+            Assert.AreEqual("1.5", report.RateMultiplier);
+            Assert.AreEqual(52.5m, report.Subtotal);
+            Assert.AreEqual(90, report.Duration);
+            Assert.AreEqual(5, report.WeekendFeeApplied);
+            Assert.AreEqual(0, report.TravelAllowanceApplied);
+
+            Assert.AreEqual(52.5m, report.PricePerSession);
+            Assert.AreEqual(8.66, report.SessionsPerMonth);
+            Assert.AreEqual(454.65m, report.PricePerMonth);
+
+            Assert.IsNotNull(report.AlternativeFee);
+            Assert.AreEqual("WEEK DAY OPTION", report.AlternativeFee.Label);
+            Assert.AreEqual(2, report.AlternativeFee.Frequency);
+            Assert.AreEqual(FrequencyUnit.PerWeek, report.AlternativeFee.Unit);
+            Assert.AreEqual(8.66, report.AlternativeFee.SessionsPerMonth);
+            Assert.AreEqual(389.7m, report.AlternativeFee.TotalPricePerMonth);
+
+            Assert.IsNotNull(report.AlternativeTravel);
+            Assert.AreEqual("IN-PERSON OPTION", report.AlternativeTravel.Label);
+            Assert.AreEqual(2, report.AlternativeTravel.Frequency);
+            Assert.AreEqual(FrequencyUnit.PerWeek, report.AlternativeTravel.Unit);
+            Assert.AreEqual(8.66, report.AlternativeTravel.SessionsPerMonth);
+            Assert.AreEqual(541.25m, report.AlternativeTravel.TotalPricePerMonth);
+
+            Assert.IsNotNull(report.BudgetRequested);
+            Assert.AreEqual("REQUEST BUDGET", report.BudgetRequested.Label);
+            Assert.AreEqual(2, report.BudgetRequested.Frequency);
+            Assert.AreEqual(FrequencyUnit.PerWeek, report.BudgetRequested.Unit);
+            Assert.AreEqual(8.66, report.BudgetRequested.SessionsPerMonth);
+            Assert.AreEqual(454.65m, report.BudgetRequested.TotalPricePerMonth);
+
+            Assert.IsNotNull(report.BudgetMinus);
+            Assert.AreEqual("REDUCED OPTIONS (-1)", report.BudgetMinus.Label);
+            Assert.AreEqual(1, report.BudgetMinus.Frequency);
+            Assert.AreEqual(FrequencyUnit.PerWeek, report.BudgetMinus.Unit);
+            Assert.AreEqual(4.33, report.BudgetMinus.SessionsPerMonth);
+            Assert.AreEqual(227.325m, report.BudgetMinus.TotalPricePerMonth);
+
+            Assert.IsNotNull(report.BudgetPlus);
+            Assert.AreEqual("EXPANDED OPTIONS (+1)", report.BudgetPlus.Label);
+            Assert.AreEqual(3, report.BudgetPlus.Frequency);
+            Assert.AreEqual(FrequencyUnit.PerWeek, report.BudgetPlus.Unit);
+            Assert.AreEqual(12.99, report.BudgetPlus.SessionsPerMonth);
+            Assert.AreEqual(681.975m, report.BudgetPlus.TotalPricePerMonth);
+
+            // in person, weekday, flat rate, 1 monthly
+            input.IsOnline = false;
+            input.IsWeekendOrHoliday = false;
+            input.IsPricePerHour = false;
+            input.Unit = FrequencyUnit.PerMonth;
+            input.Frequency = 1;
+
+            report = ProposalService.CalculateProposal(input);
+            Assert.AreEqual("Test", report.ServiceName);
+            Assert.AreEqual(30, report.BasePrice);
+            Assert.AreEqual("1", report.RateMultiplier);
+            Assert.AreEqual(30, report.Subtotal);
+            Assert.AreEqual(90, report.Duration);
+            Assert.AreEqual(0, report.WeekendFeeApplied);
+            Assert.AreEqual(10, report.TravelAllowanceApplied);
+
+            Assert.AreEqual(40m, report.PricePerSession);
+            Assert.AreEqual(1, report.SessionsPerMonth);
+            Assert.AreEqual(40, report.PricePerMonth);
+
+            Assert.IsNotNull(report.AlternativeFee);
+            Assert.AreEqual("WEEKEND OR HOLIDAY OPTION", report.AlternativeFee.Label);
+            Assert.AreEqual(1, report.AlternativeFee.Frequency);
+            Assert.AreEqual(FrequencyUnit.PerMonth, report.AlternativeFee.Unit);
+            Assert.AreEqual(1, report.AlternativeFee.SessionsPerMonth);
+            Assert.AreEqual(45m, report.AlternativeFee.TotalPricePerMonth);
+
+            Assert.IsNotNull(report.AlternativeTravel);
+            Assert.AreEqual("ONLINE OPTION", report.AlternativeTravel.Label);
+            Assert.AreEqual(1, report.AlternativeTravel.Frequency);
+            Assert.AreEqual(FrequencyUnit.PerMonth, report.AlternativeTravel.Unit);
+            Assert.AreEqual(1, report.AlternativeTravel.SessionsPerMonth);
+            Assert.AreEqual(30m, report.AlternativeTravel.TotalPricePerMonth);
+
+            Assert.IsNotNull(report.BudgetRequested);
+            Assert.AreEqual("REQUEST BUDGET", report.BudgetRequested.Label);
+            Assert.AreEqual(1, report.BudgetRequested.Frequency);
+            Assert.AreEqual(FrequencyUnit.PerMonth, report.BudgetRequested.Unit);
+            Assert.AreEqual(1, report.BudgetRequested.SessionsPerMonth);
+            Assert.AreEqual(40, report.BudgetRequested.TotalPricePerMonth);
+
+            Assert.IsNotNull(report.BudgetMinus);
+            Assert.AreEqual("REDUCED OPTIONS (-1)", report.BudgetMinus.Label);
+            Assert.AreEqual(1, report.BudgetMinus.Frequency);
+            Assert.AreEqual(FrequencyUnit.PerMonth, report.BudgetMinus.Unit);
+            Assert.AreEqual(1, report.BudgetMinus.SessionsPerMonth);
+            Assert.AreEqual(40, report.BudgetMinus.TotalPricePerMonth);
+
+            Assert.IsNotNull(report.BudgetPlus);
+            Assert.AreEqual("EXPANDED OPTIONS (+1)", report.BudgetPlus.Label);
+            Assert.AreEqual(2, report.BudgetPlus.Frequency);
+            Assert.AreEqual(FrequencyUnit.PerMonth, report.BudgetPlus.Unit);
+            Assert.AreEqual(2, report.BudgetPlus.SessionsPerMonth);
+            Assert.AreEqual(80, report.BudgetPlus.TotalPricePerMonth);
+        }
+    }
 }

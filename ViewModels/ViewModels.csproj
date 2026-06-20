@@ -14,6 +14,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Excel\Excel.csproj" />
+	  <ProjectReference Include="..\PDF\PDF.csproj" />
 	  <ProjectReference Include="..\Models\Models.csproj" />
 	  <ProjectReference Include="..\Repository\Repository.csproj" />
 	</ItemGroup>

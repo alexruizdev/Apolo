@@ -6,7 +6,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Models;
 using System;
-using System.Threading.Tasks;
 
 namespace Apolo.Views;
 

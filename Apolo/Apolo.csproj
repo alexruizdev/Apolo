@@ -75,6 +75,7 @@
 	
 	<ItemGroup>
 		<ProjectReference Include="..\Excel\Excel.csproj" />
+		<ProjectReference Include="..\PDF\PDF.csproj" />
 		<ProjectReference Include="..\Repository\Repository.csproj" />
 		<ProjectReference Include="..\ViewModels\ViewModels.csproj" />
 	</ItemGroup>
@@ -92,6 +93,12 @@
 			<Generator>ResXFileCodeGenerator</Generator>
 			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
 		</EmbeddedResource>
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <Page Update="Views\ProposalPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
 	</ItemGroup>
 	
 	<ItemGroup>
