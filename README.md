@@ -43,6 +43,8 @@ Apolo is a comprehensive lesson and billing management system designed for tutor
 - **Service Management** - Define and manage various services
 - **Payer Management** - Track and manage payment information
 - **Excel Integration** - Export and import data to/from Excel
+- **Dashboard** - View your business KPIs.
+- **Report Proposal** - Generate service proposals for potential clients.
 - **Settings Management** - Configurable application settings
 
 ## System Requirements
