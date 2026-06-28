@@ -22,7 +22,7 @@ namespace Apolo.ViewModels
 
         private async void DeleteStudent_Click(object sender, RoutedEventArgs e)
         {
-            Guid? id = await ConfirmationDialog.ConfirmItemAction(sender, "delete student");
+            Guid? id = await ConfirmationDialog.ConfirmItemAction(sender, Loc.Action_DeleteStudent);
             if (id is not null)
             {
                 await ViewModel.DeleteStudentAsync(id.Value);
@@ -31,11 +31,11 @@ namespace Apolo.ViewModels
 
         private async void NewStudent_Click(object sender, RoutedEventArgs e)
         {
-            var firstNameBox = new TextBox { Header = "First name", MinWidth = 320 };
-            var lastNameBox = new TextBox { Header = "Last name", MinWidth = 320 };
+            var firstNameBox = new TextBox { Header = Loc.Common_FirstName, MinWidth = 320 };
+            var lastNameBox = new TextBox { Header = Loc.Common_LastName, MinWidth = 320 };
             var payersBox = new ComboBox
             {
-                Header = "Payer (optional if student is payer)",
+                Header = Loc.Common_Payer,
                 ItemsSource = ViewModel.Payers,
                 DisplayMemberPath = "FullName",
                 SelectedValuePath = "Id"
@@ -48,9 +48,9 @@ namespace Apolo.ViewModels
 
             var dialog = new ContentDialog()
             {
-                Title = "Create student",
+                Title = Loc.Buttons_Create,
                 Content = panel,
-                PrimaryButtonText = "Create",
+                PrimaryButtonText = Loc.Buttons_Create,
                 CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = Content.XamlRoot
@@ -74,12 +74,12 @@ namespace Apolo.ViewModels
                 return;
 
             // Prefill with the current names
-            var firstBox = new TextBox { Header = "First name", Text = item.FirstName, MinWidth = 320, MaxLength = 100 };
-            var lastBox = new TextBox { Header = "Last name", Text = item.LastName, MinWidth = 320, MaxLength = 100 };
+            var firstBox = new TextBox { Header = Loc.Common_FirstName, Text = item.FirstName, MinWidth = 320, MaxLength = 100 };
+            var lastBox = new TextBox { Header = Loc.Common_LastName, Text = item.LastName, MinWidth = 320, MaxLength = 100 };
 
             var payerBox = new ComboBox
             {
-                Header = Loc.Box_Payer,
+                Header = "Payer",
                 ItemsSource = ViewModel.Payers,
                 SelectedValuePath = "Id",
                 DisplayMemberPath = "FullName",
@@ -93,9 +93,9 @@ namespace Apolo.ViewModels
 
             var dialog = new ContentDialog()
             {
-                Title = "Edit student",
+                Title = Loc.Buttons_Edit,
                 Content = panel,
-                PrimaryButtonText = "Save",
+                PrimaryButtonText = Loc.Buttons_Save,
                 CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = Content.XamlRoot

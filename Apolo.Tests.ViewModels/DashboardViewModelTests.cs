@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using Apolo.Services;
+using Moq;
 using Repository;
 using ViewModels;
 
@@ -10,13 +11,15 @@ namespace Apolo.Tests.ViewModels
         private DashboardViewModel _viewModel = null!;
 
         private Mock<IDashboardRepository> _repositoryMock = null!;
+        private Mock<IStringLocalizer> _localizerMock = null!;
 
         [TestInitialize]
         public void TestInit()
         {
             _repositoryMock = new Mock<IDashboardRepository>();
+            _localizerMock = new Mock<IStringLocalizer>();
 
-            _viewModel = new DashboardViewModel(_repositoryMock.Object);
+            _viewModel = new DashboardViewModel(_repositoryMock.Object, _localizerMock.Object);
         }
 
         [TestMethod]

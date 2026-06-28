@@ -10,11 +10,14 @@ namespace Apolo.Tests.ViewModels
     {
         private Mock<IUserProfileService> _mockUserProfileService = null!;
         private UserProfileViewModel _viewModel = null!;
+        private Mock<IStringLocalizer> _localizerMock = null!;
+
 
         [TestInitialize]
         public void TestInit()
         {
             _mockUserProfileService = new Mock<IUserProfileService>();
+            _localizerMock = new Mock<IStringLocalizer>();
 
             var userProfile = new UserProfile
             {
@@ -26,7 +29,7 @@ namespace Apolo.Tests.ViewModels
                 .ReturnsAsync(userProfile);
 
             _viewModel = new UserProfileViewModel(
-                _mockUserProfileService.Object);
+                _mockUserProfileService.Object, _localizerMock.Object);
         }
 
         // RefreshProfileAsync 

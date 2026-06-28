@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.Input;
+﻿using Apolo.Services;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
@@ -15,7 +16,19 @@ namespace Apolo.ViewModels
         public ObservableCollection<StudentSummary> Students { get; } = new();
         public ObservableCollection<PayerOption> Payers { get; } = new();
 
-        public StudentsViewModel(IStudentRepository studentRepository, IPayerRepository payerRepository)
+        // Messages
+        private static string Message_Load_Students_Error => "Messages/Load_Students_Error";
+        private static string Message_Load_Students_Success => "Messages/Load_Students_Success";
+        private static string Message_Add_Student_Error => "Messages/Add_Student_Error";
+        private static string Message_Add_Student_Success => "Messages/Add_Student_Success";
+        private static string Message_Add_Student_Extra => "Messages/Add_Student_Extra";
+        private static string Message_Delete_Student_Error => "Messages/Delete_Student_Error";
+        private static string Message_Delete_Student_Success => "Messages/Delete_Student_Success";
+        private static string Message_Edit_Student_Error => "Messages/Edit_Student_Error";
+        private static string Message_Edit_Student_Success => "Messages/Edit_Student_Success";
+
+        public StudentsViewModel(IStudentRepository studentRepository, IPayerRepository payerRepository, IStringLocalizer stringLocalizer)
+            : base(stringLocalizer)
         {
             _studentRepository = studentRepository;
             _payerRepository = payerRepository;
@@ -51,7 +64,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't load students while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Load_Students_Error);
                 return;
             }
 
@@ -68,14 +81,14 @@ namespace Apolo.ViewModels
             Students.Clear();
             foreach (var s in studentItems) Students.Add(s);
 
-            SetExitFunction($"{Students.Count} loaded", InfoBarType.Success);
+            SetExitFunction($"{_loc.Get(Message_Load_Students_Success, Students.Count)}.", InfoBarType.Success);
         }
 
         public async Task AddStudentAsync(string firstName, string lastName, Guid? payerId)
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't add student while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Add_Student_Error);
                 return;
             }
 
@@ -99,7 +112,7 @@ namespace Apolo.ViewModels
                     await _payerRepository.AddAsync(payer);
                     Payers.Add(Helper.ConvertToPayerOption(payer));
                     payerId = payer.Id;
-                    additionalMessage = " Created payer with same name.";
+                    additionalMessage = $" {_loc.Get(Message_Add_Student_Extra)}.";
                 }
 
                 // Create student
@@ -114,7 +127,7 @@ namespace Apolo.ViewModels
 
                 var payerName = Payers.First(p => p.Id == payerId.Value).FullName;
                 Students.Add(new StudentSummary(entity.Id, firstName, lastName, payerId.Value, payerName));
-                SetExitFunction($"Student '{entity.FullName}' added successfully.{additionalMessage}", InfoBarType.Success);
+                SetExitFunction($"{_loc.Get(Message_Add_Student_Success, entity.FullName)}.{additionalMessage}", InfoBarType.Success);
             }
             catch (DbUpdateException ex)
             {
@@ -127,7 +140,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't delete student while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Delete_Student_Error);
                 return;
             }
 
@@ -140,7 +153,7 @@ namespace Apolo.ViewModels
                 await _studentRepository.DeleteAsync(id);
 
                 Students.Remove(oldStudent);
-                SetExitFunction($"Student '{oldStudent.Name}' deleted successfully.", InfoBarType.Success);
+                SetExitFunction($"{_loc.Get(Message_Delete_Student_Success, oldStudent.Name)}.", InfoBarType.Success);
             }
             catch (DbUpdateException ex)
             {
@@ -152,7 +165,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't update student while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Edit_Student_Error);
                 return;
             }
 
@@ -175,7 +188,7 @@ namespace Apolo.ViewModels
                     PayerId = newPayerId,
                     PayerName = payerName
                 }; 
-                SetExitFunction($"Student '{oldStudent.Name}' updated successfully.", InfoBarType.Success);
+                SetExitFunction($"{_loc.Get(Message_Edit_Student_Success, oldStudent.Name)}.", InfoBarType.Success);
             }
             catch (DbUpdateException ex)
             {

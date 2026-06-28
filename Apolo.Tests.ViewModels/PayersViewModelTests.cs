@@ -1,4 +1,5 @@
-﻿using Apolo.ViewModels;
+﻿using Apolo.Services;
+using Apolo.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Moq;
@@ -12,12 +13,15 @@ namespace Apolo.Tests.ViewModels
     {
         private Mock<IPayerRepository> _mockRepo = null!;
         private PayersViewModel _viewModel = null!;
+        private Mock<IStringLocalizer> _localizerMock = null!;
+
 
         [TestInitialize]
         public void TestInit()
         {
             _mockRepo = new Mock<IPayerRepository>();
-            _viewModel = new PayersViewModel(_mockRepo.Object);
+            _localizerMock = new Mock<IStringLocalizer>();
+            _viewModel = new PayersViewModel(_mockRepo.Object, _localizerMock.Object);
         }
 
         void VerifyAction(string? message, InfoBarType severity, bool isOpen, int count, bool isBusy = false)

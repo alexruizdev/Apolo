@@ -29,7 +29,7 @@ namespace Apolo.Views
 
             var dialog = new ContentDialog()
             {
-                PrimaryButtonText = "Create",
+                PrimaryButtonText = Loc.Buttons_Create,
                 CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = Content.XamlRoot
@@ -63,7 +63,7 @@ namespace Apolo.Views
 
         private async void DeleteLesson_Click(object sender, RoutedEventArgs e)
         {
-            Guid? id = await ConfirmationDialog.ConfirmItemAction(sender, "delete lesson");
+            Guid? id = await ConfirmationDialog.ConfirmItemAction(sender, Loc.Action_DeleteLesson);
             if (id is not null)
                 await ViewModel.DeleteLessonAsync(id.Value);
 
@@ -83,7 +83,7 @@ namespace Apolo.Views
 
             var dialog = new ContentDialog()
             {
-                PrimaryButtonText = "Edit",
+                PrimaryButtonText = Loc.Buttons_Edit,
                 CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = Content.XamlRoot

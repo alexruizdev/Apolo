@@ -4,7 +4,6 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:local="using:Apolo.Views"
       xmlns:vm="using:Apolo.ViewModels"
-      xmlns:loc="using:Apolo.Services"
       xmlns:m="using:Models"
       x:Name="PageRoot"
       Loaded="Page_Loaded">
@@ -24,12 +23,12 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Column="0" 
-                       Text="{x:Bind loc:Loc.Menu_Services}"
+            <TextBlock Grid.Column="0"
+                       x:Uid="Services/Title"
                        Style="{ThemeResource TitleLargeTextBlockStyle}" />
 
             <CommandBar Grid.Column="1" DefaultLabelPosition="Right" Background="Transparent" IsDynamicOverflowEnabled="False">
-                <AppBarButton Label="New" Icon="Add"
+                <AppBarButton x:Uid="Buttons/New" Icon="Add"
                   Click="NewService_Click"
                   IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
             </CommandBar>
@@ -64,13 +63,13 @@
                                        Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
 
                             <TextBlock Style="{ThemeResource BodyTextBlockStyle}">
-                                <Run Text="Price:" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                                <Run x:Uid="Common/Price" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
                                 <Run Text="{x:Bind Price, Converter={StaticResource DecimalToCurrencyConverter}}" FontWeight="SemiBold" />
                             </TextBlock>
 
                             <Border Style="{StaticResource OnlineBadgeStyle}" VerticalAlignment="Center"
                                     Visibility="{x:Bind IsPricePerHour, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <TextBlock Text="PER HOUR" 
+                                <TextBlock x:Uid="Common/PerHour" 
                                            Style="{StaticResource OnlineTextStyle}"/>
                             </Border>
                         </StackPanel>
@@ -85,14 +84,14 @@
                                     Click="EditService_Click"
                                     IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
                                 <SymbolIcon Symbol="Edit" />
-                                <ToolTipService.ToolTip>Edit service</ToolTipService.ToolTip>
+                                <ToolTipService.ToolTip>{x:Bind loc:Loc.Common_EditService}</ToolTipService.ToolTip>
                             </Button>
 
                             <Button Style="{StaticResource RowDeleteButtonStyle}"
                                     Click="DeleteService_Click"
                                     IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
                                 <SymbolIcon Symbol="Delete" />
-                                <ToolTipService.ToolTip>Delete service</ToolTipService.ToolTip>
+                                <ToolTipService.ToolTip>{x:Bind loc:Loc.Action_DeleteService}</ToolTipService.ToolTip>
                             </Button>
                         </StackPanel>
                     </Grid>

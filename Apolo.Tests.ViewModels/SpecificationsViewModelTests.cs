@@ -8,7 +8,6 @@ using ViewModels;
 
 namespace Apolo.Tests.ViewModels
 {
-    [TestClass]
     public class SpecificationsViewModelBaseTests
     {
         protected Mock<ISpecificationRepository> _mockSpecificationRepo = null!;
@@ -17,6 +16,8 @@ namespace Apolo.Tests.ViewModels
         protected Mock<ILessonRepository> _mockLessonRepo = null!;
         protected Mock<IUserProfileService> _mockUserProfileService = null!;
         protected SpecificationsViewModel _viewModel = null!;
+        private Mock<IStringLocalizer> _localizerMock = null!;
+
 
         [TestInitialize]
         public virtual void TestInit()
@@ -26,6 +27,7 @@ namespace Apolo.Tests.ViewModels
             _mockServiceRepo = new Mock<IServiceRepository>();
             _mockLessonRepo = new Mock<ILessonRepository>();
             _mockUserProfileService = new Mock<IUserProfileService>();
+            _localizerMock = new Mock<IStringLocalizer>();
 
             var userProfile = new UserProfile
             {
@@ -41,7 +43,8 @@ namespace Apolo.Tests.ViewModels
                 _mockStudentRepo.Object,
                 _mockServiceRepo.Object,
                 _mockLessonRepo.Object,
-                _mockUserProfileService.Object);
+                _mockUserProfileService.Object,
+                _localizerMock.Object);
         }
     }
 
@@ -78,9 +81,9 @@ namespace Apolo.Tests.ViewModels
         {
             var service = new ServiceSummary(Guid.NewGuid(), "Old Service", false, 30);
             _viewModel.Services.Add(service);
-            var result = _viewModel.GetService(service.Id);
-            Assert.AreEqual(service.Name, result.value.Name);
-            Assert.AreEqual(0, result.index);
+            var (value, index) = _viewModel.GetService(service.Id);
+            Assert.AreEqual(service.Name, value.Name);
+            Assert.AreEqual(0, index);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.IsNull(_viewModel.InfoMessage);
         }
@@ -103,9 +106,9 @@ namespace Apolo.Tests.ViewModels
             var spec = new SpecificationSummary(Guid.NewGuid(), "Old Default", Guid.NewGuid(), 
                 "Student", Guid.NewGuid(), "Service", 60, null, false, false, 0);
             _viewModel.Specifications.Add(spec);
-            var result = _viewModel.GetSpecification(spec.Id);
-            Assert.AreEqual(spec.Name, result.value.Name);
-            Assert.AreEqual(0, result.index);
+            var (value, index) = _viewModel.GetSpecification(spec.Id);
+            Assert.AreEqual(spec.Name, value.Name);
+            Assert.AreEqual(0, index);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.IsNull(_viewModel.InfoMessage);
         }
@@ -129,24 +132,36 @@ namespace Apolo.Tests.ViewModels
         [TestMethod]
         public async Task LoadAsync_ValidInput_PopulatesCollection()
         {
-            var firstStudentLoad = new List<StudentOption>();
-            firstStudentLoad.Add(new StudentOption(Guid.NewGuid(), "Old Man"));
-            firstStudentLoad.Add(new StudentOption(Guid.NewGuid(), "Old Kid"));
-            var secondStudentLoad = new List<StudentOption>();
-            secondStudentLoad.Add(new StudentOption(Guid.NewGuid(), "New Man"));
-            secondStudentLoad.Add(new StudentOption(Guid.NewGuid(), "New Kid"));
-            var firstServiceLoad = new List<ServiceSummary>();
-            firstServiceLoad.Add(new ServiceSummary(Guid.NewGuid(), "Old Service", false, 30));
-            firstServiceLoad.Add(new ServiceSummary(Guid.NewGuid(), "Old Contract", false, 30));
-            var secondServiceLoad = new List<ServiceSummary>();
-            secondServiceLoad.Add(new ServiceSummary(Guid.NewGuid(), "New Service", true, 50));
-            secondServiceLoad.Add(new ServiceSummary(Guid.NewGuid(), "New Contract", true, 50));
-            var firstSpecificationLoad = new List<SpecificationSummary>();
-            firstSpecificationLoad.Add(new SpecificationSummary(Guid.NewGuid(), "Old Default", firstStudentLoad[0].Id, firstStudentLoad[0].FullName, firstServiceLoad[0].Id, firstServiceLoad[0].Name, 60, null, false, false,0));
-            firstSpecificationLoad.Add(new SpecificationSummary(Guid.NewGuid(), "Old Spec", firstStudentLoad[1].Id, firstStudentLoad[1].FullName, firstServiceLoad[1].Id, firstServiceLoad[1].Name, 60, null, false, false,0));
-            var secondSpecificationLoad = new List<SpecificationSummary>();
-            secondSpecificationLoad.Add(new SpecificationSummary(Guid.NewGuid(), "New Default", secondStudentLoad[0].Id, secondStudentLoad[0].FullName, secondServiceLoad[0].Id, secondServiceLoad[0].Name, 90, 50, true, true,0));
-            secondSpecificationLoad.Add(new SpecificationSummary(Guid.NewGuid(), "New Spec", secondStudentLoad[1].Id, secondStudentLoad[1].FullName, secondServiceLoad[1].Id, secondServiceLoad[1].Name, 90, 50, true, true,0));
+            var firstStudentLoad = new List<StudentOption>
+            {
+                new(Guid.NewGuid(), "Old Man"),
+                new(Guid.NewGuid(), "Old Kid")
+            };
+            var secondStudentLoad = new List<StudentOption>
+            {
+                new(Guid.NewGuid(), "New Man"),
+                new(Guid.NewGuid(), "New Kid")
+            };
+            var firstServiceLoad = new List<ServiceSummary>
+            {
+                new(Guid.NewGuid(), "Old Service", false, 30),
+                new(Guid.NewGuid(), "Old Contract", false, 30)
+            };
+            var secondServiceLoad = new List<ServiceSummary>
+            {
+                new(Guid.NewGuid(), "New Service", true, 50),
+                new(Guid.NewGuid(), "New Contract", true, 50)
+            };
+            var firstSpecificationLoad = new List<SpecificationSummary>
+            {
+                new(Guid.NewGuid(), "Old Default", firstStudentLoad[0].Id, firstStudentLoad[0].FullName, firstServiceLoad[0].Id, firstServiceLoad[0].Name, 60, null, false, false, 0),
+                new(Guid.NewGuid(), "Old Spec", firstStudentLoad[1].Id, firstStudentLoad[1].FullName, firstServiceLoad[1].Id, firstServiceLoad[1].Name, 60, null, false, false, 0)
+            };
+            var secondSpecificationLoad = new List<SpecificationSummary>
+            {
+                new(Guid.NewGuid(), "New Default", secondStudentLoad[0].Id, secondStudentLoad[0].FullName, secondServiceLoad[0].Id, secondServiceLoad[0].Name, 90, 50, true, true, 0),
+                new(Guid.NewGuid(), "New Spec", secondStudentLoad[1].Id, secondStudentLoad[1].FullName, secondServiceLoad[1].Id, secondServiceLoad[1].Name, 90, 50, true, true, 0)
+            };
 
             _mockStudentRepo.SetupSequence(r => r.GetStudentOptionsAsync())
              .ReturnsAsync(firstStudentLoad)
@@ -182,11 +197,11 @@ namespace Apolo.Tests.ViewModels
         public async Task LoadAsync_EmptyRepository_ResultingCollectionIsEmpty()
         {
             _mockStudentRepo.SetupSequence(r => r.GetStudentOptionsAsync())
-                .ReturnsAsync(new List<StudentOption>());
+                .ReturnsAsync([]);
             _mockServiceRepo.SetupSequence(r => r.GetServicesAsync())
-                .ReturnsAsync(new List<ServiceSummary>());
+                .ReturnsAsync([]);
             _mockSpecificationRepo.SetupSequence(r => r.GetSpecificationsAsync())
-                .ReturnsAsync(new List<SpecificationSummary>());
+                .ReturnsAsync([]);
 
 
             await _viewModel.LoadAsync();
@@ -215,9 +230,11 @@ namespace Apolo.Tests.ViewModels
         [TestMethod]
         public async Task RefreshSpecificationsAsync()
         {
-            var firstSpecificationLoad = new List<SpecificationSummary>();
-            firstSpecificationLoad.Add(new SpecificationSummary(Guid.NewGuid(), "Spec 1", Guid.NewGuid(), "Student 1", Guid.NewGuid(), "Service 1", 60, null, false, false, 1));
-            firstSpecificationLoad.Add(new SpecificationSummary(Guid.NewGuid(), "Spec 2", Guid.NewGuid(), "Student 2", Guid.NewGuid(), "Service 2", 60, null, false, false, 3));
+            var firstSpecificationLoad = new List<SpecificationSummary>
+            {
+                new(Guid.NewGuid(), "Spec 1", Guid.NewGuid(), "Student 1", Guid.NewGuid(), "Service 1", 60, null, false, false, 1),
+                new(Guid.NewGuid(), "Spec 2", Guid.NewGuid(), "Student 2", Guid.NewGuid(), "Service 2", 60, null, false, false, 3)
+            };
 
 
             _mockSpecificationRepo.SetupSequence(r => r.GetSpecificationsAsync())
@@ -562,7 +579,7 @@ namespace Apolo.Tests.ViewModels
             await _viewModel.CreateLessonFromSpecificationAsync(targetId, date, invalidTip ? -10 : 10, notes);
         }
 
-        private void ThrowExceptionForCreateLessonTests(Guid targetId, Guid studentId, bool hasPrice = false)
+        private void ThrowExceptionForCreateLessonTests(Guid studentId, bool hasPrice = false)
         {
             var date = DateOnly.FromDateTime(new DateTime(1993, 8, 17));
             string notes = "Some notes";
@@ -684,7 +701,7 @@ namespace Apolo.Tests.ViewModels
             ArrangeForCreateLessonTests(targetId, studentId);
 
             // Force the mock database to fail (e.g., a Foreign Key constraint violation)
-            ThrowExceptionForCreateLessonTests(targetId, studentId);
+            ThrowExceptionForCreateLessonTests(studentId);
 
             await ActForCreateLessonTests(targetId);
 

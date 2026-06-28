@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using Apolo.Services;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Models;
 using System;
@@ -12,12 +13,14 @@ namespace Apolo.Controls
         {
             if (sender is not Button button) return false;
 
+            var sl = new StringLocalizer();
+
             var dialog = new ContentDialog
             {
-                Title = $"Confirm: {action}",
-                Content = $"Are you sure you want to {action}? This action cannot be undone.",
-                PrimaryButtonText = "Delete",
-                CloseButtonText = "Cancel",
+                Title = Loc.F("Confirmation/Title", action),
+                Content = Loc.F("Confirmation/Content", action),
+                PrimaryButtonText = Loc.Buttons_Delete,
+                CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Close,
                 XamlRoot = button.XamlRoot
             };
@@ -32,12 +35,14 @@ namespace Apolo.Controls
             if (button.DataContext is not ISummary item)
                 return null;
 
+            var sl = new StringLocalizer();
+
             var dialog = new ContentDialog
             {
-                Title = $"Confirm: {action}",
-                Content = $"Are you sure you want to {action} '{item.Name}'? This action cannot be undone.",
-                PrimaryButtonText = "Delete",
-                CloseButtonText = "Cancel",
+                Title = Loc.F("Confirmation/Title", action),
+                Content = Loc.F("Confirmation/Content", action, item.Name),
+                PrimaryButtonText = Loc.Buttons_Delete,
+                CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Close,
                 XamlRoot = button.XamlRoot
             };

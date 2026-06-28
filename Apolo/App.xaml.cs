@@ -39,6 +39,7 @@ namespace Apolo
             PerformAutomatedBackup();
 
             Services = ConfigureServices;
+            InitializeApplicationLanguage();
             InitializeDatabase();
             InitializeComponent();
         }
@@ -73,6 +74,8 @@ namespace Apolo
 
                 // Services
                 builder.AddSingleton<IUserProfileService, UserProfileService>();
+                builder.AddSingleton<ILanguageService, LanguageService>();
+                builder.AddSingleton<IStringLocalizer, StringLocalizer>();
 
                 // Repositories
                 builder.AddTransient<IPayerRepository, PayerRepository>();
@@ -138,9 +141,9 @@ namespace Apolo
             {
                 var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
                 {
-                    Title = "Unexpected Error",
-                    Content = $"A critical error occurred. The application has logged the issue, but it may behave unexpectedly if you continue.\n\nDetails: {e.Exception.Message}",
-                    CloseButtonText = "Understood",
+                    Title = Loc.App_UnexpectedErrorTitle,
+                    Content = Loc.F("App/UnexpectedErrorContent", e.Exception.Message),
+                    CloseButtonText = Loc.Buttons_Understood,
                     XamlRoot = MainWindow.Content.XamlRoot
                 };
 
@@ -210,6 +213,25 @@ namespace Apolo
             catch (Exception ex)
             {
                 Log.Error(ex, "Failed to perform automated database backup.");
+            }
+        }
+
+        private void InitializeApplicationLanguage()
+        {
+            try
+            {
+                using var scope = Services.CreateScope();
+                var profileService = scope.ServiceProvider.GetRequiredService<IUserProfileService>();
+
+                var profile = profileService.LoadProfileAsync().Result;
+
+                Loc.ApplyLanguage(profile?.Language ?? string.Empty);
+                
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to apply user configuration language during app initialization.");
+                Loc.ApplyLanguage(string.Empty);
             }
         }
 

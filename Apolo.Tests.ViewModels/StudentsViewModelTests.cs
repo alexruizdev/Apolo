@@ -1,4 +1,5 @@
-﻿using Apolo.ViewModels;
+﻿using Apolo.Services;
+using Apolo.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Moq;
@@ -13,13 +14,16 @@ namespace Apolo.Tests.ViewModels
         private Mock<IStudentRepository> _mockStudentRepo = null!;
         private Mock<IPayerRepository> _mockPayerRepo = null!;
         private StudentsViewModel _viewModel = null!;
+        private Mock<IStringLocalizer> _localizerMock = null!;
+
 
         [TestInitialize]
         public void TestInit()
         {
             _mockStudentRepo = new Mock<IStudentRepository>();
             _mockPayerRepo = new Mock<IPayerRepository>();
-            _viewModel = new StudentsViewModel(_mockStudentRepo.Object, _mockPayerRepo.Object);
+            _localizerMock = new Mock<IStringLocalizer>();
+            _viewModel = new StudentsViewModel(_mockStudentRepo.Object, _mockPayerRepo.Object, _localizerMock.Object);
         }
 
         void VerifyAction(string? message, InfoBarType severity, bool isOpen, int studentsCount, int payersCount, bool isBusy = false)
@@ -81,9 +85,9 @@ namespace Apolo.Tests.ViewModels
         {
             var student = new StudentSummary(Guid.NewGuid(), "First", "Last", Guid.NewGuid(), "Payer");
             _viewModel.Students.Add(student);
-            var result = _viewModel.GetStudent(student.Id);
+            var (_, index) = _viewModel.GetStudent(student.Id);
             Assert.AreEqual("First Last", student.Name);
-            Assert.AreEqual(0, result.index);
+            Assert.AreEqual(0, index);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.IsNull(_viewModel.InfoMessage);
         }
@@ -106,18 +110,26 @@ namespace Apolo.Tests.ViewModels
         [TestMethod]
         public async Task LoadAsync_ValidInput_PopulatesStudentAndPayerCollection()
         {
-            var firstPayerLoad = new List<PayerOption>();
-            firstPayerLoad.Add(new PayerOption(Guid.NewGuid(), "Old Man"));
-            firstPayerLoad.Add(new PayerOption(Guid.NewGuid(), "Old Kid"));
-            var secondPayerLoad = new List<PayerOption>();
-            secondPayerLoad.Add(new PayerOption(Guid.NewGuid(), "New Man"));
-            secondPayerLoad.Add(new PayerOption(Guid.NewGuid(), "New Kid"));
-            var firstStudentLoad = new List<StudentSummary>();
-            firstStudentLoad.Add(new StudentSummary(Guid.NewGuid(), "Old", "Human", firstPayerLoad[0].Id, firstPayerLoad[0].FullName));
-            firstStudentLoad.Add(new StudentSummary(Guid.NewGuid(), "Old", "Child", firstPayerLoad[1].Id, firstPayerLoad[1].FullName));
-            var secondStudentLoad = new List<StudentSummary>();
-            secondStudentLoad.Add(new StudentSummary(Guid.NewGuid(), "New", "Human", secondPayerLoad[0].Id, secondPayerLoad[0].FullName));
-            secondStudentLoad.Add(new StudentSummary(Guid.NewGuid(), "New", "Child", secondPayerLoad[1].Id, secondPayerLoad[1].FullName));
+            var firstPayerLoad = new List<PayerOption>
+            {
+                new(Guid.NewGuid(), "Old Man"),
+                new(Guid.NewGuid(), "Old Kid")
+            };
+            var secondPayerLoad = new List<PayerOption>
+            {
+                new(Guid.NewGuid(), "New Man"),
+                new(Guid.NewGuid(), "New Kid")
+            };
+            var firstStudentLoad = new List<StudentSummary>
+            {
+                new(Guid.NewGuid(), "Old", "Human", firstPayerLoad[0].Id, firstPayerLoad[0].FullName),
+                new(Guid.NewGuid(), "Old", "Child", firstPayerLoad[1].Id, firstPayerLoad[1].FullName)
+            };
+            var secondStudentLoad = new List<StudentSummary>
+            {
+                new(Guid.NewGuid(), "New", "Human", secondPayerLoad[0].Id, secondPayerLoad[0].FullName),
+                new(Guid.NewGuid(), "New", "Child", secondPayerLoad[1].Id, secondPayerLoad[1].FullName)
+            };
 
             _mockPayerRepo.SetupSequence(r => r.GetPayerOptionsAsync())
              .ReturnsAsync(firstPayerLoad)
@@ -146,9 +158,9 @@ namespace Apolo.Tests.ViewModels
         public async Task LoadAsync_EmptyRepository_ResultingCollectionIsEmpty()
         {
             _mockPayerRepo.SetupSequence(r => r.GetPayerOptionsAsync())
-                .ReturnsAsync(new List<PayerOption>());
+                .ReturnsAsync([]);
             _mockStudentRepo.SetupSequence(r => r.GetSudentsAsync())
-                .ReturnsAsync(new List<StudentSummary>());
+                .ReturnsAsync([]);
 
 
             await _viewModel.LoadAsync();

@@ -24,7 +24,7 @@ namespace Apolo.Pages
 
         private async void DeletePayer_Click(object sender, RoutedEventArgs e)
         {
-            Guid? id = await ConfirmationDialog.ConfirmItemAction(sender, "delete payer");
+            Guid? id = await ConfirmationDialog.ConfirmItemAction(sender, Loc.Action_DeletePayer);
             if (id is not null)
             {
                 await ViewModel.DeletePayerAsync(id.Value);
@@ -39,11 +39,11 @@ namespace Apolo.Pages
                 return;
 
             // Prefill with the current names
-            var firstBox = new TextBox { Header = "First name", Text = item.FirstName, MinWidth = 300 };
-            var lastBox = new TextBox { Header = "Last name", Text = item.LastName, MinWidth = 300 };
-            var addressBox = new TextBox { Header = "Address", Text = item.Address, MinWidth = 300 };
-            var zipBox = new TextBox { Header = "Zip code", Text = item.Zip, MinWidth = 300 };
-            var cityBox = new TextBox { Header = "City", Text = item.City, MinWidth = 300 };
+            var firstBox = new TextBox { Header = Loc.Common_FirstName, Text = item.FirstName, MinWidth = 300 };
+            var lastBox = new TextBox { Header = Loc.Common_LastName, Text = item.LastName, MinWidth = 300 };
+            var addressBox = new TextBox { Header = Loc.Common_Address, Text = item.Address, MinWidth = 300 };
+            var zipBox = new TextBox { Header = Loc.Common_ZipCode, Text = item.Zip, MinWidth = 300 };
+            var cityBox = new TextBox { Header = Loc.Common_City, Text = item.City, MinWidth = 300 };
             var taxBox = new TextBox { Header = "NIF/CIF", Text = item.TaxId, MinWidth = 300 };
 
 
@@ -57,9 +57,9 @@ namespace Apolo.Pages
 
             var dialog = new ContentDialog()
             {
-                Title = "Edit payer",
+                Title = Loc.Buttons_Edit,
                 Content = panel,
-                PrimaryButtonText = "Save",
+                PrimaryButtonText = Loc.Buttons_Save,
                 CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = Content.XamlRoot
@@ -77,11 +77,11 @@ namespace Apolo.Pages
 
         private async void NewPayer_Click(object sender, RoutedEventArgs e)
         {
-            var firstNameBox = new TextBox { Header = "First name", MinWidth = 320 };
-            var lastNameBox = new TextBox { Header = "Last name", MinWidth = 320 };
-            var addressBox = new TextBox { Header = "Address", MinWidth = 320 };
-            var zipCodeBox = new TextBox { Header = "Zip code", MinWidth = 320 };
-            var cityBox = new TextBox { Header = "City", MinWidth = 320 };
+            var firstNameBox = new TextBox { Header = Loc.Common_FirstName, MinWidth = 320 };
+            var lastNameBox = new TextBox { Header = Loc.Common_LastName, MinWidth = 320 };
+            var addressBox = new TextBox { Header = Loc.Common_Address, MinWidth = 320 };
+            var zipCodeBox = new TextBox { Header = Loc.Common_ZipCode, MinWidth = 320 };
+            var cityBox = new TextBox { Header = Loc.Common_City, MinWidth = 320 };
             var idBox = new TextBox { Header = "CIF/NIF", MinWidth = 320 };
 
             var panel = new StackPanel { Spacing = 8 };
@@ -94,9 +94,9 @@ namespace Apolo.Pages
 
             var dialog = new ContentDialog()
             {
-                Title = "Create payer",
+                Title = Loc.Buttons_Create,
                 Content = panel,
-                PrimaryButtonText = "Create",
+                PrimaryButtonText = Loc.Buttons_Create,
                 CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = Content.XamlRoot

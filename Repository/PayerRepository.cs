@@ -97,11 +97,11 @@ namespace Repository
         public async Task DeleteAsync(Guid id)
         {
             // Check for existence and relations without loading all student objects
-            var hasStudents = await _context.Students.AnyAsync(s => s.PayerId == id);
+            var students = await _context.Students.Where(s => s.PayerId == id).Select(s => s.FullName).ToListAsync();
 
-            if (hasStudents)
+            if (students.Count > 0)
             {
-                throw new InvalidOperationException("Cannot delete: Payer has associated students.");
+                throw new InvalidOperationException(string.Join(", ", students));
             }
 
             var entity = await _context.Payers.FindAsync(id)
