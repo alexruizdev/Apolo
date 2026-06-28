@@ -9,6 +9,7 @@ using Repository;
 using Serilog;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using ViewModels;
 using Windows.Storage;
@@ -33,6 +34,9 @@ namespace Apolo
             // Hook up global exception handlers
             UnhandledException += App_UnhandledExceptionAsync;
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+
+            // Perform automated backups before the DB is locked by EF Core
+            PerformAutomatedBackup();
 
             Services = ConfigureServices;
             InitializeDatabase();
@@ -156,6 +160,57 @@ namespace Apolo
         {
             Log.Error(e.Exception, "An unobserved background task exception occurred.");
             e.SetObserved(); // Prevent the app from tearing down
+        }
+
+        private void PerformAutomatedBackup()
+        {
+            try
+            {
+                var localFolder = ApplicationData.Current.LocalFolder.Path;
+                var backupFolder = Path.Combine(localFolder, "Backups");
+
+                if (!Directory.Exists(backupFolder))
+                {
+                    Directory.CreateDirectory(backupFolder);
+                }
+
+                string today = DateTime.Now.ToString("yyyyMMdd");
+                string appDbPath = Path.Combine(localFolder, "app.db");
+                string archiveDbPath = Path.Combine(localFolder, "archive.db");
+
+                string backupAppDbPath = Path.Combine(backupFolder, $"app_{today}.db");
+                string backupArchiveDbPath = Path.Combine(backupFolder, $"archive_{today}.db");
+
+                // Only perform the backup if today's backup doesn't exist yet
+                if (!File.Exists(backupAppDbPath) && File.Exists(appDbPath))
+                {
+                    Log.Information("Performing daily automated database backup...");
+
+                    // File.Copy is safe here because we run this BEFORE Entity Framework starts
+                    File.Copy(appDbPath, backupAppDbPath);
+
+                    if (File.Exists(archiveDbPath))
+                    {
+                        File.Copy(archiveDbPath, backupArchiveDbPath);
+                    }
+
+                    // Prune old backups (keep the last 7 days to save disk space)
+                    var oldFiles = Directory.GetFiles(backupFolder, "*.db")
+                                            .Select(f => new FileInfo(f))
+                                            .Where(f => f.CreationTime < DateTime.Now.AddDays(-7));
+
+                    foreach (var file in oldFiles)
+                    {
+                        file.Delete();
+                    }
+
+                    Log.Information("Automated backup completed and old files pruned successfully.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to perform automated database backup.");
+            }
         }
 
         public Window? MainWindow { get; private set; }
