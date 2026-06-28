@@ -57,7 +57,7 @@ namespace Apolo.Tests.Data
             Assert.HasCount(25, result);
             Assert.HasCount(4, result.Last().Lines);
             var count = DateTimeOffset.UtcNow.Year > 2026 ? 1 : 4;
-            Assert.AreEqual($"{DateTime.Now:yyyy-MM}-E-000{count}", entity.DocumentNumber);
+            Assert.AreEqual($"{DateTime.Now:MM-yyyy}-E-000{count}", entity.DocumentNumber);
         }
 
         [TestMethod]
@@ -74,7 +74,7 @@ namespace Apolo.Tests.Data
             Assert.HasCount(25, result);
             Assert.HasCount(4, result.Last().Lines);
             var count = DateTimeOffset.UtcNow.Year > 2026 ? 1 : 3;
-            Assert.AreEqual($"TCK-{DateTime.Now:yyyy-MM}-000{count}", entity.DocumentNumber);
+            Assert.AreEqual($"TCK-{DateTime.Now:MM-yyyy}-000{count}", entity.DocumentNumber);
         }
 
         [TestMethod]

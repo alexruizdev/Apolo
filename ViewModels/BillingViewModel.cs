@@ -127,6 +127,15 @@ namespace Apolo.ViewModels
             }
         }
 
+        private async Task UpdatePayerOptions()
+        {
+            // Update payers options
+            var payers = await _payerRepository.GetPayerOptionsByUnbilledLessons();
+
+            Payers.Clear();
+            foreach (var p in payers) Payers.Add(p);
+        }
+
         public async Task LoadAsync()
         {
             if (IsBusy)
@@ -137,10 +146,7 @@ namespace Apolo.ViewModels
 
             SetEnterFunction();
 
-            var payers = await _payerRepository.GetPayerOptionsByUnbilledLessons();
-
-            Payers.Clear();
-            foreach (var payer in payers) Payers.Add(payer);
+            await UpdatePayerOptions();
 
             SetExitFunction();
         }
@@ -229,6 +235,8 @@ namespace Apolo.ViewModels
                         Lessons[i].RefreshDataUI();
                     }
                 }
+
+                await UpdatePayerOptions();
 
                 SetExitFunction($"{ids.Count} were marked as {actionName} successfully.", InfoBarType.Success);
             }
@@ -371,11 +379,7 @@ namespace Apolo.ViewModels
                 foreach (var item in Lessons)
                     item.IsSelected = false;
 
-                // Update payers options
-                var payers = await _payerRepository.GetPayerOptionsByUnbilledLessons();
-
-                Payers.Clear();
-                foreach (var p in payers) Payers.Add(p);
+                await UpdatePayerOptions();
 
                 var documentName = (isInvoice ? DocumentType.Invoice : DocumentType.Ticket).ToString();
                 SetExitFunction($"{documentName} saved to: {filePath}.", InfoBarType.Info);

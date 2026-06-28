@@ -75,10 +75,21 @@ namespace Repository
 
         public async Task<IEnumerable<BillingDocument>> GetBillSuggestionsAsync(string searchTerm)
         {
-            return await _context.BillingDocuments
-                .Where(b => b.SequenceNumber.ToString().Contains(searchTerm) || b.Year.ToString().Contains(searchTerm))
-                .Take(10)
+            if (string.IsNullOrWhiteSpace(searchTerm))
+                return [];
+
+            var normalizedTerm = searchTerm.Trim();
+
+            // DocumentNumber is computed in C#, so we filter in-memory to match the exact UI format.
+            var documents = await _context.BillingDocuments
+                .AsNoTracking()
+                .OrderByDescending(b => b.CreatedUTC)
                 .ToListAsync();
+
+            return documents
+                .Where(b => b.DocumentNumber.Contains(normalizedTerm, StringComparison.OrdinalIgnoreCase))
+                .Take(10)
+                .ToList();
         }
     }
 }

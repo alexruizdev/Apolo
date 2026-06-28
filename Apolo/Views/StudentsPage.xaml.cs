@@ -37,7 +37,7 @@ namespace Apolo.ViewModels
             {
                 Header = "Payer (optional if student is payer)",
                 ItemsSource = ViewModel.Payers,
-                DisplayMemberPath = "Name",
+                DisplayMemberPath = "FullName",
                 SelectedValuePath = "Id"
             };
 
@@ -82,7 +82,7 @@ namespace Apolo.ViewModels
                 Header = Loc.Box_Payer,
                 ItemsSource = ViewModel.Payers,
                 SelectedValuePath = "Id",
-                DisplayMemberPath = "Name",
+                DisplayMemberPath = "FullName",
                 SelectedValue = item.PayerId
             };
 
