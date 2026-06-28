@@ -25,10 +25,10 @@ namespace Models
         public DateTime CreatedUTC { get; private set; }
         public int Year { get; private set; }
 
-        // Computed property for display and UI (e.g., "2024-03-E-0013" or "TCK-2024-0015")
+        // Computed property for display and UI (e.g., "03-2024-E-0013" or "TCK-03-2024-0015")
         public string DocumentNumber => Type == DocumentType.Invoice
-        ? $"{CreatedUTC:yyyy-MM}-E-{SequenceNumber:D4}"
-        : $"TCK-{CreatedUTC:yyyy-MM}-{SequenceNumber:D4}";
+        ? $"{CreatedUTC:MM-yyyy}-E-{SequenceNumber:D4}"
+        : $"TCK-{CreatedUTC:MM-yyyy}-{SequenceNumber:D4}";
     
         public Guid PayerId { get; set; }
         public Payer Payer { get; set; } = null!;
