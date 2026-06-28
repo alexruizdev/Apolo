@@ -490,8 +490,6 @@ namespace Apolo.Tests.ViewModels
             var ids = ArrangeForGenerateInvoice();
             await ActForForGenerateInvoice(ids);
 
-            string path = Path.Combine(_viewModel.Profile.BillingFolder, $"{_viewModel.Bill.Name}.pdf");
-
             AssertForGenerateInvoice(ids, severity: InfoBarType.Info, success: true);
         }
 

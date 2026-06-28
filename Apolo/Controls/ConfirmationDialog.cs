@@ -1,5 +1,4 @@
 ﻿using Apolo.Services;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Models;
 using System;
@@ -12,8 +11,6 @@ namespace Apolo.Controls
         public static async Task<bool> ConfirmAction(object sender, string action)
         {
             if (sender is not Button button) return false;
-
-            var sl = new StringLocalizer();
 
             var dialog = new ContentDialog
             {
@@ -34,8 +31,6 @@ namespace Apolo.Controls
 
             if (button.DataContext is not ISummary item)
                 return null;
-
-            var sl = new StringLocalizer();
 
             var dialog = new ContentDialog
             {

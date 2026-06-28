@@ -86,10 +86,9 @@ namespace Repository
                 .OrderByDescending(b => b.CreatedUTC)
                 .ToListAsync();
 
-            return documents
+            return [.. documents
                 .Where(b => b.DocumentNumber.Contains(normalizedTerm, StringComparison.OrdinalIgnoreCase))
-                .Take(10)
-                .ToList();
+                .Take(10)];
         }
     }
 }

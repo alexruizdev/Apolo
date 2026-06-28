@@ -9,17 +9,11 @@ using ViewModels;
 
 namespace Apolo.ViewModels
 {
-    public partial class ServicesViewModel : BaseViewModel
+    public partial class ServicesViewModel(IServiceRepository serviceRepository, IStringLocalizer stringLocalizer) : BaseViewModel(stringLocalizer)
     {
-        IServiceRepository _repository;
+        readonly IServiceRepository _repository = serviceRepository;
 
-        public ObservableCollection<ServiceSummary> Services { get; } = new();
-
-        public ServicesViewModel(IServiceRepository serviceRepository, IStringLocalizer stringLocalizer)
-            : base(stringLocalizer)
-        {
-            _repository = serviceRepository;
-        }
+        public ObservableCollection<ServiceSummary> Services { get; } = [];
 
         private static string Message_Load_Services_Error => "Message/Load_Services_Error";
         private static string Message_Add_Service_Error => "Message/Add_Service_Error";
@@ -118,8 +112,7 @@ namespace Apolo.ViewModels
             }
 
             SetEnterFunction();
-
-            var (oldItem, idx) = GetService(id);
+            var (oldItem, _) = GetService(id);
 
             try
             {

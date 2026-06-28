@@ -11,14 +11,14 @@ namespace Apolo.ViewModels
 {
     public partial class LessonsViewModel : UserProfileViewModel
     {
-        ILessonRepository _lessonRepository;
-        IStudentRepository _studentRepository;
-        IServiceRepository _serviceRepository;
-        ISpecificationRepository _specificationRepository;
+        readonly ILessonRepository _lessonRepository;
+        readonly IStudentRepository _studentRepository;
+        readonly IServiceRepository _serviceRepository;
+        readonly ISpecificationRepository _specificationRepository;
 
-        public ObservableCollection<LessonSummary> Lessons { get; } = new();
-        public ObservableCollection<StudentOption> Students { get; } = new();
-        public ObservableCollection<ServiceSummary> Services { get; } = new();
+        public ObservableCollection<LessonSummary> Lessons { get; } = [];
+        public ObservableCollection<StudentOption> Students { get; } = [];
+        public ObservableCollection<ServiceSummary> Services { get; } = [];
 
         // Filter
         [ObservableProperty] private string _filterStudentName = string.Empty;
@@ -194,8 +194,7 @@ namespace Apolo.ViewModels
             }
 
             SetEnterFunction();
-
-            var student = GetStudent(studentId);
+            var (item, _) = GetStudent(studentId);
 
             if (!ValidateLessonInput(ref name, ref duration, service.IsPricePerHour, pricePerLesson, tip))
                 return; 
@@ -214,7 +213,7 @@ namespace Apolo.ViewModels
                     lesson.FinalPrice,
                     lesson.IsPaid,
                     lesson.StudentId,
-                    student.item.FullName,
+                    item.FullName,
                     lesson.BillingDocumentId,
                     string.Empty, 
                     lesson.IsPricePerHour,
@@ -248,7 +247,7 @@ namespace Apolo.ViewModels
             var (item, idx) = GetLesson(id);
             try
             {
-                await _lessonRepository.UpdateLessonsPayment(new List<Guid> { id }, !item.IsPaid);
+                await _lessonRepository.UpdateLessonsPayment([id], !item.IsPaid);
                 Lessons[idx] = item with { IsPaid = !item.IsPaid };
                 if (Lessons[idx].IsPaid)
                     SetExitFunction($"{_loc.Get(Message_Mark_Paid, item.Name)}.", InfoBarType.Success);
@@ -270,8 +269,7 @@ namespace Apolo.ViewModels
             }
 
             SetEnterFunction();
-
-            var (oldItem, idx) = GetLesson(id);
+            var (oldItem, _) = GetLesson(id);
 
             if (oldItem.BillingDocumentId is not null)
             {

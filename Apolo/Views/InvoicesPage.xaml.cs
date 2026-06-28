@@ -47,14 +47,14 @@ namespace Apolo.Views
 
         private async void CreateInvoice_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not Button button) return;
+            if (sender is not Button) return;
 
             await ViewModel.GenerateInvoice(isInvoice: true);
         }
 
         private async void CreateTicket_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not Button button) return;
+            if (sender is not Button) return;
 
             await ViewModel.GenerateInvoice(isInvoice: false);
         }
