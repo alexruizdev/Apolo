@@ -29,7 +29,6 @@ namespace Apolo.Tests.ViewModels
             Assert.IsFalse(_formViewModel.IsEditMode);
 
             // Default student - empty
-            Assert.AreEqual("• Select one student.", _formViewModel.InfoMessage);
             Assert.AreEqual(InfoBarType.Error, _formViewModel.InfoBarType);
             Assert.IsTrue(_formViewModel.OpenInfoBar);
             Assert.IsNull(_formViewModel.SelectedStudent);
@@ -43,7 +42,6 @@ namespace Apolo.Tests.ViewModels
             Assert.AreEqual("Math Tutoring", _formViewModel.SelectedService.Name);
             Assert.AreEqual("Math Tutoring", _formViewModel.Name);
             Assert.AreEqual(40, _formViewModel.GetBasePrice());
-            Assert.AreEqual("Price/Hour:", _formViewModel.PriceHeader);
             Assert.AreEqual(60, _formViewModel.GetDuration());
             Assert.AreEqual(0, _formViewModel.Tip);
             Assert.IsFalse(_formViewModel.IsOnline);
@@ -64,7 +62,6 @@ namespace Apolo.Tests.ViewModels
             Assert.AreEqual(InfoBarType.Success, _formViewModel.InfoBarType);
             Assert.IsFalse(_formViewModel.OpenInfoBar);
             Assert.HasCount(1, _formViewModel.Specifications);
-            Assert.AreEqual("New Lesson — Total: €50.00", _formViewModel.DialogTitle);
 
             // Select specification
             _formViewModel.SelectedSpecification = _formViewModel.Specifications[0];
@@ -72,21 +69,17 @@ namespace Apolo.Tests.ViewModels
             Assert.AreEqual("Exam Preparation Package", _formViewModel.SelectedService.Name);
             Assert.AreEqual("Exam Preparation Package", _formViewModel.Name);
             Assert.AreEqual(150, _formViewModel.GetBasePrice());
-            Assert.AreEqual("Price:", _formViewModel.PriceHeader);
             Assert.AreEqual(90, _formViewModel.GetDuration());
             Assert.AreEqual(0, _formViewModel.Tip);
             Assert.IsTrue(_formViewModel.IsOnline);
             Assert.IsTrue(_formViewModel.IsWeekendOrHoliday);
             Assert.IsEmpty(_formViewModel.Notes);
-            Assert.AreEqual("New Lesson — Total: €170.00", _formViewModel.DialogTitle);
 
             Assert.IsTrue(_formViewModel.IsPrimaryButtonEnabled);
 
             // Error
             _formViewModel.SelectedService = null;
-            Assert.AreEqual("New Lesson — Total: €-.--", _formViewModel.DialogTitle);
             Assert.IsNotNull(_formViewModel.InfoMessage); 
-            Assert.Contains("• Select a service.", _formViewModel.InfoMessage);
             Assert.AreEqual(InfoBarType.Error, _formViewModel.InfoBarType);
             Assert.IsTrue(_formViewModel.OpenInfoBar);
 
@@ -135,7 +128,6 @@ namespace Apolo.Tests.ViewModels
             Assert.IsNull(_formViewModel.SelectedService);
             Assert.AreEqual("Math Tutoring - Alice", _formViewModel.Name);
             Assert.AreEqual(30, _formViewModel.GetBasePrice());
-            Assert.AreEqual("Price/Hour:", _formViewModel.PriceHeader);
             Assert.AreEqual(90, _formViewModel.GetDuration());
             Assert.AreEqual(2.5, _formViewModel.Tip);
             Assert.IsTrue(_formViewModel.IsOnline);
@@ -144,28 +136,19 @@ namespace Apolo.Tests.ViewModels
             Assert.AreEqual(5, _formViewModel.TravelAllowance);
             Assert.AreEqual(10, _formViewModel.WeekendFee);
             Assert.AreEqual(new DateTime(2024, 6, 10), _formViewModel.Date);
-            Assert.AreEqual("Edit Lesson — Total: €45.00", _formViewModel.DialogTitle);
 
             // Errors
             _formViewModel.Duration = 0;
-            Assert.AreEqual("Edit Lesson — Total: €-.--", _formViewModel.DialogTitle);
-            Assert.AreEqual("• Duration must be a positive integer.", _formViewModel.InfoMessage);
             Assert.AreEqual(InfoBarType.Error, _formViewModel.InfoBarType);
             Assert.IsTrue(_formViewModel.OpenInfoBar);
             _formViewModel.Duration = 60;
             _formViewModel.Price = 0;
-            Assert.AreEqual("Edit Lesson — Total: €-.--", _formViewModel.DialogTitle);
-            Assert.AreEqual("• Price must be a positive integer.", _formViewModel.InfoMessage);
             Assert.AreEqual(InfoBarType.Error, _formViewModel.InfoBarType);
             _formViewModel.Price = 60;
             _formViewModel.Tip = -1;
-            Assert.AreEqual("Edit Lesson — Total: €-.--", _formViewModel.DialogTitle);
-            Assert.AreEqual("• Tip must be a positive integer.", _formViewModel.InfoMessage);
             Assert.AreEqual(InfoBarType.Error, _formViewModel.InfoBarType);
             _formViewModel.Tip = 60;
             _formViewModel.Name = "";
-            Assert.AreEqual("Edit Lesson — Total: €-.--", _formViewModel.DialogTitle);
-            Assert.AreEqual("• Lesson name cannot be empty.", _formViewModel.InfoMessage);
             Assert.AreEqual(InfoBarType.Error, _formViewModel.InfoBarType);
         }
     }

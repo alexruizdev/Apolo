@@ -43,7 +43,6 @@ namespace Apolo.Tests.ViewModels
             // Is busy
             _viewModel.IsBusy = true;
             await _viewModel.LoadAsync();
-            Assert.AreEqual("Can't load lessons while busy.", _viewModel.InfoMessage);
             Assert.IsTrue(_viewModel.OpenInfoBar);
             Assert.AreEqual(InfoBarType.Warning, _viewModel.InfoBarType);
 

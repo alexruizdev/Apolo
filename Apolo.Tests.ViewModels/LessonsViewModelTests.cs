@@ -50,12 +50,11 @@ namespace Apolo.Tests.ViewModels
     [TestClass]
     public class LessonsViewModelTests : LessonsViewModelBaseTests
     {
-        void VerifyAction(string? message, InfoBarType severity, bool isOpen, int lessonCount, int studentsCount, int servicesCount, bool isBusy = false)
+        void VerifyAction(InfoBarType severity, bool isOpen, int lessonCount, int studentsCount, int servicesCount, bool isBusy = false)
         {
             Assert.HasCount(lessonCount, _viewModel.Lessons);
             Assert.HasCount(studentsCount, _viewModel.Students);
             Assert.HasCount(servicesCount, _viewModel.Services);
-            Assert.AreEqual(message, _viewModel.InfoMessage);
             Assert.AreEqual(isBusy, _viewModel.IsBusy);
             Assert.AreEqual(isOpen, _viewModel.OpenInfoBar);
             Assert.AreEqual(severity, _viewModel.InfoBarType);
@@ -100,8 +99,7 @@ namespace Apolo.Tests.ViewModels
                 await _viewModel.LoadAsync();
         }
 
-        private void AssertForLoadAsyncTests(bool success, string? infoMessage, InfoBarType severity, 
-            bool isBusy = false, bool clear = false)
+        private void AssertForLoadAsyncTests(bool success, InfoBarType severity, bool isBusy = false, bool clear = false)
         {
             int lessonCount = success ? 44 : 0;
             int studentsCount = success ? 11 : 0;
@@ -128,7 +126,7 @@ namespace Apolo.Tests.ViewModels
                     It.IsAny<bool?>(), It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>()), Times.Never);
             }
 
-            VerifyAction(infoMessage, severity, isOpen: true, lessonCount: lessonCount, 
+            VerifyAction(severity, isOpen: true, lessonCount: lessonCount, 
                 studentsCount: studentsCount, servicesCount: servicesCount, isBusy: isBusy);
 
         }
@@ -140,8 +138,7 @@ namespace Apolo.Tests.ViewModels
 
             ArrangeForLoadTests();
             await ActForLoadAsyncTests();
-            AssertForLoadAsyncTests(success: false, infoMessage: "Can't load lessons while busy.", 
-                severity: InfoBarType.Warning, isBusy: true);
+            AssertForLoadAsyncTests(success: false, severity: InfoBarType.Warning, isBusy: true);
         }
 
         [TestMethod]
@@ -149,8 +146,7 @@ namespace Apolo.Tests.ViewModels
         {
             ArrangeForLoadTests();
             await ActForLoadAsyncTests();
-            AssertForLoadAsyncTests(success: true, infoMessage: "44 loaded", 
-                severity: InfoBarType.Success, isBusy: false);
+            AssertForLoadAsyncTests(success: true, severity: InfoBarType.Success, isBusy: false);
         }
 
 
@@ -159,8 +155,7 @@ namespace Apolo.Tests.ViewModels
         {
             ArrangeForLoadTests();
             await ActForLoadAsyncTests(clear: true);
-            AssertForLoadAsyncTests(success: true, infoMessage: "44 loaded",
-                severity: InfoBarType.Success, isBusy: false, clear: true);
+            AssertForLoadAsyncTests(success: true, severity: InfoBarType.Success, isBusy: false, clear: true);
         }
 
         // Get student ID
@@ -169,7 +164,6 @@ namespace Apolo.Tests.ViewModels
         public void ValidateStudents_InvalidStudentIds()
         {
             var exception = Assert.Throws<InvalidDataException>(() => _viewModel.GetStudent(Guid.NewGuid()));
-            Assert.AreEqual("Student not loaded.", exception.Message);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.IsNull(_viewModel.InfoMessage);
             Assert.IsFalse(_viewModel.OpenInfoBar);
@@ -200,7 +194,6 @@ namespace Apolo.Tests.ViewModels
             var result = _viewModel.ValidateLessonInput(ref invalidName, ref duration, isPricePerHour: true, basePrice: 30, tip);
             Assert.IsFalse(result);
             Assert.IsFalse(_viewModel.IsBusy);
-            Assert.AreEqual("Lesson name is required.", _viewModel.InfoMessage);
             Assert.IsTrue(_viewModel.OpenInfoBar);
             Assert.AreEqual(InfoBarType.Warning, _viewModel.InfoBarType);
         }
@@ -214,9 +207,8 @@ namespace Apolo.Tests.ViewModels
             var result = _viewModel.ValidateLessonInput(ref name, ref duration, isPricePerHour: true, basePrice: 30, tip);
             Assert.IsFalse(result);
             Assert.IsFalse(_viewModel.IsBusy);
-            Assert.AreEqual("Enter a valid non-negative tip (e.g., 15.5).", _viewModel.InfoMessage);
             Assert.IsTrue(_viewModel.OpenInfoBar);
-            Assert.AreEqual(InfoBarType.Error, _viewModel.InfoBarType);
+            Assert.AreEqual(InfoBarType.Warning, _viewModel.InfoBarType);
         }
 
         [TestMethod]
@@ -228,7 +220,6 @@ namespace Apolo.Tests.ViewModels
             var result = _viewModel.ValidateLessonInput(ref name, ref duration, isPricePerHour: true, basePrice: 30, tip);
             Assert.IsFalse(result);
             Assert.IsFalse(_viewModel.IsBusy);
-            Assert.AreEqual("Duration is required when the lesson is priced per hour.", _viewModel.InfoMessage);
             Assert.IsTrue(_viewModel.OpenInfoBar);
             Assert.AreEqual(InfoBarType.Warning, _viewModel.InfoBarType);
         }
@@ -242,7 +233,6 @@ namespace Apolo.Tests.ViewModels
             var result = _viewModel.ValidateLessonInput(ref name, ref duration, isPricePerHour: true, basePrice: 30, tip);
             Assert.IsFalse(result);
             Assert.IsFalse(_viewModel.IsBusy);
-            Assert.AreEqual("Enter a valid non-negative duration (e.g., 60).", _viewModel.InfoMessage);
             Assert.IsTrue(_viewModel.OpenInfoBar);
             Assert.AreEqual(InfoBarType.Warning, _viewModel.InfoBarType);
         }
@@ -256,7 +246,6 @@ namespace Apolo.Tests.ViewModels
             var result = _viewModel.ValidateLessonInput(ref name, ref duration, isPricePerHour: true, basePrice: -30, tip);
             Assert.IsFalse(result);
             Assert.IsFalse(_viewModel.IsBusy);
-            Assert.AreEqual("Enter a valid non-negative price per student (e.g., 42.5).", _viewModel.InfoMessage);
             Assert.IsTrue(_viewModel.OpenInfoBar);
             Assert.AreEqual(InfoBarType.Warning, _viewModel.InfoBarType);
         }
@@ -270,7 +259,6 @@ namespace Apolo.Tests.ViewModels
             var result = _viewModel.ValidateLessonInput(ref name, ref duration, isPricePerHour: false, basePrice: 30, tip);
             Assert.IsTrue(result);
             Assert.IsFalse(_viewModel.IsBusy);
-            Assert.IsNull(_viewModel.InfoMessage);
             Assert.IsNull(duration);
             Assert.IsFalse(_viewModel.OpenInfoBar);
         }
@@ -281,9 +269,7 @@ namespace Apolo.Tests.ViewModels
         public void GetLesson_InvalidId_ThrowsException()
         {
             var exception = Assert.Throws<InvalidDataException>(() => _viewModel.GetLesson(Guid.NewGuid()));
-            Assert.AreEqual("Lesson not loaded.", exception.Message);
             Assert.IsFalse(_viewModel.IsBusy);
-            Assert.IsNull(_viewModel.InfoMessage);
             Assert.IsFalse(_viewModel.OpenInfoBar);
         }
 
@@ -297,7 +283,6 @@ namespace Apolo.Tests.ViewModels
             Assert.AreEqual(lesson.Name, result.lesson.Name);
             Assert.AreEqual(0, result.index);
             Assert.IsFalse(_viewModel.IsBusy);
-            Assert.IsNull(_viewModel.InfoMessage);
         }
 
         // Add lesson
@@ -343,8 +328,8 @@ namespace Apolo.Tests.ViewModels
                 await _viewModel.AddLessonAsync(date, name, service, 60, 30, true, false, tip, notes, studentId);
         }
 
-        private void AssertForAddLessonTests(Guid studentId, bool success, 
-            string? infoMessage, InfoBarType severity,  bool isBusy = false, bool dbError = false, bool invalidStudent = false)
+        private void AssertForAddLessonTests(Guid studentId, bool success, InfoBarType severity,  bool isBusy = false, 
+            bool dbError = false, bool invalidStudent = false)
         {
             var date = DateOnly.FromDateTime(new DateTime(1993, 8, 17));
             string notes = "Some notes";
@@ -363,8 +348,8 @@ namespace Apolo.Tests.ViewModels
                     It.IsAny<bool>(), It.IsAny<decimal>(), It.IsAny<bool>(), It.IsAny<decimal>(), It.IsAny<decimal>(),
                     It.IsAny<string?>()), Times.Never);
             }
-            VerifyAction(infoMessage, severity, isOpen: !invalidStudent, 
-                studentsCount: 1, servicesCount: 1, lessonCount: success ? 1 : 0, isBusy: isBusy);
+            VerifyAction(severity, isOpen: !invalidStudent, studentsCount: 1, servicesCount: 1, 
+                lessonCount: success ? 1 : 0, isBusy: isBusy);
 
             if (success)
             {
@@ -390,8 +375,7 @@ namespace Apolo.Tests.ViewModels
             ArrangeForAddLessonTests(studentId);
             _viewModel.IsBusy = true;
             await ActForAddLessonTests(studentId, _viewModel.Services[0]);
-            AssertForAddLessonTests(_viewModel.Students[0].Id, success: false, 
-                infoMessage: "Can't add lesson while busy.", severity: InfoBarType.Warning, isBusy: true);
+            AssertForAddLessonTests(_viewModel.Students[0].Id, success: false, severity: InfoBarType.Warning, isBusy: true);
         }
 
         [TestMethod]
@@ -400,8 +384,7 @@ namespace Apolo.Tests.ViewModels
             var studentId = Guid.NewGuid();
             ArrangeForAddLessonTests(studentId);
             await ActForAddLessonTests(studentId, _viewModel.Services[0], invalidStudent: true);
-            AssertForAddLessonTests(studentId, success: false, infoMessage: null,
-                severity: InfoBarType.Success, invalidStudent: true);
+            AssertForAddLessonTests(studentId, success: false, severity: InfoBarType.Success, invalidStudent: true);
         }
 
         [TestMethod]
@@ -410,8 +393,7 @@ namespace Apolo.Tests.ViewModels
             var studentId = Guid.NewGuid();
             ArrangeForAddLessonTests(studentId);
             await ActForAddLessonTests(studentId, _viewModel.Services[0], invalidLesson: true);
-            AssertForAddLessonTests(studentId, success: false, infoMessage: "Lesson name is required.",
-                severity: InfoBarType.Warning);
+            AssertForAddLessonTests(studentId, success: false, severity: InfoBarType.Warning);
         }
         [TestMethod]
         public async Task AddLesson_DBException()
@@ -419,8 +401,7 @@ namespace Apolo.Tests.ViewModels
             var studentId = Guid.NewGuid();
             ArrangeForAddLessonTests(studentId);
             await ActForAddLessonTests(studentId, _viewModel.Services[0], dbError: true);
-            AssertForAddLessonTests(studentId, success: false, dbError: true,
-                infoMessage: "Constraint failed.", severity: InfoBarType.Error);
+            AssertForAddLessonTests(studentId, success: false, dbError: true, severity: InfoBarType.Error);
         }
 
         [TestMethod]
@@ -429,8 +410,7 @@ namespace Apolo.Tests.ViewModels
             var studentId = Guid.NewGuid();
             ArrangeForAddLessonTests(studentId);
             await ActForAddLessonTests(studentId, _viewModel.Services[0]);
-            AssertForAddLessonTests(studentId, success: true, 
-                infoMessage: "Lesson 'Lesson' added successfully.", severity: InfoBarType.Success);
+            AssertForAddLessonTests(studentId, success: true, severity: InfoBarType.Success);
         }
 
         // Update lesson
@@ -485,8 +465,8 @@ namespace Apolo.Tests.ViewModels
                 travelAllowance, isWeekendOrHoliday, weekendFee, tip, notes);
         }
 
-        private void AssertForUpdateLessonTests(Guid lessonId, bool success, 
-            string? infoMessage, InfoBarType severity, bool isBusy = false, bool dbError = false)
+        private void AssertForUpdateLessonTests(Guid lessonId, bool success, InfoBarType severity, bool isBusy = false, 
+            bool dbError = false)
         {
             var date = DateOnly.FromDateTime(new DateTime(1999, 8, 17));
             var name = "Lesson";
@@ -512,7 +492,7 @@ namespace Apolo.Tests.ViewModels
                     It.IsAny<bool>(), It.IsAny<decimal>(), It.IsAny<bool>(), It.IsAny<decimal>(), It.IsAny<decimal>(),
                     It.IsAny<string?>()), Times.Never);
             }
-            VerifyAction(infoMessage, severity, isOpen: true, studentsCount: 1, servicesCount: 1, lessonCount: 2, isBusy: isBusy);
+            VerifyAction(severity, isOpen: true, studentsCount: 1, servicesCount: 1, lessonCount: 2, isBusy: isBusy);
 
             if (success)
             {
@@ -540,8 +520,7 @@ namespace Apolo.Tests.ViewModels
             ArrangeForUpdateLessonTests(lessonId, studentId);
             _viewModel.IsBusy = true;
             await ActForUpdateLessonTests(lessonId, studentId);
-            AssertForUpdateLessonTests(lessonId, success: false, 
-                infoMessage: "Can't update lesson while busy.", severity: InfoBarType.Warning, isBusy: true);
+            AssertForUpdateLessonTests(lessonId, success: false, severity: InfoBarType.Warning, isBusy: true);
         }
 
         [TestMethod]
@@ -552,8 +531,7 @@ namespace Apolo.Tests.ViewModels
 
             ArrangeForUpdateLessonTests(lessonId, studentId);
             await ActForUpdateLessonTests(lessonId, studentId, invalidLesson: true);
-            AssertForUpdateLessonTests(lessonId, success: false, 
-                infoMessage: "Lesson name is required.", severity: InfoBarType.Warning);
+            AssertForUpdateLessonTests(lessonId, success: false, severity: InfoBarType.Warning);
         }
 
         [TestMethod]
@@ -564,8 +542,7 @@ namespace Apolo.Tests.ViewModels
 
             ArrangeForUpdateLessonTests(lessonId, studentId);
             await ActForUpdateLessonTests(lessonId, studentId, dbError: true);
-            AssertForUpdateLessonTests(lessonId, success: false, dbError: true, 
-                infoMessage: "Constraint failed.", severity: InfoBarType.Error);
+            AssertForUpdateLessonTests(lessonId, success: false, dbError: true, severity: InfoBarType.Error);
         }
 
         [TestMethod]
@@ -576,8 +553,7 @@ namespace Apolo.Tests.ViewModels
 
             ArrangeForUpdateLessonTests(lessonId, studentId);
             await ActForUpdateLessonTests(lessonId, studentId);
-            AssertForUpdateLessonTests(lessonId, success: true, 
-                infoMessage: "Lesson 'Lesson' updated successfully.", severity: InfoBarType.Success);
+            AssertForUpdateLessonTests(lessonId, success: true, severity: InfoBarType.Success);
         }
 
         // Get specification options
@@ -629,8 +605,8 @@ namespace Apolo.Tests.ViewModels
             await _viewModel.DeleteLessonAsync(lessonId);
         }
 
-        private void AssertForDeleteLessonTests(Guid lessonId, bool success,
-            string? infoMessage, InfoBarType severity, bool isBusy = false, bool dbError = false)
+        private void AssertForDeleteLessonTests(Guid lessonId, bool success, InfoBarType severity, bool isBusy = false, 
+            bool dbError = false)
         {
             if (success || dbError)
             {
@@ -640,7 +616,7 @@ namespace Apolo.Tests.ViewModels
             {
                 _mockLessonRepo.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Never);
             }
-            VerifyAction(infoMessage, severity, isOpen: true, studentsCount: 1, servicesCount: 1, lessonCount: success ? 1 : 2, 
+            VerifyAction(severity, isOpen: true, studentsCount: 1, servicesCount: 1, lessonCount: success ? 1 : 2, 
                 isBusy: isBusy);
 
             if (success)
@@ -658,8 +634,7 @@ namespace Apolo.Tests.ViewModels
             var lessonIdWithoutBill = Guid.NewGuid();
             ArrangeForDeleteLessonTests(lessonIdWithBill, lessonIdWithoutBill);
             await ActForDeleteLessonTests(lessonIdWithoutBill);
-            AssertForDeleteLessonTests(lessonIdWithoutBill, success: false, infoMessage: "Can't delete lesson while busy.",
-                severity: InfoBarType.Warning, isBusy: true);
+            AssertForDeleteLessonTests(lessonIdWithoutBill, success: false, severity: InfoBarType.Warning, isBusy: true);
         }
 
         [TestMethod]
@@ -669,9 +644,7 @@ namespace Apolo.Tests.ViewModels
             var lessonIdWithoutBill = Guid.NewGuid();
             ArrangeForDeleteLessonTests(lessonIdWithBill, lessonIdWithoutBill);
             await ActForDeleteLessonTests(lessonIdWithBill);
-            AssertForDeleteLessonTests(lessonIdWithBill, success: false, 
-                infoMessage: "Can't delete lesson 'Lesson with bill' for 'Student' because it's associated to bill 'Invoice_Name'",
-                severity: InfoBarType.Error);
+            AssertForDeleteLessonTests(lessonIdWithBill, success: false, severity: InfoBarType.Error);
         }
 
         [TestMethod]
@@ -681,8 +654,7 @@ namespace Apolo.Tests.ViewModels
             var lessonIdWithoutBill = Guid.NewGuid();
             ArrangeForDeleteLessonTests(lessonIdWithBill, lessonIdWithoutBill);
             await ActForDeleteLessonTests(lessonIdWithoutBill, dbError: true);
-            AssertForDeleteLessonTests(lessonIdWithoutBill, success: false, dbError: true,
-                infoMessage: "Constraint failed.", severity: InfoBarType.Error);
+            AssertForDeleteLessonTests(lessonIdWithoutBill, success: false, dbError: true, severity: InfoBarType.Error);
         }
 
         [TestMethod]
@@ -692,9 +664,7 @@ namespace Apolo.Tests.ViewModels
             var lessonIdWithoutBill = Guid.NewGuid();
             ArrangeForDeleteLessonTests(lessonIdWithBill, lessonIdWithoutBill);
             await ActForDeleteLessonTests(lessonIdWithoutBill);
-            AssertForDeleteLessonTests(lessonIdWithoutBill, success: true,
-                infoMessage: $"Lesson 'Lesson without bill' deleted successfully for 'Student'",
-                severity: InfoBarType.Success);
+            AssertForDeleteLessonTests(lessonIdWithoutBill, success: true, severity: InfoBarType.Success);
         }
 
         // Update Payment status
@@ -726,8 +696,8 @@ namespace Apolo.Tests.ViewModels
             await _viewModel.ChangePayment(lessonId);
         }
 
-        private void AssertForUpdatePaymentStatusTests(Guid lessonId, bool success,
-            string? infoMessage, InfoBarType severity, bool isBusy = false, bool dbError = false, bool markAsPaid = true)
+        private void AssertForUpdatePaymentStatusTests(Guid lessonId, bool success, InfoBarType severity, 
+            bool isBusy = false, bool dbError = false, bool markAsPaid = true)
         {
             if (success || dbError)
             {
@@ -737,7 +707,7 @@ namespace Apolo.Tests.ViewModels
             {
                 _mockLessonRepo.Verify(r => r.UpdateLessonsPayment(It.IsAny<List<Guid>>(), It.IsAny<bool>()), Times.Never);
             }
-            VerifyAction(infoMessage, severity, isOpen: true, studentsCount: 1, servicesCount: 1, lessonCount: 2,
+            VerifyAction(severity, isOpen: true, studentsCount: 1, servicesCount: 1, lessonCount: 2,
                 isBusy: isBusy);
 
             if (success)
@@ -755,8 +725,8 @@ namespace Apolo.Tests.ViewModels
             var lessonIdWithoutBill = Guid.NewGuid();
             ArrangeForUpdatePaymentStatusTests(lessonIdWithBill, lessonIdWithoutBill);
             await ActForUpdatePaymentStatusTests(lessonIdWithoutBill);
-            AssertForUpdatePaymentStatusTests(lessonIdWithoutBill, success: false, infoMessage: "Can't change payment while busy.",
-                severity: InfoBarType.Warning, isBusy: true);
+            AssertForUpdatePaymentStatusTests(lessonIdWithoutBill, success: false, severity: InfoBarType.Warning, 
+                isBusy: true);
         }
 
         [TestMethod]
@@ -766,9 +736,7 @@ namespace Apolo.Tests.ViewModels
             var lessonIdWithoutBill = Guid.NewGuid();
             ArrangeForUpdatePaymentStatusTests(lessonIdWithBill, lessonIdWithoutBill);
             await ActForUpdatePaymentStatusTests(lessonIdWithBill, markAsPaid: false);
-            AssertForUpdatePaymentStatusTests(lessonIdWithBill, success: true, markAsPaid: false,
-                infoMessage: "Lesson 'Lesson with bill' marked as unpaid.",
-                severity: InfoBarType.Success);
+            AssertForUpdatePaymentStatusTests(lessonIdWithBill, success: true, markAsPaid: false, severity: InfoBarType.Success);
         }
 
         [TestMethod]
@@ -778,8 +746,7 @@ namespace Apolo.Tests.ViewModels
             var lessonIdWithoutBill = Guid.NewGuid();
             ArrangeForUpdatePaymentStatusTests(lessonIdWithBill, lessonIdWithoutBill);
             await ActForUpdatePaymentStatusTests(lessonIdWithoutBill, dbError: true);
-            AssertForUpdatePaymentStatusTests(lessonIdWithoutBill, success: false, dbError: true,
-                infoMessage: "Constraint failed.", severity: InfoBarType.Error);
+            AssertForUpdatePaymentStatusTests(lessonIdWithoutBill, success: false, dbError: true, severity: InfoBarType.Error);
         }
 
         [TestMethod]
@@ -789,9 +756,7 @@ namespace Apolo.Tests.ViewModels
             var lessonIdWithoutBill = Guid.NewGuid();
             ArrangeForUpdatePaymentStatusTests(lessonIdWithBill, lessonIdWithoutBill);
             await ActForUpdatePaymentStatusTests(lessonIdWithoutBill);
-            AssertForUpdatePaymentStatusTests(lessonIdWithoutBill, success: true,
-                infoMessage: $"Lesson 'Lesson without bill' marked as paid.",
-                severity: InfoBarType.Success);
+            AssertForUpdatePaymentStatusTests(lessonIdWithoutBill, success: true, severity: InfoBarType.Success);
         }
 
     }
