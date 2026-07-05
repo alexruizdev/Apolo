@@ -23,7 +23,7 @@ public sealed partial class ServicesPage : Page
 
     private async void DeleteService_Click(object sender, RoutedEventArgs e)
     {
-        Guid? id = await ConfirmationDialog.ConfirmItemAction(sender, "delete service");
+        Guid? id = await ConfirmationDialog.ConfirmButtonItemAction(sender, "delete service");
         if (id is not null)
             await ViewModel.DeleteServiceAsync(id.Value);
     }

@@ -400,27 +400,29 @@ namespace Apolo.Tests.ViewModels
         private async Task ActForForGenerateInvoice(List<Guid> ids, bool dbError = false)
         {
             var payerId = _viewModel.SelectedPayerId ?? Guid.NewGuid();
+            var creationDate = new DateTime(2026, 01, 31);
 
             _mockPayerRepo.Setup(r => r.GetPayerSummaryNoOutstandingAsync(payerId))
                 .ReturnsAsync(new PayerSummary(payerId, "Payer", "1", 0, null, null, null, null));
             
             if (dbError)
             {
-                _mockInvoiceRepo.Setup(r => r.CreateBillAsync(payerId, ids, DocumentType.Invoice))
+                _mockInvoiceRepo.Setup(r => r.CreateBillAsync(payerId, ids, DocumentType.Invoice, creationDate))
                     .ThrowsAsync(new DbUpdateException("Constraint failed."));
             }
             else 
             {
-                _mockInvoiceRepo.Setup(r => r.CreateBillAsync(payerId, ids, DocumentType.Invoice))
-                    .ReturnsAsync((new BillingDocument(DateTime.UtcNow){ SequenceNumber = 1, Type = DocumentType.Invoice}));
+                _mockInvoiceRepo.Setup(r => r.CreateBillAsync(payerId, ids, DocumentType.Invoice, creationDate))
+                    .ReturnsAsync(new BillingDocument(DateTime.UtcNow) { SequenceNumber = 1, Type = DocumentType.Invoice });
             }
 
-            await _viewModel.GenerateInvoice(isInvoice: true);
+            await _viewModel.CreateBill(DocumentType.Invoice, creationDate);
         }
 
         private void AssertForGenerateInvoice(List<Guid> ids, string? infoMessage, InfoBarType severity,bool success, bool dbError = false,
             bool isBusy = false, bool selectPayer = true, bool selectLessons = true, bool invalidDirectory = false)
         {
+            var creationDate = new DateTime(2026, 01, 31);
             // Get payer summary
             if (isBusy || !selectPayer || !selectLessons || invalidDirectory)
             {
@@ -434,13 +436,13 @@ namespace Apolo.Tests.ViewModels
             // Create invoice
             if (success || dbError)
             {
-                _mockInvoiceRepo.Verify(r => r.CreateBillAsync(_viewModel.SelectedPayerId!.Value, ids, DocumentType.Invoice), 
+                _mockInvoiceRepo.Verify(r => r.CreateBillAsync(_viewModel.SelectedPayerId!.Value, ids, DocumentType.Invoice, creationDate), 
                     Times.Once);
             }
             else
             {
                 _mockInvoiceRepo.Verify(r => r.CreateBillAsync(It.IsAny<Guid>(), It.IsAny<List<Guid>>(),
-                    It.IsAny<DocumentType>()), Times.Never);
+                    It.IsAny<DocumentType>(), It.IsAny<DateTime>()), Times.Never);
             }
 
             decimal selected = 0;
@@ -523,8 +525,8 @@ namespace Apolo.Tests.ViewModels
             _viewModel.Profile.BillingFolder = tempPath;
 
             _viewModel.Bill = new BillSummary(Guid.NewGuid(), Guid.NewGuid(), 
-                isInvoice ? DocumentType.Invoice : DocumentType.Ticket, "2024-01-E-0007",
-                new DateOnly(2024, 1, 1).ToString("dd/MM/yyyy"));
+                isInvoice ? DocumentType.Invoice : DocumentType.Ticket, 7, "2024-01-E-0007",
+                new DateTime(2024, 1, 1));
 
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
                 "Old Lesson", "Student 1", 50, false)));

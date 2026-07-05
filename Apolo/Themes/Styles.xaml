@@ -112,6 +112,12 @@
         <Setter Property="Spacing" Value="12" />
     </Style>
 
+    <Style x:Key="OverlayPaneBorderStyle" TargetType="Border">
+        <Setter Target="Background" Value="{ThemeResource ApplicationPageBackgroundThemeBrush}" />
+        <Setter Target="BorderBrush" Value="{ThemeResource SystemControlForegroundBaseLowBrush}" />
+        <Setter Target="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+    </Style>
 
     <!-- ================================================================= -->
     <!-- ROW INTERACTION BUTTONS                                           -->
@@ -125,7 +131,7 @@
         <Setter Property="Padding" Value="8,8" />
         <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
     </Style>
-
+    
     <!-- Destructive/Delete Action Button Style -->
     <Style x:Key="RowDeleteButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}" >
         <Setter Property="Foreground" Value="{ThemeResource SystemFillColorCriticalBrush}" />
@@ -136,6 +142,9 @@
         <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
     </Style>
 
+    <Style x:Key="RowDeleteMenuFlyoutItemStyle" TargetType="MenuFlyoutItem">
+        <Setter Property="Foreground" Value="{ThemeResource SystemFillColorCriticalBrush}" />
+    </Style>
     <!-- ================================================================= -->
     <!-- ROW INTERACTION BUTTONS                                           -->
     <!-- ================================================================= -->

@@ -1,4 +1,5 @@
 ﻿using System.Reflection.Metadata;
+using System.Xml.Linq;
 
 namespace Models
 {
@@ -8,7 +9,10 @@ namespace Models
         Ticket
     }
 
-    public sealed record BillSummary(Guid? Id, Guid PayerId, DocumentType Type, string Name, string Date);
+    public sealed record BillSummary(Guid? Id, Guid PayerId, DocumentType Type, int SequenceNumber, string Name, DateTime CreatedUTC)
+    { 
+        public string Date => CreatedUTC.ToString("dd/MM/yyyy");
+    };
 
     public sealed class BillingDocument
     {
@@ -24,6 +28,12 @@ namespace Models
         public int SequenceNumber { get; set; }
         public DateTime CreatedUTC { get; private set; }
         public int Year { get; private set; }
+
+        public void EditDate(DateTime newDate)
+        {
+            CreatedUTC = newDate;
+            Year = newDate.Year;
+        }
 
         // Computed property for display and UI (e.g., "03-2024-E-0013" or "TCK-03-2024-0015")
         public string DocumentNumber => Type == DocumentType.Invoice

@@ -27,6 +27,7 @@ namespace Apolo.ViewModels
         [ObservableProperty] private DateTimeOffset? _filterStartDate;
         [ObservableProperty] private DateTimeOffset? _filterEndDate;
         [ObservableProperty] private bool _areFiltersActive;
+        [ObservableProperty] private bool _isFilterPanelOpen;
         public bool CheckFilters =>
             !string.IsNullOrWhiteSpace(FilterStudentName) ||
             !string.IsNullOrWhiteSpace(FilterPayerName) ||

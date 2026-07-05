@@ -39,7 +39,7 @@ namespace Apolo.ViewModels
         [ObservableProperty] private bool editMode;
         [ObservableProperty] private BillSummary bill;
 
-        public static BillSummary ResetBill() => new(null, Guid.NewGuid(), DocumentType.Ticket, "", "");
+        public static BillSummary ResetBill() => new(null, Guid.NewGuid(), DocumentType.Ticket, 0, "", new DateTime());
 
         public BillingViewModel(IBillingRepository billingRepository, IPayerRepository payerRepository,  
             IUserProfileService userProfile, PDF.IWriter pdfWriter, ILessonRepository lessonRepository)
@@ -317,7 +317,7 @@ namespace Apolo.ViewModels
 
         }
 
-        public async Task GenerateInvoice(bool isInvoice)
+        public async Task CreateBill(DocumentType type, DateTime date)
         {
             if (IsBusy)
             {
@@ -356,18 +356,17 @@ namespace Apolo.ViewModels
             try
             {
                 var document = await _billingRepository.CreateBillAsync(
-                    SelectedPayerId.Value, lessonsIds, isInvoice ? DocumentType.Invoice : DocumentType.Ticket);
+                    SelectedPayerId.Value, lessonsIds, type, date);
 
                 var filePath = Path.Combine(Profile.BillingFolder, $"{document.DocumentNumber}.pdf");
 
-                var dateText = document.CreatedUTC.ToString("dd/MM/yyyy");
+                Bill = new BillSummary(document.Id, document.PayerId, document.Type, document.SequenceNumber, document.DocumentNumber, document.CreatedUTC);
 
-                if (isInvoice)
-                    _pdfWriter.GenerateInvoice(document.DocumentNumber, payer, lessons, Profile, filePath, dateText);
+                if (type == DocumentType.Invoice)
+                    _pdfWriter.GenerateInvoice(document.DocumentNumber, payer, lessons, Profile, filePath, Bill.Date);
                 else
-                    _pdfWriter.GenerateTicket(document.DocumentNumber, payer, lessons, Profile, filePath, dateText);
+                    _pdfWriter.GenerateTicket(document.DocumentNumber, payer, lessons, Profile, filePath, Bill.Date);
 
-                Bill = new BillSummary(document.Id, document.PayerId, document.Type, document.DocumentNumber, dateText);
                 EditMode = true;
                 SearchBillText = document.DocumentNumber;
 
@@ -381,7 +380,7 @@ namespace Apolo.ViewModels
 
                 await UpdatePayerOptions();
 
-                var documentName = (isInvoice ? DocumentType.Invoice : DocumentType.Ticket).ToString();
+                var documentName = type.ToString();
                 SetExitFunction($"{documentName} saved to: {filePath}.", InfoBarType.Info);
             }
             catch (DbUpdateException ex)
@@ -437,9 +436,38 @@ namespace Apolo.ViewModels
 
         public void SelectBillToEdit(BillingDocument document)
         {
-            Bill = new BillSummary(document.Id, document.PayerId, document.Type, document.DocumentNumber, 
-                document.CreatedUTC.ToString("dd/MM/yyyy"));
+            Bill = new BillSummary(document.Id, document.PayerId, document.Type, document.SequenceNumber, document.DocumentNumber, 
+                document.CreatedUTC);
             SearchBillText = document.DocumentNumber;
+        }
+
+        public async Task EditBill(DocumentType type, int sequence, DateTime newDate)
+        {
+            if (IsBusy)
+            {
+                SetExitFunction("Can't edit bill while busy.", InfoBarType.Warning, false);
+                return;
+            }
+
+            SetEnterFunction();
+
+            if (Bill.Id == null)
+            {
+                SetExitFunction("Can't edit bill if not loaded", InfoBarType.Warning);
+                return;
+            }
+
+            try
+            {
+                var document = await _billingRepository.EditAsync(Bill.Id.Value, type, sequence, newDate);
+                Bill = new BillSummary(document.Id, document.PayerId, document.Type, document.SequenceNumber, document.DocumentNumber,
+                    document.CreatedUTC);
+                SetExitFunction($"{Bill.Name} was edited successfully.", InfoBarType.Success);
+            }
+            catch (Exception ex)
+            {
+                SetExitFunction(ex.Message, InfoBarType.Error);
+            }
         }
     }
 }

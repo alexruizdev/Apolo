@@ -38,7 +38,7 @@ namespace Apolo.Tests.Data
         {
             await Assert.ThrowsAsync<ArgumentException>(async () =>
             {
-                await _repository.CreateBillAsync(_data.Payers[0].Id, [], DocumentType.Invoice);
+                await _repository.CreateBillAsync(_data.Payers[0].Id, [], DocumentType.Invoice, new DateTime(2026, 01, 31));
             });
 
         }
@@ -50,14 +50,28 @@ namespace Apolo.Tests.Data
                 .Where(l => l.BillingDocumentId == null && l.StudentId == _data.Students[9].Id)
                 .Select(l => l.Id).ToList();
 
-            var entity = await _repository.CreateBillAsync(_data.Payers[7].Id, lessonIds, DocumentType.Invoice);
+            var entity = await _repository.CreateBillAsync(_data.Payers[7].Id, lessonIds, DocumentType.Invoice, 
+                new DateTime(2026, 01, 31));
 
             var result = await _context.BillingDocuments.ToListAsync(TestContext.CancellationToken);
 
             Assert.HasCount(25, result);
             Assert.HasCount(4, result.Last().Lines);
-            var count = DateTimeOffset.UtcNow.Year > 2026 ? 1 : 4;
-            Assert.AreEqual($"{DateTime.Now:MM-yyyy}-E-000{count}", entity.DocumentNumber);
+            Assert.AreEqual("01-2026-E-0004", entity.DocumentNumber);
+        }
+
+        [TestMethod]
+        public async Task EditInvoiceAsync()
+        {
+            var bill = _data.Bills[0];
+
+            var entity = await _repository.EditAsync(bill.Id, DocumentType.Ticket, 20, new DateTime(2024, 08, 30));
+
+            var result = await _context.BillingDocuments.ToListAsync(TestContext.CancellationToken);
+
+            Assert.HasCount(15, result.Where(b => b.Type == DocumentType.Invoice));
+            Assert.HasCount(9, result.Where(b => b.Type == DocumentType.Ticket));
+            Assert.HasCount(2, result.First(b => b.Id == entity.Id).Lines);
         }
 
         [TestMethod]
@@ -67,14 +81,14 @@ namespace Apolo.Tests.Data
                 .Where(l => l.BillingDocumentId == null && l.StudentId == _data.Students[9].Id)
                 .Select(l => l.Id).ToList();
 
-            var entity = await _repository.CreateBillAsync(_data.Payers[2].Id, lessonIds, DocumentType.Ticket);
+            var entity = await _repository.CreateBillAsync(_data.Payers[2].Id, lessonIds, DocumentType.Ticket, 
+                new DateTime(2026, 01, 31));
 
             var result = await _context.BillingDocuments.ToListAsync(TestContext.CancellationToken);
 
             Assert.HasCount(25, result);
             Assert.HasCount(4, result.Last().Lines);
-            var count = DateTimeOffset.UtcNow.Year > 2026 ? 1 : 3;
-            Assert.AreEqual($"TCK-{DateTime.Now:MM-yyyy}-000{count}", entity.DocumentNumber);
+            Assert.AreEqual("TCK-01-2026-0003", entity.DocumentNumber);
         }
 
         [TestMethod]

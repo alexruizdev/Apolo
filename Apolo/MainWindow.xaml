@@ -19,18 +19,11 @@
             <RowDefinition Height="*" />
             <!--  NavigationView  -->
         </Grid.RowDefinitions>
-        
+
         <TitleBar Title="Apolo"
                   Subtitle="Invoice manager"
                   IsBackButtonVisible="False"
                   IsPaneToggleButtonVisible="False">
-
-            <TitleBar.Content>
-                <AutoSuggestBox Width="360"
-                                VerticalAlignment="Center"
-                                PlaceholderText="Search.."
-                                QueryIcon="Find" />
-            </TitleBar.Content>
 
         </TitleBar>
 
