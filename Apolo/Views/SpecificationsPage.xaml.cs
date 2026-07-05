@@ -25,7 +25,7 @@ public sealed partial class SpecificationsPage : Page
 
     private async void DeleteSpecification_Click(object sender, RoutedEventArgs e)
     {
-        Guid? id = await ConfirmationDialog.ConfirmItemAction(sender, "delete specification");
+        Guid? id = await ConfirmationDialog.ConfirmButtonItemAction(sender, "delete specification");
         if (id is not null)
         {
             await ViewModel.DeleteSpecificationAsync(id.Value);

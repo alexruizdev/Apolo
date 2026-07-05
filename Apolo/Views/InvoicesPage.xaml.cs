@@ -1,10 +1,14 @@
 using Apolo.Controls;
+using Apolo.Services;
 using Apolo.ViewModels;
 using CommunityToolkit.Mvvm.DependencyInjection;
+using DocumentFormat.OpenXml.Drawing;
+using DocumentFormat.OpenXml.Vml;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using Models;
+using System;
 
 namespace Apolo.Views
 {
@@ -34,28 +38,97 @@ namespace Apolo.Views
 
         private async void RemoveLesson_Click(object sender, RoutedEventArgs e)
         {
-            if (await ConfirmationDialog.ConfirmAction(sender, "remove selected lessons"))
+            if (await ConfirmationDialog.ConfirmButtonAction(sender, "remove selected lessons"))
                 await ViewModel.RemoveSelectedLessonsAsync();
         }
 
         private async void DeleteBill_Click(object sender, RoutedEventArgs e)
         {
-            if (await ConfirmationDialog.ConfirmAction(sender, $"delete bill {ViewModel.Bill.Name}"))
+            if (await ConfirmationDialog.ConfirmButtonAction(sender, $"delete bill {ViewModel.Bill.Name}"))
                 await ViewModel.DeleteBillAsync();
         }
 
-        private async void CreateInvoice_Click(object sender, RoutedEventArgs e)
+        private async void EditBill_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not Button button) return;
+            if (ViewModel.Bill.Id is null)
+                return; 
 
-            await ViewModel.GenerateInvoice(isInvoice: true);
+            var typeOption = new RadioButtons
+            {
+                Header = "Document Type",
+                Items = { "Invoice", "Ticket" },
+                SelectedIndex = (ViewModel.Bill.Type == DocumentType.Invoice) ? 0 : 1
+            };
+            var sequence = new NumberBox
+            {
+                Header = "Sequence Number",
+                Minimum = 0,
+                Value = ViewModel.Bill.SequenceNumber
+            };
+            var datePicker = new DatePicker
+            {
+                Header = "Creation Date",
+                Date = ViewModel.Bill.CreatedUTC
+            };
+            var panel = new StackPanel { Spacing = 8 };
+            panel.Children.Add(typeOption);
+            panel.Children.Add(sequence);
+            panel.Children.Add(datePicker);
+
+            var dialog = new ContentDialog()
+            {
+                Title = $"Edit {ViewModel.Bill.Name}",
+                Content = panel,
+                PrimaryButtonText = "Save",
+                CloseButtonText = Loc.Buttons_Cancel,
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = Content.XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                DocumentType newType = (typeOption.SelectedIndex == 0) ? DocumentType.Invoice : DocumentType.Ticket;
+                int newSequence = (int)sequence.Value;
+                DateTime newDate = datePicker.Date.DateTime;
+                await ViewModel.EditBill(newType, newSequence, newDate);
+            }
         }
 
-        private async void CreateTicket_Click(object sender, RoutedEventArgs e)
+        private async void CreateBill_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not Button button) return;
+            var typeOption = new RadioButtons
+            {
+                Header = "Document Type",
+                Items = { "Invoice", "Ticket" },
+                SelectedIndex = (ViewModel.Bill.Type == DocumentType.Invoice) ? 0 : 1
+            };
+            var datePicker = new DatePicker
+            {
+                Header = "Creation Date",
+                Date = DateTime.Now
+            };
+            var panel = new StackPanel { Spacing = 8 };
+            panel.Children.Add(typeOption);
+            panel.Children.Add(datePicker);
 
-            await ViewModel.GenerateInvoice(isInvoice: false);
+            var dialog = new ContentDialog()
+            {
+                Title = $"Edit {ViewModel.Bill.Name}",
+                Content = panel,
+                PrimaryButtonText = "Save",
+                CloseButtonText = Loc.Buttons_Cancel,
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = Content.XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                DocumentType newType = (typeOption.SelectedIndex == 0) ? DocumentType.Invoice : DocumentType.Ticket;
+                DateTime newDate = datePicker.Date.DateTime;
+                await ViewModel.CreateBill(newType, newDate);
+            }
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)

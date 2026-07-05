@@ -8,10 +8,21 @@ namespace Apolo.Controls
 {
     public static class ConfirmationDialog
     {
-        public static async Task<bool> ConfirmAction(object sender, string action)
+        public static async Task<bool> ConfirmMenuAction(object sender, string action)
+        {
+            if (sender is not MenuFlyoutItem item) return false;
+
+            return await ConfirmAction(item.XamlRoot, action);
+        }
+        public static async Task<bool> ConfirmButtonAction(object sender, string action)
         {
             if (sender is not Button button) return false;
 
+            return await ConfirmAction(button.XamlRoot, action);
+        }
+
+        private static async Task<bool> ConfirmAction(XamlRoot root, string action)
+        {
             var dialog = new ContentDialog
             {
                 Title = $"Confirm: {action}",
@@ -19,17 +30,29 @@ namespace Apolo.Controls
                 PrimaryButtonText = "Delete",
                 CloseButtonText = "Cancel",
                 DefaultButton = ContentDialogButton.Close,
-                XamlRoot = button.XamlRoot
+                XamlRoot = root
             };
 
             return await dialog.ShowAsync() == ContentDialogResult.Primary;
         }
 
-        public static async Task<Guid?> ConfirmItemAction(object sender, string action)
+        public static async Task<Guid?> ConfirmMenuItemAction(object sender, string action)
+        {
+            if (sender is not MenuFlyoutItem button) return null;
+
+            return await ConfirmItemAction(button.DataContext, button.XamlRoot, action);
+        }
+
+        public static async Task<Guid?> ConfirmButtonItemAction(object sender, string action)
         {
             if (sender is not Button button) return null;
 
-            if (button.DataContext is not ISummary item)
+            return await ConfirmItemAction(button.DataContext, button.XamlRoot, action);
+        }
+
+        private static async Task<Guid?> ConfirmItemAction(object data, XamlRoot root, string action)
+        {
+            if (data is not ISummary item)
                 return null;
 
             var dialog = new ContentDialog
@@ -39,7 +62,7 @@ namespace Apolo.Controls
                 PrimaryButtonText = "Delete",
                 CloseButtonText = "Cancel",
                 DefaultButton = ContentDialogButton.Close,
-                XamlRoot = button.XamlRoot
+                XamlRoot = root
             };
 
             if (await dialog.ShowAsync() != ContentDialogResult.Primary)

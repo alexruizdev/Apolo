@@ -63,9 +63,10 @@ namespace Repository
     {
         Task<IEnumerable<LessonLine>> GetUnbilledLessonsAsync(Guid payerId);
         Task<IEnumerable<LessonLine>> GetLessonsFromBillAsync(Guid billId);
-        Task<BillingDocument> CreateBillAsync(Guid payerId, List<Guid> ids, DocumentType type);
+        Task<BillingDocument> CreateBillAsync(Guid payerId, List<Guid> ids, DocumentType type, DateTime newDate);
         Task DeleteAsync(Guid id);
         Task<IEnumerable<BillingDocument>> GetBillSuggestionsAsync(string searchTerm);
+        Task<BillingDocument> EditAsync(Guid id, DocumentType type, int sequence, DateTime newDate);
     }
 
     public interface IGeneralRepository

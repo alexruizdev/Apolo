@@ -22,7 +22,7 @@ namespace Apolo.ViewModels
 
         private async void DeleteStudent_Click(object sender, RoutedEventArgs e)
         {
-            Guid? id = await ConfirmationDialog.ConfirmItemAction(sender, "delete student");
+            Guid? id = await ConfirmationDialog.ConfirmButtonItemAction(sender, "delete student");
             if (id is not null)
             {
                 await ViewModel.DeleteStudentAsync(id.Value);

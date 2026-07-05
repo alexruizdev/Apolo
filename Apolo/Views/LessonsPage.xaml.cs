@@ -63,7 +63,7 @@ namespace Apolo.Views
 
         private async void DeleteLesson_Click(object sender, RoutedEventArgs e)
         {
-            Guid? id = await ConfirmationDialog.ConfirmItemAction(sender, "delete lesson");
+            Guid? id = await ConfirmationDialog.ConfirmMenuItemAction(sender, "delete lesson");
             if (id is not null)
                 await ViewModel.DeleteLessonAsync(id.Value);
 
@@ -71,13 +71,13 @@ namespace Apolo.Views
 
         private async void ChangePayment_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not Button b || b.DataContext is not LessonSummary row) return;
+            if (sender is not MenuFlyoutItem b || b.DataContext is not LessonSummary row) return;
             await ViewModel.ChangePayment(row.Id);
         }
 
         private async void EditLesson_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not Button b || b.DataContext is not LessonSummary row) return;
+            if (sender is not MenuFlyoutItem b || b.DataContext is not LessonSummary row) return;
 
             var formControl = new LessonFormDialog(ViewModel, row);
 

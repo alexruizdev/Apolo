@@ -23,13 +23,13 @@ namespace Apolo.Views
 
         private async void DeleteDatabaseButton_Click(object sender, RoutedEventArgs e)
         {
-            if (await ConfirmationDialog.ConfirmAction(sender, "delete database"))
+            if (await ConfirmationDialog.ConfirmButtonAction(sender, "delete database"))
                 await ViewModel.ClearDatabaseAsync();
         }
 
         private async void DeleteArchiveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (await ConfirmationDialog.ConfirmAction(sender, "delete archive"))
+            if (await ConfirmationDialog.ConfirmButtonAction(sender, "delete archive"))
                 await ViewModel.ClearArchiveAsync();
         }
 

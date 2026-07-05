@@ -24,7 +24,7 @@ namespace Apolo.Pages
 
         private async void DeletePayer_Click(object sender, RoutedEventArgs e)
         {
-            Guid? id = await ConfirmationDialog.ConfirmItemAction(sender, "delete payer");
+            Guid? id = await ConfirmationDialog.ConfirmButtonItemAction(sender, "delete payer");
             if (id is not null)
             {
                 await ViewModel.DeletePayerAsync(id.Value);

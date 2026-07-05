@@ -404,8 +404,8 @@ namespace Models
 
         // Invoices
         public static BillSummary ConverToBillSumary(BillingDocument? b) => b is null ?
-            new BillSummary(null, Guid.NewGuid(), DocumentType.Invoice, string.Empty, string.Empty) :
-            new BillSummary(b.Id, b.PayerId, b.Type, b.DocumentNumber, b.CreatedUTC.ToString("dd/MM/yyyy"));
+            new BillSummary(null, Guid.NewGuid(), DocumentType.Invoice, 0, string.Empty, new DateTime()) :
+            new BillSummary(b.Id, b.PayerId, b.Type, b.SequenceNumber, b.DocumentNumber, b.CreatedUTC);
 
         // Lessons
         public static LessonLine ConvertToLessonLine(Lesson l, Student s) =>

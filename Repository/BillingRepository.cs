@@ -30,7 +30,7 @@ namespace Repository
                 .ToListAsync();
         }
 
-        public async Task<BillingDocument> CreateBillAsync(Guid payerId, List<Guid> ids, DocumentType type)
+        public async Task<BillingDocument> CreateBillAsync(Guid payerId, List<Guid> ids, DocumentType type, DateTime date)
         {
             if (ids.Count == 0)
                 throw new ArgumentException($"Cannot create {type} without any lesson.");
@@ -43,20 +43,19 @@ namespace Repository
                 throw new ArgumentException($"Invalid lessons selected.");
 
 
-            var now = DateTime.UtcNow;
             var maxSequence = await _context.BillingDocuments
-                .Where(bd => bd.Type == type && bd.CreatedUTC.Year == now.Year)
+                .Where(bd => bd.Type == type && bd.CreatedUTC.Year == date.Year)
                 .MaxAsync(bd => (int?)bd.SequenceNumber) ?? 0;
 
-            var doc = new BillingDocument (now)
+            var doc = new BillingDocument(date)
             {
                 PayerId = payerId,
                 Type = type,
                 SequenceNumber = maxSequence + 1
             };
 
-            foreach ( var lesson in lessonsToBill )
-                doc.Lines.Add( lesson );
+            foreach (var lesson in lessonsToBill)
+                doc.Lines.Add(lesson);
 
             _context.BillingDocuments.Add(doc);
             await _context.SaveChangesAsync();
@@ -71,6 +70,35 @@ namespace Repository
 
             _context.BillingDocuments.Remove(entity);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<BillingDocument> EditAsync(Guid id, DocumentType type, int sequence, DateTime newDate)
+        {
+            var entity = await _context.BillingDocuments.FindAsync(id)
+                         ?? throw new KeyNotFoundException($"Billing document with ID {id} was not found.");
+
+            bool isTaken = await _context.BillingDocuments
+                .AnyAsync(bd => bd.Id != id
+                     && bd.Type == type
+                     && bd.Year == newDate.Year
+                     && bd.SequenceNumber == sequence);
+
+            if (isTaken)
+            {
+                var maxSequence = await _context.BillingDocuments
+                    .Where(bd => bd.Type == type && bd.Year == entity.Year)
+                    .MaxAsync(bd => (int?)bd.SequenceNumber) ?? 0;
+
+                throw new ArgumentException($"{maxSequence + 1}");
+            }
+
+            entity.SequenceNumber = sequence;
+            entity.Type = type;
+            entity.EditDate(newDate);
+
+            await _context.SaveChangesAsync();
+
+            return entity;
         }
 
         public async Task<IEnumerable<BillingDocument>> GetBillSuggestionsAsync(string searchTerm)
