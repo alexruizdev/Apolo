@@ -10,7 +10,7 @@
   <Identity
     Name="Qadra.ApoloBill"
     Publisher="CN=C8DDAB7D-1B2E-425F-81C7-1188EE7FD33A"
-    Version="0.3.1.0" />
+    Version="0.4.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="2d9b9128-abf9-4b12-a683-a019357bbc2c" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
