@@ -185,6 +185,8 @@ namespace PDF
                     table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(6).Text(_report.AlternativeFee.Label);
                     table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(6).Text($"{_report.AlternativeFee.TotalPricePerMonth:C}").AlignRight();
                 });
+
+                ComposeCancellationPolicy(column.Item());
             });
         }
 
@@ -200,6 +202,25 @@ namespace PDF
                     x.Span(" / ");
                     x.TotalPages();
                 });
+            });
+        }
+
+        private void ComposeCancellationPolicy(IContainer container)
+        {
+            container.PaddingTop(1, Unit.Centimetre).Column(column =>
+            {
+                column.Item().Text("Cancellation & Operational Policy").FontSize(12).Bold().FontColor(Colors.Blue.Darken2);
+                column.Item().PaddingTop(5).BorderTop(1).BorderColor(Colors.Grey.Lighten2);
+
+                // Section: Client Policy
+                column.Item().PaddingTop(10).Text("Client Cancellations").FontSize(10).Bold();
+                column.Item().Text("Cancellations or reschedules require at least 24 hours' notice. Failure to provide this notice will result in the full lesson fee being charged.").FontSize(9);
+
+                // Section: Provider Policy
+                column.Item().PaddingTop(10).Text("Provider Cancellations & Emergencies").FontSize(10).Bold();
+                column.Item().Text("In the event of teacher cancellation, you will have the choice to reschedule or receive a full refund for the affected session. Technical difficulties during online sessions will be resolved by rescheduling the remainder of the lesson at no extra cost.").FontSize(9);
+
+                column.Item().PaddingTop(10).Text("Emergency situations (medical or family crises) will be handled with flexibility. Please notify me as soon as possible.").FontSize(9).Italic();
             });
         }
 
