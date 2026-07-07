@@ -245,13 +245,13 @@ namespace Apolo.Tests.Models
                 Assert.HasCount(24, data.Bills);
                 var bill = data.BillSummaries.First();
                 Assert.AreEqual(DocumentType.Invoice, bill.Type);
-                Assert.AreEqual("06-2024-0004", bill.Name);
+                Assert.AreEqual("06-2024-4", bill.Name);
                 Assert.AreEqual("30/06/2024", bill.Date);
 
                 Assert.HasCount(10, data.ArchiveBills);
                 var archiveBill = data.ArchiveBillSummaries[1];
                 Assert.AreEqual(DocumentType.Ticket, archiveBill.Type);
-                Assert.AreEqual("TCK-12-2025-0008", archiveBill.Name);
+                Assert.AreEqual("TCK-12-2025-8", archiveBill.Name);
                 Assert.AreEqual("15/12/2025", archiveBill.Date);
             }
 
