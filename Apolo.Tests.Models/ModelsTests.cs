@@ -57,7 +57,7 @@ namespace Apolo.Tests.Models
             var shortNote = "This is a long note, more than 70 characters, enough to test the funct...";
             var lesson = new LessonSummary(Id: Guid.NewGuid(), DateOnly.FromDateTime(DateTime.Today), "Lesson",
                 FinalPrice: 65, IsPaid: true, StudentId: Guid.NewGuid(), "Student", BillingDocumentId: Guid.NewGuid(),
-                "2025-09-E-0001", IsPricePerHour: true, DurationMinutes: 60, BasePrice: 30, IsOnline: false, TravelAllowance: 5,
+                "09-2025-0001", IsPricePerHour: true, DurationMinutes: 60, BasePrice: 30, IsOnline: false, TravelAllowance: 5,
                 IsWeekendOrHoliday: false, WeekendFee: 5, Tip: 0, longNote);
 
             Assert.AreEqual(shortNote, lesson.ShortNote);
@@ -245,7 +245,7 @@ namespace Apolo.Tests.Models
                 Assert.HasCount(24, data.Bills);
                 var bill = data.BillSummaries.First();
                 Assert.AreEqual(DocumentType.Invoice, bill.Type);
-                Assert.AreEqual("06-2024-E-0004", bill.Name);
+                Assert.AreEqual("06-2024-0004", bill.Name);
                 Assert.AreEqual("30/06/2024", bill.Date);
 
                 Assert.HasCount(10, data.ArchiveBills);

@@ -35,9 +35,9 @@ namespace Models
             Year = newDate.Year;
         }
 
-        // Computed property for display and UI (e.g., "03-2024-E-0013" or "TCK-03-2024-0015")
+        // Computed property for display and UI (e.g., "01-2024-0013" or "TCK-03-2024-0015")
         public string DocumentNumber => Type == DocumentType.Invoice
-        ? $"{CreatedUTC:MM-yyyy}-E-{SequenceNumber:D4}"
+        ? $"{CreatedUTC:MM-yyyy}-{SequenceNumber:D4}"
         : $"TCK-{CreatedUTC:MM-yyyy}-{SequenceNumber:D4}";
     
         public Guid PayerId { get; set; }

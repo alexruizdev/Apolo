@@ -506,9 +506,10 @@ namespace Apolo.Tests.ViewModels
             var ids = ArrangeForGenerateInvoice();
             await ActForForGenerateInvoice(ids);
 
-            string path = Path.Combine(_viewModel.Profile.BillingFolder, $"{_viewModel.Bill.Name}.pdf");
+            string fileName = $"{_viewModel.Bill.Name}.pdf";
+            string ticketFileName = $"{_viewModel.Bill.Name}-list.pdf";
 
-            AssertForGenerateInvoice(ids, infoMessage: $"Invoice saved to: {path}.", 
+            AssertForGenerateInvoice(ids, infoMessage: $"Invoice and ticket saved:\n• {fileName}\n• {ticketFileName}", 
                 severity: InfoBarType.Info, success: true);
         }
 
@@ -525,7 +526,7 @@ namespace Apolo.Tests.ViewModels
             _viewModel.Profile.BillingFolder = tempPath;
 
             _viewModel.Bill = new BillSummary(Guid.NewGuid(), Guid.NewGuid(), 
-                isInvoice ? DocumentType.Invoice : DocumentType.Ticket, 7, "2024-01-E-0007",
+                isInvoice ? DocumentType.Invoice : DocumentType.Ticket, 7, "01-2024-0007",
                 new DateTime(2024, 1, 1));
 
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
@@ -567,16 +568,16 @@ namespace Apolo.Tests.ViewModels
             // Create invoice
             if (isInvoice && success)
             {
-                _mockPDFWriter.Verify(r => r.GenerateInvoice("2024-01-E-0007", It.IsAny<PayerSummary>(), lessons, _viewModel.Profile,
+                _mockPDFWriter.Verify(r => r.GenerateInvoice("01-2024-0007", It.IsAny<PayerSummary>(), lessons, _viewModel.Profile,
                     It.IsAny<string>(), _viewModel.Bill.Date),
                     Times.Once);
-                _mockPDFWriter.Verify(r => r.GenerateTicket(It.IsAny<string>(), It.IsAny<PayerSummary>(), It.IsAny<List<LessonLine>>(), It.IsAny<UserProfile>(),
-                    It.IsAny<string>(), It.IsAny<string>()),
-                    Times.Never);
+                _mockPDFWriter.Verify(r => r.GenerateTicket("01-2024-0007", It.IsAny<PayerSummary>(), lessons, _viewModel.Profile,
+                    It.IsAny<string>(), _viewModel.Bill.Date),
+                    Times.Once);
             }
             if (!isInvoice && success)
             {
-                _mockPDFWriter.Verify(r => r.GenerateTicket("2024-01-E-0007", It.IsAny<PayerSummary>(), lessons, _viewModel.Profile,
+                _mockPDFWriter.Verify(r => r.GenerateTicket("01-2024-0007", It.IsAny<PayerSummary>(), lessons, _viewModel.Profile,
                     It.IsAny<string>(), _viewModel.Bill.Date),
                     Times.Once);
                 _mockPDFWriter.Verify(r => r.GenerateInvoice(It.IsAny<string>(), It.IsAny<PayerSummary>(), It.IsAny<List<LessonLine>>(), It.IsAny<UserProfile>(),
@@ -585,7 +586,7 @@ namespace Apolo.Tests.ViewModels
             }
 
             VerifyAction(infoMessage, severity, isOpen: true, payersCount: 0, count: 4,
-                totalSelected: 0, total: 307.6m, isBusy: isBusy, infoMessageContains: success);
+                totalSelected: 0, total: 307.6m, isBusy: isBusy, infoMessageContains: false);
         }
 
         [TestMethod]
@@ -612,7 +613,7 @@ namespace Apolo.Tests.ViewModels
         {
             ArrangeForPrintDocument(isInvoice: true);
             await ActForForPrintDocument();
-            AssertForPrintDocument(infoMessage: $"2024-01-E-0007 saved to: ", 
+            AssertForPrintDocument(infoMessage: "Invoice and ticket saved:\n• 01-2024-0007.pdf\n• 01-2024-0007-list.pdf", 
                 severity: InfoBarType.Info, success: true, isInvoice: true);
         }
 
@@ -621,7 +622,7 @@ namespace Apolo.Tests.ViewModels
         {
             ArrangeForPrintDocument(isInvoice: false);
             await ActForForPrintDocument();
-            AssertForPrintDocument(infoMessage: $"2024-01-E-0007 saved to: ",
+            AssertForPrintDocument(infoMessage: "Ticket saved: 01-2024-0007.pdf",
                 severity: InfoBarType.Info, success: true, isInvoice: false);
         }
     }

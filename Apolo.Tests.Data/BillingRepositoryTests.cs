@@ -57,7 +57,7 @@ namespace Apolo.Tests.Data
 
             Assert.HasCount(25, result);
             Assert.HasCount(4, result.Last().Lines);
-            Assert.AreEqual("01-2026-E-0004", entity.DocumentNumber);
+            Assert.AreEqual("01-2026-0004", entity.DocumentNumber);
         }
 
         [TestMethod]

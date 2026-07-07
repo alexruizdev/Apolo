@@ -38,6 +38,7 @@ namespace Apolo.ViewModels
         [ObservableProperty] private decimal totalAll;
         [ObservableProperty] private bool editMode;
         [ObservableProperty] private BillSummary bill;
+        [ObservableProperty] private string? lastGeneratedFolder;
 
         public static BillSummary ResetBill() => new(null, Guid.NewGuid(), DocumentType.Ticket, 0, "", new DateTime());
 
@@ -362,10 +363,25 @@ namespace Apolo.ViewModels
 
                 Bill = new BillSummary(document.Id, document.PayerId, document.Type, document.SequenceNumber, document.DocumentNumber, document.CreatedUTC);
 
+                string successMessage;
                 if (type == DocumentType.Invoice)
+                {
+                    // Generate both invoice and ticket
                     _pdfWriter.GenerateInvoice(document.DocumentNumber, payer, lessons, Profile, filePath, Bill.Date);
+
+                    var ticketFilePath = Path.Combine(Profile.BillingFolder, $"{document.DocumentNumber}-list.pdf");
+                    _pdfWriter.GenerateTicket(document.DocumentNumber, payer, lessons, Profile, ticketFilePath, Bill.Date);
+
+                    successMessage = $"Invoice and ticket saved:\n• {Path.GetFileName(filePath)}\n• {Path.GetFileName(ticketFilePath)}";
+                }
                 else
+                {
+                    // Generate only ticket
                     _pdfWriter.GenerateTicket(document.DocumentNumber, payer, lessons, Profile, filePath, Bill.Date);
+                    successMessage = $"Ticket saved: {Path.GetFileName(filePath)}";
+                }
+
+                LastGeneratedFolder = Profile.BillingFolder;
 
                 EditMode = true;
                 SearchBillText = document.DocumentNumber;
@@ -380,8 +396,7 @@ namespace Apolo.ViewModels
 
                 await UpdatePayerOptions();
 
-                var documentName = type.ToString();
-                SetExitFunction($"{documentName} saved to: {filePath}.", InfoBarType.Info);
+                SetExitFunction(successMessage, InfoBarType.Info);
             }
             catch (DbUpdateException ex)
             {
@@ -411,12 +426,27 @@ namespace Apolo.ViewModels
             var filePath = Path.Combine(Profile.BillingFolder, $"{Bill.Name}.pdf");
             var payer = await _payerRepository.GetPayerSummaryNoOutstandingAsync(Bill.PayerId);
 
+            string successMessage;
             if (Bill.Type is DocumentType.Invoice)
+            {
+                // Generate both invoice and ticket
                 _pdfWriter.GenerateInvoice(Bill.Name, payer, lessons, Profile, filePath, Bill.Date);
-            else
-                _pdfWriter.GenerateTicket(Bill.Name, payer, lessons, Profile, filePath, Bill.Date);
 
-            SetExitFunction($"{Bill.Name} saved to: {filePath}.", InfoBarType.Info);
+                var ticketFilePath = Path.Combine(Profile.BillingFolder, $"{Bill.Name}-list.pdf");
+                _pdfWriter.GenerateTicket(Bill.Name, payer, lessons, Profile, ticketFilePath, Bill.Date);
+
+                successMessage = $"Invoice and ticket saved:\n• {Path.GetFileName(filePath)}\n• {Path.GetFileName(ticketFilePath)}";
+            }
+            else
+            {
+                // Generate only ticket
+                _pdfWriter.GenerateTicket(Bill.Name, payer, lessons, Profile, filePath, Bill.Date);
+                successMessage = $"Ticket saved: {Path.GetFileName(filePath)}";
+            }
+
+            LastGeneratedFolder = Profile.BillingFolder;
+
+            SetExitFunction(successMessage, InfoBarType.Info);
         }
 
         public async Task SuggestBills(string searchTerm)
@@ -467,6 +497,31 @@ namespace Apolo.ViewModels
             catch (Exception ex)
             {
                 SetExitFunction(ex.Message, InfoBarType.Error);
+            }
+        }
+
+        [RelayCommand]
+        public void OpenBillingFolder()
+        {
+            if (string.IsNullOrWhiteSpace(LastGeneratedFolder) || !Directory.Exists(LastGeneratedFolder))
+            {
+                if (!string.IsNullOrWhiteSpace(Profile.BillingFolder) && Directory.Exists(Profile.BillingFolder))
+                {
+                    LastGeneratedFolder = Profile.BillingFolder;
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            try
+            {
+                System.Diagnostics.Process.Start("explorer.exe", LastGeneratedFolder);
+            }
+            catch
+            {
+                // Silently fail if we can't open the folder
             }
         }
     }
