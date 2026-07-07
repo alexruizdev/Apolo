@@ -274,7 +274,13 @@
                             <ProgressBar IsIndeterminate="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
                             <InfoBar IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}"
                                      Severity="{x:Bind ViewModel.InfoBarType, Converter={StaticResource InfoBarTypeConverter}, Mode=TwoWay}"
-                                     Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}" />
+                                     Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}">
+                                <InfoBar.ActionButton>
+                                    <Button Content="Open Folder"
+                                            Command="{x:Bind ViewModel.OpenBillingFolderCommand}"
+                                            Visibility="{x:Bind ViewModel.LastGeneratedFolder, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}" />
+                                </InfoBar.ActionButton>
+                            </InfoBar>
                         </StackPanel>
 
                         <ListView Grid.Row="2"

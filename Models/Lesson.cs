@@ -10,7 +10,8 @@ namespace Models
         string Name,
         string StudentName,
         decimal FinalPrice,
-        bool IsPaid)
+        bool IsPaid,
+        int? DurationMinutes)
     { }
 
     public sealed record LessonSummary (

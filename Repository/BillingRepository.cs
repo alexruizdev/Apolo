@@ -15,7 +15,7 @@ namespace Repository
                 .AsNoTracking()
                 .Where(l => l.Student.PayerId == payerId && l.BillingDocumentId == null && !l.IsPaid)
                 .OrderBy(l => l.Date)
-                .Select(l => new LessonLine(l.Id, l.StudentId, l.Date, l.Name, l.Student.FullName, l.FinalPrice, l.IsPaid))
+                .Select(l => new LessonLine(l.Id, l.StudentId, l.Date, l.Name, l.Student.FullName, l.FinalPrice, l.IsPaid, l.DurationMinutes))
                 .ToListAsync();
         }
 
@@ -26,7 +26,7 @@ namespace Repository
                 .AsNoTracking()
                 .Where(l => l.BillingDocumentId == billId)
                 .OrderBy(l => l.Date)
-                .Select(l => new LessonLine(l.Id, l.StudentId, l.Date, l.Name, l.Student.FullName, l.FinalPrice, l.IsPaid))
+                .Select(l => new LessonLine(l.Id, l.StudentId, l.Date, l.Name, l.Student.FullName, l.FinalPrice, l.IsPaid, l.DurationMinutes))
                 .ToListAsync();
         }
 

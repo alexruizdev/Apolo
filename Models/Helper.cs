@@ -409,7 +409,7 @@ namespace Models
 
         // Lessons
         public static LessonLine ConvertToLessonLine(Lesson l, Student s) =>
-            new(l.Id, l.StudentId, l.Date, l.Name, s.FullName, l.FinalPrice, l.IsPaid);
+            new(l.Id, l.StudentId, l.Date, l.Name, s.FullName, l.FinalPrice, l.IsPaid, l.DurationMinutes);
         public static LessonSummary ConvertToLessonSummary(Lesson l, Student? s, BillingDocument? b) 
             => new(
                 l.Id,

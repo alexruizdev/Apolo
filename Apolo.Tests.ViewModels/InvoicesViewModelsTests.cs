@@ -163,16 +163,16 @@ namespace Apolo.Tests.ViewModels
 
             var firstLoad = new List<LessonLine>
             {
-                new(lessonId, studentId1, new DateOnly(2024, 1, 1), "Old Lesson", "Student 1", 100, false),
-                new(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 2), "Old Lesson", "Student 2", 200, false),
-                new(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 3), "Old Lesson", "Student 3", 300, false)
+                new(lessonId, studentId1, new DateOnly(2024, 1, 1), "Old Lesson", "Student 1", 100, false, null),
+                new(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 2), "Old Lesson", "Student 2", 200, false, null),
+                new(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 3), "Old Lesson", "Student 3", 300, false, null)
             };
 
             var secondLoad = new List<LessonLine>
             {
-                new(lessonId, studentId1, new DateOnly(2025, 1, 1), "New Lesson", "Student 1", 50, false),
-                new(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2025, 1, 2), "New Lesson", "Student 2", 500, false),
-                new(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2025, 1, 3), "New Lesson", "Student 3", 25, false)
+                new(lessonId, studentId1, new DateOnly(2025, 1, 1), "New Lesson", "Student 1", 50, false, null),
+                new(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2025, 1, 2), "New Lesson", "Student 2", 500, false, null),
+                new(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2025, 1, 3), "New Lesson", "Student 3", 25, false, null)
             };
 
             _mockInvoiceRepo.SetupSequence(r => r.GetUnbilledLessonsAsync(payer.Id))
@@ -278,15 +278,15 @@ namespace Apolo.Tests.ViewModels
         {
             List<Guid> ids = [ Guid.NewGuid(), Guid.NewGuid()];
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
-                "Old Lesson", "Student 1", 50, false)));
+                "Old Lesson", "Student 1", 50, false, null)));
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(ids[0], Guid.NewGuid(), new DateOnly(2024, 1, 1),
-                "Old Lesson", "Student 1", 30, false))
+                "Old Lesson", "Student 1", 30, false, null))
             { IsSelected = someSelected });
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(ids[1], Guid.NewGuid(), new DateOnly(2024, 1, 1),
-                "Old Lesson", "Student 1", 35.5m, false))
+                "Old Lesson", "Student 1", 35.5m, false, null))
             { IsSelected = someSelected });
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
-                "Old Lesson", "Student 1", 192.1m, false)));
+                "Old Lesson", "Student 1", 192.1m, false, null)));
             return ids;
         }
 
@@ -384,15 +384,15 @@ namespace Apolo.Tests.ViewModels
                 _viewModel.SelectedPayerId = payer.Id;
 
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
-                "Old Lesson", "Student 1", 50, false)));
+                "Old Lesson", "Student 1", 50, false, null)));
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
-                "Old Lesson", "Student 1", 30, false))
+                "Old Lesson", "Student 1", 30, false, null))
             { IsSelected = selectLessons });
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
-                "Old Lesson", "Student 1", 35.5m, false))
+                "Old Lesson", "Student 1", 35.5m, false, null))
             { IsSelected = selectLessons });
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
-                "Old Lesson", "Student 1", 192.1m, false)));
+                "Old Lesson", "Student 1", 192.1m, false, null)));
 
             return [.. _viewModel.Lessons.Where(l => l.IsSelected).Select(l => l.Data.Id)];
         }
@@ -506,9 +506,10 @@ namespace Apolo.Tests.ViewModels
             var ids = ArrangeForGenerateInvoice();
             await ActForForGenerateInvoice(ids);
 
-            string path = Path.Combine(_viewModel.Profile.BillingFolder, $"{_viewModel.Bill.Name}.pdf");
+            string fileName = $"{_viewModel.Bill.Name}.pdf";
+            string ticketFileName = $"{_viewModel.Bill.Name}-list.pdf";
 
-            AssertForGenerateInvoice(ids, infoMessage: $"Invoice saved to: {path}.", 
+            AssertForGenerateInvoice(ids, infoMessage: $"Invoice and ticket saved:\n• {fileName}\n• {ticketFileName}", 
                 severity: InfoBarType.Info, success: true);
         }
 
@@ -525,17 +526,17 @@ namespace Apolo.Tests.ViewModels
             _viewModel.Profile.BillingFolder = tempPath;
 
             _viewModel.Bill = new BillSummary(Guid.NewGuid(), Guid.NewGuid(), 
-                isInvoice ? DocumentType.Invoice : DocumentType.Ticket, 7, "2024-01-E-0007",
+                isInvoice ? DocumentType.Invoice : DocumentType.Ticket, 7, "01-2024-0007",
                 new DateTime(2024, 1, 1));
 
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
-                "Old Lesson", "Student 1", 50, false)));
+                "Old Lesson", "Student 1", 50, false, null)));
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
-                "Old Lesson", "Student 1", 30, false)));
+                "Old Lesson", "Student 1", 30, false, null)));
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
-                "Old Lesson", "Student 1", 35.5m, false)));
+                "Old Lesson", "Student 1", 35.5m, false, null)));
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
-                "Old Lesson", "Student 1", 192.1m, false)));
+                "Old Lesson", "Student 1", 192.1m, false, null)));
         }
 
         private async Task ActForForPrintDocument()
@@ -567,16 +568,16 @@ namespace Apolo.Tests.ViewModels
             // Create invoice
             if (isInvoice && success)
             {
-                _mockPDFWriter.Verify(r => r.GenerateInvoice("2024-01-E-0007", It.IsAny<PayerSummary>(), lessons, _viewModel.Profile,
+                _mockPDFWriter.Verify(r => r.GenerateInvoice("01-2024-0007", It.IsAny<PayerSummary>(), lessons, _viewModel.Profile,
                     It.IsAny<string>(), _viewModel.Bill.Date),
                     Times.Once);
-                _mockPDFWriter.Verify(r => r.GenerateTicket(It.IsAny<string>(), It.IsAny<PayerSummary>(), It.IsAny<List<LessonLine>>(), It.IsAny<UserProfile>(),
-                    It.IsAny<string>(), It.IsAny<string>()),
-                    Times.Never);
+                _mockPDFWriter.Verify(r => r.GenerateTicket("01-2024-0007", It.IsAny<PayerSummary>(), lessons, _viewModel.Profile,
+                    It.IsAny<string>(), _viewModel.Bill.Date),
+                    Times.Once);
             }
             if (!isInvoice && success)
             {
-                _mockPDFWriter.Verify(r => r.GenerateTicket("2024-01-E-0007", It.IsAny<PayerSummary>(), lessons, _viewModel.Profile,
+                _mockPDFWriter.Verify(r => r.GenerateTicket("01-2024-0007", It.IsAny<PayerSummary>(), lessons, _viewModel.Profile,
                     It.IsAny<string>(), _viewModel.Bill.Date),
                     Times.Once);
                 _mockPDFWriter.Verify(r => r.GenerateInvoice(It.IsAny<string>(), It.IsAny<PayerSummary>(), It.IsAny<List<LessonLine>>(), It.IsAny<UserProfile>(),
@@ -585,7 +586,7 @@ namespace Apolo.Tests.ViewModels
             }
 
             VerifyAction(infoMessage, severity, isOpen: true, payersCount: 0, count: 4,
-                totalSelected: 0, total: 307.6m, isBusy: isBusy, infoMessageContains: success);
+                totalSelected: 0, total: 307.6m, isBusy: isBusy, infoMessageContains: false);
         }
 
         [TestMethod]
@@ -612,7 +613,7 @@ namespace Apolo.Tests.ViewModels
         {
             ArrangeForPrintDocument(isInvoice: true);
             await ActForForPrintDocument();
-            AssertForPrintDocument(infoMessage: $"2024-01-E-0007 saved to: ", 
+            AssertForPrintDocument(infoMessage: "Invoice and ticket saved:\n• 01-2024-0007.pdf\n• 01-2024-0007-list.pdf", 
                 severity: InfoBarType.Info, success: true, isInvoice: true);
         }
 
@@ -621,7 +622,7 @@ namespace Apolo.Tests.ViewModels
         {
             ArrangeForPrintDocument(isInvoice: false);
             await ActForForPrintDocument();
-            AssertForPrintDocument(infoMessage: $"2024-01-E-0007 saved to: ",
+            AssertForPrintDocument(infoMessage: "Ticket saved: 01-2024-0007.pdf",
                 severity: InfoBarType.Info, success: true, isInvoice: false);
         }
     }
