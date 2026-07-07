@@ -388,13 +388,13 @@ namespace PDF
             {
                 container.Page(page =>
                 {
-                    page.ContinuousSize(PageSizes.A5.Width);
-                    page.Margin(50);
+                    page.ContinuousSize(PageSizes.A4.Width);
+                    page.Margin(40);
                     page.DefaultTextStyle(x => x.FontSize(11));
 
                     page.Header().PaddingBottom(20).Row(row =>
                     {
-                        row.ConstantItem(220).Column(col =>
+                        row.ConstantItem(180).Column(col =>
                         {
                             col.Item().AlignRight().Text($"Date: {dateText}");
                         });
@@ -415,47 +415,49 @@ namespace PDF
                         {
                             t.ColumnsDefinition(c =>
                             {
-                                c.ConstantColumn(85); // Date
-                                c.RelativeColumn(); // Lesson
-                                c.RelativeColumn(); // Student
-                                c.ConstantColumn(95); // Price
+                                c.ConstantColumn(90); // Date
+                                c.RelativeColumn(2); // Lesson - more space
+                                c.RelativeColumn(1.5f); // Student - good space
+                                c.ConstantColumn(70); // Duration
+                                c.ConstantColumn(85); // Price
                             });
 
                             t.Header(h =>
                             {
                                 h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Date").SemiBold();
-                                h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Lesson");
-                                h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Student");
+                                h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Lesson").SemiBold();
+                                h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Student").SemiBold();
+                                h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Duration").SemiBold();
                                 h.Cell().AlignRight().Background(Colors.Grey.Lighten3).Padding(5).Text("Price").SemiBold();
                             });
 
                             foreach (var l in list)
                             {
-                                t.Cell().PaddingVertical(4).Text(l.Date.ToString("dd-MM-yyyy"));
-                                t.Cell().PaddingVertical(4).Text(l.Name);
-                                t.Cell().PaddingVertical(4).Text(l.StudentName);
-                                t.Cell().PaddingVertical(4).AlignRight().Text(l.FinalPrice.ToString("C", culture));
+                                t.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(6).PaddingHorizontal(5).Text(l.Date.ToString("dd-MM-yyyy"));
+                                t.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(6).PaddingHorizontal(5).Text(l.Name);
+                                t.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(6).PaddingHorizontal(5).Text(l.StudentName);
+                                t.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(6).PaddingHorizontal(5).Text(l.DurationMinutes.HasValue ? $"{l.DurationMinutes.Value} min" : "-");
+                                t.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(6).PaddingHorizontal(5).AlignRight().Text(l.FinalPrice.ToString("C", culture));
                             }
                         });
 
-                        col.Item().Height(15);
+                        col.Item().Height(20);
 
-                        // Simplified Totals
+                        // Totals
                         col.Item().Row(r =>
                         {
                             r.RelativeItem(); // left empty
 
-                            r.ConstantItem(200).Table(t =>
+                            r.ConstantItem(220).Background(Colors.Grey.Lighten4).Padding(12).Table(t =>
                             {
                                 t.ColumnsDefinition(c =>
                                 {
                                     c.RelativeColumn();
-                                    c.ConstantColumn(100);
+                                    c.ConstantColumn(110);
                                 });
 
-                                // Made the total a bit larger to stand out since there are no subtotals
-                                t.Cell().AlignRight().PaddingBottom(8).Text($"TOTAL:").SemiBold().FontSize(14);
-                                t.Cell().AlignRight().Text(total.ToString("C", culture)).SemiBold().FontSize(14);
+                                t.Cell().AlignRight().Text($"TOTAL:").SemiBold().FontSize(15);
+                                t.Cell().AlignRight().Text(total.ToString("C", culture)).SemiBold().FontSize(15).FontColor(Colors.Blue.Darken2);
                             });
                         });
                     });

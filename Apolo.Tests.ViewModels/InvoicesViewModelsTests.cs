@@ -163,16 +163,16 @@ namespace Apolo.Tests.ViewModels
 
             var firstLoad = new List<LessonLine>
             {
-                new(lessonId, studentId1, new DateOnly(2024, 1, 1), "Old Lesson", "Student 1", 100, false),
-                new(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 2), "Old Lesson", "Student 2", 200, false),
-                new(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 3), "Old Lesson", "Student 3", 300, false)
+                new(lessonId, studentId1, new DateOnly(2024, 1, 1), "Old Lesson", "Student 1", 100, false, null),
+                new(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 2), "Old Lesson", "Student 2", 200, false, null),
+                new(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 3), "Old Lesson", "Student 3", 300, false, null)
             };
 
             var secondLoad = new List<LessonLine>
             {
-                new(lessonId, studentId1, new DateOnly(2025, 1, 1), "New Lesson", "Student 1", 50, false),
-                new(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2025, 1, 2), "New Lesson", "Student 2", 500, false),
-                new(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2025, 1, 3), "New Lesson", "Student 3", 25, false)
+                new(lessonId, studentId1, new DateOnly(2025, 1, 1), "New Lesson", "Student 1", 50, false, null),
+                new(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2025, 1, 2), "New Lesson", "Student 2", 500, false, null),
+                new(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2025, 1, 3), "New Lesson", "Student 3", 25, false, null)
             };
 
             _mockInvoiceRepo.SetupSequence(r => r.GetUnbilledLessonsAsync(payer.Id))
@@ -278,15 +278,15 @@ namespace Apolo.Tests.ViewModels
         {
             List<Guid> ids = [ Guid.NewGuid(), Guid.NewGuid()];
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
-                "Old Lesson", "Student 1", 50, false)));
+                "Old Lesson", "Student 1", 50, false, null)));
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(ids[0], Guid.NewGuid(), new DateOnly(2024, 1, 1),
-                "Old Lesson", "Student 1", 30, false))
+                "Old Lesson", "Student 1", 30, false, null))
             { IsSelected = someSelected });
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(ids[1], Guid.NewGuid(), new DateOnly(2024, 1, 1),
-                "Old Lesson", "Student 1", 35.5m, false))
+                "Old Lesson", "Student 1", 35.5m, false, null))
             { IsSelected = someSelected });
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
-                "Old Lesson", "Student 1", 192.1m, false)));
+                "Old Lesson", "Student 1", 192.1m, false, null)));
             return ids;
         }
 
@@ -384,15 +384,15 @@ namespace Apolo.Tests.ViewModels
                 _viewModel.SelectedPayerId = payer.Id;
 
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
-                "Old Lesson", "Student 1", 50, false)));
+                "Old Lesson", "Student 1", 50, false, null)));
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
-                "Old Lesson", "Student 1", 30, false))
+                "Old Lesson", "Student 1", 30, false, null))
             { IsSelected = selectLessons });
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
-                "Old Lesson", "Student 1", 35.5m, false))
+                "Old Lesson", "Student 1", 35.5m, false, null))
             { IsSelected = selectLessons });
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
-                "Old Lesson", "Student 1", 192.1m, false)));
+                "Old Lesson", "Student 1", 192.1m, false, null)));
 
             return [.. _viewModel.Lessons.Where(l => l.IsSelected).Select(l => l.Data.Id)];
         }
@@ -529,13 +529,13 @@ namespace Apolo.Tests.ViewModels
                 new DateTime(2024, 1, 1));
 
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
-                "Old Lesson", "Student 1", 50, false)));
+                "Old Lesson", "Student 1", 50, false, null)));
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
-                "Old Lesson", "Student 1", 30, false)));
+                "Old Lesson", "Student 1", 30, false, null)));
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
-                "Old Lesson", "Student 1", 35.5m, false)));
+                "Old Lesson", "Student 1", 35.5m, false, null)));
             _viewModel.Lessons.Add(new InvoiceLine(new LessonLine(Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2024, 1, 1),
-                "Old Lesson", "Student 1", 192.1m, false)));
+                "Old Lesson", "Student 1", 192.1m, false, null)));
         }
 
         private async Task ActForForPrintDocument()
