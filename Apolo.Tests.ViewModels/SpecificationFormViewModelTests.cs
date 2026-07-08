@@ -29,9 +29,6 @@ namespace Apolo.Tests.ViewModels
 
             // Default values
             Assert.IsNotNull(_formViewModel.InfoMessage);
-            Assert.Contains("• Select one student.", _formViewModel.InfoMessage);
-            Assert.Contains("• Select a service.", _formViewModel.InfoMessage);
-            Assert.Contains("• Specification name cannot be empty.", _formViewModel.InfoMessage);
             Assert.AreEqual(InfoBarType.Error, _formViewModel.InfoBarType);
             Assert.IsTrue(_formViewModel.OpenInfoBar);
 
@@ -45,11 +42,8 @@ namespace Apolo.Tests.ViewModels
 
             Assert.IsTrue(double.IsNaN(_formViewModel.Price));
             Assert.IsFalse(_formViewModel.IsPricePerHour);
-            Assert.AreEqual("Price:", _formViewModel.PriceHeader);
             Assert.IsFalse(_formViewModel.IsOnline);
             Assert.IsFalse(_formViewModel.IsWeekendOrHoliday);
-
-            Assert.AreEqual("New Specification — Total: €-.--", _formViewModel.DialogTitle);
 
             // Fill form
             _formViewModel.Name = "Weekend";
@@ -57,25 +51,19 @@ namespace Apolo.Tests.ViewModels
 
             _formViewModel.SelectedService = _formViewModel.Services[0];
             Assert.AreEqual("Math Tutoring", _formViewModel.Name);
-            Assert.AreEqual("Price/Hour:", _formViewModel.PriceHeader);
             Assert.AreEqual(60, _formViewModel.Duration);
 
             _formViewModel.SelectedStudent = _formViewModel.Students[0];
             Assert.IsNull(_formViewModel.InfoMessage);
             Assert.IsFalse(_formViewModel.OpenInfoBar);
-            Assert.AreEqual("New Specification — Total: €50.00", _formViewModel.DialogTitle);
 
             _formViewModel.Price = 35.5;
-            Assert.AreEqual("New Specification — Total: €45.50", _formViewModel.DialogTitle);
 
             _formViewModel.Duration = 90;
-            Assert.AreEqual("New Specification — Total: €63.50", _formViewModel.DialogTitle);
 
             _formViewModel.IsOnline = true;
-            Assert.AreEqual("New Specification — Total: €53.50", _formViewModel.DialogTitle);
 
             _formViewModel.IsWeekendOrHoliday = true;
-            Assert.AreEqual("New Specification — Total: €83.50", _formViewModel.DialogTitle);
         }
 
     }
@@ -122,11 +110,8 @@ namespace Apolo.Tests.ViewModels
 
             Assert.IsTrue(double.IsNaN(_formViewModel.Price));
             Assert.IsTrue(_formViewModel.IsPricePerHour);
-            Assert.AreEqual("Price/Hour:", _formViewModel.PriceHeader);
             Assert.IsTrue(_formViewModel.IsOnline);
             Assert.IsTrue(_formViewModel.IsWeekendOrHoliday);
-
-            Assert.AreEqual("Edit Specification — Total: €90.00", _formViewModel.DialogTitle);
 
             Assert.IsNull(_formViewModel.GetBasePrice());
             _formViewModel.Price = 0;

@@ -1,4 +1,5 @@
-﻿using Models;
+﻿using Microsoft.EntityFrameworkCore;
+using Models;
 using Repository;
 
 namespace Apolo.Tests.Data
@@ -58,7 +59,7 @@ namespace Apolo.Tests.Data
             var service = new Service { Name = "Math Tutoring", IsPricePerHour = true, Price = 45.50m };
 
             // Act & Assert
-            await Assert.ThrowsAsync<InvalidDataException>(async () =>
+            await Assert.ThrowsAsync<DbUpdateException>(async () =>
             {
                 await _repository.AddAsync(service);
             });

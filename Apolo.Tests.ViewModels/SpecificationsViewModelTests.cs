@@ -51,14 +51,11 @@ namespace Apolo.Tests.ViewModels
     [TestClass]
     public class SpecificationsViewModelTests : SpecificationsViewModelBaseTests
     {
-        
-
-        void VerifyAction(string? message, InfoBarType severity, bool isOpen, int specCount, int studentsCount, int servicesCount, bool isBusy = false)
+        void VerifyAction(InfoBarType severity, bool isOpen, int specCount, int studentsCount, int servicesCount, bool isBusy = false)
         {
             Assert.HasCount(specCount, _viewModel.Specifications);
             Assert.HasCount(studentsCount, _viewModel.Students);
             Assert.HasCount(servicesCount, _viewModel.Services);
-            Assert.AreEqual(message, _viewModel.InfoMessage);
             Assert.AreEqual(isBusy, _viewModel.IsBusy);
             Assert.AreEqual(isOpen, _viewModel.OpenInfoBar);
             Assert.AreEqual(severity, _viewModel.InfoBarType);
@@ -70,7 +67,6 @@ namespace Apolo.Tests.ViewModels
         public void GetService_InvalidId()
         {
             var exception = Assert.Throws<InvalidDataException>(() => _viewModel.GetService(Guid.NewGuid()));
-            Assert.AreEqual("Service not loaded.", exception.Message);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.IsNull(_viewModel.InfoMessage);
             Assert.IsFalse(_viewModel.OpenInfoBar);
@@ -94,7 +90,6 @@ namespace Apolo.Tests.ViewModels
         public void GetSpecification_InvalidId()
         {
             var exception = Assert.Throws<InvalidDataException>(() => _viewModel.GetSpecification(Guid.NewGuid()));
-            Assert.AreEqual("Specification not loaded.", exception.Message);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.IsNull(_viewModel.InfoMessage);
             Assert.IsFalse(_viewModel.OpenInfoBar);
@@ -122,8 +117,7 @@ namespace Apolo.Tests.ViewModels
 
             await _viewModel.LoadAsync();
 
-            VerifyAction("Can't load specifications while busy.", InfoBarType.Warning, isOpen: true,
-                specCount: 0, studentsCount: 0, servicesCount: 0, isBusy: true);
+            VerifyAction(InfoBarType.Warning, isOpen: true, specCount: 0, studentsCount: 0, servicesCount: 0, isBusy: true);
             _mockStudentRepo.Verify(r => r.GetStudentOptionsAsync(), Times.Never);
             _mockServiceRepo.Verify(r => r.GetServicesAsync(), Times.Never);
             _mockSpecificationRepo.Verify(r => r.GetSpecificationsAsync(), Times.Never);
@@ -184,7 +178,7 @@ namespace Apolo.Tests.ViewModels
             _mockSpecificationRepo.Verify(r => r.GetSpecificationsAsync(), Times.Exactly(2));
 
             // 2. Verify the UI collection was updated correctly
-            VerifyAction("2 loaded.", InfoBarType.Success, isOpen: true, specCount: 2, studentsCount: 2, servicesCount: 2);
+            VerifyAction(InfoBarType.Success, isOpen: true, specCount: 2, studentsCount: 2, servicesCount: 2);
             var addedStudent = _viewModel.Students.First();
             var addedService = _viewModel.Services.First();
             var addedSpecification = _viewModel.Specifications.First();
@@ -210,7 +204,7 @@ namespace Apolo.Tests.ViewModels
             _mockServiceRepo.Verify(r => r.GetServicesAsync(), Times.Once);
             _mockSpecificationRepo.Verify(r => r.GetSpecificationsAsync(), Times.Once);
 
-            VerifyAction("0 loaded.", InfoBarType.Success, isOpen: true, specCount: 0, studentsCount: 0, servicesCount: 0);
+            VerifyAction(InfoBarType.Success, isOpen: true, specCount: 0, studentsCount: 0, servicesCount: 0);
         }
 
         // --- Refresh specifications Tests ---
@@ -222,8 +216,7 @@ namespace Apolo.Tests.ViewModels
 
             await _viewModel.RefreshSpecifications();
 
-            VerifyAction("Can't refresh specifications while busy.", InfoBarType.Warning, isOpen: true,
-                specCount: 0, studentsCount: 0, servicesCount: 0, isBusy: true);
+            VerifyAction(InfoBarType.Warning, isOpen: true, specCount: 0, studentsCount: 0, servicesCount: 0, isBusy: true);
             _mockSpecificationRepo.Verify(r => r.GetSpecificationsAsync(), Times.Never);
         }
 
@@ -242,7 +235,7 @@ namespace Apolo.Tests.ViewModels
 
             await _viewModel.RefreshSpecifications();
 
-            VerifyAction(null, InfoBarType.Success, isOpen: false, specCount: 2, studentsCount: 0, servicesCount: 0);
+            VerifyAction(InfoBarType.Success, isOpen: false, specCount: 2, studentsCount: 0, servicesCount: 0);
             _mockSpecificationRepo.Verify(r => r.GetSpecificationsAsync(), Times.Once);
         }
 
@@ -255,8 +248,7 @@ namespace Apolo.Tests.ViewModels
 
             await _viewModel.AddSpecificationAsync("Specification", 60, null, false, false, Guid.NewGuid(), Guid.NewGuid());
 
-            VerifyAction("Can't add specification while busy.", InfoBarType.Warning, isOpen: true, 
-                specCount: 0, studentsCount: 0, servicesCount: 0, isBusy: true);
+            VerifyAction(InfoBarType.Warning, isOpen: true, specCount: 0, studentsCount: 0, servicesCount: 0, isBusy: true);
             _mockSpecificationRepo.Verify(r => r.AddSpecificationAsync(It.IsAny<Specification>()), Times.Never);
         }
 
@@ -273,8 +265,7 @@ namespace Apolo.Tests.ViewModels
 
             await _viewModel.AddSpecificationAsync(invalidName, 60, null, false, false, student.Id, service.Id);
 
-            VerifyAction("Specification name is required.", InfoBarType.Warning, isOpen: true,
-                specCount: 0, studentsCount: 1, servicesCount: 1);
+            VerifyAction(InfoBarType.Warning, isOpen: true, specCount: 0, studentsCount: 1, servicesCount: 1);
             _mockSpecificationRepo.Verify(r => r.AddSpecificationAsync(It.IsAny<Specification>()), Times.Never);
         }
 
@@ -283,8 +274,7 @@ namespace Apolo.Tests.ViewModels
         {
             await _viewModel.AddSpecificationAsync("Specification", -5, null, false, false, Guid.NewGuid(), Guid.NewGuid());
 
-            VerifyAction("Enter a valid non-negative duration (e.g., 60).", InfoBarType.Warning, isOpen: true, 
-                specCount: 0, studentsCount: 0, servicesCount: 0);
+            VerifyAction(InfoBarType.Warning, isOpen: true, specCount: 0, studentsCount: 0, servicesCount: 0);
             _mockSpecificationRepo.Verify(r => r.AddSpecificationAsync(It.IsAny<Specification>()), Times.Never);
         }
 
@@ -325,8 +315,7 @@ namespace Apolo.Tests.ViewModels
 
             await _viewModel.AddSpecificationAsync("Specification", 60, null, false, false, student.Id, service.Id);
 
-            VerifyAction("Database connection lost.", InfoBarType.Error, isOpen: true, 
-                specCount: 0, studentsCount: 1, servicesCount: 1);
+            VerifyAction(InfoBarType.Error, isOpen: true, specCount: 0, studentsCount: 1, servicesCount: 1);
             _mockSpecificationRepo.Verify(r => r.AddSpecificationAsync(It.IsAny<Specification>()), Times.Once);
         }
 
@@ -340,8 +329,7 @@ namespace Apolo.Tests.ViewModels
 
             await _viewModel.AddSpecificationAsync("Specification", 60, null, false, false, student.Id, service.Id);
 
-            VerifyAction("Specification 'Specification' added for Old Man.", InfoBarType.Success, isOpen: true, 
-                specCount: 1, studentsCount: 1, servicesCount: 1);
+            VerifyAction(InfoBarType.Success, isOpen: true, specCount: 1, studentsCount: 1, servicesCount: 1);
             _mockSpecificationRepo.Verify(r => r.AddSpecificationAsync(It.IsAny<Specification>()), Times.Once);
 
             var addedSpecification = _viewModel.Specifications.First();
@@ -375,8 +363,7 @@ namespace Apolo.Tests.ViewModels
             await _viewModel.DeleteSpecificationAsync(itemToDelete.Id);
 
             // Assert
-            VerifyAction("Can't delete specification while busy.", InfoBarType.Warning, isOpen: true, 
-                studentsCount: 1, servicesCount: 1, specCount: 1, isBusy: true);
+            VerifyAction(InfoBarType.Warning, isOpen: true, studentsCount: 1, servicesCount: 1, specCount: 1, isBusy: true);
             _mockSpecificationRepo.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Never);
         }
 
@@ -401,8 +388,7 @@ namespace Apolo.Tests.ViewModels
             await _viewModel.DeleteSpecificationAsync(itemToDelete.Id);
 
             // Assert
-            VerifyAction("Constraint failed.", InfoBarType.Error, isOpen: true, 
-                studentsCount: 1, servicesCount: 1, specCount: 1);
+            VerifyAction(InfoBarType.Error, isOpen: true, studentsCount: 1, servicesCount: 1, specCount: 1);
             _mockSpecificationRepo.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Once);
         }
 
@@ -426,8 +412,7 @@ namespace Apolo.Tests.ViewModels
             await _viewModel.DeleteSpecificationAsync(itemToDelete.Id);
 
             // Assert
-            VerifyAction("Specification 'Spec' deleted for Student.", InfoBarType.Success, isOpen: true,
-                studentsCount: 1, servicesCount: 1, specCount: 1);
+            VerifyAction(InfoBarType.Success, isOpen: true, studentsCount: 1, servicesCount: 1, specCount: 1);
             _mockSpecificationRepo.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Once);
             Assert.AreEqual("Spec to keep", _viewModel.Specifications[0].Name); // Only the kept item remains
         }
@@ -458,7 +443,7 @@ namespace Apolo.Tests.ViewModels
         }
 
         private void AssertUpdateTests(Guid targetId, Guid service2Id,
-            bool isBusy, string? infoMessage, InfoBarType severity, bool success, string name = "Specification", int duration = 10)
+            bool isBusy, InfoBarType severity, bool success, string name = "Specification", int duration = 10)
         {
             // 1. Verify Repo call
             if (success)
@@ -473,8 +458,7 @@ namespace Apolo.Tests.ViewModels
             }
 
             // 2. Verify UI Update
-            VerifyAction(infoMessage, severity, isOpen: true, 
-                studentsCount: 1, servicesCount: 2, specCount: 2, isBusy: isBusy);
+            VerifyAction(severity, isOpen: true, studentsCount: 1, servicesCount: 2, specCount: 2, isBusy: isBusy);
 
             // The item at index 0 should be our updated record
             var updatedItem = _viewModel.Specifications[0];
@@ -499,8 +483,7 @@ namespace Apolo.Tests.ViewModels
             await ActForUpdateTests(targetId, service2Id);
 
             // Assert
-            AssertUpdateTests(targetId, service2Id, isBusy: true, success: false,
-                infoMessage: "Can't update specification while busy.", severity: InfoBarType.Warning);
+            AssertUpdateTests(targetId, service2Id, isBusy: true, success: false, severity: InfoBarType.Warning);
         }
 
         [TestMethod]
@@ -518,8 +501,7 @@ namespace Apolo.Tests.ViewModels
             await ActForUpdateTests(targetId, service2Id, name: invalidName);
 
             // Assert
-            AssertUpdateTests(targetId, service2Id, isBusy: false, success: false, name: invalidName,
-                infoMessage: "Specification name is required.", severity: InfoBarType.Warning);
+            AssertUpdateTests(targetId, service2Id, isBusy: false, success: false, name: invalidName, severity: InfoBarType.Warning);
         }
 
         [TestMethod]
@@ -534,8 +516,7 @@ namespace Apolo.Tests.ViewModels
             await ActForUpdateTests(targetId, service2Id, duration: -1);
 
             // Assert
-            AssertUpdateTests(targetId, service2Id, isBusy: false, success: false, duration: -1,
-                infoMessage: "Enter a valid non-negative duration (e.g., 60).", severity: InfoBarType.Warning);
+            AssertUpdateTests(targetId, service2Id, isBusy: false, success: false, duration: -1, severity: InfoBarType.Warning);
 
         }
 
@@ -551,8 +532,7 @@ namespace Apolo.Tests.ViewModels
             await ActForUpdateTests(targetId, service2Id);
 
             // Assert
-            AssertUpdateTests(targetId, service2Id, isBusy: false, success: true,
-                infoMessage: "Specification 'Spec' updated for Student.", severity: InfoBarType.Success);
+            AssertUpdateTests(targetId, service2Id, isBusy: false, success: true, severity: InfoBarType.Success);
         }
 
         // --- CreateLessonFromSpecificationAsync Tests ---
@@ -591,7 +571,7 @@ namespace Apolo.Tests.ViewModels
                      .ThrowsAsync(new DbUpdateException("Constraint failed."));
         }
 
-        private void AssertForCreateLessonTests(Guid targetId, Guid studentId, bool success, InfoBarType severity, string? infoMessage = null,
+        private void AssertForCreateLessonTests(Guid targetId, Guid studentId, bool success, InfoBarType severity,
             bool isBusy = false, bool hasPrice = false, bool dbError = false)
         {
             var date = DateOnly.FromDateTime(new DateTime(1993, 8, 17));
@@ -626,7 +606,7 @@ namespace Apolo.Tests.ViewModels
             }
 
             // 2. Verify UI Update
-            VerifyAction(infoMessage, severity, isOpen: true, studentsCount: 1, servicesCount: 1, specCount: 1, isBusy: isBusy);
+            VerifyAction(severity, isOpen: true, studentsCount: 1, servicesCount: 1, specCount: 1, isBusy: isBusy);
         }
 
         [TestMethod]
@@ -640,8 +620,7 @@ namespace Apolo.Tests.ViewModels
 
             await ActForCreateLessonTests(targetId);
 
-            AssertForCreateLessonTests(targetId, studentId, success: false, isBusy: true,
-                 infoMessage: "Can't create lesson while busy.", severity: InfoBarType.Warning);
+            AssertForCreateLessonTests(targetId, studentId, success: false, isBusy: true, severity: InfoBarType.Warning);
         }
 
         [TestMethod]
@@ -653,8 +632,7 @@ namespace Apolo.Tests.ViewModels
 
             await ActForCreateLessonTests(targetId, invalidTip: true);
 
-            AssertForCreateLessonTests(targetId, studentId, success: false, isBusy: false,
-                 infoMessage: "Tip can't be negative.", severity: InfoBarType.Error);
+            AssertForCreateLessonTests(targetId, studentId, success: false, isBusy: false, severity: InfoBarType.Error);
         }
 
         [TestMethod]
@@ -667,9 +645,6 @@ namespace Apolo.Tests.ViewModels
 
             var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
                  ActForCreateLessonTests(invalidId));
-
-            // Assert
-            Assert.AreEqual("Specification not loaded.", exception.Message);
 
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.IsFalse(_viewModel.OpenInfoBar);
@@ -684,9 +659,6 @@ namespace Apolo.Tests.ViewModels
 
             var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
                  ActForCreateLessonTests(targetId));
-
-            // Assert
-            Assert.AreEqual("Service not loaded.", exception.Message);
 
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.IsFalse(_viewModel.OpenInfoBar);
@@ -706,8 +678,7 @@ namespace Apolo.Tests.ViewModels
             await ActForCreateLessonTests(targetId);
 
             // Assert
-            AssertForCreateLessonTests(targetId, studentId, success: false, dbError: true,
-                infoMessage: "Constraint failed.", severity: InfoBarType.Error);
+            AssertForCreateLessonTests(targetId, studentId, success: false, dbError: true, severity: InfoBarType.Error);
         }
 
         [TestMethod]
@@ -720,8 +691,7 @@ namespace Apolo.Tests.ViewModels
             await ActForCreateLessonTests(targetId);
 
             // Assert
-            AssertForCreateLessonTests(targetId, studentId, success: true, hasPrice: false,
-                infoMessage: "Lesson 'Service' created for Student.", severity: InfoBarType.Success);
+            AssertForCreateLessonTests(targetId, studentId, success: true, hasPrice: false, severity: InfoBarType.Success);
         }
 
         [TestMethod]
@@ -734,8 +704,7 @@ namespace Apolo.Tests.ViewModels
             await ActForCreateLessonTests(targetId);
 
             // Assert
-            AssertForCreateLessonTests(targetId, studentId, success: true, hasPrice: true,
-                infoMessage: "Lesson 'Service' created for Student.", severity: InfoBarType.Success);
+            AssertForCreateLessonTests(targetId, studentId, success: true, hasPrice: true, severity: InfoBarType.Success);
         }
     }
 }

@@ -66,7 +66,7 @@ namespace Apolo.Services
         public static string Buttons_Cancel => S("Buttons/Cancel/Content");
         public static string Buttons_Create => S("Buttons/Create");
         public static string Buttons_Edit => S("Buttons/Edit");
-        public static string Buttons_Save => S("Buttons/Save");
+        public static string Buttons_Save => S("Buttons/Save/Label");
         public static string Buttons_Understood => S("Buttons/Understood");
         public static string Buttons_Archive => S("Buttons/Archive");
         public static string Buttons_Retrieve => S("Buttons/Retrieve");

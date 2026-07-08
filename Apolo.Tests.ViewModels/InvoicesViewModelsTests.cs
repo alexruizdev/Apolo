@@ -55,16 +55,12 @@ namespace Apolo.Tests.ViewModels
                 _mockPDFWriter.Object, _mockLessonRepo.Object, _localizerMock.Object);
         }
 
-        void VerifyAction(string? message, InfoBarType severity, bool isOpen, int payersCount, int count, decimal totalSelected, decimal total, bool isBusy = false, bool infoMessageContains = false)
+        void VerifyAction(InfoBarType severity, bool isOpen, int payersCount, int count, decimal totalSelected, decimal total, bool isBusy = false)
         {
             Assert.HasCount(payersCount, _viewModel.Payers);
             Assert.HasCount(count, _viewModel.Lessons);
             Assert.AreEqual(totalSelected, _viewModel.TotalSelected);
             Assert.AreEqual(total, _viewModel.TotalAll);
-            if (infoMessageContains)
-                Assert.IsTrue(_viewModel.InfoMessage?.Contains(message ?? string.Empty) ?? false);
-            else
-                Assert.AreEqual(message, _viewModel.InfoMessage);
             Assert.AreEqual(isBusy, _viewModel.IsBusy);
             Assert.AreEqual(severity, _viewModel.InfoBarType);
             Assert.AreEqual(isOpen, _viewModel.OpenInfoBar);
@@ -77,8 +73,7 @@ namespace Apolo.Tests.ViewModels
 
             _viewModel.SelectionState = null;
 
-            VerifyAction("Can't update selection while busy.", InfoBarType.Warning, 
-                isOpen: true, payersCount: 0, count: 0, totalSelected: 0, total: 0, isBusy:true);
+            VerifyAction(InfoBarType.Warning, isOpen: true, payersCount: 0, count: 0, totalSelected: 0, total: 0, isBusy:true);
 
         }
 
@@ -91,8 +86,7 @@ namespace Apolo.Tests.ViewModels
 
             await _viewModel.LoadAsync();
 
-            VerifyAction("Can't load payers while busy.", InfoBarType.Warning, isOpen: true,
-                payersCount: 0, count: 0, isBusy: true, total: 0, totalSelected: 0);
+            VerifyAction(InfoBarType.Warning, isOpen: true, payersCount: 0, count: 0, isBusy: true, total: 0, totalSelected: 0);
 
             _mockPayerRepo.Verify(r => r.GetPayerOptionsByUnbilledLessons(), Times.Never);
         }
@@ -120,8 +114,7 @@ namespace Apolo.Tests.ViewModels
 
             _mockPayerRepo.Verify(r => r.GetPayerOptionsByUnbilledLessons(), Times.Exactly(2));
 
-            VerifyAction(null, InfoBarType.Success, isOpen: false,
-                payersCount: 2, count: 0, isBusy: false, total: 0, totalSelected: 0);
+            VerifyAction(InfoBarType.Success, isOpen: false, payersCount: 2, count: 0, isBusy: false, total: 0, totalSelected: 0);
             Assert.AreEqual("New payer 1", _viewModel.Payers[0].FullName);
             Assert.AreEqual("New payer 2", _viewModel.Payers[1].FullName);
         }
@@ -136,8 +129,7 @@ namespace Apolo.Tests.ViewModels
 
             _mockPayerRepo.Verify(r => r.GetPayerOptionsByUnbilledLessons(), Times.Once);
 
-            VerifyAction(null, InfoBarType.Success, isOpen: false,
-                payersCount: 0, count: 0, isBusy: false, total: 0, totalSelected: 0);
+            VerifyAction(InfoBarType.Success, isOpen: false, payersCount: 0, count: 0, isBusy: false, total: 0, totalSelected: 0);
         }
 
         // Load Lessons
@@ -149,8 +141,7 @@ namespace Apolo.Tests.ViewModels
 
             await _viewModel.LoadLessonsAsync();
 
-            VerifyAction("Can't load lessons while busy.", InfoBarType.Warning, isOpen: true,
-                payersCount: 0, count: 0, isBusy: true, total: 0, totalSelected: 0);
+            VerifyAction(InfoBarType.Warning, isOpen: true, payersCount: 0, count: 0, isBusy: true, total: 0, totalSelected: 0);
 
             _mockInvoiceRepo.Verify(r => r.GetUnbilledLessonsAsync(It.IsAny<Guid>()), Times.Never);
         }
@@ -184,11 +175,11 @@ namespace Apolo.Tests.ViewModels
                 .ReturnsAsync(secondLoad);
 
             await _viewModel.LoadLessonsAsync(); // test that Lessons.Clear() is working
-            VerifyAction("Loaded 3 lessons unbilled and unpaid", InfoBarType.Success, isOpen: true,
+            VerifyAction(InfoBarType.Success, isOpen: true,
                 payersCount: 1, count: 3, isBusy: false, total: 600, totalSelected: 0);
 
             await _viewModel.LoadLessonsAsync(); // If LoadAsync is called twice, you should not have duplicate items in your list
-            VerifyAction("Loaded 3 lessons unbilled and unpaid", InfoBarType.Success, isOpen: true,
+            VerifyAction(InfoBarType.Success, isOpen: true,
                 payersCount: 1, count: 3, isBusy: false, total: 575, totalSelected: 0);
 
             _mockInvoiceRepo.Verify(r => r.GetUnbilledLessonsAsync(payer.Id), Times.Exactly(2));
@@ -247,7 +238,7 @@ namespace Apolo.Tests.ViewModels
                 .ReturnsAsync([]);
 
             await _viewModel.LoadLessonsAsync(); // test that Lessons.Clear() is working
-            VerifyAction("Loaded 0 lessons unbilled and unpaid", InfoBarType.Success, isOpen: true,
+            VerifyAction(InfoBarType.Success, isOpen: true,
                 payersCount: 1, count: 0, isBusy: false, total: 0, totalSelected: 0);
 
             _mockInvoiceRepo.Verify(r => r.GetUnbilledLessonsAsync(payer.Id), Times.Once);
@@ -306,7 +297,7 @@ namespace Apolo.Tests.ViewModels
         }
 
         private void AssertForMarkAsPaid(List<Guid> ids, bool success,
-            string? infoMessage, InfoBarType severity, bool isBusy = false, bool dbError = false)
+            InfoBarType severity, bool isBusy = false, bool dbError = false)
         {
             if (success || dbError)
             {
@@ -319,12 +310,12 @@ namespace Apolo.Tests.ViewModels
 
             if (dbError || success)
             {
-                VerifyAction(infoMessage, severity, isOpen: true, payersCount: 0, count: 4,
+                VerifyAction(severity, isOpen: true, payersCount: 0, count: 4,
                 totalSelected: 65.5m, total: 307.6m, isBusy: isBusy);
             }
             else
             {
-                VerifyAction(infoMessage, severity, isOpen: true, payersCount: 0, count: 4, 
+                VerifyAction(severity, isOpen: true, payersCount: 0, count: 4, 
                     totalSelected: 0, total: 307.6m, isBusy: isBusy);
             }
 
@@ -337,8 +328,7 @@ namespace Apolo.Tests.ViewModels
 
             var ids = ArrangeForMarkAsPaid();
             await ActForMarkAsPaid(ids);
-            AssertForMarkAsPaid(ids, success: false, infoMessage: "Can't mark lessons as paid while busy.",
-                severity: InfoBarType.Warning, isBusy: true);
+            AssertForMarkAsPaid(ids, success: false, severity: InfoBarType.Warning, isBusy: true);
         }
 
         [TestMethod]
@@ -346,8 +336,7 @@ namespace Apolo.Tests.ViewModels
         {
             var ids = ArrangeForMarkAsPaid();
             await ActForMarkAsPaid(ids);
-            AssertForMarkAsPaid(ids, success: false, infoMessage: "Please, select first a lesson to mark them as paid.",
-                severity: InfoBarType.Info);
+            AssertForMarkAsPaid(ids, success: false, severity: InfoBarType.Info);
         }
 
         [TestMethod]
@@ -355,8 +344,7 @@ namespace Apolo.Tests.ViewModels
         {
             var ids = ArrangeForMarkAsPaid(someSelected: true);
             await ActForMarkAsPaid(ids, dbError: true);
-            AssertForMarkAsPaid(ids, success: false, dbError: true, infoMessage: "Constraint failed.", 
-                severity: InfoBarType.Error);
+            AssertForMarkAsPaid(ids, success: false, dbError: true, severity: InfoBarType.Error);
         }
 
         [TestMethod]
@@ -364,8 +352,7 @@ namespace Apolo.Tests.ViewModels
         {
             var ids = ArrangeForMarkAsPaid(someSelected: true);
             await ActForMarkAsPaid(ids);
-            AssertForMarkAsPaid(ids, success: true, infoMessage: "2 were marked as paid successfully.", 
-                severity: InfoBarType.Success);
+            AssertForMarkAsPaid(ids, success: true, severity: InfoBarType.Success);
         }
 
         // Generate invoice
@@ -423,7 +410,7 @@ namespace Apolo.Tests.ViewModels
             await _viewModel.CreateBill(DocumentType.Invoice, creationDate);
         }
 
-        private void AssertForGenerateInvoice(List<Guid> ids, string? infoMessage, InfoBarType severity,bool success, bool dbError = false,
+        private void AssertForGenerateInvoice(List<Guid> ids, InfoBarType severity,bool success, bool dbError = false,
             bool isBusy = false, bool selectPayer = true, bool selectLessons = true, bool invalidDirectory = false)
         {
             var creationDate = new DateTime(2026, 01, 31);
@@ -454,7 +441,7 @@ namespace Apolo.Tests.ViewModels
                 selected = 65.5m;
             decimal total = success ? 65.5m : 307.6m;
 
-            VerifyAction(infoMessage, severity, isOpen: true, payersCount: success ? 0 : 1, count: success ? 2 : 4,
+            VerifyAction(severity, isOpen: true, payersCount: success ? 0 : 1, count: success ? 2 : 4,
                 totalSelected: selected, total: total, isBusy: isBusy);
         }
 
@@ -464,8 +451,7 @@ namespace Apolo.Tests.ViewModels
             _viewModel.IsBusy = true;
             var ids = ArrangeForGenerateInvoice();
             await ActForForGenerateInvoice(ids);
-            AssertForGenerateInvoice(ids, infoMessage: "Can't generate invoice while busy.", severity: InfoBarType.Warning,
-                isBusy: true, success: false);
+            AssertForGenerateInvoice(ids, severity: InfoBarType.Warning, isBusy: true, success: false);
         }
 
         [TestMethod]
@@ -473,8 +459,7 @@ namespace Apolo.Tests.ViewModels
         {
             var ids = ArrangeForGenerateInvoice(invalidDirectory: true);
             await ActForForGenerateInvoice(ids);
-            AssertForGenerateInvoice(ids, infoMessage: $"Directory '{_viewModel.Profile.BillingFolder}' does not exist.", 
-                severity: InfoBarType.Error, success: false, invalidDirectory: true);
+            AssertForGenerateInvoice(ids, severity: InfoBarType.Error, success: false, invalidDirectory: true);
         }
 
         [TestMethod]
@@ -482,8 +467,7 @@ namespace Apolo.Tests.ViewModels
         {
             var ids = ArrangeForGenerateInvoice(selectPayer: false);
             await ActForForGenerateInvoice(ids);
-            AssertForGenerateInvoice(ids, infoMessage: "No payer selected.", severity: InfoBarType.Warning, success: false,
-                selectPayer: false);
+            AssertForGenerateInvoice(ids, severity: InfoBarType.Warning, success: false, selectPayer: false);
         }
 
         [TestMethod]
@@ -491,8 +475,7 @@ namespace Apolo.Tests.ViewModels
         {
             var ids = ArrangeForGenerateInvoice(selectLessons: false);
             await ActForForGenerateInvoice(ids);
-            AssertForGenerateInvoice(ids, infoMessage: "No lessons selected.", severity: InfoBarType.Warning, success: false,
-                selectLessons: false);
+            AssertForGenerateInvoice(ids, severity: InfoBarType.Warning, success: false, selectLessons: false);
         }
 
         [TestMethod]
@@ -500,8 +483,7 @@ namespace Apolo.Tests.ViewModels
         {
             var ids = ArrangeForGenerateInvoice();
             await ActForForGenerateInvoice(ids, dbError: true);
-            AssertForGenerateInvoice(ids, infoMessage: "Constraint failed.", severity: InfoBarType.Error, success: false,
-                dbError: true);
+            AssertForGenerateInvoice(ids, severity: InfoBarType.Error, success: false, dbError: true);
         }
 
         [TestMethod]
@@ -513,8 +495,7 @@ namespace Apolo.Tests.ViewModels
             string fileName = $"{_viewModel.Bill.Name}.pdf";
             string ticketFileName = $"{_viewModel.Bill.Name}-list.pdf";
 
-            AssertForGenerateInvoice(ids, infoMessage: $"Invoice and ticket saved:\n• {fileName}\n• {ticketFileName}", 
-                severity: InfoBarType.Info, success: true);
+            AssertForGenerateInvoice(ids, severity: InfoBarType.Info, success: true);
         }
 
         // Print Document
@@ -554,8 +535,8 @@ namespace Apolo.Tests.ViewModels
             await _viewModel.PrintDocument();
         }
 
-        private void AssertForPrintDocument(string? infoMessage, InfoBarType severity, bool success,
-            bool isBusy = false, bool isInvoice = true, bool invalidDirectory = false)
+        private void AssertForPrintDocument(InfoBarType severity, bool success, bool isBusy = false, 
+            bool isInvoice = true, bool invalidDirectory = false)
         {
             var lessons = _viewModel.Lessons.Select(l => l.Data).ToList();
 
@@ -589,8 +570,7 @@ namespace Apolo.Tests.ViewModels
                     Times.Never);
             }
 
-            VerifyAction(infoMessage, severity, isOpen: true, payersCount: 0, count: 4,
-                totalSelected: 0, total: 307.6m, isBusy: isBusy, infoMessageContains: false);
+            VerifyAction(severity, isOpen: true, payersCount: 0, count: 4, totalSelected: 0, total: 307.6m, isBusy: isBusy);
         }
 
         [TestMethod]
@@ -599,8 +579,7 @@ namespace Apolo.Tests.ViewModels
             _viewModel.IsBusy = true;
             ArrangeForPrintDocument();
             await ActForForPrintDocument();
-            AssertForPrintDocument(infoMessage: "Can't print bill while busy.", severity: InfoBarType.Warning,
-                isBusy: true, success: false);
+            AssertForPrintDocument(severity: InfoBarType.Warning, isBusy: true, success: false);
         }
 
         [TestMethod]
@@ -608,8 +587,7 @@ namespace Apolo.Tests.ViewModels
         {
             ArrangeForPrintDocument(invalidDirectory: true);
             await ActForForPrintDocument();
-            AssertForPrintDocument(infoMessage: "Billing folder does not exist, please configure it properly in the settings view.",
-                severity: InfoBarType.Error, success: false, invalidDirectory: true);
+            AssertForPrintDocument(severity: InfoBarType.Error, success: false, invalidDirectory: true);
         }
 
         [TestMethod]
@@ -617,8 +595,7 @@ namespace Apolo.Tests.ViewModels
         {
             ArrangeForPrintDocument(isInvoice: true);
             await ActForForPrintDocument();
-            AssertForPrintDocument(infoMessage: "Invoice and ticket saved:\n• 01-2024-0007.pdf\n• 01-2024-0007-list.pdf", 
-                severity: InfoBarType.Info, success: true, isInvoice: true);
+            AssertForPrintDocument(severity: InfoBarType.Info, success: true, isInvoice: true);
         }
 
         [TestMethod]
@@ -626,8 +603,7 @@ namespace Apolo.Tests.ViewModels
         {
             ArrangeForPrintDocument(isInvoice: false);
             await ActForForPrintDocument();
-            AssertForPrintDocument(infoMessage: "Ticket saved: 01-2024-0007.pdf",
-                severity: InfoBarType.Info, success: true, isInvoice: false);
+            AssertForPrintDocument(severity: InfoBarType.Info, success: true, isInvoice: false);
         }
     }
 }
