@@ -6,8 +6,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Repository;
+using Serilog;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using ViewModels;
 using Windows.Storage;
 
@@ -19,6 +21,19 @@ namespace Apolo
 
         public App()
         {
+            // Initialize Logger
+            string logFilePath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "Logs", "apolo_log_.txt");
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Information()
+                .WriteTo.File(logFilePath, rollingInterval: RollingInterval.Day, retainedFileCountLimit: 7)
+                .CreateLogger();
+
+            Log.Information("Apolo App starting up...");
+
+            // Hook up global exception handlers
+            UnhandledException += App_UnhandledExceptionAsync;
+            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+
             Services = ConfigureServices;
             InitializeDatabase();
             InitializeComponent();
@@ -108,6 +123,39 @@ namespace Apolo
             m_window = new MainWindow();
             MainWindow = m_window;
             m_window.Activate();
+        }
+
+        private async void App_UnhandledExceptionAsync(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            Log.Fatal(e.Exception, "A fatal UI exception occurred.");
+            e.Handled = true; // Attempt to prevent the app from crashing instantly
+
+            if (MainWindow?.Content?.XamlRoot != null)
+            {
+                var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
+                {
+                    Title = "Unexpected Error",
+                    Content = $"A critical error occurred. The application has logged the issue, but it may behave unexpectedly if you continue.\n\nDetails: {e.Exception.Message}",
+                    CloseButtonText = "Understood",
+                    XamlRoot = MainWindow.Content.XamlRoot
+                };
+
+                try
+                {
+                    await dialog.ShowAsync();
+                }
+                catch (Exception dialogEx)
+                {
+                    // If the UI thread is too corrupted to show a dialog, catch it so we don't cause a secondary crash
+                    Log.Error(dialogEx, "Failed to display the unhandled exception dialog.");
+                }
+            }
+        }
+
+        private void TaskScheduler_UnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+        {
+            Log.Error(e.Exception, "An unobserved background task exception occurred.");
+            e.SetObserved(); // Prevent the app from tearing down
         }
 
         public Window? MainWindow { get; private set; }
