@@ -9,6 +9,18 @@ using WinRT;
 
 namespace Apolo
 {
+    public static class NavigationTags
+    {
+        public const string Lessons = "lessons";
+        public const string Invoicing = "invoicing";
+        public const string Payers = "payers";
+        public const string Students = "students";
+        public const string Services = "services";
+        public const string Specifications = "specifications";
+        public const string Dashboard = "dashboard";
+        public const string Proposal = "proposal";
+        public const string Settings = "settings";
+    }
     public sealed partial class MainWindow : Window
     {
         MicaController? _mica;
@@ -49,31 +61,31 @@ namespace Apolo
             var tag = (args.SelectedItem as NavigationViewItem)?.Tag?.ToString();
             switch (tag)
             {
-                case "lessons":
+                case NavigationTags.Lessons:
                     RootFrame.Navigate(typeof(LessonsPage));
                     break;
-                case "invoicing":
+                case NavigationTags.Invoicing:
                     RootFrame.Navigate(typeof(InvoicesPage));
                     break;
-                case "payers":
+                case NavigationTags.Payers:
                     RootFrame.Navigate(typeof(PayersPage)); 
                     break;
-                case "students":
+                case NavigationTags.Students:
                     RootFrame.Navigate(typeof(StudentsPage));
                     break;
-                case "services":
+                case NavigationTags.Services:
                     RootFrame.Navigate(typeof(ServicesPage));
                     break;
-                case "specifications":
+                case NavigationTags.Specifications:
                     RootFrame.Navigate(typeof(SpecificationsPage));
                     break;
-                case "dashboard":
+                case NavigationTags.Dashboard:
                     RootFrame.Navigate(typeof(DashboardPage));
                     break;
-                case "proposal":
+                case NavigationTags.Proposal:
                     RootFrame.Navigate(typeof(ProposalPage));
                     break;
-                case "settings":
+                case NavigationTags.Settings:
                     RootFrame.Navigate(typeof(SettingsPage));
                     break;
             }

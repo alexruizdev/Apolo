@@ -1,17 +1,31 @@
-﻿using CommunityToolkit.Mvvm.Input;
+﻿using Apolo.Services;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
+using SQLitePCL;
 using System.Collections.ObjectModel;
 using ViewModels;
 
 namespace Apolo.ViewModels
 {
-    public partial class PayersViewModel(IPayerRepository payerRepository) : BaseViewModel
+    public partial class PayersViewModel(IPayerRepository payerRepository, IStringLocalizer stringLocalizer) : 
+        BaseViewModel(stringLocalizer)
     {
         readonly IPayerRepository _payerRepository = payerRepository;
 
         public ObservableCollection<PayerSummary> Payers { get; } = [];
+
+        // Messages
+        private static string Message_Load_Payers_Error => "Messages/Load_Payers_Error";
+        private static string Message_Load_Payers_Success => "Messages/Load_Payers_Success";
+        private static string Message_Add_Payer_Error => "Messages/Add_Payer_Error";
+        private static string Message_Add_Payer_Success => "Messages/Add_Payer_Success";
+        private static string Message_Delete_Payer_Error => "Messages/Delete_Payer_Error";
+        private static string Message_Associated_Student_Reason => "Messages/Associated_Student_Reason";
+        private static string Message_Delete_Payer_Success => "Messages/Delete_Payer_Success";
+        private static string Message_Edit_Payer_Error => "Messages/Edit_Payer_Error";
+        private static string Message_Edit_Payer_Success => "Messages/Edit_Payer_Success";
 
         public bool ValidatePayerInput(ref string firstName, ref string lastName, 
             ref string address, ref string zipCode, ref string city, ref string taxId)
@@ -25,7 +39,7 @@ namespace Apolo.ViewModels
 
             if (string.IsNullOrWhiteSpace(firstName) && string.IsNullOrWhiteSpace(lastName))
             {
-                SetExitFunction("Enter at least a first or last name.", InfoBarType.Warning);
+                SetExitFunction(_loc.Get(Message_PersonNameValidation), InfoBarType.Warning);
                 return false;
             }
 
@@ -38,7 +52,7 @@ namespace Apolo.ViewModels
             if (payer is null)
             {
                 SetExitFunction();
-                throw new InvalidDataException("Payer not loaded.");
+                throw new InvalidDataException($"{_loc.Get(Message_Payer_Not_Loaded, id.ToString())}.");
             }
             return (payer, Payers.IndexOf(payer));
         }
@@ -48,7 +62,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't load payers while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Load_Payers_Error);
                 return;
             }
 
@@ -57,7 +71,7 @@ namespace Apolo.ViewModels
             var items = await _payerRepository.GetPayersAsync();
             Payers.Clear();
             foreach (var item in items) Payers.Add(item);
-            SetExitFunction($"{Payers.Count} loaded", InfoBarType.Success);
+            SetExitFunction($"{_loc.Get(Message_Load_Payers_Success, Payers.Count)}.", InfoBarType.Success);
         }
 
 
@@ -71,7 +85,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't add payer while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Add_Payer_Error);
                 return;
             }
 
@@ -98,7 +112,7 @@ namespace Apolo.ViewModels
 
                 // Append to UI (no unpaid items yet)
                 Payers.Add(Helper.ConvertToPayerSummary(payer, 0));
-                SetExitFunction($"Payer '{payer.FullName}' added successfully.", InfoBarType.Success);
+                SetExitFunction($"{_loc.Get(Message_Add_Payer_Success, payer.FullName)}.", InfoBarType.Success);
             }
             catch (DbUpdateException ex)
             {
@@ -111,7 +125,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't delete payer while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Delete_Payer_Error);
                 return;
             }
 
@@ -123,11 +137,16 @@ namespace Apolo.ViewModels
                 await _payerRepository.DeleteAsync(id);
 
                 Payers.Remove(oldPayer);
-                SetExitFunction($"Payer '{oldPayer.Name}' deleted successfully.", InfoBarType.Success);
+                SetExitFunction($"{_loc.Get(Message_Delete_Payer_Success, oldPayer.Name)}.", InfoBarType.Success);
             }
             catch (DbUpdateException ex)
             {
                 SetExitFunction(ex.Message, InfoBarType.Error);
+            }
+            catch (InvalidOperationException ex)
+            {
+                SetExitFunction($"{_loc.Get(Message_Delete_Payer_Error)}: {_loc.Get(Message_Associated_Student_Reason, ex.Message)}",
+                    InfoBarType.Error);
             }
         }
 
@@ -136,7 +155,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't update payer while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Edit_Payer_Error);
                 return;
             }
 
@@ -162,8 +181,8 @@ namespace Apolo.ViewModels
                     Zip = zipCode,
                     City = city,
                     TaxId = taxId
-                }; 
-                SetExitFunction($"Payer '{oldPayer.Name}' updated successfully.", InfoBarType.Success);
+                };
+                SetExitFunction($"{_loc.Get(Message_Edit_Payer_Success, oldPayer.Name)}.", InfoBarType.Success);
             }
             catch (DbUpdateException ex)
             {

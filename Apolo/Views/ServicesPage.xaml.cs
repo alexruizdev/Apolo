@@ -23,7 +23,7 @@ public sealed partial class ServicesPage : Page
 
     private async void DeleteService_Click(object sender, RoutedEventArgs e)
     {
-        Guid? id = await ConfirmationDialog.ConfirmButtonItemAction(sender, "delete service");
+        Guid? id = await ConfirmationDialog.ConfirmButtonItemAction(sender, Loc.Action_DeleteService);
         if (id is not null)
             await ViewModel.DeleteServiceAsync(id.Value);
     }
@@ -36,13 +36,13 @@ public sealed partial class ServicesPage : Page
             return;
 
         // Prefill with the current names
-        var nameBox = new TextBox { Header = "Name", Text = item.Name, MinWidth = 320, MaxLength = 100 };
+        var nameBox = new TextBox { Header = Loc.Common_Name, Text = item.Name, MinWidth = 320, MaxLength = 100 };
         var priceBox = new NumberBox {
-            Header = "Service rate (price):", 
+            Header = Loc.Common_Price, 
             Value = (double)item.Price, 
             PlaceholderText = "0.00"
         };
-        var isPricePerHourCheck = new CheckBox { Content = "Is price per hour?", IsChecked = item.IsPricePerHour };
+        var isPricePerHourCheck = new CheckBox { Content = Loc.Common_PerHour, IsChecked = item.IsPricePerHour };
 
         var panel = new StackPanel { Spacing = 8 };
         panel.Children.Add(nameBox);
@@ -50,9 +50,9 @@ public sealed partial class ServicesPage : Page
         panel.Children.Add(isPricePerHourCheck);
         var dialog = new ContentDialog()
         {
-            Title = "Edit service",
+            Title = Loc.Buttons_Edit,
             Content = panel,
-            PrimaryButtonText = "Save",
+            PrimaryButtonText = Loc.Buttons_Save,
             CloseButtonText = Loc.Buttons_Cancel,
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = Content.XamlRoot
@@ -69,9 +69,9 @@ public sealed partial class ServicesPage : Page
 
     private async void NewService_Click(object sender, RoutedEventArgs e)
     {
-        var nameBox = new TextBox { Header = "Name", MinWidth = 320, MaxLength = 120 };
-        var priceBox = new NumberBox { Header = "Service rate (price):", MinWidth = 320, PlaceholderText = "0.00", Value = 0 };
-        var isPricePerHourCheck = new CheckBox { Content = "Is price per hour?", IsChecked = true };
+        var nameBox = new TextBox { Header = Loc.Common_Name, MinWidth = 320, MaxLength = 120 };
+        var priceBox = new NumberBox { Header = Loc.Common_Price, MinWidth = 320, PlaceholderText = "0.00", Value = 0 };
+        var isPricePerHourCheck = new CheckBox { Content = Loc.Common_PerHour, IsChecked = true };
 
         var panel = new StackPanel { Spacing = 8 };
         panel.Children.Add(nameBox);
@@ -79,9 +79,9 @@ public sealed partial class ServicesPage : Page
         panel.Children.Add(isPricePerHourCheck);
         var dialog = new ContentDialog()
         {
-            Title = "Create service",
+            Title = Loc.Buttons_Create,
             Content = panel,
-            PrimaryButtonText = "Create",
+            PrimaryButtonText = Loc.Buttons_Create,
             CloseButtonText = Loc.Buttons_Cancel,
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = Content.XamlRoot

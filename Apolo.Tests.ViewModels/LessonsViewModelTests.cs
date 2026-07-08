@@ -16,6 +16,8 @@ namespace Apolo.Tests.ViewModels
         protected Mock<ISpecificationRepository> _mockSpecificationRepo = null!;
         protected Mock<IUserProfileService> _mockUserProfileService = null!;
         protected LessonsViewModel _viewModel = null!;
+        private Mock<IStringLocalizer> _localizerMock = null!;
+
 
         [TestInitialize]
         public virtual void TestInit()
@@ -25,6 +27,7 @@ namespace Apolo.Tests.ViewModels
             _mockServiceRepo = new Mock<IServiceRepository>();
             _mockSpecificationRepo = new Mock<ISpecificationRepository>();
             _mockUserProfileService = new Mock<IUserProfileService>();
+            _localizerMock = new Mock<IStringLocalizer>();
 
             var userProfile = new UserProfile
             {
@@ -40,7 +43,7 @@ namespace Apolo.Tests.ViewModels
                 _mockStudentRepo.Object,
                 _mockServiceRepo.Object,
                 _mockSpecificationRepo.Object,
-                _mockUserProfileService.Object);
+                _mockUserProfileService.Object, _localizerMock.Object);
         }
     }
 

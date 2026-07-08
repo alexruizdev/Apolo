@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Models;
 using System.Collections.ObjectModel;
+using System.Globalization;
 
 namespace ViewModels
 {
@@ -35,7 +36,7 @@ namespace ViewModels
         [ObservableProperty] private double _weekendFee;
 
         // Dynamic UI Configurations
-        [ObservableProperty] private string _priceHeader = "Price:";
+        [ObservableProperty] private string _priceHeader;
         [ObservableProperty] private string _studentSearchText = string.Empty;
         [ObservableProperty] private bool _isSpecificationEnabled;
         [ObservableProperty] private bool _isPrimaryButtonEnabled;
@@ -44,13 +45,20 @@ namespace ViewModels
         [ObservableProperty] private string _dialogTitle = string.Empty;
         private Guid? _studentId;
 
+        // Messages
+        protected static string Message_Edit_Title => "Message/Edit_Lesson";
+        protected static string Message_New_Title => "Message/New_Lesson";
+
         public LessonFormViewModel(LessonsViewModel parentViewModel)
+            : base(parentViewModel._loc)
         {
             _parentViewModel = parentViewModel;
             IsEditMode = false;
 
             TravelAllowance = _parentViewModel.Profile.TravelAllowance;
             WeekendFee = _parentViewModel.Profile.WeekendFee;
+
+            PriceHeader = _loc.Get(Header_Price);
 
             foreach (var student in Students) FilteredStudents.Add(student);
 
@@ -62,9 +70,12 @@ namespace ViewModels
         }
 
         public LessonFormViewModel(LessonsViewModel parentViewModel, LessonSummary lesson)
+            : base(parentViewModel._loc)
         {
             _parentViewModel = parentViewModel;
-            
+
+            PriceHeader = _loc.Get(Header_Price);
+
             IsEditMode = true;
             Name = lesson.Name;
             Date = new DateTimeOffset(lesson.Date.ToDateTime(TimeOnly.MinValue));
@@ -199,7 +210,7 @@ namespace ViewModels
 
         partial void OnIsPricePerHourChanged(bool value)
         {
-            PriceHeader = IsPricePerHour ? "Price/Hour:" : "Price:";
+            PriceHeader = IsPricePerHour ? PriceHeader = _loc.Get(Header_PricePerHour) : PriceHeader = _loc.Get(Header_Price); 
         }
 
         // --- UPDATE FINAL PRICE ---
@@ -208,7 +219,7 @@ namespace ViewModels
         {
             if (SelectedService == null || errors)
             {
-                DialogTitle = $"New Lesson — Total: €-.--";
+                DialogTitle = $"{_loc.Get(Message_New_Title, "€-.--")}";
                 return;
             }
 
@@ -221,14 +232,14 @@ namespace ViewModels
 
 
             // Update the string property bound to the dialog title
-            DialogTitle = $"New Lesson — Total: {finalPrice:C2}";
+            DialogTitle = $"{_loc.Get(Message_New_Title, finalPrice.ToString("C2", CultureInfo.CurrentCulture))}";
         }
 
         private void UpdateEditDialogTitle(bool errors)
         {
             if (errors)
             {
-                DialogTitle = $"Edit Lesson — Total: €-.--";
+                DialogTitle = $"{_loc.Get(Message_Edit_Title, "€-.--")}";
                 return;
             }
 
@@ -241,7 +252,7 @@ namespace ViewModels
 
 
             // Update the string property bound to the dialog title
-            DialogTitle = $"Edit Lesson — Total: {finalPrice:C2}";
+            DialogTitle = $"{_loc.Get(Message_Edit_Title, finalPrice.ToString("C2", CultureInfo.CurrentCulture))}";
         }
 
         // --- VALIDATION LOGIC ---
@@ -251,9 +262,9 @@ namespace ViewModels
             IsPricePerHour = SelectedService != null && SelectedService.IsPricePerHour;
 
             if (SelectedStudent == null)
-                errors.Add("• Select one student.");
+                errors.Add(_loc.Get(Message_SelectStudentValidation));
             if (SelectedService == null)
-                errors.Add("• Select a service.");
+                errors.Add(_loc.Get(Message_SelectServiceValidation));
         }
 
         private void Validate()
@@ -266,13 +277,13 @@ namespace ViewModels
                 ValidateNewLesson(ref errors);
             
             if (IsPricePerHour && (double.IsNaN(Duration) || Duration <= 0))
-                errors.Add("• Duration must be a positive integer.");
+                errors.Add(_loc.Get(Message_DurationValueValidation));
             if (Price <= 0)
-                errors.Add("• Price must be a positive integer.");
+                errors.Add(_loc.Get(Message_PriceValidation));
             if (Tip < 0)
-                errors.Add("• Tip must be a positive integer.");
+                errors.Add(_loc.Get(Message_TipValidation));
             if (string.IsNullOrWhiteSpace(Name))
-                errors.Add("• Lesson name cannot be empty.");
+                errors.Add(_loc.Get(Message_LessonNameValidation));
 
             IsPrimaryButtonEnabled = !errors.Any();
 

@@ -3,7 +3,6 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:vm="using:Apolo.ViewModels"
-      xmlns:loc="using:Apolo.Services"
       xmlns:m="using:Models"
       x:Name="PageRoot"
       Loaded="Page_Loaded">
@@ -23,12 +22,12 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Column="0" 
-                       Text="{x:Bind loc:Loc.Menu_Payers}"
+            <TextBlock Grid.Column="0"
+                       x:Uid="Payers/Title"
                        Style="{ThemeResource TitleLargeTextBlockStyle}" />
 
             <CommandBar Grid.Column="1" DefaultLabelPosition="Right" Background="Transparent" IsDynamicOverflowEnabled="False">
-                <AppBarButton Label="New" Icon="Add"
+                <AppBarButton x:Uid="Buttons/New" Icon="Add"
                   Click="NewPayer_Click"
                   IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
             </CommandBar>
@@ -59,7 +58,7 @@
                             <TextBlock Text="•" 
                                        Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
                             <TextBlock Style="{ThemeResource BodyTextBlockStyle}">
-                                <Run Text="Outstanding:" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                                <Run x:Uid="Common/Outstanding" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
                                 <Run Text="{x:Bind Outstanding, Converter={StaticResource DecimalToCurrencyConverter}}" FontWeight="SemiBold" />
                             </TextBlock>
                         </StackPanel>
@@ -73,13 +72,13 @@
                                     Click="EditPayer_Click"
                                     IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
                                 <SymbolIcon Symbol="Edit" />
-                                <ToolTipService.ToolTip>Edit payer</ToolTipService.ToolTip>
+                                <ToolTipService.ToolTip>{x:Bind loc:Loc.Common_EditPayer}</ToolTipService.ToolTip>
                             </Button>
 
                             <Button Style="{StaticResource RowDeleteButtonStyle}" Click="DeletePayer_Click" 
                                     IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
                                 <SymbolIcon Symbol="Delete" />
-                                <ToolTipService.ToolTip>Delete payer</ToolTipService.ToolTip>
+                                <ToolTipService.ToolTip>{x:Bind loc:Loc.Action_DeletePayer}</ToolTipService.ToolTip>
                             </Button>
                         </StackPanel>
                     </Grid>

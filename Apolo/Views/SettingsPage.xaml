@@ -4,7 +4,6 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:local="using:Apolo.Views"
       xmlns:vm="using:Apolo.ViewModels"
-      xmlns:loc="using:Apolo.Services"
       xmlns:m="using:Models"
       x:Name="PageRoot">
 
@@ -14,9 +13,9 @@
             <!-- ========================================== -->
             <!-- HEADER & STATE ZONE                        -->
             <!-- ========================================== -->
-            <TextBlock Text="{x:Bind loc:Loc.Menu_Settings}" Style="{ThemeResource TitleLargeTextBlockStyle}" />
+            <TextBlock x:Uid="Settings/Title" Style="{ThemeResource TitleLargeTextBlockStyle}" />
 
-            <HyperlinkButton Content="User manual"
+            <HyperlinkButton x:Uid="Settings/UserManual"
                              NavigateUri="https://github.com/alexruizdev/Apolo/wiki/Manual" />
 
             <StackPanel Spacing="4">
@@ -29,37 +28,37 @@
             <!-- ========================================== -->
             <!-- SECTION 1: MAIN INFORMATION                -->
             <!-- ========================================== -->
-            <Expander Header="Main Information" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+            <Expander x:Uid="Settings/MainInformation" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
                 <StackPanel Spacing="12" Padding="0,8,0,4">
                     <Grid ColumnDefinitions="*, *" ColumnSpacing="12">
-                        <TextBox Grid.Column="0" Header="Full Name" Text="{x:Bind ViewModel.Profile.FullName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
-                        <TextBox Grid.Column="1" Header="Phone" Text="{x:Bind ViewModel.Profile.Phone, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="4,0,0,0"/>
+                        <TextBox Grid.Column="0" x:Uid="Common/Name" Text="{x:Bind ViewModel.Profile.FullName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
+                        <TextBox Grid.Column="1" x:Uid="Common/Phone" Text="{x:Bind ViewModel.Profile.Phone, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="4,0,0,0"/>
                     </Grid>
-                    
-                    <TextBox Header="Address" Text="{x:Bind ViewModel.Profile.Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBox x:Uid="Common/Address" Text="{x:Bind ViewModel.Profile.Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     
                     <Grid ColumnDefinitions="*, *">
-                        <TextBox Grid.Column="0" Header="Zip Code" Text="{x:Bind ViewModel.Profile.ZipCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
-                        <TextBox Grid.Column="1" Header="City" Text="{x:Bind ViewModel.Profile.City, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="4,0,0,0"/>
+                        <TextBox Grid.Column="0" x:Uid="Common/ZipCode" Text="{x:Bind ViewModel.Profile.ZipCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
+                        <TextBox Grid.Column="1" x:Uid="Common/City" Text="{x:Bind ViewModel.Profile.City, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="4,0,0,0"/>
                     </Grid>
-                    
-                    <TextBox  Header="Email" Text="{x:Bind ViewModel.Profile.Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  />
+
+                    <TextBox  x:Uid="Common/Email" Text="{x:Bind ViewModel.Profile.Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  />
                 </StackPanel>
             </Expander>
 
             <!-- ========================================== -->
             <!-- SECTION 2: BILLING & TAX DETAILS           -->
             <!-- ========================================== -->
-            <Expander Header="Billing &amp; Tax Details" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+            <Expander x:Uid="Settings/BillingTaxDetails" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
                 <StackPanel Spacing="12" Padding="0,8,0,4">
                     <Grid ColumnDefinitions="*, *" ColumnSpacing="12">
-                        <TextBox Grid.Column="0" Header="Tax ID" Text="{x:Bind ViewModel.Profile.TaxId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
-                        <TextBox Grid.Column="1" Header="Bank Name" Text="{x:Bind ViewModel.Profile.BankName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="4,0,0,0"/>
+                        <TextBox Grid.Column="0" x:Uid="Common/TaxId" Text="{x:Bind ViewModel.Profile.TaxId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
+                        <TextBox Grid.Column="1" x:Uid="Common/BankName" Text="{x:Bind ViewModel.Profile.BankName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="4,0,0,0"/>
                     </Grid>
 
                     <Grid ColumnDefinitions="*, *">
-                        <TextBox Grid.Column="0" Header="Bank Account (IBAN)" Text="{x:Bind ViewModel.Profile.BankAccount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
-                        <NumberBox Grid.Column="1" Header="IVA (VAT) Percent" 
+                        <TextBox Grid.Column="0" x:Uid="Common/BankAccount" Text="{x:Bind ViewModel.Profile.BankAccount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
+                        <NumberBox Grid.Column="1" x:Uid="Common/TaxPercent"
                                Value="{x:Bind ViewModel.Profile.IvaPercent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                SmallChange="1" LargeChange="5" SpinButtonPlacementMode="Inline" Margin="4,0,0,0"/>
                     </Grid>
@@ -69,46 +68,66 @@
             <!-- ========================================== -->
             <!-- SECTION 3: CONFIGURATION & FEES            -->
             <!-- ========================================== -->
-            <Expander Header="Configuration &amp; Fees" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+            <Expander x:Uid="Settings/ConfigurationFees" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
                 <StackPanel Spacing="12" Margin="0,10,0,0">
+                    <!-- Travel Allowance & Weekend Fee -->
                     <Grid ColumnDefinitions="*, *" ColumnSpacing="12">
-                        <NumberBox Header="Travel Allowance" 
+                        <NumberBox x:Uid="Common/TravelAllowance"
                                Value="{x:Bind ViewModel.Profile.TravelAllowance, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                PlaceholderText="0.00" SpinButtonPlacementMode="Inline" Margin="0,0,4,0"/>
-                        <NumberBox Grid.Column="1" Header="Weekend Fee" 
+                        <NumberBox Grid.Column="1" x:Uid="Common/WeekendFee"
                                Value="{x:Bind ViewModel.Profile.WeekendFee, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                PlaceholderText="0.00" SpinButtonPlacementMode="Inline" Margin="4,0,0,0"/>
                     </Grid>
-
+                
+                    <!-- Billing Folder -->
                     <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto">
-                        <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Billing Folder" Style="{ThemeResource BodyTextBlockStyle}" Margin="0,0,0,4"/>
-                        <TextBox x:Name="BillingFolderTextBlock" Grid.Row="1" Text="{x:Bind ViewModel.Profile.BillingFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True" PlaceholderText="Select a folder..."/>
-                        <Button Grid.Row="1" Grid.Column="1" Content="Pick a folder" Click="PickBillingFolder_Click" Margin="8,0,0,0"/>
+                        <TextBlock Grid.Row="0" Grid.ColumnSpan="2" x:Uid="Settings/BillingFolder" Style="{ThemeResource BodyTextBlockStyle}" Margin="0,0,0,4"/>
+                        <TextBox x:Name="BillingFolderTextBlock" Grid.Row="1" Text="{x:Bind ViewModel.Profile.BillingFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True" x:Uid="Settings/SelectFolder"/>
+                        <Button Grid.Row="1" Grid.Column="1" x:Uid="Settings/PickFolder" Click="PickBillingFolder_Click" Margin="8,0,0,0"/>
 
                     </Grid>
-
+                    
+                    <!-- Backup Folder -->
                     <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto">
-                        <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Backups Folder" Style="{ThemeResource BodyTextBlockStyle}" Margin="0,0,0,4"/>
-                        <TextBox x:Name="BackupFolderTextBlock" Grid.Row="1" Text="{x:Bind ViewModel.Profile.BackupFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True" PlaceholderText="Select a folder..."/>
-                        <Button Grid.Row="1" Grid.Column="1" Content="Pick a folder" Click="PickBackupFolder_Click" Margin="8,0,0,0"/>
+                        <TextBlock Grid.Row="0" Grid.ColumnSpan="2" x:Uid="Settings/BackupsFolder" Style="{ThemeResource BodyTextBlockStyle}" Margin="0,0,0,4"/>
+                        <TextBox x:Name="BackupFolderTextBlock" Grid.Row="1" Text="{x:Bind ViewModel.Profile.BackupFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True" x:Uid="Settings/SelectFolder"/>
+                        <Button Grid.Row="1" Grid.Column="1" x:Uid="Settings/PickFolder" Click="PickBackupFolder_Click" Margin="8,0,0,0"/>
                     </Grid>
+
+                    <!-- Language Option -->
+                    <StackPanel>
+                        <TextBlock Text="Language / Idioma"
+                                   Style="{ThemeResource BodyTextBlockStyle}"
+                                   FontWeight="SemiBold" />
+
+                        <ComboBox x:Name="LanguageComboBox"
+                                  Width="300"
+                                  ItemsSource="{x:Bind ViewModel.Languages}"
+                                  SelectedItem="{x:Bind ViewModel.SelectedLenguage, Mode=TwoWay}"
+                                  DisplayMemberPath="DisplayName" />
+
+                        <TextBlock Text="Changing this will instantly translate supported UI controls and layouts."
+                                   Style="{ThemeResource CaptionTextBlockStyle}"
+                                   Foreground="{ThemeResource SystemControlPageTextBaseMediumBrush}" />
+                    </StackPanel>
                 </StackPanel>
             </Expander>
 
             <!-- PRIMARY SAVING ACTION TOOLBAR -->
             <CommandBar DefaultLabelPosition="Right" HorizontalAlignment="Left" Background="Transparent" Margin="0,4,0,0">
-                <AppBarButton Icon="Save" Label="Save" Command="{Binding SaveCommand}"/>
+                <AppBarButton Icon="Save" x:Uid="Buttons/Save" Command="{Binding SaveCommand}"/>
                 <AppBarSeparator />
-                <AppBarButton Icon="Refresh" Label="Discard Changes"  Command="{Binding RefreshProfileCommand}"/>
+                <AppBarButton Icon="Refresh" x:Uid="Buttons/DiscardChanges"  Command="{Binding RefreshProfileCommand}"/>
                 <AppBarSeparator />
-                <AppBarButton Icon="Delete" Label="Delete profile" Foreground="{ThemeResource SystemFillColorCriticalBrush}"  Command="{Binding DeleteCommand}"/>
+                <AppBarButton Icon="Delete" x:Uid="Buttons/DeleteProfile" Foreground="{ThemeResource SystemFillColorCriticalBrush}"  Command="{Binding DeleteCommand}"/>
             </CommandBar>
 
             <!-- ========================================== -->
             <!-- DATA MANAGEMENT UTILITIES                  -->
             <!-- ========================================== -->
             <StackPanel Spacing="12" Margin="0,16,0,0">
-                <TextBlock Text="Data Management" Style="{StaticResource SubtitleTextBlockStyle}"/>
+                <TextBlock x:Uid="Settings/DataManagement" Style="{StaticResource SubtitleTextBlockStyle}"/>
 
                 <Border Style="{StaticResource SettingUtilitiesStyle}">
 
@@ -116,23 +135,23 @@
 
                         <!-- Safe/Standard File Actions -->
                         <CommandBar DefaultLabelPosition="Right"  HorizontalAlignment="Left"  Background="Transparent">
-                            <AppBarButton Label="Import backup" Icon="Import" Click="ImportExcelButton_Click"/>
-                            <AppBarButton Icon="Save" Label="Export Excel" Click="ExportExcelButton_Click"/>
+                            <AppBarButton x:Uid="Buttons/ImportBackup" Icon="Import" Click="ImportExcelButton_Click"/>
+                            <AppBarButton Icon="Save" x:Uid="Buttons/ExportExcel" Click="ExportExcelButton_Click"/>
                             <AppBarSeparator />
-                            <AppBarButton Label="Import archive" Icon="ImportAll" Click="ImportArchiveButton_Click"/>
-                            <AppBarButton Label="Save archive" Icon="SaveLocal" Click="ExportArchiveButton_Click"/>
-                            <AppBarButton Icon="Library" Label="Archive" Click="ArchiveButton_Click"/>
-                            <AppBarButton Icon="Import" Label="Retrieve from archive" Click="RetrieveFromArchiveButton_Click"/>
+                            <AppBarButton x:Uid="Buttons/ImportArchive" Icon="ImportAll" Click="ImportArchiveButton_Click"/>
+                            <AppBarButton x:Uid="Buttons/SaveArchive" Icon="SaveLocal" Click="ExportArchiveButton_Click"/>
+                            <AppBarButton Icon="Library" x:Uid="Buttons/Archive" Click="ArchiveButton_Click"/>
+                            <AppBarButton Icon="Import" x:Uid="Buttons/Retrieve" Click="RetrieveFromArchiveButton_Click"/>
                         </CommandBar>
 
                         <MenuFlyoutSeparator />
 
                         <!-- Danger/Destructive Actions Strip -->
                         <StackPanel Spacing="8">
-                            <TextBlock Text="Danger Zone" Style="{StaticResource BodyStrongTextBlockStyle}" Foreground="{ThemeResource SystemFillColorCriticalBrush}" />
+                            <TextBlock x:Uid="Settings/DangerZone" Style="{StaticResource BodyStrongTextBlockStyle}" Foreground="{ThemeResource SystemFillColorCriticalBrush}" />
                             <CommandBar DefaultLabelPosition="Right" HorizontalAlignment="Left" Background="Transparent">
-                                <AppBarButton Label="Nuke Database" Icon="Delete" Foreground="{ThemeResource SystemFillColorCriticalBrush}" Click="DeleteDatabaseButton_Click"/>
-                                <AppBarButton Label="Nuke Archive" Icon="Delete" Foreground="{ThemeResource SystemFillColorCriticalBrush}" Click="DeleteArchiveButton_Click"/>
+                                <AppBarButton x:Uid="Settings/DeleteDatabase" Icon="Delete" Foreground="{ThemeResource SystemFillColorCriticalBrush}" Click="DeleteDatabaseButton_Click"/>
+                                <AppBarButton x:Uid="Settings/DeleteArchive" Icon="Delete" Foreground="{ThemeResource SystemFillColorCriticalBrush}" Click="DeleteArchiveButton_Click"/>
                             </CommandBar>
                         </StackPanel>
                     </StackPanel>

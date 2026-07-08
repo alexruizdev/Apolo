@@ -27,9 +27,9 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <TextBlock Text="Client Budget Proposals" Style="{ThemeResource TitleLargeTextBlockStyle}" />
+            <TextBlock x:Uid="Proposal/Title" Style="{ThemeResource TitleLargeTextBlockStyle}" />
 
-            <AppBarButton Label="Export to PDF"
+            <AppBarButton x:Uid="Buttons/ExportPdf"
                           Grid.Column="1"
                           Icon="Document"
                           Command="{x:Bind ViewModel.GeneratePDFCommand}"
@@ -65,10 +65,10 @@
                     <!-- Service Details -->
                     <Border Style="{StaticResource MetricBorder}">
                         <StackPanel Spacing="12">
-                            <TextBlock Text="Service Details" Style="{ThemeResource SubtitleTextBlockStyle}"/>
+                            <TextBlock x:Uid="Proposal/ServiceDetails" Style="{ThemeResource SubtitleTextBlockStyle}"/>
                             
                             <!-- Service -->
-                            <ComboBox Header="Service"
+                            <ComboBox x:Uid="Common/Service"
                                       IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
                                       SelectedValuePath="Name"
                                       DisplayMemberPath="Name"
@@ -106,20 +106,16 @@
                             
 
                             <!-- Online -->
-                            <ToggleSwitch Header="Lesson Delivery Modality"
-                                          OnContent="Online Session"
-                                          OffContent="In-Person (Applies Travel Allowance)"
+                            <ToggleSwitch x:Uid="Form/Online"
                                           IsOn="{x:Bind ViewModel.IsOnline, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             
                             <!-- Weekend -->
-                            <ToggleSwitch Header="Weekend or Holiday Scheduling"
-                                          OnContent="Weekend or Holiday Pricing (Applies Fee)"
-                                          OffContent="Standard Weekday Pricing"
+                            <ToggleSwitch x:Uid="Form/Weekend"
                                           IsOn="{x:Bind ViewModel.IsWeekendOrHoliday, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             
                             <!-- Frequency -->
                             <StackPanel Spacing="12">
-                                <TextBlock Text="Frequency Setup"
+                                <TextBlock x:Uid="Proposal/FrequencySetup"
                                            Style="{ThemeResource SubtitleTextBlockStyle}" />
 
                                 <Grid ColumnSpacing="12">
@@ -128,17 +124,17 @@
                                         <ColumnDefinition Width="1.5*" />
                                     </Grid.ColumnDefinitions>
 
-                                    <NumberBox Header="Frequency"
+                                    <NumberBox x:Uid="Proposal/FrequencyInput"
                                                Value="{x:Bind ViewModel.Frequency, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                Minimum="1"
                                                SpinButtonPlacementMode="Inline" />
 
                                     <ComboBox Grid.Column="1"
-                                              Header="Time Interval Unit"
+                                              x:Uid="Proposal/FrequencyVariant"
                                               SelectedIndex="{x:Bind ViewModel.SelectedUnitIndex, Mode=TwoWay}"
                                               HorizontalAlignment="Stretch">
-                                        <ComboBoxItem Content="Times per Week" />
-                                        <ComboBoxItem Content="Times per Month" />
+                                        <ComboBoxItem x:Uid="Proposal/TimesPerWeek" />
+                                        <ComboBoxItem x:Uid="Proposal/TimesPerMonth" />
                                     </ComboBox>
                                 </Grid>
                             </StackPanel>
@@ -168,7 +164,7 @@
                             HorizontalAlignment="Left" Grid.Column="0" Grid.Row="0">
                         <StackPanel Spacing="16" Padding="4">
 
-                            <TextBlock Text="PRICE PER SESSION" Style="{ThemeResource ReportTitle}" />
+                            <TextBlock x:Uid="Proposal/PricePerSession" Style="{ThemeResource ReportTitle}" />
                             <TextBlock Text="{x:Bind ViewModel.Report.PricePerSession, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}}"
                                            Style="{StaticResource HeaderTextBlockStyle}"
                                            Foreground="{ThemeResource SystemFillColorSuccessBrush}"
@@ -192,15 +188,15 @@
                                 </Grid.RowDefinitions>
                             
                                 <!-- Base price -->
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Base Price" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Grid.Row="0" Grid.Column="0" x:Uid="Proposal/BasePrice" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                 <TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind ViewModel.BasePrice, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}}" Style="{ThemeResource BodyTextBlockStyle}" HorizontalAlignment="Right" />
                             
                                 <!-- Weekend fee -->
-                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Weekend / Holiday Fee" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" x:Uid="Proposal/WeekendHolidayFee" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                 <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.Report.WeekendFeeApplied, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}, TargetNullValue='+ $0.00'}" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource SystemFillColorAttentionBrush}" HorizontalAlignment="Right" />
                             
                                 <!-- Duration multiplier -->
-                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Duration Multiplier" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Grid.Row="2" Grid.Column="0" x:Uid="Proposal/DurationMultiplier" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                 <StackPanel Grid.Row="2"
                                             Grid.Column="1"
                                             Orientation="Horizontal"
@@ -210,7 +206,7 @@
                                                Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
                                     <TextBlock Text="{x:Bind ViewModel.Report.RateMultiplier, Mode=OneWay}"
                                                Style="{ThemeResource BodyTextBlockStyle}" />
-                                    <TextBlock Text=" hrs"
+                                    <TextBlock x:Uid="Proposal/Hours"
                                                Style="{ThemeResource BodyTextBlockStyle}"
                                                Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
                                 </StackPanel>
@@ -218,11 +214,11 @@
                                 <MenuFlyoutSeparator Grid.Row="3" Grid.ColumnSpan="2" Margin="0,4,0,4" />
                             
                                 <!-- Subtotal -->
-                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Subtotal" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Grid.Row="4" Grid.Column="0" x:Uid="Proposal/Subtotal" Style="{ThemeResource BodyStrongTextBlockStyle}" />
                                 <TextBlock Grid.Row="4" Grid.Column="1" Text="{x:Bind ViewModel.Report.Subtotal, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}}" Style="{ThemeResource BodyStrongTextBlockStyle}" HorizontalAlignment="Right" />
                             
                                 <!-- Travel allowance -->
-                                <TextBlock Grid.Row="5" Grid.Column="0" Text="Travel Allowance" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Grid.Row="5" Grid.Column="0" x:Uid="Proposal/TravelAllowance" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                 <TextBlock Grid.Row="5" Grid.Column="1" Text="{x:Bind ViewModel.Report.TravelAllowanceApplied, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}}" Style="{ThemeResource BodyTextBlockStyle}" HorizontalAlignment="Right" />
                             
                             </Grid>
@@ -233,16 +229,16 @@
                     <Border Grid.Column="1" Grid.Row="0"
                             Style="{StaticResource MetricBorder}">
                         <StackPanel Spacing="8">
-                            <TextBlock Text="REQUESTED BUDGET" Style="{ThemeResource ReportTitle}" />
+                            <TextBlock x:Uid="Proposal/RequestedBudget" Style="{ThemeResource ReportTitle}" />
                             <TextBlock Text="{x:Bind ViewModel.Report.BudgetRequested.TotalPricePerMonth, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}}"
                                        Style="{StaticResource HeaderTextBlockStyle}"
                                        FontWeight="SemiBold"
                                        Foreground="{ThemeResource AccentAAFillColorDefaultBrush}" />
-                            <TextBlock Text="(estimated monthly cost)"
+                            <TextBlock x:Uid="Proposal/EstimatedMonthlyCost"
                                        Style="{StaticResource CaptionTextBlockStyle}"
                                        Margin="0,8,0,0" />
                             <MenuFlyoutSeparator />
-                            <TextBlock Text="Frequency:"
+                            <TextBlock x:Uid="Proposal/FrequencyReport"
                                        Style="{StaticResource CaptionTextBlockStyle}" />
                             <TextBlock Text="{x:Bind ViewModel.BudgetRequestedFrequencyString, Mode=OneWay}"
                                        Style="{StaticResource BodyTextBlockStyle}" />
@@ -257,11 +253,11 @@
                                        Style="{StaticResource ReportTitle}"
                                        Foreground="{ThemeResource SystemFillColorAttentionBrush}" />
                             <MenuFlyoutSeparator />
-                            <TextBlock Text="Frequency Variant:"
+                            <TextBlock x:Uid="Proposal/FrequencyVariantReport"
                                         Style="{StaticResource CaptionTextBlockStyle}" />
                             <TextBlock Text="{x:Bind ViewModel.BudgetMinusFrequencyString, Mode=OneWay}"
                                         Style="{StaticResource BodyTextBlockStyle}" />
-                            <TextBlock Text="Estimated monthly cost:"
+                            <TextBlock x:Uid="Proposal/EstimatedMonthlyCost"
                                         Style="{StaticResource CaptionTextBlockStyle}"
                                         Margin="0,8,0,0" />
                             <TextBlock Text="{x:Bind ViewModel.Report.BudgetMinus.TotalPricePerMonth, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}}"
@@ -298,11 +294,11 @@
                             <TextBlock Text="{x:Bind ViewModel.Report.AlternativeTravel.Label, Mode=OneWay}"
                                        Style="{StaticResource ReportTitle}" />
                             <MenuFlyoutSeparator />
-                            <TextBlock Text="Frequency:"
+                            <TextBlock x:Uid="Proposal/FrequencyReport"
                                        Style="{StaticResource CaptionTextBlockStyle}" />
                             <TextBlock Text="{x:Bind ViewModel.AlternativeTravelFrequencyString, Mode=OneWay}"
                                        Style="{StaticResource BodyTextBlockStyle}" />
-                            <TextBlock Text="Estimated monthly cost:"
+                            <TextBlock x:Uid="Proposal/EstimatedMonthlyCost"
                                        Style="{StaticResource CaptionTextBlockStyle}"
                                        Margin="0,8,0,0" />
                             <TextBlock Text="{x:Bind ViewModel.Report.AlternativeTravel.TotalPricePerMonth, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}}"

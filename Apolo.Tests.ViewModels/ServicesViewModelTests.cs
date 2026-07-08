@@ -1,4 +1,5 @@
-﻿using Apolo.ViewModels;
+﻿using Apolo.Services;
+using Apolo.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Models;
@@ -13,12 +14,15 @@ namespace Apolo.Tests.ViewModels
     {
         private Mock<IServiceRepository> _mockRepo = null!;
         private ServicesViewModel _viewModel = null!;
+        private Mock<IStringLocalizer> _localizerMock = null!;
+
 
         [TestInitialize]
         public void TestInit()
         {
             _mockRepo = new Mock<IServiceRepository>();
-            _viewModel = new ServicesViewModel(_mockRepo.Object);
+            _localizerMock = new Mock<IStringLocalizer>();
+            _viewModel = new ServicesViewModel(_mockRepo.Object, _localizerMock.Object);
         }
 
         void VerifyAction(string? message, InfoBarType severity, bool isOpen, int count, bool isBusy = false)

@@ -1,31 +1,103 @@
 ﻿using Apolo.Services;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Models;
 using Repository;
 using Serilog;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
 using ViewModels;
 
 namespace Apolo.ViewModels
 {
-    public partial class SettingsViewModel(IGeneralRepository repository, IUserProfileService userProfile,
-        Excel.IReader excelReader, Excel.IWriter excelWriter) : UserProfileViewModel(userProfile)
+    
+
+    public partial class SettingsViewModel : UserProfileViewModel
     {
+        readonly IGeneralRepository _repository;
+        readonly Excel.IReader _excelReader;
+        readonly Excel.IWriter _excelWriter;
+        readonly ILanguageService _languageService;
+
+        public ObservableCollection<LanguageOption> Languages { get; } =
+        [
+            new LanguageOption { DisplayName = "System Default / Idioma del Sistema", Code = "" },
+            new LanguageOption { DisplayName = "English", Code = "en-US" },
+            new LanguageOption { DisplayName = "Español", Code = "es-ES" }
+        ];
+
+        [ObservableProperty] private LanguageOption _selectedLenguage;
+
+        // Message
+        private static string Message_Save_Settings_Error => "Messages/Save_Settings_Error";
+        private static string Message_Save_Settings_Success => "Messages/Save_Settings_Success";
+        private static string Message_Delete_Settings_Error => "Messages/Delete_Settings_Error";
+        private static string Message_Delete_Settings_Success => "Messages/Delete_Settings_Success";
+        private static string Message_Delete_Database_Error => "Messages/Delete_Database_Error";
+        private static string Message_Delete_Database_Success => "Messages/Delete_Database_Success";
+        private static string Message_Delete_Archive_Error => "Messages/Delete_Archive_Error";
+        private static string Message_Delete_Archive_Success => "Messages/Delete_Archive_Success";
+        private static string Message_Import_Database_Error => "Messages/Import_Database_Error";
+        private static string Message_Import_Database_Success => "Messages/Import_Database_Success";
+        private static string Message_Import_Archive_Error => "Messages/Import_Archive_Error";
+        private static string Message_Import_Archive_Success => "Messages/Import_Archive_Success";
+        private static string Message_Export_Database_Error => "Messages/Export_Database_Error";
+        private static string Message_Export_Database_Success => "Messages/Export_Database_Success";
+        private static string Message_Export_Archive_Error => "Messages/Export_Archive_Error";
+        private static string Message_Export_Archive_Success => "Messages/Export_Archive_Success";
+        private static string Message_Archive_Error => "Messages/Archive_Error";
+        private static string Message_Archive_Success => "Messages/Archive_Success";
+        private static string Message_Retrieve_Archive_Error => "Messages/Retrieve_Archive_Error";
+        private static string Message_Retrieve_Archive_Success => "Messages/Retrieve_Archive_Success";
+        private static string Message_Export_Header => "Messages/Settings_Export_Header";
+        private static string Message_Export_Date => "Messages/Settings_Export_Date";
+        private static string Message_Export_Results => "Messages/Settings_Export_Results";
+        private static string Message_Export_Services => "Messages/Settings_Export_Services";
+        private static string Message_Export_Payers => "Messages/Settings_Export_Payers";
+        private static string Message_Export_Students => "Messages/Settings_Export_Students";
+        private static string Message_Export_Specifications => "Messages/Settings_Export_Specifications";
+        private static string Message_Export_Lessons => "Messages/Settings_Export_Lessons";
+        private static string Message_Export_Invoices => "Messages/Settings_Export_Invoices";
+        private static string Message_No_File_Reason => "Messages/No_File_Reason";
+        private static string Message_No_Directory_Reason => "Messages/No_Directory_Reason";
+        private static string Message_Excel_Used_Reason => "Messages/Excel_Used_Reason";
+        private static string Message_Backup_Folder_Reason => "Messages/Backup_Folder_Reason";
+        private static string Message_Payer_Selection_Reason => "Messages/Payer_Selection_Reason";
+
+
+        public SettingsViewModel(IGeneralRepository repository, IUserProfileService userProfile,
+            Excel.IReader excelReader, Excel.IWriter excelWriter, ILanguageService languageService, 
+            IStringLocalizer stringLocalizer)
+            : base(userProfile, stringLocalizer)
+        {
+            _repository = repository;
+            _excelReader = excelReader;
+            _excelWriter = excelWriter;
+            _languageService = languageService;
+
+            // Match the stored profile language string to our dropdown items
+            SelectedLenguage = Languages.FirstOrDefault(l => l.Code == Profile.Language) ?? Languages.First();
+        }
+
         [RelayCommand]
         public async Task SaveAsync()
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't save settings while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Save_Settings_Error);
                 return;
             }
 
             SetEnterFunction();
 
+            Profile.Language = SelectedLenguage.Code;
+
             await _userProfileService.SaveAsync(Profile);
 
-            SetExitFunction("User profile saved successfully.", InfoBarType.Success);
+            _languageService.ApplyLanguage(Profile.Language);
+
+            SetExitFunction($"{_loc.Get(Message_Save_Settings_Success)}.", InfoBarType.Success);
         }
 
         [RelayCommand]
@@ -33,7 +105,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't delete settings while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Delete_Settings_Error);
                 return;
             }
 
@@ -43,40 +115,40 @@ namespace Apolo.ViewModels
 
             await _userProfileService.SaveAsync(Profile);
 
-            SetExitFunction("User profile deleted successfully.", InfoBarType.Success);
+            SetExitFunction($"{_loc.Get(Message_Delete_Settings_Success)}.", InfoBarType.Success);
         }
 
         public async Task ClearDatabaseAsync()
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't clear database while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Delete_Database_Error);
                 return;
             }
 
             SetEnterFunction();
 
-            await repository.ClearDatabaseAsync();
+            await _repository.ClearDatabaseAsync();
 
-            SetExitFunction("Database has been clear successfully.", InfoBarType.Success);
+            SetExitFunction($"{_loc.Get(Message_Delete_Database_Success)}.", InfoBarType.Success);
         }
 
         public async Task ClearArchiveAsync()
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't clear archive while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Delete_Archive_Error);
                 return;
             }
 
             SetEnterFunction();
 
-            await repository.ClearArchiveAsync();
+            await _repository.ClearArchiveAsync();
 
-            SetExitFunction("Archive has been clear successfully.", InfoBarType.Success);
+            SetExitFunction($"{_loc.Get(Message_Delete_Archive_Success)}.", InfoBarType.Success);
         }
 
-        public static async Task<string> GenerateExportSummary(string folderPath,
+        public async Task<string> GenerateExportSummary(string folderPath,
             int serviceCount, int payerCount,
             int studentCount, int specificationCount,
             int lessonCount, int invoiceCount)
@@ -88,21 +160,19 @@ namespace Apolo.ViewModels
             // 2. Build the content using a StringBuilder
             StringBuilder sb = new();
             sb.AppendLine("===========================================");
-            sb.AppendLine("       APOLO APP - IMPORT SUMMARY          ");
+            sb.AppendLine($"       APOLO APP - {_loc.Get(Message_Export_Header)}          ");
             sb.AppendLine("===========================================");
-            sb.AppendLine($"Date: {DateTime.Now:f}");
+            sb.AppendLine($"{_loc.Get(Message_Export_Date)}: {DateTime.Now:f}");
             sb.AppendLine();
-            sb.AppendLine("RESULTS:");
-            sb.AppendLine($"- Services Imported: {serviceCount}");
-            sb.AppendLine($"- Payers Imported: {payerCount}");
-            sb.AppendLine($"- Students Imported: {studentCount}");
-            sb.AppendLine($"- Specifications Imported: {specificationCount}");
-            sb.AppendLine($"- Lessons Imported: {lessonCount}");
-            sb.AppendLine($"- Invoices Processed: {invoiceCount}");
+            sb.AppendLine($"{_loc.Get(Message_Export_Results)}:");
+            sb.AppendLine($"- {_loc.Get(Message_Export_Services)}: {serviceCount}");
+            sb.AppendLine($"- {_loc.Get(Message_Export_Payers)}: {payerCount}");
+            sb.AppendLine($"- {_loc.Get(Message_Export_Students)}: {studentCount}");
+            sb.AppendLine($"- {_loc.Get(Message_Export_Specifications)}: {specificationCount}");
+            sb.AppendLine($"- {_loc.Get(Message_Export_Lessons)}: {lessonCount}");
+            sb.AppendLine($"- {_loc.Get(Message_Export_Invoices)}: {invoiceCount}");
             sb.AppendLine();
-            sb.AppendLine("STATUS: Success");
             sb.AppendLine("===========================================");
-            sb.AppendLine("All data has been saved to the Excel file.");
 
             // 3. Write the file
             await File.WriteAllTextAsync(fullPath, sb.ToString());
@@ -114,7 +184,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't import database from Excel while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Import_Database_Error);
                 return;
             }
 
@@ -122,14 +192,14 @@ namespace Apolo.ViewModels
 
             if (string.IsNullOrWhiteSpace(file))
             {
-                SetExitFunction("No file selected.", InfoBarType.Warning);
+                SetExitFunction($"{_loc.Get(Message_Import_Database_Error)}: {_loc.Get(Message_No_File_Reason)}.", InfoBarType.Warning);
                 return;
             }
 
             var root = Path.GetDirectoryName(file);
             if (!Directory.Exists(root))
             {
-                SetExitFunction($"Directory '{root}' does not exist.", InfoBarType.Error);
+                SetExitFunction($"{_loc.Get(Message_Import_Database_Error)}: {_loc.Get(Message_No_Directory_Reason, root ?? string.Empty)}.", InfoBarType.Error);
                 return;
             }
 
@@ -137,41 +207,41 @@ namespace Apolo.ViewModels
             {
                 var watch = Stopwatch.StartNew();
 
-                await Task.Run(async () => await excelReader.ReadExcel(file));
+                await Task.Run(async () => await _excelReader.ReadExcel(file));
 
                 // Insert data into database
-                await repository.ImportAllDataAsync(
-                    excelReader.Services,
-                    excelReader.Payers,
-                    excelReader.Students,
-                    excelReader.Specifications,
-                    excelReader.Lessons,
-                    excelReader.Invoices);
+                await _repository.ImportAllDataAsync(
+                    _excelReader.Services,
+                    _excelReader.Payers,
+                    _excelReader.Students,
+                    _excelReader.Specifications,
+                    _excelReader.Lessons,
+                    _excelReader.Invoices);
 
                 string path = await GenerateExportSummary(root,
-                    excelReader.Services.Count,
-                    excelReader.Payers.Count,
-                    excelReader.Students.Count,
-                    excelReader.Specifications.Count,
-                    excelReader.Lessons.Count,
-                    excelReader.Invoices.Count);
+                    _excelReader.Services.Count,
+                    _excelReader.Payers.Count,
+                    _excelReader.Students.Count,
+                    _excelReader.Specifications.Count,
+                    _excelReader.Lessons.Count,
+                    _excelReader.Invoices.Count);
 
                 watch.Stop();
                 TimeSpan ts = watch.Elapsed;
-                string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}",
+                string elapsedTime = string.Format("{0:00}:{1:00}:{2:00}",
                     ts.Hours, ts.Minutes, ts.Seconds);
 
-                SetExitFunction($"Import completed ({elapsedTime}). Summary saved to {path}", InfoBarType.Success);
+                SetExitFunction($"{_loc.Get(Message_Import_Database_Success, elapsedTime, path)}.", InfoBarType.Success);
             }
             catch (IOException ex)
             {
                 Log.Warning(ex, "Failed to import from Excel due to file lock.");
-                SetExitFunction("The file is in use. Please close it in Excel and try again.", InfoBarType.Error);
+                SetExitFunction($"{_loc.Get(Message_Import_Database_Error)}:{_loc.Get(Message_Excel_Used_Reason)}.", InfoBarType.Error);
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "An unexpected error occurred during Excel import.");
-                SetExitFunction($"Import failed: {ex.Message}", InfoBarType.Error);
+                SetExitFunction($"{_loc.Get(Message_Import_Database_Error)}: {ex.Message}", InfoBarType.Error);
             }
 
         }
@@ -180,7 +250,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't import archive from Excel while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Import_Archive_Error);
                 return;
             }
 
@@ -188,14 +258,14 @@ namespace Apolo.ViewModels
 
             if (string.IsNullOrWhiteSpace(file))
             {
-                SetExitFunction("No file selected.", InfoBarType.Warning);
+                SetExitFunction($"{_loc.Get(Message_Import_Archive_Error)}: {_loc.Get(Message_No_File_Reason)}.", InfoBarType.Warning);
                 return;
             }
 
             var root = Path.GetDirectoryName(file);
             if (!Directory.Exists(root))
             {
-                SetExitFunction($"Directory '{root}' does not exist.", InfoBarType.Error);
+                SetExitFunction($"{_loc.Get(Message_Import_Archive_Error)}: {_loc.Get(Message_No_Directory_Reason, root ?? string.Empty)}.", InfoBarType.Error);
                 return;
             }
 
@@ -204,39 +274,39 @@ namespace Apolo.ViewModels
 
                 var watch = Stopwatch.StartNew();
 
-                await Task.Run(async () => await excelReader.ReadExcel(file));
+                await Task.Run(async () => await _excelReader.ReadExcel(file));
 
                 // Insert data into database
-                await repository.ImportArchiveAsync(
-                    excelReader.Payers,
-                    excelReader.Students,
-                    excelReader.Lessons,
-                    excelReader.Invoices);
+                await _repository.ImportArchiveAsync(
+                    _excelReader.Payers,
+                    _excelReader.Students,
+                    _excelReader.Lessons,
+                    _excelReader.Invoices);
 
                 string path = await GenerateExportSummary(root,
-                    excelReader.Services.Count,
-                    excelReader.Payers.Count,
-                    excelReader.Students.Count,
-                    excelReader.Specifications.Count,
-                    excelReader.Lessons.Count,
-                    excelReader.Invoices.Count);
+                    _excelReader.Services.Count,
+                    _excelReader.Payers.Count,
+                    _excelReader.Students.Count,
+                    _excelReader.Specifications.Count,
+                    _excelReader.Lessons.Count,
+                    _excelReader.Invoices.Count);
 
                 watch.Stop();
                 TimeSpan ts = watch.Elapsed;
                 string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}",
                     ts.Hours, ts.Minutes, ts.Seconds);
 
-                SetExitFunction($"Import completed ({elapsedTime}). Summary saved to {path}", InfoBarType.Success);
+                SetExitFunction($"{_loc.Get(Message_Import_Archive_Success, elapsedTime, path)}.", InfoBarType.Success);
             }
             catch (IOException ex)
             {
                 Log.Warning(ex, "Failed to import from Excel due to file lock.");
-                SetExitFunction("The file is in use. Please close it in Excel and try again.", InfoBarType.Error);
+                SetExitFunction($"{_loc.Get(Message_Import_Archive_Error)}:{_loc.Get(Message_Excel_Used_Reason)}.", InfoBarType.Error);
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "An unexpected error occurred during Excel import.");
-                SetExitFunction($"Import failed: {ex.Message}", InfoBarType.Error);
+                SetExitFunction($"{_loc.Get(Message_Import_Archive_Error)}: {ex.Message}", InfoBarType.Error);
             }
         }
 
@@ -244,7 +314,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't export archive while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Export_Database_Error);
                 return;
             }
 
@@ -252,7 +322,7 @@ namespace Apolo.ViewModels
 
             if (!Directory.Exists(Profile.BackupFolder))
             {
-                SetExitFunction($"Directory '{Profile.BackupFolder}' does not exist.", InfoBarType.Error);
+                SetExitFunction($"{_loc.Get(Message_Export_Database_Error)}: {_loc.Get(Message_Backup_Folder_Reason)}.", InfoBarType.Warning);
                 return;
             }
 
@@ -262,25 +332,20 @@ namespace Apolo.ViewModels
 
                 string templatePath = Path.Combine(installedPath, "Assets", "Excel", "Template.xlsx");
 
-                var data = await repository.ExportArchiveAsync();
-                excelWriter.WriteExcel(templatePath, Profile.BackupFolder, in data, archive: true);
+                var data = await _repository.ExportArchiveAsync();
+                _excelWriter.WriteExcel(templatePath, Profile.BackupFolder, in data, archive: true);
 
                 watch.Stop();
                 TimeSpan ts = watch.Elapsed;
-                string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}",
+                string elapsedTime = string.Format("{0:00}:{1:00}:{2:00}",
                     ts.Hours, ts.Minutes, ts.Seconds);
 
-                SetExitFunction($"Export completed ({elapsedTime}). File saved to {Profile.BackupFolder}", InfoBarType.Success);
-            }
-            catch (IOException ex)
-            {
-                Log.Warning(ex, "Failed to import from Excel due to file lock.");
-                SetExitFunction("The file is in use. Please close it in Excel and try again.", InfoBarType.Error);
+                SetExitFunction($"{_loc.Get(Message_Export_Database_Success, elapsedTime, Profile.BackupFolder)}.", InfoBarType.Success);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "An unexpected error occurred during Excel import.");
-                SetExitFunction($"Import failed: {ex.Message}", InfoBarType.Error);
+                Log.Error(ex, "An unexpected error occurred during Excel export.");
+                SetExitFunction($"{_loc.Get(Message_Export_Database_Error)}: {ex.Message}", InfoBarType.Error);
             }
         }
 
@@ -288,7 +353,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't export database while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Export_Archive_Error);
                 return;
             }
 
@@ -296,7 +361,7 @@ namespace Apolo.ViewModels
 
             if (!Directory.Exists(Profile.BackupFolder))
             {
-                SetExitFunction($"Directory '{Profile.BackupFolder}' does not exist.", InfoBarType.Error);
+                SetExitFunction($"{_loc.Get(Message_Export_Archive_Error)}: {_loc.Get(Message_Backup_Folder_Reason)}.", InfoBarType.Warning);
                 return;
             }
 
@@ -306,38 +371,33 @@ namespace Apolo.ViewModels
 
                 string templatePath = Path.Combine(installedPath, "Assets", "Excel", "Template.xlsx");
 
-                var data = await repository.GetAllDataAsync();
-                excelWriter.WriteExcel(templatePath, Profile.BackupFolder, in data);
+                var data = await _repository.GetAllDataAsync();
+                _excelWriter.WriteExcel(templatePath, Profile.BackupFolder, in data);
 
                 watch.Stop();
                 TimeSpan ts = watch.Elapsed;
-                string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}",
+                string elapsedTime = string.Format("{0:00}:{1:00}:{2:00}",
                     ts.Hours, ts.Minutes, ts.Seconds);
 
-                SetExitFunction($"Export completed ({elapsedTime}). File saved to {Profile.BackupFolder}", InfoBarType.Success);
-            }
-            catch (IOException ex)
-            {
-                Log.Warning(ex, "Failed to export to Excel due to file lock.");
-                SetExitFunction("File is in use. Please close Excel and try again.", InfoBarType.Error);
+                SetExitFunction($"{_loc.Get(Message_Export_Archive_Success, elapsedTime, Profile.BackupFolder)}.", InfoBarType.Success);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "An unexpected error occurred during database export.");
-                SetExitFunction($"Export failed: {ex.Message}", InfoBarType.Error);
+                Log.Error(ex, "An unexpected error occurred during Excel export.");
+                SetExitFunction($"{_loc.Get(Message_Export_Archive_Error)}: {ex.Message}", InfoBarType.Error);
             }
 
         }
 
-        public async Task<List<PayerActivityInfo>> GetPayersActivity() => await repository.GetPayersWithActivityAsync();
+        public async Task<List<PayerActivityInfo>> GetPayersActivity() => await _repository.GetPayersWithActivityAsync();
 
-        public async Task<List<PayerOption>> GetPayersFromArchive() => await repository.GetPayersFromArchiveAsync();
+        public async Task<List<PayerOption>> GetPayersFromArchive() => await _repository.GetPayersFromArchiveAsync();
 
         public async Task ArchiveOldData(List<Guid> payersIds)
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't archive data while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Archive_Error);
                 return;
             }
 
@@ -345,14 +405,14 @@ namespace Apolo.ViewModels
 
             if (payersIds.Count == 0)
             {
-                SetExitFunction("No payers were selected.", InfoBarType.Info);
+                SetExitFunction($"{_loc.Get(Message_Archive_Error)}: {_loc.Get(Message_Payer_Selection_Reason)}.", InfoBarType.Info);
                 return;
             }
 
             try
             {
-                await repository.ArchiveOldDataAsync(payersIds);
-                SetExitFunction("Archived data successfully.", InfoBarType.Success);
+                await _repository.ArchiveOldDataAsync(payersIds);
+                SetExitFunction($"{_loc.Get(Message_Archive_Success)}.", InfoBarType.Success);
             }
             catch (Exception ex) 
             {
@@ -364,7 +424,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't retrieve data from archive while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Retrieve_Archive_Error);
                 return;
             }
 
@@ -372,14 +432,14 @@ namespace Apolo.ViewModels
 
             if (payersIds.Count == 0)
             {
-                SetExitFunction("No payers were selected.", InfoBarType.Info);
+                SetExitFunction($"{_loc.Get(Message_Retrieve_Archive_Error)}: {_loc.Get(Message_Payer_Selection_Reason)}.", InfoBarType.Info);
                 return;
             }
 
             try
             {
-                await repository.RetrieveDataFromArchiveAsync(payersIds);
-                SetExitFunction("Data retrieved successfully from archive.", InfoBarType.Success);
+                await _repository.RetrieveDataFromArchiveAsync(payersIds);
+                SetExitFunction($"{_loc.Get(Message_Retrieve_Archive_Success)}.", InfoBarType.Success);
             }
             catch (Exception ex)
             {

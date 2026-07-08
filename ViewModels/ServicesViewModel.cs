@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Mvvm.Input;
+﻿using Apolo.Services;
+using CommunityToolkit.Mvvm.Input;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
@@ -13,25 +15,36 @@ namespace Apolo.ViewModels
 
         public ObservableCollection<ServiceSummary> Services { get; } = new();
 
-        public ServicesViewModel(IServiceRepository serviceRepository)
+        public ServicesViewModel(IServiceRepository serviceRepository, IStringLocalizer stringLocalizer)
+            : base(stringLocalizer)
         {
             _repository = serviceRepository;
         }
 
+        private static string Message_Load_Services_Error => "Message/Load_Services_Error";
+        private static string Message_Add_Service_Error => "Message/Add_Service_Error";
+        private static string Message_Repeated_Service_Reason => "Message/Service_Repeated_Reason";
+        private static string Message_Add_Service_Success => "Message/Add_Service_Success";
+        private static string Message_Delete_Service_Error => "Message/Delete_Service_Error";
+        private static string Message_Delete_Service_Success => "Message/Delete_Service_Success";
+        private static string Message_Edit_Service_Error => "Message/Edit_Service_Error";
+        private static string Message_Edit_Service_Success => "Message/Edit_Service_Success";
+
         public bool ValidateServiceInput(ref string name, decimal price)
         {
+            var errors = new List<string>();
+
             name = (name ?? "").Trim();
             if (string.IsNullOrEmpty(name))
-            {
-                SetExitFunction("Name is required.", InfoBarType.Warning);
-                return false;
-            }
+                errors.Add(_loc.Get(Message_ServiceNameValidation));
             if (price < 0)
-            {
-                SetExitFunction("Enter a valid non-negative price (e.g., 42.50).", InfoBarType.Warning);
-                return false;
-            }
-            return true;
+                errors.Add(_loc.Get(Message_PriceValidation));
+
+            if (errors.Count == 0)
+                return  true;
+
+            SetExitFunction(string.Join(Environment.NewLine, errors), InfoBarType.Warning);
+            return false;
         }
 
         public (ServiceSummary service, int index) GetService(Guid id)
@@ -40,7 +53,7 @@ namespace Apolo.ViewModels
             if (service is null)
             {
                 SetExitFunction();
-                throw new InvalidDataException("Service not loaded.");
+                throw new InvalidDataException(_loc.Get(Message_Service_Not_Loaded, id.ToString()));
             }
             return (service, Services.IndexOf(service));
         }
@@ -50,7 +63,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't load services while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Load_Services_Error);
                 return;
             }
 
@@ -66,7 +79,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't add service while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Add_Service_Error);
                 return;
             }
 
@@ -86,11 +99,12 @@ namespace Apolo.ViewModels
                 await _repository.AddAsync(entity);
                 
                 Services.Add(Helper.ConvertToServiceSummary(entity));
-                SetExitFunction($"Service '{name}' added successfully.", InfoBarType.Success);
+                SetExitFunction($"{_loc.Get(Message_Add_Service_Success, name)}.", InfoBarType.Success);
             }
             catch (DbUpdateException ex)
             {
-                SetExitFunction(ex.Message, InfoBarType.Error);
+                SetExitFunction($"{_loc.Get(Message_Add_Service_Error)}: {_loc.Get(Message_Repeated_Service_Reason, name, ex.Message)}.",
+                    InfoBarType.Error);
             }
         }
 
@@ -99,7 +113,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't delete service while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Delete_Service_Error);
                 return;
             }
 
@@ -112,7 +126,7 @@ namespace Apolo.ViewModels
                 await _repository.DeleteAsync(id);
 
                 Services.Remove(oldItem);
-                SetExitFunction($"Service '{oldItem.Name}' deleted successfully.", InfoBarType.Success);
+                SetExitFunction($"{_loc.Get(Message_Delete_Service_Success, oldItem.Name)}.", InfoBarType.Success);
             }
             catch (DbUpdateException ex)
             {
@@ -124,7 +138,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't update service while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Edit_Service_Error);
                 return;
             }
 
@@ -134,6 +148,17 @@ namespace Apolo.ViewModels
                 return;
 
             var (oldItem, idx) = GetService(id);
+
+            // Only check uniqueness if the name is DIFFERENT from the current one
+            if (oldItem.Name.ToLower().Trim() != name.ToLower().Trim())
+            {
+                if (Services.Any(s => s.Id != id && s.Name.ToLower().Trim() == name.ToLower().Trim()))
+                {
+                    SetExitFunction($"{_loc.Get(Message_Edit_Service_Error)}: {_loc.Get(Message_Repeated_Service_Reason, name, string.Empty)}.",
+                        InfoBarType.Error);
+                    return;
+                }
+            }
 
             try
             {
@@ -148,7 +173,7 @@ namespace Apolo.ViewModels
                     IsPricePerHour = isPricePerHour,
                     Price = (double)price
                 }; 
-                SetExitFunction($"Service '{name}' updated successfully.", InfoBarType.Success);
+                SetExitFunction($"{_loc.Get(Message_Edit_Service_Success, name)}.", InfoBarType.Success);
             }
             catch (DbUpdateException ex)
             {

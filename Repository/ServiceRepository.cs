@@ -18,16 +18,8 @@ namespace Repository
 
         public async Task AddAsync(Service service)
         {
-            try
-            {
-                _context.Services.Add(service);
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException ex)
-            {
-                // SQLite Error 19 is "Constraint Violation"
-                throw new InvalidDataException($"A service with this name already exists: {service.Name}.", ex);
-            }
+            _context.Services.Add(service);
+            await _context.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(Guid id)
