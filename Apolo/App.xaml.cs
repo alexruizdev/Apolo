@@ -62,8 +62,8 @@ namespace Apolo
                     return connectionStringBuilder.ToString();
                 }
 
-                var dbPath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "app.context");
-                var archiveDbPath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "archive.context");
+                var dbPath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "apolo.db");
+                var archiveDbPath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "apolo_archive.db");
 
                 builder.AddDbContext<ApoloContext>(options =>
                     options.UseSqlite(GetConnectionString(dbPath)));
@@ -113,10 +113,10 @@ namespace Apolo
         {
             using var scope = Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<ApoloContext>();
-            context.Database.EnsureCreated();
+            context.Database.Migrate();
 
             var archive = scope.ServiceProvider.GetRequiredService<ApoloArchiveContext>();
-            archive.Database.EnsureCreated();
+            archive.Database.Migrate();
 
             context.Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL;");
             archive.Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL;");
@@ -175,11 +175,11 @@ namespace Apolo
                 }
 
                 string today = DateTime.Now.ToString("yyyyMMdd");
-                string appDbPath = Path.Combine(localFolder, "app.db");
-                string archiveDbPath = Path.Combine(localFolder, "archive.db");
+                string appDbPath = Path.Combine(localFolder, "apolo.db");
+                string archiveDbPath = Path.Combine(localFolder, "apolo_archive.db");
 
-                string backupAppDbPath = Path.Combine(backupFolder, $"app_{today}.db");
-                string backupArchiveDbPath = Path.Combine(backupFolder, $"archive_{today}.db");
+                string backupAppDbPath = Path.Combine(backupFolder, $"apolo_{today}.db");
+                string backupArchiveDbPath = Path.Combine(backupFolder, $"apolo_archive_{today}.db");
 
                 // Only perform the backup if today's backup doesn't exist yet
                 if (!File.Exists(backupAppDbPath) && File.Exists(appDbPath))
