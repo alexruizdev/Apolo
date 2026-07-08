@@ -2,27 +2,16 @@
 using CommunityToolkit.Mvvm.Input;
 using Models;
 using Repository;
+using Serilog;
 using System.Diagnostics;
 using System.Text;
 using ViewModels;
 
 namespace Apolo.ViewModels
 {
-    public partial class SettingsViewModel : UserProfileViewModel
+    public partial class SettingsViewModel(IGeneralRepository repository, IUserProfileService userProfile,
+        Excel.IReader excelReader, Excel.IWriter excelWriter) : UserProfileViewModel(userProfile)
     {
-        IGeneralRepository _repository;
-        Excel.IReader _excelReader;
-        Excel.IWriter _excelWriter;
-
-        public SettingsViewModel(IGeneralRepository repository, IUserProfileService userProfile, 
-            Excel.IReader excelReader, Excel.IWriter excelWriter)
-            : base(userProfile)
-        {
-            _repository = repository;
-            _excelReader = excelReader;
-            _excelWriter = excelWriter;
-        }
-
         [RelayCommand]
         public async Task SaveAsync()
         {
@@ -67,7 +56,7 @@ namespace Apolo.ViewModels
 
             SetEnterFunction();
 
-            await _repository.ClearDatabaseAsync();
+            await repository.ClearDatabaseAsync();
 
             SetExitFunction("Database has been clear successfully.", InfoBarType.Success);
         }
@@ -82,12 +71,12 @@ namespace Apolo.ViewModels
 
             SetEnterFunction();
 
-            await _repository.ClearArchiveAsync();
+            await repository.ClearArchiveAsync();
 
             SetExitFunction("Archive has been clear successfully.", InfoBarType.Success);
         }
 
-        public async Task<string> GenerateExportSummary(string folderPath,
+        public static async Task<string> GenerateExportSummary(string folderPath,
             int serviceCount, int payerCount,
             int studentCount, int specificationCount,
             int lessonCount, int invoiceCount)
@@ -97,7 +86,7 @@ namespace Apolo.ViewModels
             string fullPath = Path.Combine(folderPath, fileName);
 
             // 2. Build the content using a StringBuilder
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             sb.AppendLine("===========================================");
             sb.AppendLine("       APOLO APP - IMPORT SUMMARY          ");
             sb.AppendLine("===========================================");
@@ -144,33 +133,47 @@ namespace Apolo.ViewModels
                 return;
             }
 
-            var watch = Stopwatch.StartNew();
+            try
+            {
+                var watch = Stopwatch.StartNew();
 
-            await Task.Run(async () => await _excelReader.ReadExcel(file));
+                await Task.Run(async () => await excelReader.ReadExcel(file));
 
-            // Insert data into database
-            await _repository.ImportAllDataAsync(
-                _excelReader.Services,
-                _excelReader.Payers,
-                _excelReader.Students,
-                _excelReader.Specifications,
-                _excelReader.Lessons,
-                _excelReader.Invoices);
+                // Insert data into database
+                await repository.ImportAllDataAsync(
+                    excelReader.Services,
+                    excelReader.Payers,
+                    excelReader.Students,
+                    excelReader.Specifications,
+                    excelReader.Lessons,
+                    excelReader.Invoices);
 
-            string path = await GenerateExportSummary(root,
-                _excelReader.Services.Count,
-                _excelReader.Payers.Count,
-                _excelReader.Students.Count,
-                _excelReader.Specifications.Count,
-                _excelReader.Lessons.Count,
-                _excelReader.Invoices.Count);
+                string path = await GenerateExportSummary(root,
+                    excelReader.Services.Count,
+                    excelReader.Payers.Count,
+                    excelReader.Students.Count,
+                    excelReader.Specifications.Count,
+                    excelReader.Lessons.Count,
+                    excelReader.Invoices.Count);
 
-            watch.Stop();
-            TimeSpan ts = watch.Elapsed;
-            string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}",
-                ts.Hours, ts.Minutes, ts.Seconds);
+                watch.Stop();
+                TimeSpan ts = watch.Elapsed;
+                string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}",
+                    ts.Hours, ts.Minutes, ts.Seconds);
 
-            SetExitFunction($"Import completed ({elapsedTime}). Summary saved to {path}", InfoBarType.Success);
+                SetExitFunction($"Import completed ({elapsedTime}). Summary saved to {path}", InfoBarType.Success);
+            }
+            catch (IOException ex)
+            {
+                Log.Warning(ex, "Failed to import from Excel due to file lock.");
+                SetExitFunction("The file is in use. Please close it in Excel and try again.", InfoBarType.Error);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An unexpected error occurred during Excel import.");
+                SetExitFunction($"Import failed: {ex.Message}", InfoBarType.Error);
+            }
+
         }
 
         public async Task ImportArchiveFromExcel(string file)
@@ -198,22 +201,22 @@ namespace Apolo.ViewModels
 
             var watch = Stopwatch.StartNew();
 
-            await Task.Run(async () => await _excelReader.ReadExcel(file));
+            await Task.Run(async () => await excelReader.ReadExcel(file));
 
             // Insert data into database
-            await _repository.ImportArchiveAsync(
-                _excelReader.Payers,
-                _excelReader.Students,
-                _excelReader.Lessons,
-                _excelReader.Invoices);
+            await repository.ImportArchiveAsync(
+                excelReader.Payers,
+                excelReader.Students,
+                excelReader.Lessons,
+                excelReader.Invoices);
 
             string path = await GenerateExportSummary(root,
-                _excelReader.Services.Count,
-                _excelReader.Payers.Count,
-                _excelReader.Students.Count,
-                _excelReader.Specifications.Count,
-                _excelReader.Lessons.Count,
-                _excelReader.Invoices.Count);
+                excelReader.Services.Count,
+                excelReader.Payers.Count,
+                excelReader.Students.Count,
+                excelReader.Specifications.Count,
+                excelReader.Lessons.Count,
+                excelReader.Invoices.Count);
 
             watch.Stop();
             TimeSpan ts = watch.Elapsed;
@@ -243,8 +246,8 @@ namespace Apolo.ViewModels
 
             string templatePath = Path.Combine(installedPath, "Assets", "Excel", "Template.xlsx");
 
-            var data = await _repository.ExportArchiveAsync();
-            _excelWriter.WriteExcel(templatePath, Profile.BackupFolder, in data, archive: true);
+            var data = await repository.ExportArchiveAsync();
+            excelWriter.WriteExcel(templatePath, Profile.BackupFolder, in data, archive: true);
 
             watch.Stop();
             TimeSpan ts = watch.Elapsed;
@@ -270,24 +273,38 @@ namespace Apolo.ViewModels
                 return;
             }
 
-            var watch = Stopwatch.StartNew();
+            try
+            {
+                var watch = Stopwatch.StartNew();
 
-            string templatePath = Path.Combine(installedPath, "Assets", "Excel", "Template.xlsx");
+                string templatePath = Path.Combine(installedPath, "Assets", "Excel", "Template.xlsx");
 
-            var data = await _repository.GetAllDataAsync();
-            _excelWriter.WriteExcel(templatePath, Profile.BackupFolder, in data);
+                var data = await repository.GetAllDataAsync();
+                excelWriter.WriteExcel(templatePath, Profile.BackupFolder, in data);
 
-            watch.Stop();
-            TimeSpan ts = watch.Elapsed;
-            string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}",
-                ts.Hours, ts.Minutes, ts.Seconds);
+                watch.Stop();
+                TimeSpan ts = watch.Elapsed;
+                string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}",
+                    ts.Hours, ts.Minutes, ts.Seconds);
 
-            SetExitFunction($"Export completed ({elapsedTime}). File saved to {Profile.BackupFolder}", InfoBarType.Success);
+                SetExitFunction($"Export completed ({elapsedTime}). File saved to {Profile.BackupFolder}", InfoBarType.Success);
+            }
+            catch (IOException ex)
+            {
+                Log.Warning(ex, "Failed to export to Excel due to file lock.");
+                SetExitFunction("File is in use. Please close Excel and try again.", InfoBarType.Error);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An unexpected error occurred during database export.");
+                SetExitFunction($"Export failed: {ex.Message}", InfoBarType.Error);
+            }
+
         }
 
-        public async Task<List<PayerActivityInfo>> GetPayersActivity() => await _repository.GetPayersWithActivityAsync();
+        public async Task<List<PayerActivityInfo>> GetPayersActivity() => await repository.GetPayersWithActivityAsync();
 
-        public async Task<List<PayerOption>> GetPayersFromArchive() => await _repository.GetPayersFromArchiveAsync();
+        public async Task<List<PayerOption>> GetPayersFromArchive() => await repository.GetPayersFromArchiveAsync();
 
         public async Task ArchiveOldData(List<Guid> payersIds)
         {
@@ -307,7 +324,7 @@ namespace Apolo.ViewModels
 
             try
             {
-                await _repository.ArchiveOldDataAsync(payersIds);
+                await repository.ArchiveOldDataAsync(payersIds);
                 SetExitFunction("Archived data successfully.", InfoBarType.Success);
             }
             catch (Exception ex) 
@@ -334,7 +351,7 @@ namespace Apolo.ViewModels
 
             try
             {
-                await _repository.RetrieveDataFromArchiveAsync(payersIds);
+                await repository.RetrieveDataFromArchiveAsync(payersIds);
                 SetExitFunction("Data retrieved successfully from archive.", InfoBarType.Success);
             }
             catch (Exception ex)
