@@ -15,8 +15,8 @@ namespace ViewModels
         public ObservableCollection<StudentOption> Students => _parentViewModel.Students;
         public ObservableCollection<ServiceSummary> Services => _parentViewModel.Services;
 
-        public ObservableCollection<SpecificationOption> Specifications = new();
-        public ObservableCollection<StudentOption> FilteredStudents { get; } = new();
+        public ObservableCollection<SpecificationOption> Specifications = [];
+        public ObservableCollection<StudentOption> FilteredStudents { get; } = [];
 
         // Form Fields
         [ObservableProperty] private StudentOption? _selectedStudent;
@@ -43,7 +43,7 @@ namespace ViewModels
         [ObservableProperty] private bool _isEditMode = false;
 
         [ObservableProperty] private string _dialogTitle = string.Empty;
-        private Guid? _studentId;
+        private readonly Guid? _studentId;
 
         // Messages
         protected static string Message_Edit_Title => "Message/Edit_Lesson";
@@ -285,7 +285,7 @@ namespace ViewModels
             if (string.IsNullOrWhiteSpace(Name))
                 errors.Add(_loc.Get(Message_LessonNameValidation));
 
-            IsPrimaryButtonEnabled = !errors.Any();
+            IsPrimaryButtonEnabled = errors.Count == 0;
 
             if (IsEditMode)
                 UpdateEditDialogTitle(!IsPrimaryButtonEnabled);

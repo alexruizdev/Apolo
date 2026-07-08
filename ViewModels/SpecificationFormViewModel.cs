@@ -15,7 +15,7 @@ namespace ViewModels
         // Dropdown Items Sources
         public ObservableCollection<StudentOption> Students => _parentViewModel.Students;
         public ObservableCollection<ServiceSummary> Services => _parentViewModel.Services;
-        public ObservableCollection<StudentOption> FilteredStudents { get; } = new();
+        public ObservableCollection<StudentOption> FilteredStudents { get; } = [];
 
         // Form Fields
         [ObservableProperty] private StudentOption? _selectedStudent;
@@ -35,7 +35,7 @@ namespace ViewModels
         [ObservableProperty] private bool _isEditMode = false;
 
         [ObservableProperty] private string _dialogTitle = string.Empty;
-        private Guid? _specificationId;
+        private readonly Guid? _specificationId;
 
         // Messages 
         protected static string Message_Edit_Title => "Message/Edit_Specification";
@@ -80,7 +80,7 @@ namespace ViewModels
 
         partial void OnSelectedServiceChanged(ServiceSummary? value)
         {
-            UpdateServiceDerivedFields(null);
+            UpdateServiceDerivedFields();
 
             Validate();
         }
@@ -124,7 +124,7 @@ namespace ViewModels
 
         // --- UPDATE FINAL PRICE ---
 
-        private void UpdateServiceDerivedFields(double? forcedPrice)
+        private void UpdateServiceDerivedFields()
         {
             SetEnterFunction();
 
@@ -196,7 +196,7 @@ namespace ViewModels
             if (string.IsNullOrWhiteSpace(Name))
                 errors.Add(_loc.Get(Message_Name_Validation));
 
-            IsPrimaryButtonEnabled = !errors.Any();
+            IsPrimaryButtonEnabled = errors.Count == 0;
 
             UpdateDialogTitle(!IsPrimaryButtonEnabled);
 

@@ -8,30 +8,21 @@ using ViewModels;
 
 namespace Apolo.ViewModels
 {
-    public partial class SpecificationsViewModel : UserProfileViewModel
+    public partial class SpecificationsViewModel(ISpecificationRepository specificationRepository,
+        IStudentRepository studentRepository,
+        IServiceRepository serviceRepository,
+        ILessonRepository lessonRepository,
+        IUserProfileService userProfileService,
+        IStringLocalizer stringLocalizer) : UserProfileViewModel(userProfileService, stringLocalizer)
     {
-        ISpecificationRepository _specificationRepository;
-        IStudentRepository _studentRepository;
-        IServiceRepository _serviceRepository;
-        ILessonRepository _lessonRepository;
+        readonly ISpecificationRepository _specificationRepository = specificationRepository;
+        readonly IStudentRepository _studentRepository = studentRepository;
+        readonly IServiceRepository _serviceRepository = serviceRepository;
+        readonly ILessonRepository _lessonRepository = lessonRepository;
 
-        public ObservableCollection<SpecificationSummary> Specifications { get; } = new();
-        public ObservableCollection<StudentOption> Students { get; } = new();
-        public ObservableCollection<ServiceSummary> Services { get; } = new();
-
-        public SpecificationsViewModel(ISpecificationRepository specificationRepository,
-            IStudentRepository studentRepository,
-            IServiceRepository serviceRepository,
-            ILessonRepository lessonRepository,
-            IUserProfileService userProfileService,
-            IStringLocalizer stringLocalizer)
-            : base(userProfileService, stringLocalizer)
-        {
-            _specificationRepository = specificationRepository;
-            _studentRepository = studentRepository;
-            _serviceRepository = serviceRepository;
-            _lessonRepository = lessonRepository;
-        }
+        public ObservableCollection<SpecificationSummary> Specifications { get; } = [];
+        public ObservableCollection<StudentOption> Students { get; } = [];
+        public ObservableCollection<ServiceSummary> Services { get; } = [];
 
         // Messages
         private static string Message_Load_Error => "Message/Load_Specification_Error";
@@ -172,15 +163,14 @@ namespace Apolo.ViewModels
             }
 
             SetEnterFunction();
-
-            var oldSpec = GetSpecification(id);
+            var (value, _) = GetSpecification(id);
 
             try
             {
                 await _specificationRepository.DeleteAsync(id);
 
-                Specifications.Remove(oldSpec.value);
-                SetExitFunction($"{_loc.Get(Message_Delete_Success, oldSpec.value.Name, oldSpec.value.StudentName)}.",
+                Specifications.Remove(value);
+                SetExitFunction($"{_loc.Get(Message_Delete_Success, value.Name, value.StudentName)}.",
                     InfoBarType.Success);
             }
             catch (DbUpdateException ex)
@@ -230,7 +220,7 @@ namespace Apolo.ViewModels
                 return;
             }
 
-            var oldSpec = GetSpecification(id);
+            var (value, index) = GetSpecification(id);
 
             try
             {
@@ -238,7 +228,7 @@ namespace Apolo.ViewModels
 
 
                 var serviceName = Services.First(s => s.Id == serviceId).Name;
-                Specifications[oldSpec.index] = oldSpec.value with
+                Specifications[index] = value with
                 {
                     Name = name,
                     DurationMinutes = durationMinutes,
@@ -248,7 +238,7 @@ namespace Apolo.ViewModels
                     ServiceId = serviceId,
                     ServiceName = serviceName
                 };
-                SetExitFunction($"{_loc.Get(Message_Edit_Success, oldSpec.value.Name, oldSpec.value.StudentName)}.",
+                SetExitFunction($"{_loc.Get(Message_Edit_Success, value.Name, value.StudentName)}.",
                     InfoBarType.Success);
             }
             catch (DbUpdateException ex)
@@ -273,21 +263,21 @@ namespace Apolo.ViewModels
                 return;
             }
 
-            var spec = GetSpecification(id);
+            var (value, _) = GetSpecification(id);
 
-            var (service, _) = GetService(spec.value.ServiceId);
+            var (service, _) = GetService(value.ServiceId);
 
             try
             {
                 await _lessonRepository.AddLessonAsync(
-                    date, spec.value.ServiceName, isPaid: false, spec.value.StudentId, null,
-                    service.IsPricePerHour, spec.value.DurationMinutes, (decimal)(spec.value.Price ?? service.Price),
-                    spec.value.IsOnline, TravelAllowance, spec.value.IsWeekendOrHoliday, WeekendFee,
+                    date, value.ServiceName, isPaid: false, value.StudentId, null,
+                    service.IsPricePerHour, value.DurationMinutes, (decimal)(value.Price ?? service.Price),
+                    value.IsOnline, TravelAllowance, value.IsWeekendOrHoliday, WeekendFee,
                     tip, notes);
 
                 await _specificationRepository.IncrementUsageAsync(id);
 
-                SetExitFunction($"{_loc.Get(Message_Create_Lesson_Success, spec.value.ServiceName, spec.value.StudentName)}.",
+                SetExitFunction($"{_loc.Get(Message_Create_Lesson_Success, value.ServiceName, value.StudentName)}.",
                     InfoBarType.Success); 
             }
             catch (DbUpdateException ex)

@@ -54,7 +54,7 @@ namespace Apolo.Tests.ViewModels
                 _readerMock.Object, _writerMock.Object, _languageMock.Object, _localizerMock.Object);
         }
 
-        void VerifyAction(InfoBarType severity, bool isOpen, bool isBusy = false, bool contains = false)
+        void VerifyAction(InfoBarType severity, bool isOpen, bool isBusy = false)
         {
             Assert.AreEqual(isBusy, _viewModel.IsBusy);
             Assert.AreEqual(isOpen, _viewModel.OpenInfoBar);
@@ -203,7 +203,7 @@ namespace Apolo.Tests.ViewModels
                     data.Lessons, data.Bills), Times.Once);
 
                 string fileContent = await File.ReadAllTextAsync(resultPath, TestContext.CancellationToken);
-                VerifyAction(InfoBarType.Success, isOpen: true, contains: true);
+                VerifyAction(InfoBarType.Success, isOpen: true);
             }
             finally
             {
@@ -284,7 +284,7 @@ namespace Apolo.Tests.ViewModels
 
             _repositoryMock.Verify(r => r.GetAllDataAsync(), Times.Once);
 
-            VerifyAction(InfoBarType.Success, isOpen: true, contains: true);
+            VerifyAction(InfoBarType.Success, isOpen: true);
         }
 
         // Export database from excel
@@ -330,7 +330,7 @@ namespace Apolo.Tests.ViewModels
 
             _repositoryMock.Verify(r => r.ExportArchiveAsync(), Times.Once);
 
-            VerifyAction(InfoBarType.Success, isOpen: true, contains: true);
+            VerifyAction(InfoBarType.Success, isOpen: true);
         }
 
         // Get payers with activity

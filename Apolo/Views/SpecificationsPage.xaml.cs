@@ -47,7 +47,7 @@ public sealed partial class SpecificationsPage : Page
             XamlRoot = Content.XamlRoot
         };
 
-        Binding operationsBinding = new Binding
+        Binding operationsBinding = new()
         {
             Source = formControl.ViewModel,
             Path = new PropertyPath("IsPrimaryButtonEnabled"),
@@ -55,7 +55,7 @@ public sealed partial class SpecificationsPage : Page
         };
         BindingOperations.SetBinding(dialog, ContentDialog.IsPrimaryButtonEnabledProperty, operationsBinding);
 
-        Binding dynamicTitleBinding = new Binding
+        Binding dynamicTitleBinding = new()
         {
             Source = formControl.ViewModel,
             Path = new PropertyPath("DialogTitle"),
@@ -141,7 +141,7 @@ public sealed partial class SpecificationsPage : Page
             XamlRoot = Content.XamlRoot
         };
 
-        Binding operationsBinding = new Binding
+        Binding operationsBinding = new()
         {
             Source = formControl.ViewModel,
             Path = new PropertyPath("IsPrimaryButtonEnabled"),
@@ -149,7 +149,7 @@ public sealed partial class SpecificationsPage : Page
         };
         BindingOperations.SetBinding(dialog, ContentDialog.IsPrimaryButtonEnabledProperty, operationsBinding);
 
-        Binding dynamicTitleBinding = new Binding
+        Binding dynamicTitleBinding = new()
         {
             Source = formControl.ViewModel,
             Path = new PropertyPath("DialogTitle"),
