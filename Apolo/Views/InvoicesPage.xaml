@@ -81,16 +81,11 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
+            <!-- 1. Page Title -->
             <TextBlock Grid.Column="0"
                        x:Uid="Title/Invoicing"
                        Style="{ThemeResource TitleLargeTextBlockStyle}" 
                        VerticalAlignment="Top"/>
-            <!-- 1. Page Title -->
-            <TextBlock Grid.Row="0"
-                       Grid.Column="0"
-                       Text="{x:Bind loc:Loc.Menu_Invoicing}"
-                       Style="{ThemeResource TitleLargeTextBlockStyle}"
-                       VerticalAlignment="Center" />
 
             <!-- 2. Adaptive Context Area (Bill Info & Totals) -->
             <!-- On Wide: Sits in Column 1, right-aligned. On Narrow: Wraps to Row 1 -->
@@ -136,7 +131,12 @@
                             VerticalAlignment="Center">
 
                     <!-- Included the checkbox directly next to the selected total for quick access -->
-                    <CheckBox x:Uid="Buttons/SelectAll" IsThreeState="True" IsChecked="{x:Bind ViewModel.SelectionState, Mode=TwoWay}" Margin="0" />
+                    <CheckBox x:Name="SelectAllCheckBox"
+                              x:Uid="Buttons/SelectAll"
+                              AutomationProperties.AutomationId="Invoices.SelectAll"
+                              IsThreeState="True"
+                              IsChecked="{x:Bind ViewModel.SelectionState, Mode=TwoWay}"
+                              Margin="0" />
 
                     <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
                                VerticalAlignment="Center">
@@ -155,13 +155,14 @@
             <ToggleButton x:Name="SidebarToggle"
                           Grid.Row="0"
                           Grid.Column="2"
-                          IsChecked="True"
+                          AutomationProperties.AutomationId="Invoices.ConfigurePaneToggle"
+                          IsChecked="{x:Bind ViewModel.IsConfigPaneOpen, Mode=TwoWay}"
                           VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal"
                             Spacing="8">
                     <SymbolIcon Symbol="Setting" />
                     <TextBlock x:Name="SidebarToggleText"
-                               Text="Configure Bill" />
+                               Text="{x:Bind local:InvoicesPage.ConfigureBillText}" />
                 </StackPanel>
             </ToggleButton>
         </Grid>
@@ -171,7 +172,7 @@
                        PanePlacement="Left"
                        OpenPaneLength="340"
                        DisplayMode="Inline"
-                       IsPaneOpen="{Binding ElementName=SidebarToggle, Path=IsChecked, Mode=TwoWay}">
+                       IsPaneOpen="{x:Bind ViewModel.IsConfigPaneOpen, Mode=TwoWay}">
 
                 <SplitView.Pane>
                     <Border Style="{StaticResource OverlayPaneBorderStyle}">
@@ -181,13 +182,16 @@
                                 <StackPanel Style="{StaticResource CardPanelStyle}">
                                     <TextBlock x:Uid="Common/NewInvoice"
                                                Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                    <ComboBox x:Uid="Common/Payer"
-                                              ItemsSource="{Binding Payers}"
+                                    <ComboBox x:Name="PayerComboBox"
+                                              x:Uid="Common/Payer"
+                                              AutomationProperties.AutomationId="Invoices.Payer"
+                                              ItemsSource="{x:Bind ViewModel.Payers, Mode=OneWay}"
                                               SelectedValuePath="Id"
                                               DisplayMemberPath="FullName"
                                               SelectedValue="{x:Bind ViewModel.SelectedPayerId, Mode=TwoWay}"
                                               HorizontalAlignment="Stretch" />
                                     <Button x:Uid="Buttons/LoadLessons"
+                                            AutomationProperties.AutomationId="Invoices.LoadLessons"
                                             Click="LoadForPayer_Click"
                                             Style="{ThemeResource AccentButtonStyle}"
                                             IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
@@ -197,8 +201,10 @@
                                 <StackPanel Style="{StaticResource CardPanelStyle}">
                                     <TextBlock x:Uid="Common/EditBill"
                                                Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                    <AutoSuggestBox x:Uid="Common/SearchBill"
-                                                    PlaceholderText="e.g. 2024-03..."
+                                    <AutoSuggestBox x:Name="SearchBillBox"
+                                                    x:Uid="Common/SearchBill"
+                                                    AutomationProperties.AutomationId="Invoices.SearchBill"
+                                                    PlaceholderText="{x:Bind local:InvoicesPage.SearchBillPlaceholderText}"
                                                     Text="{x:Bind ViewModel.SearchBillText, Mode=TwoWay}"
                                                     ItemsSource="{x:Bind ViewModel.BillSuggestions, Mode=OneWay}"
                                                     DisplayMemberPath="DocumentNumber"
@@ -208,6 +214,7 @@
                                                     SuggestionChosen="BillSearch_SuggestionChosen"
                                                     HorizontalAlignment="Stretch" />
                                     <Button x:Uid="Buttons/LoadBill"
+                                            AutomationProperties.AutomationId="Invoices.LoadBill"
                                             Click="LoadForBill_Click"
                                             Style="{ThemeResource AccentButtonStyle}"
                                             IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
@@ -229,15 +236,15 @@
                         </Grid.RowDefinitions>
 
                 <CommandBar Grid.Row="0" DefaultLabelPosition="Right" Background="Transparent" HorizontalAlignment="Left">
-                    <AppBarButton x:Uid="Buttons/MarkPaid" Icon="Accept" Click="MarkPaid_Click" IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
-                    <AppBarButton x:Uid="Buttons/MarkUnpaid" Icon="Undo" Foreground="{ThemeResource SystemFillColorCriticalBrush}" Click="MarkUnpaid_Click" IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
-                    <AppBarButton x:Uid="Buttons/Remove" Icon="Remove" Click="RemoveLesson_Click" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    <AppBarButton x:Uid="Buttons/MarkPaid" AutomationProperties.AutomationId="Invoices.MarkPaid" Icon="Accept" Click="MarkPaid_Click" IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
+                    <AppBarButton x:Uid="Buttons/MarkUnpaid" AutomationProperties.AutomationId="Invoices.MarkUnpaid" Icon="Undo" Foreground="{ThemeResource SystemFillColorCriticalBrush}" Click="MarkUnpaid_Click" IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
+                    <AppBarButton x:Uid="Buttons/Remove" AutomationProperties.AutomationId="Invoices.RemoveLessons" Icon="Remove" Click="RemoveLesson_Click" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     <AppBarSeparator />
-                    <AppBarButton x:Uid="Buttons/New" Icon="Document" Click="CreateBill_Click" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
+                    <AppBarButton x:Uid="Buttons/New" AutomationProperties.AutomationId="Invoices.CreateBill" Icon="Document" Click="CreateBill_Click" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
                     <AppBarSeparator />
-                    <AppBarButton x:Uid="Buttons/Edit" Icon="Edit" Click="EditBill_Click" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                    <AppBarButton x:Uid="Buttons/ExportPdf" Icon="Print" Command="{x:Bind ViewModel.PrintDocumentCommand}" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                    <AppBarButton x:Uid="Delete" Icon="Delete" Foreground="{ThemeResource SystemFillColorCriticalBrush}" Click="DeleteBill_Click" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    <AppBarButton x:Uid="Buttons/Edit" AutomationProperties.AutomationId="Invoices.EditBill" Icon="Edit" Click="EditBill_Click" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    <AppBarButton x:Uid="Buttons/ExportPdf" AutomationProperties.AutomationId="Invoices.ExportPdf" Icon="Print" Command="{x:Bind ViewModel.PrintDocumentCommand}" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    <AppBarButton x:Uid="Delete" AutomationProperties.AutomationId="Invoices.DeleteBill" Icon="Delete" Foreground="{ThemeResource SystemFillColorCriticalBrush}" Click="DeleteBill_Click" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
                 </CommandBar>
 
                         <StackPanel Grid.Row="1"
@@ -254,8 +261,10 @@
                             </InfoBar>
                         </StackPanel>
 
-                        <ListView Grid.Row="2"
-                                  ItemsSource="{Binding Lessons}"
+                        <ListView x:Name="InvoicesListView"
+                                  Grid.Row="2"
+                                  AutomationProperties.AutomationId="Invoices.Lessons"
+                                  ItemsSource="{x:Bind ViewModel.Lessons, Mode=OneWay}"
                                   SelectionMode="None">
                             <ListView.ItemTemplate>
                                 <DataTemplate x:DataType="vm:InvoiceLine">
