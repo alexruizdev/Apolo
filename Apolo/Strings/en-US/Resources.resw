@@ -1,65 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
-    Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
-    associated with the data types.
-    
-    Example:
-    
-    ... ado.net/XML headers & schema ...
-    <resheader name="resmimetype">text/microsoft-resx</resheader>
-    <resheader name="version">2.0</resheader>
-    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
-    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
-    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
-    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
-    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
-        <value>[base64 mime encoded serialized .NET Framework object]</value>
-    </data>
-    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
-        <comment>This is a comment</comment>
-    </data>
-                
-    There are any number of "resheader" rows that contain simple 
-    name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
-    mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
-    extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
-    read any of the formats listed below.
-    
-    mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
-            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
-            : and then encoded with base64 encoding.
-    
-    mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
-            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
-            : and then encoded with base64 encoding.
-
-    mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
-            : using a System.ComponentModel.TypeConverter
-            : and then encoded with base64 encoding.
-    -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xsd:schema id="root"
+    xmlns=""
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
@@ -117,38 +61,13 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Buttons/Delete" xml:space="preserve">
-    <value>Delete</value>
-    <comment>Content of a delete button</comment>
-  </data>
-  <data name="Buttons/Edit.Content" xml:space="preserve">
-    <value>Edit</value>
-    <comment>Content of an edit button</comment>
-  </data>
-  <data name="Buttons/Cancel" xml:space="preserve">
-    <value>Cancel</value>
-    <comment>Content of a cancel button</comment>
-  </data>
-  <data name="Menu/Services" xml:space="preserve">
-    <value>Services</value>
-  </data>
-  <data name="Menu/Students" xml:space="preserve">
-    <value>Students</value>
-  </data>
-  <data name="Menu/Specifications" xml:space="preserve">
-    <value>Specifications</value>
-  </data>
+
+  <!-- Menu -->
   <data name="Menu/Dashboard" xml:space="preserve">
     <value>Dashboard</value>
   </data>
   <data name="Menu/Proposal" xml:space="preserve">
     <value>Proposal</value>
-  </data>
-  <data name="Menu/Settings" xml:space="preserve">
-    <value>Settings</value>
-  </data>
-  <data name="Menu/Payers" xml:space="preserve">
-    <value>Payers</value>
   </data>
   <data name="Menu/Lessons" xml:space="preserve">
     <value>Lessons</value>
@@ -156,11 +75,1125 @@
   <data name="Menu/Invoicing" xml:space="preserve">
     <value>Invoicing</value>
   </data>
-  <data name="Box/Payer" xml:space="preserve">
-    <value>Payer</value>
-    <comment>Header for TextBox</comment>
+  <data name="Menu/Payers" xml:space="preserve">
+    <value>Payers</value>
   </data>
-  <data name="Buttons/Notes" xml:space="preserve">
+  <data name="Menu/Services" xml:space="preserve">
+    <value>Services</value>
+  </data>
+  <data name="Menu/Specifications" xml:space="preserve">
+    <value>Specifications</value>
+  </data>
+  <data name="Menu/Students" xml:space="preserve">
+    <value>Students</value>
+  </data>
+  <data name="Menu/Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+
+  <!-- Buttons -->
+  <data name="Buttons/ClearFilters.Content" xml:space="preserve">
+    <value>Clear Filters</value>
+  </data>
+  <data name="Buttons/PaymentOption_All.Content" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="Buttons/PaymentOption_Paid.Content" xml:space="preserve">
+    <value>Only Paid</value>
+  </data>
+  <data name="Buttons/PaymentOption_Unpaid.Content" xml:space="preserve">
+    <value>Only Unpaid</value>
+  </data>
+  <data name="Buttons/Apply_Filters.Content" xml:space="preserve">
+    <value>Apply Filters</value>
+  </data>
+  <data name="Buttons/Cancel.Content" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Buttons/PricePerHour.Content" xml:space="preserve">
+    <value>Price/Hour:</value>
+  </data>
+  <data name="Buttons/New.Label" xml:space="preserve">
+    <value>New</value>
+  </data>
+
+  <data name="Buttons/Delete.Label" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Buttons/Edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+
+  <!-- Confirmation -->
+  <data name="Confirmation/Title" xml:space="preserve">
+    <value>Confirm: {0}</value>
+  </data>
+  <data name="Confirmation/Content" xml:space="preserve">
+    <value>Are you sure you want to {0}? This action cannot be undone.</value>
+  </data>
+  <data name="Confirmation/Content_Item" xml:space="preserve">
+    <value>Are you sure you want to {0} '{1}'? This action cannot be undone.</value>
+  </data>
+
+  <!-- Tool Tip-->
+  <data name="Edit_Lesson.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Edit lesson</value>
+  </data>
+  <data name="Change_Payment.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Change payment status</value>
+  </data>
+  <data name="Delete_Lesson.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete lesson</value>
+  </data>
+  <data name="Billing_Document.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Billing document</value>
+  </data>
+
+  <!-- Texts -->
+  <data name="Filters.Text" xml:space="preserve">
+    <value>Filters</value>
+  </data>
+  <data name="Paid.Text" xml:space="preserve">
+    <value>PAID</value>
+  </data>
+  <data name="Unpaid.Text" xml:space="preserve">
+    <value>UNPAID</value>
+  </data>
+  <data name="Lesson_Details.Text" xml:space="preserve">
+    <value>Lesson Details</value>
+  </data>
+  <data name="Pricing_Details.Text" xml:space="preserve">
+    <value>Pricing &amp; Options</value>
+  </data>
+  <data name="Title/Invoicing.Text" xml:space="preserve">
+    <value>Invoicing</value>
+  </data>
+
+  <!-- Forms -->
+  <data name="Search_Student.Header" xml:space="preserve">
+    <value>Student Name</value>
+  </data>
+  <data name="Search_Student.PlaceholderText" xml:space="preserve">
+    <value>Search Student...</value>
+  </data>
+  <data name="Search_Payer.Header" xml:space="preserve">
+    <value>Payer Name</value>
+  </data>
+  <data name="Lesson_Name.Header" xml:space="preserve">
+    <value>Lesson Name</value>
+  </data>
+  <data name="Search_Payer.PlaceholderText" xml:space="preserve">
+    <value>Search Payer...</value>
+  </data>
+  <data name="Payment_Status.Header" xml:space="preserve">
+    <value>Payment Status</value>
+  </data>
+  <data name="Start_Date.Header" xml:space="preserve">
+    <value>Start Date</value>
+  </data>
+  <data name="End_Date.Header" xml:space="preserve">
+    <value>End Date</value>
+  </data>
+  <data name="Date.Header" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="Price.Header" xml:space="preserve">
+    <value>Price:</value>
+  </data>
+  <data name="PricePerHour.Header" xml:space="preserve">
+    <value>Price/Hour:</value>
+  </data>
+  <data name="Specification.Header" xml:space="preserve">
+    <value>Specification (optional)</value>
+  </data>
+  <data name="Form/Tip.Header" xml:space="preserve">
+    <value>Tip:</value>
+  </data>
+  <data name="Form/Online.Header" xml:space="preserve">
+    <value>Lesson Delivery Modality:</value>
+  </data>
+  <data name="Form/Online.OnContent" xml:space="preserve">
+    <value>Online Session</value>
+  </data>
+  <data name="Form/Online.OffContent" xml:space="preserve">
+    <value>In-Person</value>
+  </data>
+  <data name="Form/Travel_Allowance.Header" xml:space="preserve">
+    <value>Travel Allowance:</value>
+  </data>
+  <data name="Form/Weekend.Header" xml:space="preserve">
+    <value>Weekend or Holiday Scheduling:</value>
+  </data>
+  <data name="Form/Weekend.OnContent" xml:space="preserve">
+    <value>Weekend or Holiday</value>
+  </data>
+  <data name="Form/Weekend.OffContent" xml:space="preserve">
+    <value>Weekday Pricing</value>
+  </data>
+  <data name="Form/Weekend_Fee.Header" xml:space="preserve">
+    <value>Weekend or holiday fee:</value>
+  </data>
+  <data name="Form/Notes.Header" xml:space="preserve">
+    <value>Notes:</value>
+  </data>
+  <data name="Form/Price_Type.Header" xml:space="preserve">
+    <value>Price Rate:</value>
+  </data>
+  <data name="Form/Price_Type.OnContent" xml:space="preserve">
+    <value>Price/Hour</value>
+  </data>
+  <data name="Form/Price_Type.OffContent" xml:space="preserve">
+    <value>Flat rate</value>
+  </data>
+
+  <!-- Messages - Base-->
+  <data name="Messages/Price" xml:space="preserve">
+    <value>Price:</value>
+  </data>
+  <data name="Messages/PricePerHour" xml:space="preserve">
+    <value>Price/Hour:</value>
+  </data>
+  <data name="Messages/Student_Not_Loaded" xml:space="preserve">
+    <value>Student '{0}' not loaded.</value>
+  </data>
+  <data name="Messages/Service_Not_Loaded" xml:space="preserve">
+    <value>Service '{0}' not loaded.</value>
+  </data>
+  <data name="Messages/Payer_Not_Loaded" xml:space="preserve">
+    <value>Payer '{0}' not loaded.</value>
+  </data>
+  <data name="Messages/Lesson_Not_Loaded" xml:space="preserve">
+    <value>Lesson '{0}' not loaded.</value>
+  </data>
+  <data name="Messages/Bill_Not_Loaded" xml:space="preserve">
+    <value>Bill '{0}' not loaded</value>
+  </data>
+  <data name="Message/Specification_Not_Loaded" xml:space="preserve">
+    <value>Specification '{0}' not loaded</value>
+  </data>
+  <data name="Messages/Lesson_Name_Validation" xml:space="preserve">
+    <value>• Lesson name is required.</value>
+  </data>
+  <data name="Messages/Service_Name_Validation" xml:space="preserve">
+    <value>• Service name is required.</value>
+  </data>
+  <data name="Messages/Specification_Name_Validation" xml:space="preserve">
+    <value>• Specification name is required.</value>
+  </data>
+  <data name="Messages/Person_Name_Validation" xml:space="preserve">
+    <value>• Enter at least a first or last name.</value>
+  </data>
+  <data name="Messages/Tip_Validation" xml:space="preserve">
+    <value>• Enter a valid non-negative tip (e.g., 15.5).</value>
+  </data>
+  <data name="Messages/Duration_Validation" xml:space="preserve">
+    <value>• Duration is required when the lesson is priced per hour.</value>
+  </data>
+  <data name="Messages/Duration_Value_Validation" xml:space="preserve">
+    <value>• Enter a valid non-negative duration (e.g., 60).</value>
+  </data>
+  <data name="Messages/Price_Validation" xml:space="preserve">
+    <value>• Enter a valid non-negative base price (e.g., 42.5).</value>
+  </data>
+  <data name="Messages/Student_Selection_Validation" xml:space="preserve">
+    <value>• Select a student.</value>
+  </data>
+  <data name="Messages/Service_Selection_Validation" xml:space="preserve">
+    <value>• Select a service.</value>
+  </data>
+  <data name="Messages/Lesson_Paid_Validation" xml:space="preserve">
+    <value>• Is not possible to edit a lesson if it's paid.</value>
+  </data>
+  <data name="Messages/Lesson_Bill_Validation" xml:space="preserve">
+    <value>• Is not possible to edit a lesson it it has a bill document associated.</value>
+  </data>
+  <data name="Messages/Frequency_Validation" xml:space="preserve">
+    <value>• Frequency must be a positive integer.</value>
+  </data>
+  <data name="Messages/Change_Payment_Error" xml:space="preserve">
+    <value>Can't change payment</value>
+  </data>
+  <data name="Messages/Mark_Paid_Reason" xml:space="preserve">
+    <value>Please, select first a lesson to mark them as paid</value>
+  </data>
+  <data name="Messages/Mark_Unpaid_Reason" xml:space="preserve">
+    <value>Please, select first a lesson to mark them as unpaid</value>
+  </data>
+  <data name="Messages/Mark_Paid_Success" xml:space="preserve">
+    <value>Lesson '{0}' marked as paid successfully</value>
+  </data>
+  <data name="Messages/Mark_Unpaid_Success" xml:space="preserve">
+    <value>Lesson '{0}' marked as unpaid successfully</value>
+  </data>
+  <data name="Messages/Lessons_Mark_Paid_Success" xml:space="preserve">
+    <value>{0} lessons marked as paid successfully</value>
+  </data>
+  <data name="Messages/Lessons_Mark_Unpaid_Success" xml:space="preserve">
+    <value>{0} lessons marked as unpaid successfully</value>
+  </data>
+  <data name="Messages/Reason_Busy" xml:space="preserve">
+    <value>app is busy</value>
+  </data>
+
+  <!-- Messages - Payers -->
+  <data name="Messages/Load_Payers_Error" xml:space="preserve">
+    <value>Can't load Payers page</value>
+  </data>
+  <data name="Messages/Load_Payers_Success" xml:space="preserve">
+    <value>{0} payer(s) retrieved</value>
+  </data>
+  <data name="Messages/Add_Payer_Error" xml:space="preserve">
+    <value>Can't add payer</value>
+  </data>
+  <data name="Messages/Add_Payer_Success" xml:space="preserve">
+    <value>Payer '{0}' added successfully</value>
+  </data>
+  <data name="Messages/Delete_Payer_Error" xml:space="preserve">
+    <value>Can't delete payer</value>
+  </data>
+  <data name="Messages/Associated_Student_Reason" xml:space="preserve">
+    <value>payer has associates at least a student ({0})</value>
+  </data>
+  <data name="Messages/Delete_Payer_Success" xml:space="preserve">
+    <value>Payer '{0}' delete successfully</value>
+  </data>
+  <data name="Messages/Edit_Payer_Error" xml:space="preserve">
+    <value>Can't edit payer</value>
+  </data>
+  <data name="Messages/Edit_Payer_Success" xml:space="preserve">
+    <value>Payer '{0}' updated successfully</value>
+  </data>
+
+  <!-- Messages - Lessons -->
+  <data name="Messages/Load_Lesson_Error" xml:space="preserve">
+    <value>Can't load Lessons page</value>
+  </data>
+  <data name="Messages/Load_Lesson_Success" xml:space="preserve">
+    <value>{0} lesson(s) retrieved</value>
+  </data>
+  <data name="Messages/Add_Lesson_Error" xml:space="preserve">
+    <value>Can't add lesson</value>
+  </data>
+  <data name="Messages/Add_Lesson_Success" xml:space="preserve">
+    <value>Lesson '{0}' added successfully</value>
+  </data>
+  <data name="Messages/Delete_Lesson_Error" xml:space="preserve">
+    <value>Can't delete lesson</value>
+  </data>
+  <data name="Messages/LessonIsAssigned" xml:space="preserve">
+    <value>'{0}-{1}' is associated to bill '{2}'</value>
+  </data>
+  <data name="Messages/Delete_Lesson_Success" xml:space="preserve">
+    <value>Lesson '{0}' deleted successfully for '{1}'</value>
+  </data>
+  <data name="Messages/Edit_Lesson_Error" xml:space="preserve">
+    <value>Can't edit lesson</value>
+  </data>
+  <data name="Messages/Edit_Lesson_Success" xml:space="preserve">
+    <value>"Lesson '{0}' updated successfully</value>
+  </data>
+  <data name="Messages/Clear Filters_Error" xml:space="preserve">
+    <value>Can't clear filters</value>
+  </data>
+
+  <!-- Messages - Bills -->
+  <data name="Messages/State_Bill_Error" xml:space="preserve">
+    <value>Can't update selection</value>
+  </data>
+  <data name="Messages/Load_Bill_Error" xml:space="preserve">
+    <value>Can't load Invoice page</value>
+  </data>
+  <data name="Messages/Load_Lessons_Error" xml:space="preserve">
+    <value>Can't load lessons</value>
+  </data>
+  <data name="Messages/Payer_Selected_Reason" xml:space="preserve">
+    <value>no payer was selected</value>
+  </data>
+  <data name="Messages/Load_Lessons_Success" xml:space="preserve">
+    <value>{0} lesson(s) loaded unbilled and unpaid</value>
+  </data>
+  <data name="Messages/Load_Bill_Lessons_Error" xml:space="preserve">
+    <value>Can't load bill lessons</value>
+  </data>
+  <data name="Messages/Bill_Selected_Reason" xml:space="preserve">
+    <value>no bill was selected</value>
+  </data>
+  <data name="Messages/Load_Bill_Lessons_Success" xml:space="preserve">
+    <value>'{0}' loaded ({1} lesson(s))</value>
+  </data>
+  <data name="Messages/Remove_Bill_Lessons_Error" xml:space="preserve">
+    <value>Can't remove selected lessons</value>
+  </data>
+  <data name="Messages/Lessons_Selected_Reason" xml:space="preserve">
+    <value>no lesson was selected</value>
+  </data>
+  <data name="Messages/Remove_Bill_Lessons_Success" xml:space="preserve">
+    <value>{0} were removed from {1}</value>
+  </data>
+  <data name="Messages/Delete_Bill_Error" xml:space="preserve">
+    <value>Can't remove bill document</value>
+  </data>
+  <data name="Messages/Delete_Bill_Success" xml:space="preserve">
+    <value>Bill document '{0}' deleted successfully</value>
+  </data>
+  <data name="Messages/Generate_Bill_Error" xml:space="preserve">
+    <value>Can't generate bill document</value>
+  </data>
+  <data name="Messages/Billing_Folder_Reason" xml:space="preserve">
+    <value>directory '{0}' does not exist (you can configure it properly in the settings view)</value>
+  </data>
+  <data name="Messages/Generate_Bill_Success" xml:space="preserve">
+    <value>Bill document '{0}' saved to: {0}</value>
+  </data>
+  <data name="Messages/Print_Bill_Error" xml:space="preserve">
+    <value>Can't print bill document</value>
+  </data>
+
+  <!-- Messages - Dashboard -->
+  <data name="Messages/Load_Dashboard_Error" xml:space="preserve">
+    <value>Can't load Dashboard page</value>
+  </data>
+  <data name="Messages/Dashboard_Income" xml:space="preserve">
+    <value>Income {0}</value>
+  </data>
+  <data name="Messages/Dashboard_Total_Amount" xml:space="preserve">
+    <value>Total Amount</value>
+  </data>
+  <data name="Messages/Paid" xml:space="preserve">
+    <value>Paid</value>
+  </data>
+  <data name="Messages/Unpaid" xml:space="preserve">
+    <value>Unpaid</value>
+  </data>
+  <data name="Message/New" xml:space="preserve">
+    <value>New</value>
+  </data>
+
+  <!-- Messages - LessonForm -->
+  <data name="Message/New_Lesson" xml:space="preserve">
+    <value>New Lesson — Total: {0}</value>
+  </data>
+  <data name="Message/Edit_Lesson" xml:space="preserve">
+    <value>Edit Lesson — Total: {0}</value>
+  </data>
+
+  <!-- Messages - Services -->
+  <data name="Message/Load_Services_Error" xml:space="preserve">
+    <value>Can't load Services page</value>
+  </data>
+  <data name="Message/Add_Service_Error" xml:space="preserve">
+    <value>Can't add service</value>
+  </data>
+  <data name="Message/Service_Repeated_Reason" xml:space="preserve">
+    <value>a service with the name '{0}' already exists ({1})</value>
+  </data>
+  <data name="Message/Add_Service_Success" xml:space="preserve">
+    <value>Service '{0}' added successfully</value>
+  </data>
+  <data name="Message/Delete_Service_Error" xml:space="preserve">
+    <value>Can't delete service</value>
+  </data>
+  <data name="Message/Delete_Service_Success" xml:space="preserve">
+    <value>Service '{0}' deleted successfully</value>
+  </data>
+  <data name="Message/Edit_Service_Error" xml:space="preserve">
+    <value>Can't edit service</value>
+  </data>
+  <data name="Message/Edit_Service_Success" xml:space="preserve">
+    <value>Service '{0}' updated successfully</value>
+  </data>
+
+  <!-- Messages - Specifications -->
+
+  <data name="Message/Load_Specification_Error" xml:space="preserve">
+    <value>Can't load specifications page</value>
+  </data>
+  <data name="Messages/Load_Specification_Success" xml:space="preserve">
+    <value>{0} specification(s) loaded</value>
+  </data>
+  <data name="Message/Refresh_Specification_Error" xml:space="preserve">
+    <value>Can't refresh specifications page</value>
+  </data>
+  <data name="Message/Add_Specification_Error" xml:space="preserve">
+    <value>Can't add specifications</value>
+  </data>
+  <data name="Message/Add_Specification_Success" xml:space="preserve">
+    <value>Specification '{0}' added for {1}</value>
+  </data>
+  <data name="Message/Delete_Specification_Error" xml:space="preserve">
+    <value>Can't delete specifications</value>
+  </data>
+  <data name="Message/Delete_Specification_Success" xml:space="preserve">
+    <value>Specification '{0}' deleted for {1}</value>
+  </data>
+  <data name="Message/Edit_Specification_Success" xml:space="preserve">
+    <value>Specification '{0}' updated for {1}</value>
+  </data>
+  <data name="Message/Create_Lesson_Specification_Error" xml:space="preserve">
+    <value>Can't create lesson from specification</value>
+  </data>
+  <data name="Message/Create_Lesson_Specification_Success" xml:space="preserve">
+    <value>Lesson '{0}' created for {1}</value>
+  </data>
+
+  <!-- Messages - SpecificationForm -->
+  <data name="Message/New_Specification" xml:space="preserve">
+    <value>New Specification — Total: {0}</value>
+  </data>
+  <data name="Message/Edit_Specification" xml:space="preserve">
+    <value>Edit Specification — Total: {0}</value>
+  </data>
+  <data name="Message/Save_Specification_Error" xml:space="preserve">
+    <value>Student or service is null</value>
+  </data>
+  <data name="Message/Edit_Specification_Error" xml:space="preserve">
+    <value>Specification doesn't have Id</value>
+  </data>
+  <data name="Message/Edit_Specification_Service_Error" xml:space="preserve">
+    <value>Service is not selected to edit specification</value>
+  </data>
+
+  <!-- Messages - Students -->
+  <data name="Messages/Load_Students_Error" xml:space="preserve">
+    <value>Can't load students page</value>
+  </data>
+  <data name="Messages/Load_Students_Success" xml:space="preserve">
+    <value>{0} student(s) retrieved</value>
+  </data>
+  <data name="Messages/Add_Student_Error" xml:space="preserve">
+    <value>Can't add student</value>
+  </data>
+  <data name="Messages/Add_Student_Success" xml:space="preserve">
+    <value>Student '{0}' added successfully</value>
+  </data>
+  <data name="Messages/Add_Student_Extra" xml:space="preserve">
+    <value>Created payer with same name</value>
+  </data>
+  <data name="Messages/Delete_Student_Error" xml:space="preserve">
+    <value>Can't delete student</value>
+  </data>
+  <data name="Messages/Delete_Student_Success" xml:space="preserve">
+    <value>Student '{0}' delete successfully</value>
+  </data>
+  <data name="Messages/Edit_Student_Error" xml:space="preserve">
+    <value>Can't edit student</value>
+  </data>
+  <data name="Messages/Edit_Student_Success" xml:space="preserve">
+    <value>Student '{0}' updated successfully</value>
+  </data>
+
+  <!-- Messages / Proposal -->
+  <data name="Messages/Load_Proposal_Error" xml:space="preserve">
+    <value>Can't load proposal page</value>
+  </data>
+  <data name="Messages/Generate_Proposal_Error" xml:space="preserve">
+    <value>Can't generate proposal</value>
+  </data>
+  <data name="Messages/Generate_Proposal_Success" xml:space="preserve">
+    <value>Generated proposal successfully: {0}</value>
+  </data>
+  <data name="Message/Week" xml:space="preserve">
+    <value>Week</value>
+  </data>
+  <data name="Message/Month" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="Message/Times" xml:space="preserve">
+    <value>time(s)</value>
+  </data>
+  <data name="Message/Sessions" xml:space="preserve">
+    <value>total sessions</value>
+  </data>
+
+  <!-- Messages / Settings -->
+  <data name="Messages/Save_Settings_Error" xml:space="preserve">
+    <value>Can't save user profile</value>
+  </data>
+  <data name="Messages/Save_Settings_Success" xml:space="preserve">
+    <value>User profile saved successfully</value>
+  </data>
+  <data name="Messages/Delete_Settings_Error" xml:space="preserve">
+    <value>Can't delete user profile</value>
+  </data>
+  <data name="Messages/Delete_Settings_Success" xml:space="preserve">
+    <value>User profile deleted successfully</value>
+  </data>
+  <data name="Messages/Delete_Database_Error" xml:space="preserve">
+    <value>Can't delete database</value>
+  </data>
+  <data name="Messages/Delete_Database_Success" xml:space="preserve">
+    <value>Database has been deleted successfully</value>
+  </data>
+  <data name="Messages/Delete_Archive_Error" xml:space="preserve">
+    <value>Can't delete archive</value>
+  </data>
+  <data name="Messages/Delete_Archive_Success" xml:space="preserve">
+    <value>Archive has been deleted successfully</value>
+  </data>
+  <data name="Messages/Import_Database_Error" xml:space="preserve">
+    <value>Can't import database from Excel</value>
+  </data>
+  <data name="Messages/No_File_Reason" xml:space="preserve">
+    <value>no file was selected</value>
+  </data>
+  <data name="Messages/No_Directory_Reason" xml:space="preserve">
+    <value>directory '{0}' does not exist</value>
+  </data>
+  <data name="Messages/Excel_Used_Reason" xml:space="preserve">
+    <value>the file is in use. Please close it in Excel and try again</value>
+  </data>
+  <data name="Messages/Import_Database_Success" xml:space="preserve">
+    <value>Database has been imported successfully ({0}). Summary saved to {1}</value>
+  </data>
+  <data name="Messages/Import_Archive_Error" xml:space="preserve">
+    <value>Can't import archive</value>
+  </data>
+  <data name="Messages/Import_Archive_Success" xml:space="preserve">
+    <value>Archive has been imported successfully ({0}). Summary saved to {1}</value>
+  </data>
+  <data name="Messages/Export_Database_Error" xml:space="preserve">
+    <value>Can't export database</value>
+  </data>
+  <data name="Messages/Backup_Folder_Reason" xml:space="preserve">
+    <value>the backup folder doesn't exists, please configure it properly in the settings page</value>
+  </data>
+  <data name="Messages/Export_Database_Success" xml:space="preserve">
+    <value>Database export completed ({0}). File saved to {1}</value>
+  </data>
+  <data name="Messages/Export_Archive_Error" xml:space="preserve">
+    <value>Can't export archive</value>
+  </data>
+  <data name="Messages/Export_Archive_Success" xml:space="preserve">
+    <value>Archive export completed ({0}). File saved to {1}</value>
+  </data>
+  <data name="Messages/Archive_Error" xml:space="preserve">
+    <value>Can't archive data</value>
+  </data>
+  <data name="Messages/Payer_Selection_Reason" xml:space="preserve">
+    <value>no payer selected</value>
+  </data>
+  <data name="Messages/Archive_Success" xml:space="preserve">
+    <value>Archived data successfully</value>
+  </data>
+  <data name="Messages/Retrieve_Archive_Error" xml:space="preserve">
+    <value>Can't retrieve archive data</value>
+  </data>
+  <data name="Messages/Retrieve_Archive_Success" xml:space="preserve">
+    <value>Retrieved archive data successfully</value>
+  </data>
+
+  <data name="Messages/Settings_Export_Header" xml:space="preserve">
+    <value>IMPORT SUMMARY</value>
+  </data>
+  <data name="Messages/Settings_Export_Date" xml:space="preserve">
+    <value>Fecha</value>
+  </data>
+  <data name="Messages/Settings_Export_Results" xml:space="preserve">
+    <value>RESULTS</value>
+  </data>
+  <data name="Messages/Settings_Export_Services" xml:space="preserve">
+    <value>Services Imported</value>
+  </data>
+  <data name="Messages/Settings_Export_Payers" xml:space="preserve">
+    <value>Payers Imported</value>
+  </data>
+  <data name="Messages/Settings_Export_Students" xml:space="preserve">
+    <value>Students Imported</value>
+  </data>
+  <data name="Messages/Settings_Export_Specifications" xml:space="preserve">
+    <value>Specifications Imported</value>
+  </data>
+  <data name="Messages/Settings_Export_Lessons" xml:space="preserve">
+    <value>Lessons Imported</value>
+  </data>
+  <data name="Messages/Settings_Export_Invoices" xml:space="preserve">
+    <value>Invoices Imported</value>
+  </data>
+  <data name="Buttons/Create" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="Buttons/Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Buttons/ApplyFilters.Content" xml:space="preserve">
+    <value>Apply Filters</value>
+  </data>
+  <data name="Buttons/LoadLessons.Content" xml:space="preserve">
+    <value>Load lessons</value>
+  </data>
+  <data name="Buttons/LoadBill.Content" xml:space="preserve">
+    <value>Load bill</value>
+  </data>
+  <data name="Buttons/MarkPaid.Label" xml:space="preserve">
+    <value>Mark paid</value>
+  </data>
+  <data name="Buttons/MarkUnpaid.Label" xml:space="preserve">
+    <value>Mark unpaid</value>
+  </data>
+  <data name="Buttons/Remove.Label" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="Buttons/NewInvoice.Label" xml:space="preserve">
+    <value>New Invoice</value>
+  </data>
+  <data name="Buttons/NewTicket.Label" xml:space="preserve">
+    <value>New Ticket</value>
+  </data>
+  <data name="Buttons/ExportPdf.Label" xml:space="preserve">
+    <value>Export to PDF</value>
+  </data>
+  <data name="Buttons/SelectAll.Content" xml:space="preserve">
+    <value>Select all</value>
+  </data>
+  <data name="Buttons/Understood" xml:space="preserve">
+    <value>Understood</value>
+  </data>
+  <data name="Buttons/ImportBackup.Label" xml:space="preserve">
+    <value>Import backup</value>
+  </data>
+  <data name="Buttons/ExportExcel.Label" xml:space="preserve">
+    <value>Export Excel</value>
+  </data>
+  <data name="Buttons/ImportArchive.Label" xml:space="preserve">
+    <value>Import archive</value>
+  </data>
+  <data name="Buttons/SaveArchive.Label" xml:space="preserve">
+    <value>Save archive</value>
+  </data>
+  <data name="Buttons/Archive.Label" xml:space="preserve">
+    <value>Archive</value>
+  </data>
+  <data name="Buttons/Retrieve.Label" xml:space="preserve">
+    <value>Retrieve</value>
+  </data>
+  <data name="Buttons/PickFile" xml:space="preserve">
+    <value>Pick a file</value>
+  </data>
+  <data name="Buttons/PickFolder" xml:space="preserve">
+    <value>Pick Folder</value>
+  </data>
+  <data name="Buttons/DeleteProfile.Label" xml:space="preserve">
+    <value>Delete profile</value>
+  </data>
+  <data name="Buttons/DiscardChanges.Label" xml:space="preserve">
+    <value>Discard Changes</value>
+  </data>
+  <data name="Buttons/Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Common/DashboardTitle" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Common/AppTitle" xml:space="preserve">
+    <value>Apolo</value>
+  </data>
+  <data name="Common/InvoiceManager" xml:space="preserve">
+    <value>Invoice manager</value>
+  </data>
+  <data name="Common/UserManual" xml:space="preserve">
+    <value>User manual</value>
+  </data>
+  <data name="Common/Outstanding.Text" xml:space="preserve">
+    <value>Outstanding:</value>
+  </data>
+  <data name="Common/BillingDocument.Content" xml:space="preserve">
+    <value>Billing Document</value>
+  </data>
+  <data name="Common/ChangePaymentStatus" xml:space="preserve">
+    <value>Change payment status</value>
+  </data>
+  <data name="Common/MinuteAbbrev.Text" xml:space="preserve">
+    <value>min</value>
+  </data>
+  <data name="Common/CreateBill" xml:space="preserve">
+    <value>Create bill</value>
+  </data>
+  <data name="Common/EditExistingBill" xml:space="preserve">
+    <value>Edit existing bill</value>
+  </data>
+  <data name="Common/Summaries" xml:space="preserve">
+    <value>Summaries</value>
+  </data>
+  <data name="Common/CreatePayer" xml:space="preserve">
+    <value>Create payer</value>
+  </data>
+  <data name="Common/EditPayer" xml:space="preserve">
+    <value>Edit payer</value>
+  </data>
+  <data name="Common/CreateService" xml:space="preserve">
+    <value>Create service</value>
+  </data>
+  <data name="Common/EditService" xml:space="preserve">
+    <value>Edit service</value>
+  </data>
+  <data name="Common/CreateStudent" xml:space="preserve">
+    <value>Create student</value>
+  </data>
+  <data name="Common/EditStudent" xml:space="preserve">
+    <value>Edit student</value>
+  </data>
+  <data name="Common/CreateSpecification" xml:space="preserve">
+    <value>Create specification</value>
+  </data>
+  <data name="Common/EditSpecification.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Edit specification</value>
+  </data>
+  <data name="Common/CreateLesson.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Create lesson</value>
+  </data>
+  <data name="Common/DeleteSpecification.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete specification</value>
+  </data>
+  <data name="Common/EditLesson" xml:space="preserve">
+    <value>Edit lesson</value>
+  </data>
+  <data name="Common/Filters.Text" xml:space="preserve">
+    <value>Filters</value>
+  </data>
+  <data name="Common/ClearFilters.Content" xml:space="preserve">
+    <value>Clear Filters</value>
+  </data>
+  <data name="Common/FilterResults.Text" xml:space="preserve">
+    <value>Filter Results</value>
+  </data>
+  <data name="Common/SearchBill.Header" xml:space="preserve">
+    <value>Search Bill Name/Number</value>
+  </data>
+  <data name="Common/PaymentStatus.Header" xml:space="preserve">
+    <value>Payment Status</value>
+  </data>
+  <data name="Common/AllStatuses.Content" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="Common/OnlyPaid.Content" xml:space="preserve">
+    <value>Paid</value>
+  </data>
+  <data name="Common/OnlyUnpaid.Content" xml:space="preserve">
+    <value>Unpaid</value>
+  </data>
+  <data name="Common/StartDate.Header" xml:space="preserve">
+    <value>Start Date</value>
+  </data>
+  <data name="Common/EndDate.Header" xml:space="preserve">
+    <value>End Date</value>
+  </data>
+  <data name="Common/ActiveBill.Text" xml:space="preserve">
+    <value>Active Bill</value>
+  </data>
+  <data name="Common/NewInvoice.Text" xml:space="preserve">
+    <value>Create bill</value>
+  </data>
+  <data name="Common/Date.Text" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="Common/Selected.Text" xml:space="preserve">
+    <value>Selected</value>
+  </data>
+  <data name="Common/TotalAll.Text" xml:space="preserve">
+    <value>Total All</value>
+  </data>
+  <data name="Common/Summary.Text" xml:space="preserve">
+    <value>Summaries</value>
+  </data>
+  <data name="Common/FirstName" xml:space="preserve">
+    <value>First name</value>
+  </data>
+  <data name="Common/LastName" xml:space="preserve">
+    <value>Last name</value>
+  </data>
+  <data name="Common/Address.Header" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="Common/ZipCode.Header" xml:space="preserve">
+    <value>Zip code</value>
+  </data>
+  <data name="Common/City.Header" xml:space="preserve">
+    <value>City</value>
+  </data>
+  <data name="Common/Name.Header" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Common/Service.Header" xml:space="preserve">
+    <value>Service</value>
+  </data>
+  <data name="Common/LessonDetails.Text" xml:space="preserve">
+    <value>Lesson Details</value>
+  </data>
+  <data name="Common/LessonName.Header" xml:space="preserve">
+    <value>Lesson name</value>
+  </data>
+  <data name="Common/SpecificationName.Header" xml:space="preserve">
+    <value>Specification name</value>
+  </data>
+  <data name="Common/PricingOptions.Text" xml:space="preserve">
+    <value>Pricing &amp; Options</value>
+  </data>
+  <data name="Common/ServiceDetails" xml:space="preserve">
+    <value>Service Details</value>
+  </data>
+  <data name="Common/DurationMinutes.Header" xml:space="preserve">
+    <value>Duration (minutes):</value>
+  </data>
+  <data name="Common/Tip" xml:space="preserve">
+    <value>Tip:</value>
+  </data>
+  <data name="Common/Online.Text" xml:space="preserve">
+    <value>Online</value>
+  </data>
+  <data name="Common/WeekendOrHoliday.Text" xml:space="preserve">
+    <value>Weekend or Holiday</value>
+  </data>
+  <data name="Common/Notes" xml:space="preserve">
     <value>Notes</value>
+  </data>
+  <data name="Common/Price.Text" xml:space="preserve">
+    <value>Price:</value>
+  </data>
+  <data name="Common/PerHour.Text" xml:space="preserve">
+    <value>Price/Hour</value>
+  </data>
+  <data name="Common/TravelAllowance.Header" xml:space="preserve">
+    <value>Travel Allowance</value>
+  </data>
+  <data name="Common/WeekendFee.Header" xml:space="preserve">
+    <value>Weekend Fee</value>
+  </data>
+  <data name="Common/TaxId.Header" xml:space="preserve">
+    <value>Tax ID</value>
+  </data>
+  <data name="Common/BankName.Header" xml:space="preserve">
+    <value>Bank Name</value>
+  </data>
+  <data name="Common/BankAccount.Header" xml:space="preserve">
+    <value>Bank Account (IBAN)</value>
+  </data>
+  <data name="Common/TaxPercent.Header" xml:space="preserve">
+    <value>IVA (VAT) Percent</value>
+  </data>
+  <data name="Common/Email.Header" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Common/Phone.Header" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="Common/ProgressiveSearch" xml:space="preserve">
+    <value>Type to search...</value>
+  </data>
+  <data name="Common/Payer.Header" xml:space="preserve">
+    <value>Payer</value>
+  </data>
+  <data name="Common/EditBill.Text" xml:space="preserve">
+    <value>Edit existing bill</value>
+  </data>
+
+  <!-- Lessons -->
+  <data name="Lessons/Title.Text" xml:space="preserve">
+    <value>Lessons</value>
+  </data>
+
+  <!-- Servicios -->
+  <data name="Services/Title.Text" xml:space="preserve">
+    <value>Services</value>
+  </data>
+
+  <!-- Payers -->
+  <data name="Payers/Title.Text" xml:space="preserve">
+    <value>Payers</value>
+  </data>
+
+  <!-- Dashboard -->
+  <data name="Dashboard/Title.Text" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Dashboard/EarningsSelectedMonth.Text" xml:space="preserve">
+    <value>Earnings (Selected Month)</value>
+  </data>
+  <data name="Dashboard/TotalUnpaidAllTime.Text" xml:space="preserve">
+    <value>Total Unpaid (All Time)</value>
+  </data>
+  <data name="Dashboard/LessonsSelectedMonth.Text" xml:space="preserve">
+    <value>Lessons (Selected Month)</value>
+  </data>
+  <data name="Dashboard/IncomesPerYearComparison.Text" xml:space="preserve">
+    <value>Incomes per Year Comparison</value>
+  </data>
+  <data name="Dashboard/PaidVsUnpaidSelectedMonth.Text" xml:space="preserve">
+    <value>Paid vs Unpaid (Selected Month)</value>
+  </data>
+  <data name="Dashboard/Top5PayersSelectedMonth.Text" xml:space="preserve">
+    <value>Top 5 Payers (Selected Month)</value>
+  </data>
+
+  <!-- Proposal -->
+  <data name="Proposal/Title.Text" xml:space="preserve">
+    <value>Client Budget Proposals</value>
+  </data>
+  <data name="Proposal/ServiceDetails.Text" xml:space="preserve">
+    <value>Service Details</value>
+  </data>
+  <data name="Proposal/FrequencySetup.Text" xml:space="preserve">
+    <value>Frequency Setup</value>
+  </data>
+  <data name="Proposal/TimeIntervalUnit.Text" xml:space="preserve">
+    <value>Time Interval Unit</value>
+  </data>
+  <data name="Proposal/TimesPerWeek.Content" xml:space="preserve">
+    <value>Times per Week</value>
+  </data>
+  <data name="Proposal/TimesPerMonth.Content" xml:space="preserve">
+    <value>Times per Month</value>
+  </data>
+  <data name="Proposal/PricePerSession.Text" xml:space="preserve">
+    <value>PRICE PER SESSION</value>
+  </data>
+  <data name="Proposal/BasePrice.Text" xml:space="preserve">
+    <value>Base Price</value>
+  </data>
+  <data name="Proposal/WeekendHolidayFee.Text" xml:space="preserve">
+    <value>Weekend / Holiday Fee</value>
+  </data>
+  <data name="Proposal/DurationMultiplier.Text" xml:space="preserve">
+    <value>Duration Multiplier</value>
+  </data>
+  <data name="Proposal/Subtotal.Text" xml:space="preserve">
+    <value>Subtotal</value>
+  </data>
+  <data name="Proposal/TravelAllowance.Text" xml:space="preserve">
+    <value>Travel Allowance</value>
+  </data>
+  <data name="Proposal/RequestedBudget.Text" xml:space="preserve">
+    <value>REQUESTED BUDGET</value>
+  </data>
+  <data name="Proposal/EstimatedMonthlyCost.Text" xml:space="preserve">
+    <value>Estimated monthly cost:</value>
+  </data>
+  <data name="Proposal/FrequencyInput.Header" xml:space="preserve">
+    <value>Frequency:</value>
+  </data>
+  <data name="Proposal/FrequencyReport.Text" xml:space="preserve">
+    <value>Frequency:</value>
+  </data>
+  <data name="Proposal/FrequencyVariant.Header" xml:space="preserve">
+    <value>Frequency Variant:</value>
+  </data>
+  <data name="Proposal/FrequencyVariantReport.Text" xml:space="preserve">
+    <value>Frequency Variant:</value>
+  </data>
+  <data name="Proposal/Hours.Text" xml:space="preserve">
+    <value> hrs</value>
+  </data>
+
+  <!-- Students -->
+  <data name="Students/Title.Text" xml:space="preserve">
+    <value>Students</value>
+  </data>
+  <data name="Students/Payer.Text" xml:space="preserve">
+    <value>Payer</value>
+  </data>
+  <data name="Students/DeleteStudent.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete student</value>
+  </data>
+  <data name="Students/EditStudent.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Edit estudiante</value>
+  </data>
+
+  <!-- Specifications -->
+  <data name="Specifications/Title.Text" xml:space="preserve">
+    <value>Specifications</value>
+  </data>
+  <data name="Specifications/Service.Text" xml:space="preserve">
+    <value>Service:</value>
+  </data>
+  <data name="Specifications/Duration.Text" xml:space="preserve">
+    <value>Duration:</value>
+  </data>
+
+  <!-- Settings -->
+  <data name="Settings/Title.Text" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Settings/UserManual.Content" xml:space="preserve">
+    <value>User manual</value>
+  </data>
+  <data name="Settings/MainInformation.Header" xml:space="preserve">
+    <value>Main Information</value>
+  </data>
+  <data name="Settings/BillingTaxDetails.Header" xml:space="preserve">
+    <value>Billing &amp; Tax Details</value>
+  </data>
+  <data name="Settings/ConfigurationFees.Header" xml:space="preserve">
+    <value>Configuration &amp; Fees</value>
+  </data>
+  <data name="Settings/BillingFolder.Text" xml:space="preserve">
+    <value>Billing Folder</value>
+  </data>
+  <data name="Settings/BackupsFolder.Text" xml:space="preserve">
+    <value>Backups Folder</value>
+  </data>
+  <data name="Settings/SelectFolder.PlaceholderText" xml:space="preserve">
+    <value>Select a folder...</value>
+  </data>
+  <data name="Settings/PickFolder.Content" xml:space="preserve">
+    <value>Pick a folder</value>
+  </data>
+  <data name="Settings/DataManagement.Text" xml:space="preserve">
+    <value>Data Management</value>
+  </data>
+  <data name="Settings/DangerZone.Text" xml:space="preserve">
+    <value>Danger Zone</value>
+  </data>
+  <data name="Settings/ArchiveOldData" xml:space="preserve">
+    <value>Archive old data</value>
+  </data>
+  <data name="Settings/SelectPayersArchive" xml:space="preserve">
+    <value>Select payers to retrieve from archive.</value>
+  </data>
+  <data name="Settings/PickFile" xml:space="preserve">
+    <value>Pick a file</value>
+  </data>
+  <data name="Settings/ArchiveDatabase" xml:space="preserve">
+    <value>Archive Database</value>
+  </data>
+  <data name="Settings/RetrieveFromArchive" xml:space="preserve">
+    <value>Retrieve from archive</value>
+  </data>
+  <data name="Settings/DeleteDatabase.Label" xml:space="preserve">
+    <value>Delete database</value>
+  </data>
+  <data name="Settings/DeleteArchive.Label" xml:space="preserve">
+    <value>Delete archive</value>
+  </data>
+  <data name="Actions/DeleteDatabase" xml:space="preserve">
+    <value>delete database</value>
+  </data>
+  <data name="Actions/DeleteArchive" xml:space="preserve">
+    <value>delete archive</value>
+  </data>
+  <data name="Actions/RemoveSelectedLessons" xml:space="preserve">
+    <value>remove selected lessons</value>
+  </data>
+  <data name="Actions/DeleteBill" xml:space="preserve">
+    <value>delete bill</value>
+  </data>
+  <data name="Actions/DeletePayer" xml:space="preserve">
+    <value>delete payer</value>
+  </data>
+  <data name="Actions/DeleteService" xml:space="preserve">
+    <value>delete service</value>
+  </data>
+  <data name="Actions/DeleteStudent" xml:space="preserve">
+    <value>delete student</value>
+  </data>
+  <data name="Actions/DeleteSpecification" xml:space="preserve">
+    <value>delete specification</value>
+  </data>
+  <data name="Actions/DeleteLesson" xml:space="preserve">
+    <value>delete lesson</value>
+  </data>
+  <data name="App/UnexpectedErrorTitle" xml:space="preserve">
+    <value>Unexpected Error</value>
+  </data>
+  <data name="App/UnexpectedErrorContent" xml:space="preserve">
+    <value>A critical error occurred. The application has logged the issue, but it may behave unexpectedly if you continue.\n\nDetails: {0}</value>
   </data>
 </root>

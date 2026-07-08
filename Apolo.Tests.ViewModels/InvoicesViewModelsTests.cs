@@ -17,6 +17,8 @@ namespace Apolo.Tests.ViewModels
         private Mock<IUserProfileService> _mockUserProfileService = null!;
         private Mock<PDF.IWriter> _mockPDFWriter = null!;
         private BillingViewModel _viewModel = null!;
+        private Mock<IStringLocalizer> _localizerMock = null!;
+
 
         [TestInitialize]
         public void TestInit()
@@ -47,8 +49,10 @@ namespace Apolo.Tests.ViewModels
             _mockUserProfileService.Setup(r => r.LoadProfileAsync())
                 .ReturnsAsync(userProfile);
 
+            _localizerMock = new Mock<IStringLocalizer>();
+
             _viewModel = new BillingViewModel(_mockInvoiceRepo.Object, _mockPayerRepo.Object, _mockUserProfileService.Object,
-                _mockPDFWriter.Object, _mockLessonRepo.Object);
+                _mockPDFWriter.Object, _mockLessonRepo.Object, _localizerMock.Object);
         }
 
         void VerifyAction(string? message, InfoBarType severity, bool isOpen, int payersCount, int count, decimal totalSelected, decimal total, bool isBusy = false, bool infoMessageContains = false)

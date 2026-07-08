@@ -4,7 +4,6 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:local="using:Apolo.Views"
       xmlns:vm="using:Apolo.ViewModels"
-      xmlns:loc="using:Apolo.Services"
       xmlns:m="using:Models"
       x:Name="PageRoot"
       Loaded="Page_Loaded">
@@ -82,6 +81,10 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
+            <TextBlock Grid.Column="0"
+                       x:Uid="Title/Invoicing"
+                       Style="{ThemeResource TitleLargeTextBlockStyle}" 
+                       VerticalAlignment="Top"/>
             <!-- 1. Page Title -->
             <TextBlock Grid.Row="0"
                        Grid.Column="0"
@@ -106,11 +109,11 @@
                             VerticalAlignment="Center"
                             Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <TextBlock Style="{ThemeResource BodyTextBlockStyle}">
-                <Run Text="Active Bill: "
-                        Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
-                <Run Text="{x:Bind ViewModel.Bill.Name, Mode=OneWay}"
-                        FontWeight="SemiBold"
-                        Foreground="{ThemeResource SystemAccentColor}" />
+                        <Run x:Uid="Common/ActiveBill"
+                                Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                        <Run Text="{x:Bind ViewModel.Bill.Name, Mode=OneWay}"
+                                FontWeight="SemiBold"
+                                Foreground="{ThemeResource SystemAccentColor}" />
                     </TextBlock>
                     <TextBlock Text="|"
                                Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
@@ -131,25 +134,19 @@
                 <StackPanel Orientation="Horizontal"
                             Spacing="10"
                             VerticalAlignment="Center">
+
                     <!-- Included the checkbox directly next to the selected total for quick access -->
-                    <CheckBox Content="All"
-                              IsThreeState="True"
-                              IsChecked="{x:Bind ViewModel.SelectionState, Mode=TwoWay}"
-                              Margin="0,0,-8,0" />
+                    <CheckBox x:Uid="Buttons/SelectAll" IsThreeState="True" IsChecked="{x:Bind ViewModel.SelectionState, Mode=TwoWay}" Margin="0" />
 
                     <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
                                VerticalAlignment="Center">
-                        <Run Text="Selected: "
-                             Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
-                        <Run Text="{x:Bind ViewModel.TotalSelected, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}}"
-                             FontWeight="Bold" />
+                        <Run x:Uid="Common/Selected" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                            <Run Text="{x:Bind ViewModel.TotalSelected, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}}" FontWeight="Bold" />
                     </TextBlock>
                     <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
                                VerticalAlignment="Center">
-                         <Run Text="Total All: "
-                              Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
-                         <Run Text="{x:Bind ViewModel.TotalAll, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}}"
-                              FontWeight="Bold" />
+                         <Run x:Uid="Common/TotalAll" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                             <Run Text="{x:Bind ViewModel.TotalAll, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}}" FontWeight="Bold" />
                     </TextBlock>
                 </StackPanel>
             </StackPanel>
@@ -182,15 +179,15 @@
                             <StackPanel Spacing="10">
 
                                 <StackPanel Style="{StaticResource CardPanelStyle}">
-                                    <TextBlock Text="Create bill"
+                                    <TextBlock x:Uid="Common/NewInvoice"
                                                Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                    <ComboBox Header="Payer"
+                                    <ComboBox x:Uid="Common/Payer"
                                               ItemsSource="{Binding Payers}"
                                               SelectedValuePath="Id"
                                               DisplayMemberPath="FullName"
                                               SelectedValue="{x:Bind ViewModel.SelectedPayerId, Mode=TwoWay}"
                                               HorizontalAlignment="Stretch" />
-                                    <Button Content="Load lessons"
+                                    <Button x:Uid="Buttons/LoadLessons"
                                             Click="LoadForPayer_Click"
                                             Style="{ThemeResource AccentButtonStyle}"
                                             IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
@@ -198,9 +195,9 @@
                                 </StackPanel>
 
                                 <StackPanel Style="{StaticResource CardPanelStyle}">
-                                    <TextBlock Text="Edit existing bill"
+                                    <TextBlock x:Uid="Common/EditBill"
                                                Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                    <AutoSuggestBox Header="Search Bill Name/Number"
+                                    <AutoSuggestBox x:Uid="Common/SearchBill"
                                                     PlaceholderText="e.g. 2024-03..."
                                                     Text="{x:Bind ViewModel.SearchBillText, Mode=TwoWay}"
                                                     ItemsSource="{x:Bind ViewModel.BillSuggestions, Mode=OneWay}"
@@ -210,7 +207,7 @@
                                                     TextChanged="BillSearch_TextChanged"
                                                     SuggestionChosen="BillSearch_SuggestionChosen"
                                                     HorizontalAlignment="Stretch" />
-                                    <Button Content="Load bill"
+                                    <Button x:Uid="Buttons/LoadBill"
                                             Click="LoadForBill_Click"
                                             Style="{ThemeResource AccentButtonStyle}"
                                             IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
@@ -231,43 +228,17 @@
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
-                        <CommandBar Grid.Row="0"
-                                    DefaultLabelPosition="Right"
-                                    Background="Transparent"
-                                    HorizontalAlignment="Left">
-                            <AppBarButton Label="Mark paid"
-                                          Icon="Accept"
-                                          Click="MarkPaid_Click"
-                                          IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
-                            <AppBarButton Label="Mark unpaid"
-                                          Icon="Undo"
-                                          Foreground="{ThemeResource SystemFillColorCriticalBrush}"
-                                          Click="MarkUnpaid_Click"
-                                          IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
-                            <AppBarButton Label="Remove selected lessons"
-                                          Icon="Remove"
-                                          Click="RemoveLesson_Click"
-                                          Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                            <AppBarButton Label="Edit"
-                                          Icon="Edit"
-                                          Click="EditBill_Click"
-                                          Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                            <AppBarSeparator />
-                            <AppBarButton Label="New"
-                                          Icon="Document"
-                                          Click="CreateBill_Click"
-                                          Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
-                            <AppBarSeparator />
-                            <AppBarButton Label="PDF"
-                                          Icon="Print"
-                                          Command="{x:Bind ViewModel.PrintDocumentCommand}"
-                                          Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                            <AppBarButton Label="Delete"
-                                          Icon="Delete"
-                                          Foreground="{ThemeResource SystemFillColorCriticalBrush}"
-                                          Click="DeleteBill_Click"
-                                          Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                        </CommandBar>
+                <CommandBar Grid.Row="0" DefaultLabelPosition="Right" Background="Transparent" HorizontalAlignment="Left">
+                    <AppBarButton x:Uid="Buttons/MarkPaid" Icon="Accept" Click="MarkPaid_Click" IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
+                    <AppBarButton x:Uid="Buttons/MarkUnpaid" Icon="Undo" Foreground="{ThemeResource SystemFillColorCriticalBrush}" Click="MarkUnpaid_Click" IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
+                    <AppBarButton x:Uid="Buttons/Remove" Icon="Remove" Click="RemoveLesson_Click" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    <AppBarSeparator />
+                    <AppBarButton x:Uid="Buttons/New" Icon="Document" Click="CreateBill_Click" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
+                    <AppBarSeparator />
+                    <AppBarButton x:Uid="Buttons/Edit" Icon="Edit" Click="EditBill_Click" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    <AppBarButton x:Uid="Buttons/ExportPdf" Icon="Print" Command="{x:Bind ViewModel.PrintDocumentCommand}" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    <AppBarButton x:Uid="Delete" Icon="Delete" Foreground="{ThemeResource SystemFillColorCriticalBrush}" Click="DeleteBill_Click" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                </CommandBar>
 
                         <StackPanel Grid.Row="1"
                                     Spacing="4">
@@ -325,12 +296,12 @@
                                                        HorizontalAlignment="Right" />
                                             <Border Style="{StaticResource PaidBadgeStyle}"
                                                     Visibility="{x:Bind Data.IsPaid, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                                <TextBlock Text="PAID"
+                                                <TextBlock x:Uid="Paid"
                                                            Style="{StaticResource PaidTextStyle}" />
                                             </Border>
                                             <Border Style="{StaticResource UnpaidBadgeStyle}"
                                                     Visibility="{x:Bind Data.IsPaid, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                                                <TextBlock Text="UNPAID"
+                                                <TextBlock x:Uid="Unpaid"
                                                            Style="{StaticResource UnpaidTextStyle}" />
                                             </Border>
                                         </StackPanel>

@@ -9,7 +9,7 @@ using System.Collections.ObjectModel;
 namespace ViewModels
 {
     public partial class ProposalViewModel(IServiceRepository serviceRepository, IUserProfileService userProfile,
-        IReportWriter reportWriter) : UserProfileViewModel(userProfile)
+        IReportWriter reportWriter, IStringLocalizer stringLocalizer) : UserProfileViewModel(userProfile, stringLocalizer)
     {
 
         // Input
@@ -25,7 +25,7 @@ namespace ViewModels
         [ObservableProperty] private ProposalReport _report = new();
 
         // Dynamic UI Configurations
-        [ObservableProperty] private string _priceHeader = "Price:";
+        [ObservableProperty] private string _priceHeader = string.Empty;
         [ObservableProperty] private bool _isPricePerHour = false;
         [ObservableProperty] private bool _isPrimaryButtonEnabled;
 
@@ -40,13 +40,22 @@ namespace ViewModels
 
         public ObservableCollection<ServiceSummary> Services { get; } = [];
 
+        // Messages
+        private static string Message_Load_Error => "Messages/Load_Proposal_Error";
+        private static string Message_Generate_Error => "Messages/Generate_Proposal_Error";
+        private static string Message_Generate_Success => "Messages/Generate_Proposal_Success";
+        private static string Message_Week => "Message/Week";
+        private static string Message_Month => "Message/Month";
+        private static string Message_Times => "Message/Times";
+        private static string Message_Sessions => "Message/Sessions";
+
         // --- COMMANDS ---
         [RelayCommand]
         public async Task LoadAsync()
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't load services while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Load_Error);
                 return;
             }
 
@@ -70,7 +79,7 @@ namespace ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't generate proposal while busy.", InfoBarType.Warning);
+                SetExitBusy(Message_Generate_Error);
                 return;
             }
 
@@ -78,7 +87,8 @@ namespace ViewModels
 
             if (!Directory.Exists(Profile.BillingFolder))
             {
-                SetExitFunction("Can't export proposal without setting 'Billing Folder'", InfoBarType.Error);
+                SetExitFunction($"{_loc.Get(Message_Generate_Error)}: {_loc.Get(Message_Generate_Error, Profile.BillingFolder)}.", 
+                    InfoBarType.Error);
                 return;
             }
 
@@ -90,16 +100,17 @@ namespace ViewModels
             {
                 reportWriter.GenerateProposal(filename, Report);
 
-                SetExitFunction($"Generated proposal successfully: {filename}.", InfoBarType.Success);
+                SetExitFunction($"{_loc.Get(Message_Generate_Success, filename)}.", InfoBarType.Success);
             }
             catch (Exception ex)
             {
-                SetExitFunction($"Error generating proposal '{filename}': {ex.Message}", InfoBarType.Error);
+                SetExitFunction($"{_loc.Get(Message_Generate_Error)} '{filename}': {ex.Message}", InfoBarType.Error);
             }
         }
 
-        private static string FormatFreq(BudgetColumn col) =>
-            $"{col.Frequency} time(s) / {(col.Unit == FrequencyUnit.PerWeek ? "week" : "month")} ({col.SessionsPerMonth:F1} total sessions)";
+        private string FormatFreq(BudgetColumn col) =>
+            $"{col.Frequency} {_loc.Get(Message_Times)} / {(col.Unit == FrequencyUnit.PerWeek ? 
+                _loc.Get(Message_Week) : _loc.Get(Message_Month))} ({col.SessionsPerMonth:F1} {_loc.Get(Message_Sessions)})";
 
         // --- UPDATING FORM LOGIC ---
 
@@ -151,7 +162,7 @@ namespace ViewModels
         }
         partial void OnIsPricePerHourChanged(bool value)
         {
-            PriceHeader = IsPricePerHour ? "Price/Hour:" : "Price:";
+            PriceHeader = IsPricePerHour ? PriceHeader = _loc.Get(Header_PricePerHour) : PriceHeader = _loc.Get(Header_Price);
             _input.IsPricePerHour = value;
         }
         partial void OnFrequencyChanged(int value)
@@ -174,13 +185,13 @@ namespace ViewModels
             var errors = new List<string>();
 
             if (SelectedService is null)
-                errors.Add("• You must select a service.");
+                errors.Add(_loc.Get(Message_SelectServiceValidation));
             if (IsPricePerHour && (double.IsNaN(Duration) || Duration <= 0))
-                errors.Add("• Duration must be a positive integer.");
+                errors.Add(_loc.Get(Message_DurationValueValidation));
             if (BasePrice <= 0)
-                errors.Add("• Price must be a positive integer.");
+                errors.Add(_loc.Get(Message_PriceValidation));
             if (Frequency <= 0)
-                errors.Add("• Frequency must be a positive integer.");
+                errors.Add(_loc.Get(Message_FrequencyValidation));
 
             IsPrimaryButtonEnabled = errors.Count == 0;
 

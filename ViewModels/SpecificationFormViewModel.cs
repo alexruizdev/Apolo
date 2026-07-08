@@ -1,7 +1,10 @@
-﻿using Apolo.ViewModels;
+﻿using Apolo.Services;
+using Apolo.ViewModels;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel.__Internals;
 using Models;
 using System.Collections.ObjectModel;
+using System.Globalization;
 
 namespace ViewModels
 {
@@ -26,7 +29,7 @@ namespace ViewModels
         [ObservableProperty] private bool _isPricePerHour;
 
         // Dynamic UI Configurations
-        [ObservableProperty] private string _priceHeader = "Price:";
+        [ObservableProperty] private string _priceHeader = string.Empty;
         [ObservableProperty] private string _studentSearchText = string.Empty;
         [ObservableProperty] private bool _isPrimaryButtonEnabled;
         [ObservableProperty] private bool _isEditMode = false;
@@ -34,7 +37,16 @@ namespace ViewModels
         [ObservableProperty] private string _dialogTitle = string.Empty;
         private Guid? _specificationId;
 
+        // Messages 
+        protected static string Message_Edit_Title => "Message/Edit_Specification";
+        protected static string Message_New_Title => "Message/New_Specification";
+        protected static string Message_Name_Validation => "Message/Specification_Name_Validation";
+        protected static string Message_Save_Error => "Message/Save_Specification_Error";
+        protected static string Message_Edit_Error => "Message/Edit_Specification_Error";
+        protected static string Message_Edit_Service_Error => "Message/Edit_Specification_Service_Error";
+
         public SpecificationFormViewModel(SpecificationsViewModel parentViewModel)
+            : base(parentViewModel._loc)
         {
             _parentViewModel = parentViewModel;
             IsEditMode = false;
@@ -45,6 +57,7 @@ namespace ViewModels
         }
 
         public SpecificationFormViewModel(SpecificationsViewModel parentViewModel, SpecificationSummary specification)
+            : base(parentViewModel._loc)
         {
             _parentViewModel = parentViewModel;
 
@@ -99,7 +112,7 @@ namespace ViewModels
 
         partial void OnIsPricePerHourChanged(bool value)
         {
-            PriceHeader = IsPricePerHour ? "Price/Hour:" : "Price:";
+            PriceHeader = IsPricePerHour ? PriceHeader = _loc.Get(Header_PricePerHour) : PriceHeader = _loc.Get(Header_Price);
         }
 
         partial void OnSelectedStudentChanged(StudentOption? value) => Validate();
@@ -132,10 +145,12 @@ namespace ViewModels
 
         private void UpdateDialogTitle(bool errors)
         {
-            string title = IsEditMode ? "Edit" : "New";
             if (SelectedService == null || errors)
             {
-                DialogTitle = $"{title} Specification — Total: €-.--";
+                if (IsEditMode)
+                    DialogTitle = $"{_loc.Get(Message_Edit_Title, "€-.--")}";
+                else
+                    DialogTitle = $"{_loc.Get(Message_New_Title, "€-.--")}";
                 return;
             }
 
@@ -150,7 +165,11 @@ namespace ViewModels
 
 
             // Update the string property bound to the dialog title
-            DialogTitle = $"{title} Specification — Total: {finalPrice:C2}";
+            if (IsEditMode)
+                DialogTitle = $"{_loc.Get(Message_Edit_Title, finalPrice.ToString("C2", CultureInfo.CurrentCulture))}";
+            else
+                DialogTitle = $"{_loc.Get(Message_New_Title, finalPrice.ToString("C2", CultureInfo.CurrentCulture))}";
+            return;
         }
 
 
@@ -166,16 +185,16 @@ namespace ViewModels
 
             if (!IsEditMode)
                 if (SelectedStudent == null)
-                    errors.Add("• Select one student.");
+                    errors.Add(_loc.Get(Message_SelectStudentValidation));
 
             if (SelectedService == null)
-                errors.Add("• Select a service.");
+                errors.Add(_loc.Get(Message_SelectServiceValidation));
             if (IsPricePerHour && (double.IsNaN(Duration) || Duration <= 0))
-                errors.Add("• Duration must be a positive integer.");
+                errors.Add(_loc.Get(Message_DurationValueValidation));
             if (!double.IsNaN(Price) && Price < 0)
-                errors.Add("• Price must be a positive integer.");
+                errors.Add(_loc.Get(Message_PriceValidation));
             if (string.IsNullOrWhiteSpace(Name))
-                errors.Add("• Specification name cannot be empty.");
+                errors.Add(_loc.Get(Message_Name_Validation));
 
             IsPrimaryButtonEnabled = !errors.Any();
 
@@ -196,7 +215,7 @@ namespace ViewModels
         public async Task SaveSpecificationAsync()
         {
             if (SelectedStudent == null || SelectedService == null)
-                throw new ArgumentException("Student or service is null");
+                throw new ArgumentException(_loc.Get(Message_Save_Error));
 
             await _parentViewModel.AddSpecificationAsync(Name, GetDuration(), Price, IsOnline, IsWeekendOrHoliday,
                 SelectedStudent.Id, SelectedService.Id);
@@ -205,10 +224,10 @@ namespace ViewModels
         public async Task EditSpecificationAsync()
         {
             if (_specificationId is null)
-                throw new InvalidDataException("Specification doesn't have Id.");
+                throw new InvalidDataException($"{_loc.Get(Message_Edit_Error)}.");
 
             if (SelectedService is null)
-                throw new InvalidCastException("Service is not selected to edit specification.");
+                throw new InvalidCastException($"{_loc.Get(Message_Edit_Service_Error)}.");
 
             await _parentViewModel.UpdateSpecificationAsync(_specificationId.Value, Name, GetDuration(), GetBasePrice(), IsOnline,
                 IsWeekendOrHoliday, SelectedService.Id);

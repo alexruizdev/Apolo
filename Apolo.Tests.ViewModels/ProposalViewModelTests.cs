@@ -15,6 +15,8 @@ namespace Apolo.Tests.ViewModels
         private Mock<IServiceRepository> _mockServiceRepo = null!;
         private Mock<IUserProfileService> _mockUserProfileService = null!;
         private Mock<IReportWriter> _mockPDFWriter = null!;
+        private Mock<IStringLocalizer> _localizerMock = null!;
+
 
         [TestInitialize]
         public void TestInit()
@@ -22,6 +24,7 @@ namespace Apolo.Tests.ViewModels
             _mockServiceRepo = new Mock<IServiceRepository>();
             _mockPDFWriter = new Mock<IReportWriter>();
             _mockUserProfileService = new Mock<IUserProfileService>();
+            _localizerMock = new Mock<IStringLocalizer>();
 
             var userProfile = new UserProfile
             {
@@ -44,7 +47,7 @@ namespace Apolo.Tests.ViewModels
                 .ReturnsAsync(userProfile);
 
             _viewModel = new ProposalViewModel(_mockServiceRepo.Object, _mockUserProfileService.Object,
-                _mockPDFWriter.Object);
+                _mockPDFWriter.Object, _localizerMock.Object);
         }
 
         [TestMethod]

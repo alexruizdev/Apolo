@@ -25,7 +25,7 @@ public sealed partial class SpecificationsPage : Page
 
     private async void DeleteSpecification_Click(object sender, RoutedEventArgs e)
     {
-        Guid? id = await ConfirmationDialog.ConfirmButtonItemAction(sender, "delete specification");
+        Guid? id = await ConfirmationDialog.ConfirmButtonItemAction(sender, Loc.Action_DeleteSpecification);
         if (id is not null)
         {
             await ViewModel.DeleteSpecificationAsync(id.Value);
@@ -41,7 +41,7 @@ public sealed partial class SpecificationsPage : Page
 
         var dialog = new ContentDialog()
         {
-            PrimaryButtonText = "Edit",
+            PrimaryButtonText = Loc.Buttons_Edit,
             CloseButtonText = Loc.Buttons_Cancel,
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = Content.XamlRoot
@@ -80,16 +80,16 @@ public sealed partial class SpecificationsPage : Page
         if (btn.DataContext is not SpecificationSummary item)
             return;
 
-        var datePicker = new CalendarDatePicker { Header = "Date", IsTodayHighlighted = true };
+        var datePicker = new CalendarDatePicker { Header = Loc.Common_Date, IsTodayHighlighted = true };
         var noteBox = new TextBox
         {
-            Header = "Notes",
+            Header = Loc.Common_Notes,
             MinWidth = 400,
             AcceptsReturn = true,
             TextWrapping = TextWrapping.Wrap
         };
 
-        var tipBox = new NumberBox { Header = "Tip:", PlaceholderText = "0.00" };
+        var tipBox = new NumberBox { Header = Loc.Common_Tip, PlaceholderText = "0.00" };
 
         var panel = new StackPanel { Spacing = 8 };
         panel.Children.Add(datePicker);
@@ -106,9 +106,9 @@ public sealed partial class SpecificationsPage : Page
 
         var dialog = new ContentDialog()
         {
-            Title = "Create lesson",
+            Title = Loc.Buttons_Create,
             Content = viewer,
-            PrimaryButtonText = "Create",
+            PrimaryButtonText = Loc.Buttons_Create,
             CloseButtonText = Loc.Buttons_Cancel,
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = Content.XamlRoot
@@ -135,7 +135,7 @@ public sealed partial class SpecificationsPage : Page
 
         var dialog = new ContentDialog()
         {
-            PrimaryButtonText = "Create",
+            PrimaryButtonText = Loc.Buttons_Create,
             CloseButtonText = Loc.Buttons_Cancel,
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = Content.XamlRoot

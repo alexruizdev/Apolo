@@ -23,13 +23,13 @@ namespace Apolo.Views
 
         private async void DeleteDatabaseButton_Click(object sender, RoutedEventArgs e)
         {
-            if (await ConfirmationDialog.ConfirmButtonAction(sender, "delete database"))
+            if (await ConfirmationDialog.ConfirmButtonAction(sender, Loc.Action_DeleteDatabase))
                 await ViewModel.ClearDatabaseAsync();
         }
 
         private async void DeleteArchiveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (await ConfirmationDialog.ConfirmButtonAction(sender, "delete archive"))
+            if (await ConfirmationDialog.ConfirmButtonAction(sender, Loc.Action_DeleteArchive))
                 await ViewModel.ClearArchiveAsync();
         }
 
@@ -57,8 +57,7 @@ namespace Apolo.Views
 
             var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
             picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-            picker.CommitButtonText = "Pick a folder";
-            picker.ViewMode = PickerViewMode.List;
+            picker.CommitButtonText = Loc.Buttons_PickFile;
 
             var folder = await picker.PickSingleFolderAsync();
             if (folder == null) return;
@@ -72,8 +71,7 @@ namespace Apolo.Views
 
             var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
             picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-            picker.CommitButtonText = "Pick a folder";
-            picker.ViewMode = PickerViewMode.List;
+            picker.CommitButtonText = Loc.Buttons_PickFile;
 
             var folder = await picker.PickSingleFolderAsync();
             if (folder == null) return;
@@ -89,7 +87,7 @@ namespace Apolo.Views
 
             var payersList = new ListView
             {
-                Header = "Payers",
+                Header = Loc.Common_Payer,
                 SelectionMode = ListViewSelectionMode.Multiple,
                 ItemsSource = payers,
                 MaxHeight = 240
@@ -109,9 +107,9 @@ namespace Apolo.Views
 
             var dialog = new ContentDialog()
             {
-                Title = "Archive old data",
+                Title = Loc.Settings_ArchiveOldData,
                 Content = viewer,
-                PrimaryButtonText = "Archive",
+                PrimaryButtonText = Loc.Buttons_Archive,
                 CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = Content.XamlRoot
@@ -133,7 +131,7 @@ namespace Apolo.Views
 
             var payersList = new ListView
             {
-                Header = "Payers",
+                Header = Loc.Common_Payer,
                 SelectionMode = ListViewSelectionMode.Multiple,
                 ItemsSource = payers,
                 MaxHeight = 240
@@ -153,9 +151,9 @@ namespace Apolo.Views
 
             var dialog = new ContentDialog()
             {
-                Title = "Select payers to retrieve from archive.",
+                Title = Loc.Settings_SelectPayersArchive,
                 Content = viewer,
-                PrimaryButtonText = "Retrieve",
+                PrimaryButtonText = Loc.Buttons_Retrieve,
                 CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = Content.XamlRoot
@@ -186,7 +184,7 @@ namespace Apolo.Views
 
             var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
 
-            picker.CommitButtonText = "Pick Folder";
+            picker.CommitButtonText = Loc.Buttons_PickFolder;
             picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
             picker.ViewMode = PickerViewMode.List;
 
@@ -204,7 +202,7 @@ namespace Apolo.Views
 
             var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
 
-            picker.CommitButtonText = "Pick Folder";
+            picker.CommitButtonText = Loc.Buttons_PickFolder;
             picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
             picker.ViewMode = PickerViewMode.List;
 

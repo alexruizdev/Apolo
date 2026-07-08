@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<UserControl
-    x:Class="Apolo.Controls.LessonFormDialog"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Apolo.Controls"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+<UserControl x:Class="Apolo.Controls.LessonFormDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Apolo.Controls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
 
     <Grid Width="500">
         <Grid.RowDefinitions>
@@ -17,13 +16,15 @@
         <!-- ================================================================= -->
         <!--  ERROR BAR                                                        -->
         <!-- ================================================================= -->
-        <StackPanel Grid.Row="0" Spacing="4">
+        <StackPanel Grid.Row="0"
+                    Spacing="4">
             <ProgressBar IsIndeterminate="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
             <InfoBar IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}"
                      Severity="{x:Bind ViewModel.InfoBarType, Converter={StaticResource InfoBarTypeConverter}, Mode=TwoWay}"
                      Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}" />
         </StackPanel>
-        <ScrollViewer Style="{StaticResource MainScrollStyle}" Grid.Row="1"> 
+        <ScrollViewer Style="{StaticResource MainScrollStyle}"
+                      Grid.Row="1">
             <StackPanel Spacing="16"
                         Padding="0,0,4,0">
 
@@ -32,7 +33,7 @@
                 <!-- ================================================================= -->
 
                 <StackPanel Style="{StaticResource CardPanelStyle}">
-                    <TextBlock Text="Lesson Details"
+                    <TextBlock x:Uid="Common/LessonDetails"
                                Style="{ThemeResource BodyStrongTextBlockStyle}" />
 
                     <Grid ColumnSpacing="12"
@@ -44,9 +45,8 @@
 
                         <!-- Student -->
                         <AutoSuggestBox Grid.Column="0"
-                                        Header="Student"
+                                        x:Uid="Search_Student"
                                         IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
-                                        PlaceholderText="Type to search..."
                                         QueryIcon="Find"
                                         Text="{x:Bind ViewModel.StudentSearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                         ItemsSource="{x:Bind ViewModel.FilteredStudents, Mode=OneWay}"
@@ -58,7 +58,7 @@
 
                         <!-- Specification -->
                         <ComboBox Grid.Column="1"
-                                  Header="Specification (optional)"
+                                  x:Uid="Common/SpecificationName"
                                   IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
                                   DisplayMemberPath="Display"
                                   SelectedValuePath="Id"
@@ -69,11 +69,11 @@
                     </Grid>
 
                     <!-- Lesson name -->
-                    <TextBox Header="Lesson name"
+                    <TextBox x:Uid="Common/LessonName"
                              HorizontalAlignment="Stretch"
                              Text="{x:Bind ViewModel.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    
-                    <Grid ColumnSpacing="12" >
+
+                    <Grid ColumnSpacing="12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="1*" />
                             <ColumnDefinition Width="1*" />
@@ -81,7 +81,7 @@
 
                         <!-- Date -->
                         <CalendarDatePicker Grid.Column="0"
-                                            Header="Date"
+                                            x:Uid="Date"
                                             IsTodayHighlighted="True"
                                             HorizontalAlignment="Stretch"
                                             DateFormat="{}{day.integer(2)}/{month.integer(2)}/{year.full}"
@@ -89,7 +89,7 @@
 
                         <!-- Service -->
                         <ComboBox Grid.Column="1"
-                                  Header="Service"
+                                  x:Uid="Common/Service"
                                   IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
                                   Visibility="{x:Bind ViewModel.IsEditMode, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
                                   SelectedValuePath="Name"
@@ -106,7 +106,7 @@
                 <!-- ================================================================= -->
 
                 <StackPanel Style="{StaticResource CardPanelStyle}">
-                    <TextBlock Text="Pricing &amp; Options"
+                    <TextBlock x:Uid="Common/PricingOptions"
                                Style="{ThemeResource BodyStrongTextBlockStyle}" />
 
                     <Grid ColumnSpacing="12">
@@ -116,11 +116,12 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- Price -->
-                        <StackPanel Grid.Column="0" Spacing="2">
+                        <StackPanel Grid.Column="0"
+                                    Spacing="2">
                             <TextBlock Text="{x:Bind ViewModel.PriceHeader, Mode=OneWay}"
                                        Style="{ThemeResource BodyTextBlockStyle}"
                                        Margin="0,0,0,4" />
-                            <NumberBox PlaceholderText="0.00" 
+                            <NumberBox PlaceholderText="0.00"
                                        Style="{StaticResource PriceNumberBox}"
                                        IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
                                        Value="{x:Bind ViewModel.Price, Mode=TwoWay}" />
@@ -128,7 +129,7 @@
 
                         <!-- Duration -->
                         <NumberBox Grid.Column="1"
-                                   Header="Duration (minutes):"
+                                   x:Uid="Common/DurationMinutes"
                                    Style="{StaticResource TimeNumberBox}"
                                    IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
                                    Visibility="{x:Bind ViewModel.IsPricePerHour, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -136,13 +137,13 @@
                     </Grid>
 
                     <!-- Price / hour -->
-                    <CheckBox Content="Price/hour"
-                              IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
-                              Visibility="{x:Bind ViewModel.IsEditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
-                              IsChecked="{x:Bind ViewModel.IsPricePerHour, Mode=TwoWay}" />
-                    
+                    <ToggleSwitch x:Uid="Form/Price_Type"
+                                  IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
+                                  Visibility="{x:Bind ViewModel.IsEditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                  IsOn="{x:Bind ViewModel.IsPricePerHour, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
                     <!-- Tip -->
-                    <NumberBox Header="Tip:"
+                    <NumberBox x:Uid="Form/Tip"
                                IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
                                PlaceholderText="0.00"
                                Style="{StaticResource PriceNumberBox}"
@@ -156,11 +157,10 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- Online -->
-                        <CheckBox Content="Online"
-                                  IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
-                                  Grid.Column="0"
-                                  IsChecked="{x:Bind ViewModel.IsOnline, Mode=TwoWay}" />
-                        <NumberBox Header="Travel Allowance:"
+                        <ToggleSwitch x:Uid="Form/Online"
+                                      IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
+                                      IsOn="{x:Bind ViewModel.IsOnline, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <NumberBox x:Uid="Common/TravelAllowance"
                                    Grid.Column="1"
                                    IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
                                    Visibility="{x:Bind ViewModel.IsEditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -178,11 +178,10 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- Weekend -->
-                        <CheckBox Content="Weekend or Holiday"
-                                  IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
-                                  Grid.Column="0"
-                                  IsChecked="{x:Bind ViewModel.IsWeekendOrHoliday, Mode=TwoWay}" />
-                        <NumberBox Header="Weeken or holiday fee:"
+                        <ToggleSwitch x:Uid="Form/Weekend"
+                                      IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
+                                      IsOn="{x:Bind ViewModel.IsWeekendOrHoliday, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <NumberBox x:Uid="Common/WeekendFee"
                                    Grid.Column="1"
                                    IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
                                    Visibility="{x:Bind ViewModel.IsEditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -192,7 +191,7 @@
                                    Value="{x:Bind ViewModel.WeekendFee, Mode=TwoWay}" />
 
                     </Grid>
-                    
+
                 </StackPanel>
 
                 <!-- ================================================================= -->
@@ -200,7 +199,7 @@
                 <!-- ================================================================= -->
 
                 <StackPanel Spacing="12">
-                    <TextBox Header="Notes"
+                    <TextBox x:Uid="Form/Notes"
                              HorizontalAlignment="Stretch"
                              AcceptsReturn="True"
                              TextWrapping="Wrap"

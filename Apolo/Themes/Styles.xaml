@@ -163,11 +163,13 @@
         <Setter Property="LargeChange" Value="5" />
         <Setter Property="MaxWidth" Value="250" />
         <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="Minimum" Value="0" />
     </Style>
     <Style x:Key="TimeNumberBox" TargetType="NumberBox">
         <Setter Property="SpinButtonPlacementMode" Value="Inline"/>
         <Setter Property="SmallChange" Value="15" />
         <Setter Property="LargeChange" Value="30" />
+        <Setter Property="Minimum" Value="15" />
     </Style>
 
     <!-- ================================================================= -->

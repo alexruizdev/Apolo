@@ -15,16 +15,21 @@ namespace Apolo.Tests.ViewModels
 
         private Mock<IGeneralRepository> _repositoryMock = null!;
         private Mock<IUserProfileService> _mockUserProfileService = null!;
-        private Mock<CSV.IWriter> _writerMock = null!;
-        private Mock<CSV.IReader> _readerMock = null!;
+        private Mock<Excel.IWriter> _writerMock = null!;
+        private Mock<Excel.IReader> _readerMock = null!;
+        private Mock<ILanguageService> _languageMock = null!;
+        private Mock<IStringLocalizer> _localizerMock = null!;
+
 
         [TestInitialize]
         public void TestInit()
         {
             _repositoryMock = new Mock<IGeneralRepository>();
             _mockUserProfileService = new Mock<IUserProfileService>();
-            _writerMock = new Mock<CSV.IWriter>();
-            _readerMock = new Mock<CSV.IReader>();
+            _writerMock = new Mock<Excel.IWriter>();
+            _readerMock = new Mock<Excel.IReader>();
+            _languageMock = new Mock<ILanguageService>();
+            _localizerMock = new Mock<IStringLocalizer>();
 
             var userProfile = new UserProfile
             {
@@ -46,7 +51,7 @@ namespace Apolo.Tests.ViewModels
                 .ReturnsAsync(userProfile);
 
             _viewModel = new SettingsViewModel(_repositoryMock.Object, _mockUserProfileService.Object,
-                _readerMock.Object, _writerMock.Object);
+                _readerMock.Object, _writerMock.Object, _languageMock.Object, _localizerMock.Object);
         }
 
         void VerifyAction(string? message, InfoBarType severity, bool isOpen, bool isBusy = false, bool contains = false)

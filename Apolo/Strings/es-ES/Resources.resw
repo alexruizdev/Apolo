@@ -1,0 +1,1181 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <xsd:schema id="root"
+        xmlns=""
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+
+    <!-- Menu -->
+    <data name="Menu/Dashboard" xml:space="preserve">
+        <value>Panel Datos</value>
+    </data>
+    <data name="Menu/Proposal" xml:space="preserve">
+        <value>Presupuesto</value>
+    </data>
+    <data name="Menu/Lessons" xml:space="preserve">
+        <value>Clases</value>
+    </data>
+    <data name="Menu/Invoicing" xml:space="preserve">
+        <value>Facturación</value>
+    </data>
+    <data name="Menu/Payers" xml:space="preserve">
+        <value>Pagadores</value>
+    </data>
+    <data name="Menu/Services" xml:space="preserve">
+        <value>Servicios</value>
+    </data>
+    <data name="Menu/Specifications" xml:space="preserve">
+        <value>Especificaciones</value>
+    </data>
+    <data name="Menu/Students" xml:space="preserve">
+        <value>Alumnos</value>
+    </data>
+    <data name="Menu/Settings" xml:space="preserve">
+        <value>Configuración</value>
+    </data>
+
+    <!-- Buttons -->
+    <data name="Buttons/ClearFilters.Content" xml:space="preserve">
+        <value>Borrar Filtros</value>
+    </data>
+    <data name="Buttons/PaymentOption_All.Content" xml:space="preserve">
+        <value>Todos</value>
+    </data>
+    <data name="Buttons/PaymentOption_Paid.Content" xml:space="preserve">
+        <value>Pagados</value>
+    </data>
+    <data name="Buttons/PaymentOption_Unpaid.Content" xml:space="preserve">
+        <value>Sin Pagar</value>
+    </data>
+    <data name="Buttons/Apply_Filters.Content" xml:space="preserve">
+        <value>Aplicar Filtros</value>
+    </data>
+    <data name="Buttons/Cancel.Content" xml:space="preserve">
+        <value>Cancelar</value>
+    </data>
+    <data name="Buttons/PricePerHour.Content" xml:space="preserve">
+        <value>Precio/Hora:</value>
+    </data>
+    <data name="Buttons/New.Label" xml:space="preserve">
+        <value>Nuevo</value>
+    </data>
+
+    <data name="Buttons/Delete.Label" xml:space="preserve">
+        <value>Borrar</value>
+    </data>
+    <data name="Buttons/Edit" xml:space="preserve">
+        <value>Editar</value>
+    </data>
+
+    <!-- Confirmation -->
+    <data name="Confirmation/Title" xml:space="preserve">
+        <value>Confirmar: {0}</value>
+    </data>
+    <data name="Confirmation/Content" xml:space="preserve">
+        <value>¿Estás seguro/a que quieres {0}? Esta acción es irreversible.</value>
+    </data>
+    <data name="Confirmation/Content_Item" xml:space="preserve">
+        <value>¿Estás seguro/a que quieres {0} '{1}'? Esta acción es irreversible.</value>
+    </data>
+
+    <!-- Tool Tip-->
+    <data name="Edit_Lesson.ToolTipService.ToolTip" xml:space="preserve">
+        <value>Editar clase</value>
+    </data>
+    <data name="Change_Payment.ToolTipService.ToolTip" xml:space="preserve">
+        <value>Cambiar estado de pago</value>
+    </data>
+    <data name="Delete_Lesson.ToolTipService.ToolTip" xml:space="preserve">
+        <value>Borrar clase</value>
+    </data>
+    <data name="Billing_Document.ToolTipService.ToolTip" xml:space="preserve">
+        <value>Identificador del recibo</value>
+    </data>
+
+    <!-- Texts -->
+    <data name="Filters.Text" xml:space="preserve">
+        <value>Filtros</value>
+    </data>
+    <data name="Paid.Text" xml:space="preserve">
+        <value>PAGADO</value>
+    </data>
+    <data name="Unpaid.Text" xml:space="preserve">
+        <value>SIN PAGAR</value>
+    </data>
+    <data name="Lesson_Details.Text" xml:space="preserve">
+        <value>Detalles de clase</value>
+    </data>
+    <data name="Pricing_Details.Text" xml:space="preserve">
+        <value>Precio &amp; Opciones</value>
+    </data>
+    <data name="Title/Invoicing.Text" xml:space="preserve">
+        <value>Facturación</value>
+    </data>
+
+    <!-- Forms -->
+    <data name="Search_Student.Header" xml:space="preserve">
+        <value>Nombre del Alumno</value>
+    </data>
+    <data name="Search_Student.PlaceholderText" xml:space="preserve">
+        <value>Buscar alumno...</value>
+    </data>
+    <data name="Search_Payer.Header" xml:space="preserve">
+        <value>Nombre del Pagador</value>
+    </data>
+    <data name="Lesson_Name.Header" xml:space="preserve">
+        <value>Nombre de la clase</value>
+    </data>
+    <data name="Search_Payer.PlaceholderText" xml:space="preserve">
+        <value>Buscar Pagador...</value>
+    </data>
+    <data name="Payment_Status.Header" xml:space="preserve">
+        <value>Estado de Pago</value>
+    </data>
+    <data name="Start_Date.Header" xml:space="preserve">
+        <value>Fecha Inicial</value>
+    </data>
+    <data name="End_Date.Header" xml:space="preserve">
+        <value>Fecha Final</value>
+    </data>
+    <data name="Date.Header" xml:space="preserve">
+        <value>Fecha</value>
+    </data>
+    <data name="Price.Header" xml:space="preserve">
+        <value>Precio:</value>
+    </data>
+    <data name="PricePerHour.Header" xml:space="preserve">
+        <value>Precio/Hora:</value>
+    </data>
+    <data name="Specification.Header" xml:space="preserve">
+        <value>Especificación (opcional)</value>
+    </data>
+    <data name="Form/Tip.Header" xml:space="preserve">
+        <value>Propina:</value>
+    </data>
+    <data name="Form/Online.Header" xml:space="preserve">
+        <value>Modalidad de clase:</value>
+    </data>
+    <data name="Form/Online.OnContent" xml:space="preserve">
+        <value>Sesión en remoto</value>
+    </data>
+    <data name="Form/Online.OffContent" xml:space="preserve">
+        <value>Sesión presencial</value>
+    </data>
+    <data name="Form/Travel_Allowance.Header" xml:space="preserve">
+        <value>Tarifa por desplazamiento:</value>
+    </data>
+    <data name="Form/Weekend.Header" xml:space="preserve">
+        <value>Horario:</value>
+    </data>
+    <data name="Form/Weekend.OnContent" xml:space="preserve">
+        <value>Sáb, Dom y Festivos</value>
+    </data>
+    <data name="Form/Weekend.OffContent" xml:space="preserve">
+        <value>Laboral</value>
+    </data>
+    <data name="Form/Weekend_Fee.Header" xml:space="preserve">
+        <value>Tarifa de Sáb, Dom y Festivos:</value>
+    </data>
+    <data name="Form/Notes.Header" xml:space="preserve">
+        <value>Notas:</value>
+    </data>
+    <data name="Form/Price_Type.Header" xml:space="preserve">
+        <value>Tarifa:</value>
+    </data>
+    <data name="Form/Price_Type.OnContent" xml:space="preserve">
+        <value>Precio/Hora</value>
+    </data>
+    <data name="Form/Price_Type.OffContent" xml:space="preserve">
+        <value>Fija</value>
+    </data>
+
+    <!-- Messages - Base-->
+    <data name="Messages/Price" xml:space="preserve">
+        <value>Precio:</value>
+    </data>
+    <data name="Messages/PricePerHour" xml:space="preserve">
+        <value>Precio/Hora:</value>
+    </data>
+    <data name="Messages/Student_Not_Loaded" xml:space="preserve">
+        <value>Estudiante '{0}' no cargado.</value>
+    </data>
+    <data name="Messages/Service_Not_Loaded" xml:space="preserve">
+        <value>Servicio '{0}' no cargado.</value>
+    </data>
+    <data name="Messages/Payer_Not_Loaded" xml:space="preserve">
+        <value>Pagador '{0}' no cargado.</value>
+    </data>
+    <data name="Messages/Lesson_Not_Loaded" xml:space="preserve">
+        <value>Clase '{0}' no cargada.</value>
+    </data>
+    <data name="Messages/Bill_Not_Loaded" xml:space="preserve">
+        <value>Factura '{0}' no cargada</value>
+    </data>
+    <data name="Message/Specification_Not_Loaded" xml:space="preserve">
+        <value>Especificación '{0}' no cargada</value>
+    </data>
+    <data name="Messages/Lesson_Name_Validation" xml:space="preserve">
+        <value>• Es necesario rellenar el nombre de clase.</value>
+    </data>
+    <data name="Messages/Service_Name_Validation" xml:space="preserve">
+        <value>• Es necesario rellenar el nombre de servicio.</value>
+    </data>
+    <data name="Message/Specification_Name_Validation" xml:space="preserve">
+        <value>• Es necesario rellenar el nombre de la especificación.</value>
+    </data>
+    <data name="Messages/Person_Name_Validation" xml:space="preserve">
+        <value>• Introduce al menos el nombre o el apellido.</value>
+    </data>
+    <data name="Messages/Tip_Validation" xml:space="preserve">
+        <value>• Introduce un valor non negativo para la propina (ej., 15.5).</value>
+    </data>
+    <data name="Messages/Duration_Validation" xml:space="preserve">
+        <value>• Es necesario rellenar la duración cuando la clase se paga por horas.</value>
+    </data>
+    <data name="Messages/Duration_Value_Validation" xml:space="preserve">
+        <value>• Introduce un valor no negativo para la duración (ej., 60).</value>
+    </data>
+    <data name="Messages/Price_Validation" xml:space="preserve">
+        <value>• Introduce un valor no negativo para el precio base (ej., 42.5).</value>
+    </data>
+    <data name="Messages/Student_Selection_Validation" xml:space="preserve">
+        <value>• Selecciona un estudiante.</value>
+    </data>
+    <data name="Messages/Service_Selection_Validation" xml:space="preserve">
+        <value>• Seleccion un servicio.</value>
+    </data>
+    <data name="Messages/Lesson_Paid_Validation" xml:space="preserve">
+        <value>• No se puede editar una clase si está marcada como pagada.</value>
+    </data>
+    <data name="Messages/Lesson_Bill_Validation" xml:space="preserve">
+        <value>• No se puede editar una clase si está asociada a una factura.</value>
+    </data>
+    <data name="Messages/Frequency_Validation" xml:space="preserve">
+        <value>• La frecuando tiene que ser un valor positivo.</value>
+    </data>
+    <data name="Messages/Change_Payment_Error" xml:space="preserve">
+        <value>No se puede cambiar el estado de pago</value>
+    </data>
+    <data name="Messages/Mark_Paid_Reason" xml:space="preserve">
+        <value>Por favor, selecciona primero una clase para marcarla como pagada</value>
+    </data>
+    <data name="Messages/Mark_Unpaid_Reason" xml:space="preserve">
+        <value>Por favor, selecciona primero una clase para marcarla como sin pagar</value>
+    </data>
+    <data name="Messages/Mark_Paid_Success" xml:space="preserve">
+        <value>Clase '{0}' marcada como pagada correctamente</value>
+    </data>
+    <data name="Messages/Mark_Unpaid_Success" xml:space="preserve">
+        <value>Clase '{0}' marcada como sin pagar correctamente</value>
+    </data>
+    <data name="Messages/Lessons_Mark_Paid_Success" xml:space="preserve">
+        <value>{0} clases marcadas como pagadas correctamente</value>
+    </data>
+    <data name="Messages/Lessons_Mark_Unpaid_Success" xml:space="preserve">
+        <value>{0} clases marcadas como sin pagar correctamente</value>
+    </data>
+    <data name="Messages/Reason_Busy" xml:space="preserve">
+        <value>applicación ocupada</value>
+    </data>
+
+    <!-- Messages - Payers -->
+    <data name="Messages/Load_Payers_Error" xml:space="preserve">
+        <value>No se puede cargar la ventana Pagadores</value>
+    </data>
+    <data name="Messages/Load_Payers_Success" xml:space="preserve">
+        <value>{0} pagador(es) extraídos</value>
+    </data>
+    <data name="Messages/Add_Payer_Error" xml:space="preserve">
+        <value>No se puede añadir pagador</value>
+    </data>
+    <data name="Messages/Add_Payer_Success" xml:space="preserve">
+        <value>Pagador '{0}' añadido correctamente</value>
+    </data>
+    <data name="Messages/Delete_Payer_Error" xml:space="preserve">
+        <value>No se puede borrar pagador</value>
+    </data>
+    <data name="Messages/Associated_Student_Reason" xml:space="preserve">
+        <value>el pagador tiene asociado algún alumno ({0})</value>
+    </data>
+    <data name="Messages/Delete_Payer_Success" xml:space="preserve">
+        <value>Pagador '{0}' borrado correctamente</value>
+    </data>
+    <data name="Messages/Edit_Payer_Error" xml:space="preserve">
+        <value>No se puede editar pagador</value>
+    </data>
+    <data name="Messages/Edit_Payer_Success" xml:space="preserve">
+        <value>Pagador '{0}' actualizado correctamente</value>
+    </data>
+
+    <!-- Messages - Lessons -->
+    <data name="Messages/Load_Lesson_Error" xml:space="preserve">
+        <value>No se puede cargar la ventana de Clases</value>
+    </data>
+    <data name="Messages/Load_Lesson_Success" xml:space="preserve">
+        <value>{0} clase(s) extraídas</value>
+    </data>
+    <data name="Messages/Add_Lesson_Error" xml:space="preserve">
+        <value>No se puede añadir clase</value>
+    </data>
+    <data name="Messages/Add_Lesson_Success" xml:space="preserve">
+        <value>Clase '{0}' añadida correctamente</value>
+    </data>
+    <data name="Messages/Delete_Lesson_Error" xml:space="preserve">
+        <value>No se puede borrar clase</value>
+    </data>
+    <data name="Messages/LessonIsAssigned" xml:space="preserve">
+        <value>'{0}-{1}' está asociada a una factura '{2}'</value>
+    </data>
+    <data name="Messages/Delete_Lesson_Success" xml:space="preserve">
+        <value>Clase '{0}' borrada correctamente para '{1}'</value>
+    </data>
+    <data name="Messages/Edit_Lesson_Error" xml:space="preserve">
+        <value>No se puede editar clase</value>
+    </data>
+    <data name="Messages/Edit_Lesson_Success" xml:space="preserve">
+        <value>"Clase '{0}' actualizada correctamente</value>
+    </data>
+    <data name="Messages/Clear Filters_Error" xml:space="preserve">
+        <value>No se pueden borrar filtros</value>
+    </data>
+
+    <!-- Messages - Bills -->
+    <data name="Messages/State_Bill_Error" xml:space="preserve">
+        <value>No se puede cambiar la selección</value>
+    </data>
+    <data name="Messages/Load_Bill_Error" xml:space="preserve">
+        <value>No se pueden cargar las clases para la factura</value>
+    </data>
+    <data name="Messages/Load_Lessons_Error" xml:space="preserve">
+        <value>No se puede cargar las clases</value>
+    </data>
+    <data name="Messages/Payer_Selected_Reason" xml:space="preserve">
+        <value>no se ha seleccionado a un pagador</value>
+    </data>
+    <data name="Messages/Load_Lessons_Success" xml:space="preserve">
+        <value>{0} clase(s) cargadas sin factura asociada ni pagadas</value>
+    </data>
+    <data name="Messages/Load_Bill_Lessons_Error" xml:space="preserve">
+        <value>No se pueden carga la factura</value>
+    </data>
+    <data name="Messages/Bill_Selected_Reason" xml:space="preserve">
+        <value>no se ha seleccionado una factura</value>
+    </data>
+    <data name="Messages/Load_Bill_Lessons_Success" xml:space="preserve">
+        <value>'{0}' cargada ({1} clase(s))</value>
+    </data>
+    <data name="Messages/Remove_Bill_Lessons_Error" xml:space="preserve">
+        <value>No se puede quitar la(s) clase(s) seleccionada(s)</value>
+    </data>
+    <data name="Messages/Lessons_Selected_Reason" xml:space="preserve">
+        <value>no se ha seleccionado ninguna clase</value>
+    </data>
+    <data name="Messages/Remove_Bill_Lessons_Success" xml:space="preserve">
+        <value>{0} clase(s) borrada(s) de {1}</value>
+    </data>
+    <data name="Messages/Delete_Bill_Error" xml:space="preserve">
+        <value>No se puede eleminar la factura</value>
+    </data>
+    <data name="Messages/Delete_Bill_Success" xml:space="preserve">
+        <value>Factura '{0}' borrada correctamente</value>
+    </data>
+    <data name="Messages/Generate_Bill_Error" xml:space="preserve">
+        <value>No se puede generar la factura</value>
+    </data>
+    <data name="Messages/Billing_Folder_Reason" xml:space="preserve">
+        <value>Directorio '{0}' no existe (puedes configurarlo correctamente en la ventana de configuración)</value>
+    </data>
+    <data name="Messages/Generate_Bill_Success" xml:space="preserve">
+        <value>Factura '{0}' guardada en: {0}</value>
+    </data>
+    <data name="Messages/Print_Bill_Error" xml:space="preserve">
+        <value>No se puede imprimir la factura</value>
+    </data>
+
+    <!-- Messages - Dashboard -->
+    <data name="Messages/Load_Dashboard_Error" xml:space="preserve">
+        <value>No se puede cargar la ventana de Panel de Datos</value>
+    </data>
+    <data name="Messages/Dashboard_Income" xml:space="preserve">
+        <value>Ingresos {0}</value>
+    </data>
+    <data name="Messages/Dashboard_Total_Amount" xml:space="preserve">
+        <value>Cuantía Total</value>
+    </data>
+    <data name="Messages/Paid" xml:space="preserve">
+        <value>Pagado</value>
+    </data>
+    <data name="Messages/Unpaid" xml:space="preserve">
+        <value>Sin pagar</value>
+    </data>
+    <data name="Message/New" xml:space="preserve">
+        <value>Nuevo</value>
+    </data>
+
+    <!-- Messages - LessonForm -->
+    <data name="Message/New_Lesson" xml:space="preserve">
+        <value>Crear clase — Total: {0}</value>
+    </data>
+    <data name="Message/Edit_Lesson" xml:space="preserve">
+        <value>Editar clase — Total: {0}</value>
+    </data>
+
+    <!-- Messages - Services -->
+    <data name="Message/Load_Services_Error" xml:space="preserve">
+        <value>No se puede cargar la ventana de Servicios</value>
+    </data>
+    <data name="Message/Add_Service_Error" xml:space="preserve">
+        <value>No se puede añadir un servicio nuevo</value>
+    </data>
+    <data name="Message/Service_Repeated_Reason" xml:space="preserve">
+        <value>un servicio con el nombre '{0}' ya existe ({1})</value>
+    </data>
+    <data name="Message/Add_Service_Success" xml:space="preserve">
+        <value>Servicio '{0}' añadido correctamente</value>
+    </data>
+    <data name="Message/Delete_Service_Error" xml:space="preserve">
+        <value>No se puede borrar el servicio</value>
+    </data>
+    <data name="Message/Delete_Service_Success" xml:space="preserve">
+        <value>Servicio '{0}' borrado correctamente</value>
+    </data>
+    <data name="Message/Edit_Service_Error" xml:space="preserve">
+        <value>No se puede editar el servicio</value>
+    </data>
+    <data name="Message/Edit_Service_Success" xml:space="preserve">
+        <value>Servicio '{0}' actualizado correctamente</value>
+    </data>
+
+    <!-- Messages - Specifications -->
+
+    <data name="Message/Load_Specification_Error" xml:space="preserve">
+        <value>No se puede cargar la ventana de Especificaciones</value>
+    </data>
+    <data name="Message/Load_Specification_Success" xml:space="preserve">
+        <value>{0} especificacion(es) cargada(s)</value>
+    </data>
+    <data name="Message/Refresh_Specification_Error" xml:space="preserve">
+        <value>No se puede refrescar la ventana de Especificaciones</value>
+    </data>
+    <data name="Message/Add_Specification_Error" xml:space="preserve">
+        <value>No se puede añadir especificación</value>
+    </data>
+    <data name="Message/Add_Specification_Success" xml:space="preserve">
+        <value>Especificación '{0}' añadida para {1}</value>
+    </data>
+    <data name="Message/Delete_Specification_Error" xml:space="preserve">
+        <value>No se puede borrar la especificación</value>
+    </data>
+    <data name="Message/Delete_Specification_Success" xml:space="preserve">
+        <value>Especificación '{0}' borrada para {1}</value>
+    </data>
+    <data name="Message/Edit_Specification_Success" xml:space="preserve">
+        <value>Especificación '{0}' actualizada para {1}</value>
+    </data>
+    <data name="Message/Create_Lesson_Specification_Error" xml:space="preserve">
+        <value>No se puede crear una clase a partir de la especificación</value>
+    </data>
+    <data name="Message/Create_Lesson_Specification_Success" xml:space="preserve">
+        <value>Clase '{0}' creada para {1}</value>
+    </data>
+
+    <!-- Messages - SpecificationForm -->
+    <data name="Message/New_Specification" xml:space="preserve">
+        <value>Crear especificación — Total: {0}</value>
+    </data>
+    <data name="Message/Edit_Specification" xml:space="preserve">
+        <value>Editar especificación — Total: {0}</value>
+    </data>
+    <data name="Message/Save_Specification_Error" xml:space="preserve">
+        <value>El estudiante o servicio tiene valor nulo</value>
+    </data>
+    <data name="Message/Edit_Specification_Error" xml:space="preserve">
+        <value>La especificación no tiene identificador</value>
+    </data>
+    <data name="Message/Edit_Specification_Service_Error" xml:space="preserve">
+        <value>No hay un servicio seleccionado para editar la especificación</value>
+    </data>
+
+    <!-- Messages - Students -->
+    <data name="Messages/Load_Students_Error" xml:space="preserve">
+        <value>No se puede cargar la ventana de Alumnos</value>
+    </data>
+    <data name="Messages/Load_Students_Success" xml:space="preserve">
+        <value>{0} alumno(s) cargado(s)</value>
+    </data>
+    <data name="Messages/Add_Student_Error" xml:space="preserve">
+        <value>No se puede añadir alumno</value>
+    </data>
+    <data name="Messages/Add_Student_Success" xml:space="preserve">
+        <value>Alumno '{0}' añadido correctamente</value>
+    </data>
+    <data name="Messages/Add_Student_Extra" xml:space="preserve">
+        <value>Creado un pagador con el mismo nombre</value>
+    </data>
+    <data name="Messages/Delete_Student_Error" xml:space="preserve">
+        <value>No se puede borrar al alumno</value>
+    </data>
+    <data name="Messages/Delete_Student_Success" xml:space="preserve">
+        <value>Alumno '{0}' borrado correctamente</value>
+    </data>
+    <data name="Messages/Edit_Student_Error" xml:space="preserve">
+        <value>No se puede editar al alumno</value>
+    </data>
+    <data name="Messages/Edit_Student_Success" xml:space="preserve">
+        <value>Alumno '{0}' actualizado correctamente</value>
+    </data>
+
+    <!-- Messages / Proposal -->
+    <data name="Messages/Load_Proposal_Error" xml:space="preserve">
+        <value>No se puede cargar la ventana de Presupuesto</value>
+    </data>
+    <data name="Messages/Generate_Proposal_Error" xml:space="preserve">
+        <value>No se puede generar presupuesto</value>
+    </data>
+    <data name="Messages/Generate_Proposal_Success" xml:space="preserve">
+        <value>Presupuesto generado correctamente: {0}</value>
+    </data>
+    <data name="Message/Week" xml:space="preserve">
+        <value>Semana</value>
+    </data>
+    <data name="Message/Month" xml:space="preserve">
+        <value>Mes</value>
+    </data>
+    <data name="Message/Times" xml:space="preserve">
+        <value>veces(s)</value>
+    </data>
+    <data name="Message/Sessions" xml:space="preserve">
+        <value>sesiones en total</value>
+    </data>
+
+    <!-- Messages / Settings -->
+    <data name="Messages/Save_Settings_Error" xml:space="preserve">
+        <value>No se puede guardar el perfil de usuario</value>
+    </data>
+    <data name="Messages/Save_Settings_Success" xml:space="preserve">
+        <value>Se ha guardado el perfil de usuario correctamente</value>
+    </data>
+    <data name="Messages/Delete_Settings_Error" xml:space="preserve">
+        <value>No se puede borrar el perfil de usuario</value>
+    </data>
+    <data name="Messages/Delete_Settings_Success" xml:space="preserve">
+        <value>Se ha borrado el perfil de usuario correctamente</value>
+    </data>
+    <data name="Messages/Delete_Database_Error" xml:space="preserve">
+        <value>No se puede borrar la base de datos</value>
+    </data>
+    <data name="Messages/Delete_Database_Success" xml:space="preserve">
+        <value>La base de datos se ha borrado correctamente</value>
+    </data>
+    <data name="Messages/Delete_Archive_Error" xml:space="preserve">
+        <value>No se puede borrar los datos archivados</value>
+    </data>
+    <data name="Messages/Delete_Archive_Success" xml:space="preserve">
+        <value>Se han borrado correctamente los datos archivados</value>
+    </data>
+    <data name="Messages/Import_Database_Error" xml:space="preserve">
+        <value>No se puede importar la base de datos del Excel</value>
+    </data>
+    <data name="Messages/No_File_Reason" xml:space="preserve">
+        <value>no se ha seleccionado un fichero</value>
+    </data>
+    <data name="Messages/No_Directory_Reason" xml:space="preserve">
+        <value>No existe el directorio '{0}'</value>
+    </data>
+    <data name="Messages/Excel_Used_Reason" xml:space="preserve">
+        <value>el fichero está en uso. Por favor, cierra el Excel y vuelve a intentarlo</value>
+    </data>
+    <data name="Messages/Import_Database_Success" xml:space="preserve">
+        <value>La base de datos ha sido importada correctamente ({0}). Un resumen se ha generado en {1}</value>
+    </data>
+    <data name="Messages/Import_Archive_Error" xml:space="preserve">
+        <value>No se puede importar los datos archivados</value>
+    </data>
+    <data name="Messages/Import_Archive_Success" xml:space="preserve">
+        <value>Los datos archivados han sido importados correctamente ({0}). Un resumen se ha generado en {1}</value>
+    </data>
+    <data name="Messages/Export_Database_Error" xml:space="preserve">
+        <value>Nose puede exportar la base de datos</value>
+    </data>
+    <data name="Messages/Backup_Folder_Reason" xml:space="preserve">
+        <value>no existe el directorio de copia de seguridad, se puede configurar en la ventana de configuración</value>
+    </data>
+    <data name="Messages/Export_Database_Success" xml:space="preserve">
+        <value>Se ha exportado la base de datos correctamente ({0}). Fichero generado en {1}</value>
+    </data>
+    <data name="Messages/Export_Archive_Error" xml:space="preserve">
+        <value>No se pueden exportar los datos archivados</value>
+    </data>
+    <data name="Messages/Export_Archive_Success" xml:space="preserve">
+        <value>Se han exportado los datos archivados ({0}). Fichero generado en {1}</value>
+    </data>
+    <data name="Messages/Archive_Error" xml:space="preserve">
+        <value>No se pueden archivar los datos</value>
+    </data>
+    <data name="Messages/Payer_Selection_Reason" xml:space="preserve">
+        <value>no se ha seleccionado ningún pagador</value>
+    </data>
+    <data name="Messages/Archive_Success" xml:space="preserve">
+        <value>Datos archivados correctamente</value>
+    </data>
+    <data name="Messages/Retrieve_Archive_Error" xml:space="preserve">
+        <value>No se pueden recuperar los datos archivados</value>
+    </data>
+    <data name="Messages/Retrieve_Archive_Success" xml:space="preserve">
+        <value>Se han recuperado los datos archivados</value>
+    </data>
+
+    <data name="Messages/Settings_Export_Header" xml:space="preserve">
+        <value>RESUMEN AL IMPORTAR</value>
+    </data>
+    <data name="Messages/Settings_Export_Date" xml:space="preserve">
+        <value>Fecha</value>
+    </data>
+    <data name="Messages/Settings_Export_Results" xml:space="preserve">
+        <value>RESULTADOS</value>
+    </data>
+    <data name="Messages/Settings_Export_Services" xml:space="preserve">
+        <value>Servicios Importados</value>
+    </data>
+    <data name="Messages/Settings_Export_Payers" xml:space="preserve">
+        <value>Pagadores Importados</value>
+    </data>
+    <data name="Messages/Settings_Export_Students" xml:space="preserve">
+        <value>Alumnos Importados</value>
+    </data>
+    <data name="Messages/Settings_Export_Specifications" xml:space="preserve">
+        <value>Especificaciones Importadas</value>
+    </data>
+    <data name="Messages/Settings_Export_Lessons" xml:space="preserve">
+        <value>Clases Importadas</value>
+    </data>
+    <data name="Messages/Settings_Export_Invoices" xml:space="preserve">
+        <value>Facturas Importadas</value>
+    </data>
+    <data name="Buttons/Create" xml:space="preserve">
+        <value>Crear</value>
+    </data>
+    <data name="Buttons/Save" xml:space="preserve">
+        <value>Guardar</value>
+    </data>
+    <data name="Buttons/ApplyFilters.Content" xml:space="preserve">
+        <value>Aplicar filtros</value>
+    </data>
+    <data name="Buttons/LoadLessons.Content" xml:space="preserve">
+        <value>Cargar clases</value>
+    </data>
+    <data name="Buttons/LoadBill.Content" xml:space="preserve">
+        <value>Cargar factura</value>
+    </data>
+    <data name="Buttons/MarkPaid.Label" xml:space="preserve">
+        <value>Marcar como pagadas</value>
+    </data>
+    <data name="Buttons/MarkUnpaid.Label" xml:space="preserve">
+        <value>Marcar como sin pagar</value>
+    </data>
+    <data name="Buttons/Remove.Label" xml:space="preserve">
+        <value>Quitar</value>
+    </data>
+    <data name="Buttons/NewInvoice.Label" xml:space="preserve">
+        <value>Crear Factura</value>
+    </data>
+    <data name="Buttons/NewTicket.Label" xml:space="preserve">
+        <value>Crear Ticket</value>
+    </data>
+    <data name="Buttons/ExportPdf.Label" xml:space="preserve">
+        <value>Exportar a PDF</value>
+    </data>
+    <data name="Buttons/SelectAll.Content" xml:space="preserve">
+        <value>Seleccionar todo</value>
+    </data>
+    <data name="Buttons/Understood" xml:space="preserve">
+        <value>Entendido</value>
+    </data>
+    <data name="Buttons/ImportBackup.Label" xml:space="preserve">
+        <value>Importar copia de seguridad</value>
+    </data>
+    <data name="Buttons/ExportExcel.Label" xml:space="preserve">
+        <value>Exportar Excel</value>
+    </data>
+    <data name="Buttons/ImportArchive.Label" xml:space="preserve">
+        <value>Importar archivo</value>
+    </data>
+    <data name="Buttons/SaveArchive.Label" xml:space="preserve">
+        <value>Guardar archivo</value>
+    </data>
+    <data name="Buttons/Archive.Label" xml:space="preserve">
+        <value>Archivar</value>
+    </data>
+    <data name="Buttons/Retrieve.Label" xml:space="preserve">
+        <value>Recuperar</value>
+    </data>
+    <data name="Buttons/PickFile" xml:space="preserve">
+        <value>Seleccionar archivo</value>
+    </data>
+    <data name="Buttons/PickFolder" xml:space="preserve">
+        <value>Seleccionar carpeta</value>
+    </data>
+    <data name="Buttons/DeleteProfile.Label" xml:space="preserve">
+        <value>Borrar perfil</value>
+    </data>
+    <data name="Buttons/DiscardChanges.Label" xml:space="preserve">
+        <value>Descartar cambios</value>
+    </data>
+    <data name="Buttons/Search" xml:space="preserve">
+        <value>Buscar</value>
+    </data>
+    <data name="Common/DashboardTitle" xml:space="preserve">
+        <value>Panel de Datos</value>
+    </data>
+    <data name="Common/AppTitle" xml:space="preserve">
+        <value>Apolo</value>
+    </data>
+    <data name="Common/InvoiceManager" xml:space="preserve">
+        <value>Gestor de facturas</value>
+    </data>
+    <data name="Common/UserManual" xml:space="preserve">
+        <value>Manual de usuario</value>
+    </data>
+    <data name="Common/Outstanding.Text" xml:space="preserve">
+        <value>Pendiente:</value>
+    </data>
+    <data name="Common/BillingDocument.Content" xml:space="preserve">
+        <value>Documento de facturación</value>
+    </data>
+    <data name="Common/ChangePaymentStatus" xml:space="preserve">
+        <value>Cambiar estado de pago</value>
+    </data>
+    <data name="Common/MinuteAbbrev.Text" xml:space="preserve">
+        <value>min</value>
+    </data>
+    <data name="Common/CreateBill" xml:space="preserve">
+        <value>Crear factura</value>
+    </data>
+    <data name="Common/EditExistingBill" xml:space="preserve">
+        <value>Editar factura existente</value>
+    </data>
+    <data name="Common/Summaries" xml:space="preserve">
+        <value>Resúmenes</value>
+    </data>
+    <data name="Common/CreatePayer" xml:space="preserve">
+        <value>Crear pagador</value>
+    </data>
+    <data name="Common/EditPayer" xml:space="preserve">
+        <value>Editar pagador</value>
+    </data>
+    <data name="Common/CreateService" xml:space="preserve">
+        <value>Crear servicio</value>
+    </data>
+    <data name="Common/EditService" xml:space="preserve">
+        <value>Editar servicio</value>
+    </data>
+    <data name="Common/CreateStudent" xml:space="preserve">
+        <value>Crear alumno</value>
+    </data>
+    <data name="Common/EditStudent" xml:space="preserve">
+        <value>Editar alumno</value>
+    </data>
+    <data name="Common/CreateSpecification" xml:space="preserve">
+        <value>Crear especificación</value>
+    </data>
+    <data name="Common/EditSpecification.ToolTipService.ToolTip" xml:space="preserve">
+        <value>Editar especificación</value>
+    </data>
+    <data name="Common/CreateLesson.ToolTipService.ToolTip" xml:space="preserve">
+        <value>Crear clase</value>
+    </data>
+    <data name="Common/DeleteSpecification.ToolTipService.ToolTip" xml:space="preserve">
+        <value>Borrar especificación</value>
+    </data>
+    <data name="Common/EditLesson" xml:space="preserve">
+        <value>Editar clase</value>
+    </data>
+    <data name="Common/Filters.Text" xml:space="preserve">
+        <value>Filtros</value>
+    </data>
+    <data name="Common/ClearFilters.Content" xml:space="preserve">
+        <value>Borrar filtros</value>
+    </data>
+    <data name="Common/FilterResults.Text" xml:space="preserve">
+        <value>Filtrar resultados</value>
+    </data>
+    <data name="Common/SearchBill.Header" xml:space="preserve">
+        <value>Buscar nombre/número de factura</value>
+    </data>
+    <data name="Common/PaymentStatus.Header" xml:space="preserve">
+        <value>Estado de pago</value>
+    </data>
+    <data name="Common/AllStatuses.Content" xml:space="preserve">
+        <value>Todos</value>
+    </data>
+    <data name="Common/OnlyPaid.Content" xml:space="preserve">
+        <value>Pagados</value>
+    </data>
+    <data name="Common/OnlyUnpaid.Content" xml:space="preserve">
+        <value>Sin pagar</value>
+    </data>
+    <data name="Common/StartDate.Header" xml:space="preserve">
+        <value>Fecha inicial</value>
+    </data>
+    <data name="Common/EndDate.Header" xml:space="preserve">
+        <value>Fecha final</value>
+    </data>
+    <data name="Common/ActiveBill.Text" xml:space="preserve">
+        <value>Factura seleccionada</value>
+    </data>
+    <data name="Common/NewInvoice.Text" xml:space="preserve">
+        <value>Crear factura</value>
+    </data>
+    <data name="Common/Date.Text" xml:space="preserve">
+        <value>Fecha</value>
+    </data>
+    <data name="Common/Selected.Text" xml:space="preserve">
+        <value>Seleccionado</value>
+    </data>
+    <data name="Common/TotalAll.Text" xml:space="preserve">
+        <value>Total global</value>
+    </data>
+    <data name="Common/Summary.Text" xml:space="preserve">
+        <value>Resumen</value>
+    </data>
+    <data name="Common/FirstName" xml:space="preserve">
+        <value>Nombre</value>
+    </data>
+    <data name="Common/LastName" xml:space="preserve">
+        <value>Apellidos</value>
+    </data>
+    <data name="Common/Address.Header" xml:space="preserve">
+        <value>Dirección</value>
+    </data>
+    <data name="Common/ZipCode.Header" xml:space="preserve">
+        <value>Código postal</value>
+    </data>
+    <data name="Common/City.Header" xml:space="preserve">
+        <value>Ciudad</value>
+    </data>
+    <data name="Common/Name.Header" xml:space="preserve">
+        <value>Nombre</value>
+    </data>
+    <data name="Common/Service.Header" xml:space="preserve">
+        <value>Servicio</value>
+    </data>
+    <data name="Common/LessonDetails.Text" xml:space="preserve">
+        <value>Detalles de clase</value>
+    </data>
+    <data name="Common/LessonName.Header" xml:space="preserve">
+        <value>Nombre de la clase</value>
+    </data>
+    <data name="Common/SpecificationName.Header" xml:space="preserve">
+        <value>Nombre de la especificación</value>
+    </data>
+    <data name="Common/PricingOptions.Text" xml:space="preserve">
+        <value>Precio y opciones</value>
+    </data>
+    <data name="Common/ServiceDetails" xml:space="preserve">
+        <value>Detalles del servicio</value>
+    </data>
+    <data name="Common/DurationMinutes.Header" xml:space="preserve">
+        <value>Duración (minutos):</value>
+    </data>
+    <data name="Common/Tip" xml:space="preserve">
+        <value>Propina:</value>
+    </data>
+    <data name="Common/Online.Text" xml:space="preserve">
+        <value>En línea</value>
+    </data>
+    <data name="Common/WeekendOrHoliday.Text" xml:space="preserve">
+        <value>Fin de semana o festivo</value>
+    </data>
+    <data name="Common/Notes" xml:space="preserve">
+        <value>Notas</value>
+    </data>
+    <data name="Common/Price.Text" xml:space="preserve">
+        <value>Precio:</value>
+    </data>
+    <data name="Common/PerHour.Text" xml:space="preserve">
+        <value>Precio/Hora</value>
+    </data>
+    <data name="Common/TravelAllowance.Header" xml:space="preserve">
+        <value>Tarifa por desplazamiento</value>
+    </data>
+    <data name="Common/WeekendFee.Header" xml:space="preserve">
+        <value>Tarifa de fin de semana</value>
+    </data>
+    <data name="Common/TaxId.Header" xml:space="preserve">
+        <value>NIF</value>
+    </data>
+    <data name="Common/BankName.Header" xml:space="preserve">
+        <value>Nombre del banco</value>
+    </data>
+    <data name="Common/BankAccount.Header" xml:space="preserve">
+        <value>Cuenta bancaria (IBAN)</value>
+    </data>
+    <data name="Common/TaxPercent.Header" xml:space="preserve">
+        <value>IVA (VAT) Porcentaje</value>
+    </data>
+    <data name="Common/Email.Header" xml:space="preserve">
+        <value>Correo electrónico</value>
+    </data>
+    <data name="Common/Phone.Header" xml:space="preserve">
+        <value>Teléfono</value>
+    </data>
+    <data name="Common/ProgressiveSearch" xml:space="preserve">
+        <value>Escribe para buscar...</value>
+    </data>
+    <data name="Common/Payer.Header" xml:space="preserve">
+        <value>Pagador</value>
+    </data>
+    <data name="Common/EditBill.Text" xml:space="preserve">
+        <value>Editar factura</value>
+    </data>
+
+    <!-- Lessons -->
+    <data name="Lessons/Title.Text" xml:space="preserve">
+        <value>Clases</value>
+    </data>
+
+    <!-- Servicios -->
+    <data name="Services/Title.Text" xml:space="preserve">
+        <value>Servicios</value>
+    </data>
+
+    <!-- Payers -->
+    <data name="Payers/Title.Text" xml:space="preserve">
+        <value>Pagadores</value>
+    </data>
+
+    <!-- Dashboard -->
+    <data name="Dashboard/Title.Text" xml:space="preserve">
+        <value>Panel de Datos</value>
+    </data>
+    <data name="Dashboard/EarningsSelectedMonth.Text" xml:space="preserve">
+        <value>Ingresos (mes seleccionado)</value>
+    </data>
+    <data name="Dashboard/TotalUnpaidAllTime.Text" xml:space="preserve">
+        <value>Total sin pagar (histórico)</value>
+    </data>
+    <data name="Dashboard/LessonsSelectedMonth.Text" xml:space="preserve">
+        <value>Clases (mes seleccionado)</value>
+    </data>
+    <data name="Dashboard/IncomesPerYearComparison.Text" xml:space="preserve">
+        <value>Comparación de ingresos por año</value>
+    </data>
+    <data name="Dashboard/PaidVsUnpaidSelectedMonth.Text" xml:space="preserve">
+        <value>Pagadas vs Sin pagar (mes seleccionado)</value>
+    </data>
+    <data name="Dashboard/Top5PayersSelectedMonth.Text" xml:space="preserve">
+        <value>Top 5 pagadores (mes seleccionado)</value>
+    </data>
+
+    <!-- Proposal -->
+    <data name="Proposal/Title.Text" xml:space="preserve">
+        <value>Presupuestos para clientes</value>
+    </data>
+    <data name="Proposal/ServiceDetails.Text" xml:space="preserve">
+        <value>Detalles del servicio</value>
+    </data>
+    <data name="Proposal/FrequencySetup.Text" xml:space="preserve">
+        <value>Configuración de frecuencia</value>
+    </data>
+    <data name="Proposal/TimeIntervalUnit.Text" xml:space="preserve">
+        <value>Unidad de intervalo de tiempo</value>
+    </data>
+    <data name="Proposal/TimesPerWeek.Content" xml:space="preserve">
+        <value>Veces por semana</value>
+    </data>
+    <data name="Proposal/TimesPerMonth.Content" xml:space="preserve">
+        <value>Veces por mes</value>
+    </data>
+    <data name="Proposal/PricePerSession.Text" xml:space="preserve">
+        <value>PRECIO POR SESIÓN</value>
+    </data>
+    <data name="Proposal/BasePrice.Text" xml:space="preserve">
+        <value>Precio base</value>
+    </data>
+    <data name="Proposal/WeekendHolidayFee.Text" xml:space="preserve">
+        <value>Recargo fin de semana/festivo</value>
+    </data>
+    <data name="Proposal/DurationMultiplier.Text" xml:space="preserve">
+        <value>Multiplicador de duración</value>
+    </data>
+    <data name="Proposal/Subtotal.Text" xml:space="preserve">
+        <value>Subtotal</value>
+    </data>
+    <data name="Proposal/TravelAllowance.Text" xml:space="preserve">
+        <value>Tarifa por desplazamiento</value>
+    </data>
+    <data name="Proposal/RequestedBudget.Text" xml:space="preserve">
+        <value>PRESUPUESTO SOLICITADO</value>
+    </data>
+    <data name="Proposal/EstimatedMonthlyCost.Text" xml:space="preserve">
+        <value>Coste mensual estimado:</value>
+    </data>
+    <data name="Proposal/FrequencyInput.Header" xml:space="preserve">
+        <value>Frecuencia:</value>
+    </data>
+    <data name="Proposal/FrequencyReport.Text" xml:space="preserve">
+        <value>Frecuencia:</value>
+    </data>
+    <data name="Proposal/FrequencyVariant.Header" xml:space="preserve">
+        <value>Variante de frecuencia:</value>
+    </data>
+    <data name="Proposal/FrequencyVariantReport.Text" xml:space="preserve">
+        <value>Variante de frecuencia:</value>
+    </data>
+    <data name="Proposal/Hours.Text" xml:space="preserve">
+        <value> h</value>
+    </data>
+
+    <!-- Students -->
+    <data name="Students/Title.Text" xml:space="preserve">
+        <value>Alumnos</value>
+    </data>
+    <data name="Students/Payer.Text" xml:space="preserve">
+        <value>Pagador</value>
+    </data>
+    <data name="Students/DeleteStudent.ToolTipService.ToolTip" xml:space="preserve">
+        <value>Borrar estudiante</value>
+    </data>
+    <data name="Students/EditStudent.ToolTipService.ToolTip" xml:space="preserve">
+        <value>Editar estudiante</value>
+    </data>
+
+    <!-- Specifications -->
+    <data name="Specifications/Title.Text" xml:space="preserve">
+        <value>Especificaciones</value>
+    </data>
+    <data name="Specifications/Service.Text" xml:space="preserve">
+        <value>Servicio:</value>
+    </data>
+    <data name="Specifications/Duration.Text" xml:space="preserve">
+        <value>Duración:</value>
+    </data>
+
+    <!-- Settings -->
+    <data name="Settings/Title.Text" xml:space="preserve">
+        <value>Configuración</value>
+    </data>
+    <data name="Settings/UserManual.Content" xml:space="preserve">
+        <value>Manual de usuario</value>
+    </data>
+    <data name="Settings/MainInformation.Header" xml:space="preserve">
+        <value>Información principal</value>
+    </data>
+    <data name="Settings/BillingTaxDetails.Header" xml:space="preserve">
+        <value>Datos fiscales y de facturación</value>
+    </data>
+    <data name="Settings/ConfigurationFees.Header" xml:space="preserve">
+        <value>Configuración y tarifas</value>
+    </data>
+    <data name="Settings/BillingFolder.Text" xml:space="preserve">
+        <value>Carpeta de facturas</value>
+    </data>
+    <data name="Settings/BackupsFolder.Text" xml:space="preserve">
+        <value>Carpeta de copias de seguridad</value>
+    </data>
+    <data name="Settings/SelectFolder.PlaceholderText" xml:space="preserve">
+        <value>Selecciona una carpeta...</value>
+    </data>
+    <data name="Settings/PickFolder.Content" xml:space="preserve">
+        <value>Seleccionar carpeta</value>
+    </data>
+    <data name="Settings/DataManagement.Text" xml:space="preserve">
+        <value>Gestión de datos</value>
+    </data>
+    <data name="Settings/DangerZone.Text" xml:space="preserve">
+        <value>Zona de peligro</value>
+    </data>
+    <data name="Settings/ArchiveOldData" xml:space="preserve">
+        <value>Archivar datos antiguos</value>
+    </data>
+    <data name="Settings/SelectPayersArchive" xml:space="preserve">
+        <value>Selecciona pagadores para recuperar del archivo.</value>
+    </data>
+    <data name="Settings/PickFile" xml:space="preserve">
+        <value>Seleccionar archivo</value>
+    </data>
+    <data name="Settings/ArchiveDatabase" xml:space="preserve">
+        <value>Archivar base de datos</value>
+    </data>
+    <data name="Settings/RetrieveFromArchive" xml:space="preserve">
+        <value>Recuperar desde archivo</value>
+    </data>
+    <data name="Settings/DeleteDatabase.Label" xml:space="preserve">
+        <value>Borrar base de datos</value>
+    </data>
+    <data name="Settings/DeleteArchive.Label" xml:space="preserve">
+        <value>Borrar archivo</value>
+    </data>
+    <data name="Actions/DeleteDatabase" xml:space="preserve">
+        <value>borrar base de datos</value>
+    </data>
+    <data name="Actions/DeleteArchive" xml:space="preserve">
+        <value>borrar archivo</value>
+    </data>
+    <data name="Actions/RemoveSelectedLessons" xml:space="preserve">
+        <value>quitar clases seleccionadas</value>
+    </data>
+    <data name="Actions/DeleteBill" xml:space="preserve">
+        <value>borrar factura</value>
+    </data>
+    <data name="Actions/DeletePayer" xml:space="preserve">
+        <value>borrar pagador</value>
+    </data>
+    <data name="Actions/DeleteService" xml:space="preserve">
+        <value>borrar servicio</value>
+    </data>
+    <data name="Actions/DeleteStudent" xml:space="preserve">
+        <value>borrar alumno</value>
+    </data>
+    <data name="Actions/DeleteSpecification" xml:space="preserve">
+        <value>borrar especificación</value>
+    </data>
+    <data name="Actions/DeleteLesson" xml:space="preserve">
+        <value>borrar clase</value>
+    </data>
+    <data name="App/UnexpectedErrorTitle" xml:space="preserve">
+        <value>Error inesperado</value>
+    </data>
+    <data name="App/UnexpectedErrorContent" xml:space="preserve">
+        <value>Se ha producido un error crítico. La aplicación ha registrado la incidencia, pero puede comportarse de forma inesperada si continúas.\n\nDetalles: {0}</value>
+    </data>
+</root>

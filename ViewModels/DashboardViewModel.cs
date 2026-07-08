@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Apolo.Services;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
@@ -43,7 +44,16 @@ namespace ViewModels
         [ObservableProperty] private Axis[] _topPayersXAxes = null!;
         [ObservableProperty] private ISeries[] _paidVsUnpaidSeries = null!;
 
-        public DashboardViewModel(IDashboardRepository dashboardRepository)
+        // Messages 
+        protected static string Message_Load_Error => "Messages/Load_Dashboard_Error";
+        protected static string Message_Income => "Messages/Dashboard_Income";
+        protected static string Message_Total_Amount => "Messages/Dashboard_Total_Amount";
+        protected static string Message_Paid => "Messages/Paid";
+        protected static string Message_Unpaid => "Messages/Unpaid";
+        protected static string Message_New => "Messages/New";
+
+        public DashboardViewModel(IDashboardRepository dashboardRepository, IStringLocalizer stringLocalizer)
+            : base(stringLocalizer)
         {
             _dashboardRepository = dashboardRepository;
 
@@ -61,7 +71,7 @@ namespace ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't load lessons while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Load_Error);
                 return;
             }
 
@@ -91,7 +101,7 @@ namespace ViewModels
                 new LineSeries<decimal>
                 {
                     Values = currentYearIncomes,
-                    Name = $"Income {year}",
+                    Name = $"{_loc.Get(Message_Income, year)}",
                     Fill = new SolidColorPaint(SKColors.LightBlue.WithAlpha(90)),
                     Stroke = new SolidColorPaint(SKColors.DodgerBlue) { StrokeThickness = 3 },
                     GeometrySize = 10
@@ -99,7 +109,7 @@ namespace ViewModels
                 new LineSeries<decimal>
                     {
                         Values = prevYearIncomes,
-                        Name = $"Income {year - 1}",
+                        Name = $"{_loc.Get(Message_Income, year - 1)}",
                         Fill = null, // No fill for the comparison line to keep it clean
                         Stroke = new SolidColorPaint(SKColors.Gray)
                         {
@@ -117,7 +127,7 @@ namespace ViewModels
                 new ColumnSeries<decimal>
                 {
                     Values = [.. topPayers.Values],
-                    Name = "Total Amount",
+                    Name = _loc.Get(Message_Total_Amount),
                     MaxBarWidth = 40, // Keeps the bars from getting too thick
                     DataLabelsPaint = new SolidColorPaint(new SKColor(30, 30, 30)),
                     DataLabelsPosition = LiveChartsCore.Measure.DataLabelsPosition.Right,
@@ -150,8 +160,8 @@ namespace ViewModels
             var (paid, unpaid) = await _dashboardRepository.GetPaidVsUnpaidCountThisMonthAsync(year, month);
             PaidVsUnpaidSeries =
             [
-                new PieSeries<int> { Values = [paid], Name = "Paid" },
-                new PieSeries<int> { Values = [unpaid], Name = "Unpaid" }
+                new PieSeries<int> { Values = [paid], Name = _loc.Get(Message_Paid) },
+                new PieSeries<int> { Values = [unpaid], Name = _loc.Get(Message_Unpaid) }
             ];
             SetExitFunction();
         }
@@ -160,7 +170,7 @@ namespace ViewModels
         {
             if (PreviousMonthEarnings == 0)
             {
-                EarningsTrend = CurrentMonthEarnings > 0 ? "New" : "0%";
+                EarningsTrend = CurrentMonthEarnings > 0 ? _loc.Get(Message_New) : "0%";
                 return;
             }
 

@@ -1,5 +1,6 @@
 using Apolo.Controls;
 using Apolo.Services;
+using Apolo.Services;
 using Apolo.ViewModels;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using DocumentFormat.OpenXml.Drawing;
@@ -38,13 +39,13 @@ namespace Apolo.Views
 
         private async void RemoveLesson_Click(object sender, RoutedEventArgs e)
         {
-            if (await ConfirmationDialog.ConfirmButtonAction(sender, "remove selected lessons"))
+            if (await ConfirmationDialog.ConfirmButtonAction(sender, Loc.Action_RemoveSelectedLessons))
                 await ViewModel.RemoveSelectedLessonsAsync();
         }
 
         private async void DeleteBill_Click(object sender, RoutedEventArgs e)
         {
-            if (await ConfirmationDialog.ConfirmButtonAction(sender, $"delete bill {ViewModel.Bill.Name}"))
+            if (await ConfirmationDialog.ConfirmButtonAction(sender, $"{Loc.Action_DeleteBill} {ViewModel.Bill.Name}"))
                 await ViewModel.DeleteBillAsync();
         }
 
