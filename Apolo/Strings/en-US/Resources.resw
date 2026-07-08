@@ -277,7 +277,7 @@
   <data name="Messages/Service_Name_Validation" xml:space="preserve">
     <value>• Service name is required.</value>
   </data>
-  <data name="Messages/Specification_Name_Validation" xml:space="preserve">
+  <data name="Message/Specification_Name_Validation" xml:space="preserve">
     <value>• Specification name is required.</value>
   </data>
   <data name="Messages/Person_Name_Validation" xml:space="preserve">
@@ -508,7 +508,7 @@
   <data name="Message/Load_Specification_Error" xml:space="preserve">
     <value>Can't load specifications page</value>
   </data>
-  <data name="Messages/Load_Specification_Success" xml:space="preserve">
+  <data name="Message/Load_Specification_Success" xml:space="preserve">
     <value>{0} specification(s) loaded</value>
   </data>
   <data name="Message/Refresh_Specification_Error" xml:space="preserve">

@@ -1,5 +1,4 @@
 ﻿using Apolo.Services;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Models;
 using System;
@@ -55,8 +54,6 @@ namespace Apolo.Controls
         {
             if (data is not ISummary item)
                 return null;
-
-            var sl = new StringLocalizer();
 
             var dialog = new ContentDialog
             {

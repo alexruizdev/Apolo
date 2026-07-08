@@ -492,9 +492,6 @@ namespace Apolo.Tests.ViewModels
             var ids = ArrangeForGenerateInvoice();
             await ActForForGenerateInvoice(ids);
 
-            string fileName = $"{_viewModel.Bill.Name}.pdf";
-            string ticketFileName = $"{_viewModel.Bill.Name}-list.pdf";
-
             AssertForGenerateInvoice(ids, severity: InfoBarType.Info, success: true);
         }
 
