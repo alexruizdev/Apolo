@@ -165,7 +165,7 @@ namespace Apolo
             e.SetObserved(); // Prevent the app from tearing down
         }
 
-        private void PerformAutomatedBackup()
+        private static void PerformAutomatedBackup()
         {
             try
             {

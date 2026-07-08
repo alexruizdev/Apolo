@@ -712,7 +712,7 @@
   <data name="Buttons/Create" xml:space="preserve">
     <value>Create</value>
   </data>
-  <data name="Buttons/Save" xml:space="preserve">
+  <data name="Buttons/Save.Label" xml:space="preserve">
     <value>Save</value>
   </data>
   <data name="Buttons/ApplyFilters.Content" xml:space="preserve">
