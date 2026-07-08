@@ -1,5 +1,6 @@
 ﻿using Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 
 namespace Repository
 {
@@ -101,6 +102,28 @@ namespace Repository
                 .WithMany(i => i.Lines)
                 .HasForeignKey(a => a.BillingDocumentId)
                 .OnDelete(DeleteBehavior.SetNull);
+        }
+    }
+
+    public class ApoloContextFactory : IDesignTimeDbContextFactory<ApoloContext>
+    {
+        public ApoloContext CreateDbContext(string[] args)
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<ApoloContext>();
+            optionsBuilder.UseSqlite("Data Source=apolo.db");
+
+            return new ApoloContext(optionsBuilder.Options);
+        }
+    }
+
+    public class ApoloArchiveContextFactory : IDesignTimeDbContextFactory<ApoloArchiveContext>
+    {
+        public ApoloArchiveContext CreateDbContext(string[] args)
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<ApoloArchiveContext>();
+            optionsBuilder.UseSqlite("Data Source=apolo_archive.db");
+
+            return new ApoloArchiveContext(optionsBuilder.Options);
         }
     }
 }

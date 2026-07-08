@@ -1,0 +1,16 @@
+===========================================
+       APOLO APP - IMPORT SUMMARY          
+===========================================
+Date: Saturday, June 20, 2026 9:31 PM
+
+RESULTS:
+- Services Imported: 6
+- Payers Imported: 8
+- Students Imported: 10
+- Specifications Imported: 10
+- Lessons Imported: 40
+- Invoices Processed: 24
+
+STATUS: Success
+===========================================
+All data has been saved to the Excel file.
