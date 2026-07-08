@@ -199,31 +199,45 @@ namespace Apolo.ViewModels
                 return;
             }
 
-            var watch = Stopwatch.StartNew();
+            try
+            {
 
-            await Task.Run(async () => await excelReader.ReadExcel(file));
+                var watch = Stopwatch.StartNew();
 
-            // Insert data into database
-            await repository.ImportArchiveAsync(
-                excelReader.Payers,
-                excelReader.Students,
-                excelReader.Lessons,
-                excelReader.Invoices);
+                await Task.Run(async () => await excelReader.ReadExcel(file));
 
-            string path = await GenerateExportSummary(root,
-                excelReader.Services.Count,
-                excelReader.Payers.Count,
-                excelReader.Students.Count,
-                excelReader.Specifications.Count,
-                excelReader.Lessons.Count,
-                excelReader.Invoices.Count);
+                // Insert data into database
+                await repository.ImportArchiveAsync(
+                    excelReader.Payers,
+                    excelReader.Students,
+                    excelReader.Lessons,
+                    excelReader.Invoices);
 
-            watch.Stop();
-            TimeSpan ts = watch.Elapsed;
-            string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}",
-                ts.Hours, ts.Minutes, ts.Seconds);
+                string path = await GenerateExportSummary(root,
+                    excelReader.Services.Count,
+                    excelReader.Payers.Count,
+                    excelReader.Students.Count,
+                    excelReader.Specifications.Count,
+                    excelReader.Lessons.Count,
+                    excelReader.Invoices.Count);
 
-            SetExitFunction($"Import completed ({elapsedTime}). Summary saved to {path}", InfoBarType.Success);
+                watch.Stop();
+                TimeSpan ts = watch.Elapsed;
+                string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}",
+                    ts.Hours, ts.Minutes, ts.Seconds);
+
+                SetExitFunction($"Import completed ({elapsedTime}). Summary saved to {path}", InfoBarType.Success);
+            }
+            catch (IOException ex)
+            {
+                Log.Warning(ex, "Failed to import from Excel due to file lock.");
+                SetExitFunction("The file is in use. Please close it in Excel and try again.", InfoBarType.Error);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An unexpected error occurred during Excel import.");
+                SetExitFunction($"Import failed: {ex.Message}", InfoBarType.Error);
+            }
         }
 
         public async Task ExportArchiveToExcel(string installedPath)
@@ -242,19 +256,32 @@ namespace Apolo.ViewModels
                 return;
             }
 
-            var watch = Stopwatch.StartNew();
+            try
+            {
+                var watch = Stopwatch.StartNew();
 
-            string templatePath = Path.Combine(installedPath, "Assets", "Excel", "Template.xlsx");
+                string templatePath = Path.Combine(installedPath, "Assets", "Excel", "Template.xlsx");
 
-            var data = await repository.ExportArchiveAsync();
-            excelWriter.WriteExcel(templatePath, Profile.BackupFolder, in data, archive: true);
+                var data = await repository.ExportArchiveAsync();
+                excelWriter.WriteExcel(templatePath, Profile.BackupFolder, in data, archive: true);
 
-            watch.Stop();
-            TimeSpan ts = watch.Elapsed;
-            string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}",
-                ts.Hours, ts.Minutes, ts.Seconds);
+                watch.Stop();
+                TimeSpan ts = watch.Elapsed;
+                string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}",
+                    ts.Hours, ts.Minutes, ts.Seconds);
 
-            SetExitFunction($"Export completed ({elapsedTime}). File saved to {Profile.BackupFolder}", InfoBarType.Success);
+                SetExitFunction($"Export completed ({elapsedTime}). File saved to {Profile.BackupFolder}", InfoBarType.Success);
+            }
+            catch (IOException ex)
+            {
+                Log.Warning(ex, "Failed to import from Excel due to file lock.");
+                SetExitFunction("The file is in use. Please close it in Excel and try again.", InfoBarType.Error);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An unexpected error occurred during Excel import.");
+                SetExitFunction($"Import failed: {ex.Message}", InfoBarType.Error);
+            }
         }
 
         public async Task ExportDatabaseToExcel(string installedPath)
