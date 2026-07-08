@@ -37,6 +37,7 @@ namespace Apolo.ViewModels
         [ObservableProperty] private decimal totalSelected;
         [ObservableProperty] private decimal totalAll;
         [ObservableProperty] private bool editMode;
+        [ObservableProperty] private bool isConfigPaneOpen = true;
         [ObservableProperty] private BillSummary bill;
         [ObservableProperty] private string? lastGeneratedFolder;
 
@@ -56,6 +57,8 @@ namespace Apolo.ViewModels
         protected static string Message_Generate_Bill_Error => "Messages/Generate_Bill_Error";
         protected static string Message_Generate_Bill_Success => "Messages/Generate_Bill_Success";
         protected static string Message_Print_Bill_Error => "Messages/Print_Bill_Error";
+        protected static string Messages_Edit_Bill_Error => "Messages/Edit_Bill_Error";
+        protected static string Messages_Edit_Bill_Success => "Messages/Edit_Bill_Success";
 
         public static BillSummary ResetBill() => new(null, Guid.NewGuid(), DocumentType.Ticket, 0, "", new DateTime());
 
@@ -507,7 +510,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't edit bill while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Messages_Edit_Bill_Error);
                 return;
             }
 
@@ -515,7 +518,8 @@ namespace Apolo.ViewModels
 
             if (Bill.Id == null)
             {
-                SetExitFunction("Can't edit bill if not loaded", InfoBarType.Warning);
+                SetExitFunction($"{_loc.Get(Messages_Edit_Bill_Error)}: {_loc.Get(Message_Bill_Selected_Reason)}.",
+                    InfoBarType.Warning);
                 return;
             }
 
@@ -524,9 +528,9 @@ namespace Apolo.ViewModels
                 var document = await _billingRepository.EditAsync(Bill.Id.Value, type, sequence, newDate);
                 Bill = new BillSummary(document.Id, document.PayerId, document.Type, document.SequenceNumber, document.DocumentNumber,
                     document.CreatedUTC);
-                SetExitFunction($"{Bill.Name} was edited successfully.", InfoBarType.Success);
+                SetExitFunction($"{_loc.Get(Messages_Edit_Bill_Success, Bill.Name)}.", InfoBarType.Success);
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex)
             {
                 SetExitFunction(ex.Message, InfoBarType.Error);
             }

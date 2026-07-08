@@ -13,6 +13,8 @@ namespace Apolo.Views
 {
     public sealed partial class LessonsPage : Page
     {
+        public static bool Not(bool value) => !value;
+
         public LessonsViewModel ViewModel => (LessonsViewModel)DataContext;
         public LessonsPage()
         {

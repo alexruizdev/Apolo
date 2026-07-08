@@ -400,6 +400,12 @@
   <data name="Messages/State_Bill_Error" xml:space="preserve">
     <value>Can't update selection</value>
   </data>
+  <data name="Messages/Edit_Bill_Error" xml:space="preserve">
+    <value>Can't edit selection</value>
+  </data>
+  <data name="Messages/Edit_Bill_Success" xml:space="preserve">
+    <value>Bill document '{0}' edited</value>
+  </data>
   <data name="Messages/Load_Bill_Error" xml:space="preserve">
     <value>Can't load Invoice page</value>
   </data>
@@ -802,6 +808,30 @@
   <data name="Common/ChangePaymentStatus" xml:space="preserve">
     <value>Change payment status</value>
   </data>
+  <data name="Common/ConfigureBill" xml:space="preserve">
+    <value>Configure bill</value>
+  </data>
+  <data name="Common/SearchBillPlaceholder" xml:space="preserve">
+    <value>e.g. 2024-03...</value>
+  </data>
+  <data name="Common/DocumentType" xml:space="preserve">
+    <value>Document type</value>
+  </data>
+  <data name="Common/SequenceNumber" xml:space="preserve">
+    <value>Sequence number</value>
+  </data>
+  <data name="Common/CreationDate" xml:space="preserve">
+    <value>Creation date</value>
+  </data>
+  <data name="Common/Invoice" xml:space="preserve">
+    <value>Invoice</value>
+  </data>
+  <data name="Common/Ticket" xml:space="preserve">
+    <value>Ticket</value>
+  </data>
+  <data name="Common/LessonActions" xml:space="preserve">
+    <value>Lesson actions</value>
+  </data>
   <data name="Common/MinuteAbbrev.Text" xml:space="preserve">
     <value>min</value>
   </data>
@@ -984,6 +1014,24 @@
   </data>
   <data name="Common/EditBill.Text" xml:space="preserve">
     <value>Edit existing bill</value>
+  </data>
+  <data name="Dialogs/EditBillTitle" xml:space="preserve">
+    <value>Edit {0}</value>
+  </data>
+  <data name="Dialogs/CreateBillTitle" xml:space="preserve">
+    <value>Create bill</value>
+  </data>
+  <data name="Lessons/RowActions.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Lesson actions</value>
+  </data>
+  <data name="Lessons/EditLessonMenuItem.Text" xml:space="preserve">
+    <value>Edit lesson</value>
+  </data>
+  <data name="Lessons/ChangePaymentMenuItem.Text" xml:space="preserve">
+    <value>Change payment status</value>
+  </data>
+  <data name="Lessons/DeleteLessonMenuItem.Text" xml:space="preserve">
+    <value>Delete lesson</value>
   </data>
 
   <!-- Lessons -->
