@@ -1,10 +1,13 @@
 using Apolo.Pages;
+using Apolo.Services;
 using Apolo.ViewModels;
 using Apolo.Views;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Animation;
+using System;
 using WinRT;
 
 namespace Apolo
@@ -30,8 +33,35 @@ namespace Apolo
             InitializeComponent();
             TrySetMicaBackdrop();
             ExtendsContentIntoTitleBar = true;
+            Loc.LanguageChanged += Loc_LanguageChanged;
             NavView.SelectedItem = NavView.MenuItems[0] as NavigationViewItem;
             RootFrame.Navigate(typeof(LessonsPage));
+        }
+
+        private void Loc_LanguageChanged(object? sender, EventArgs e)
+        {
+            // This forces all {x:Bind} elements in this XAML file to re-fetch their properties
+            this.Bindings.Update();
+
+            if (RootFrame.CurrentSourcePageType != null)
+            {
+                // Capture the current page and any parameters it was passed
+                var currentPageType = RootFrame.CurrentSourcePageType;
+
+                // Temporarily disable the cache. 
+                // If we don't do this, WinUI might pull the old English/Spanish page from memory instead of rebuilding it.
+                var oldCacheSize = RootFrame.CacheSize;
+                RootFrame.CacheSize = 0;
+
+                // Re-navigate to the exact same page, suppressing the animation so it looks like an instant text swap
+                RootFrame.Navigate(
+                    currentPageType,
+                    null,
+                    new SuppressNavigationTransitionInfo());
+
+                // Restore the original cache size
+                RootFrame.CacheSize = oldCacheSize;
+            }
         }
 
         bool TrySetMicaBackdrop()
@@ -51,8 +81,9 @@ namespace Apolo
             return true;
         }
 
-        private void Window_Activated(object sender, Microsoft.UI.Xaml.WindowActivatedEventArgs e)
+        private void Window_Activated(object sender, WindowActivatedEventArgs e)
         {
+            System.ArgumentNullException.ThrowIfNull(e);
             // Do something when the window is activated
         }
 

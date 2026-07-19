@@ -1,5 +1,6 @@
 ﻿using Microsoft.Windows.ApplicationModel.Resources;
 using Microsoft.Windows.Globalization;
+using System;
 
 namespace Apolo.Services
 {
@@ -20,6 +21,15 @@ namespace Apolo.Services
     public static class Loc
     {
         private static ResourceLoader? _loader;
+
+        public static event EventHandler? LanguageChanged;
+
+        public static void NotifyLanguageChanged()
+        {
+            _loader = new ResourceLoader();
+
+            LanguageChanged?.Invoke(null, EventArgs.Empty);
+        }
 
         private static ResourceLoader Loader
         {
@@ -42,6 +52,8 @@ namespace Apolo.Services
             ApplicationLanguages.PrimaryLanguageOverride = languageCode;
 
             _loader = null;
+
+            LanguageChanged?.Invoke(null, EventArgs.Empty);
         }
 
         // Get a string by key

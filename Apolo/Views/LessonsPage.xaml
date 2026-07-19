@@ -197,21 +197,21 @@
                                                         VerticalAlignment="Center">
                                                 <Button x:Uid="Lessons/RowActions"
                                                         Style="{StaticResource RowActionButtonStyle}"
-                                                        IsEnabled="{x:Bind local:LessonsPage.Not(PageRoot.ViewModel.IsBusy), Mode=OneWay}">
+                                                        IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
                                                     <SymbolIcon Symbol="More" />
 
                                                     <Button.Flyout>
                                                         <MenuFlyout>
                                                             <MenuFlyoutItem x:Uid="Lessons/EditLessonMenuItem"
                                                                             Click="EditLesson_Click"
-                                                                            IsEnabled="{x:Bind local:LessonsPage.Not(PageRoot.ViewModel.IsBusy), Mode=OneWay}">
+                                                                            IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
                                                                 <MenuFlyoutItem.Icon>
                                                                     <SymbolIcon Symbol="Edit" />
                                                                 </MenuFlyoutItem.Icon>
                                                             </MenuFlyoutItem>
                                                             <MenuFlyoutItem x:Uid="Lessons/ChangePaymentMenuItem"
                                                                             Click="ChangePayment_Click"
-                                                                            IsEnabled="{x:Bind local:LessonsPage.Not(PageRoot.ViewModel.IsBusy), Mode=OneWay}">
+                                                                            IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
                                                                 <MenuFlyoutItem.Icon>
                                                                     <SymbolIcon Symbol="Shop" />
                                                                 </MenuFlyoutItem.Icon>
@@ -219,7 +219,7 @@
                                                             <MenuFlyoutItem x:Uid="Lessons/DeleteLessonMenuItem"
                                                                             Style="{StaticResource RowDeleteMenuFlyoutItemStyle}"
                                                                             Click="DeleteLesson_Click"
-                                                                            IsEnabled="{x:Bind local:LessonsPage.Not(PageRoot.ViewModel.IsBusy), Mode=OneWay}">
+                                                                            IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
                                                                 <MenuFlyoutItem.Icon>
                                                                     <SymbolIcon Symbol="Delete" />
                                                                 </MenuFlyoutItem.Icon>
