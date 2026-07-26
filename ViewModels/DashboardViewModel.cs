@@ -52,8 +52,8 @@ namespace ViewModels
         protected static string Message_Unpaid => "Messages/Unpaid";
         protected static string Message_New => "Messages/New";
 
-        public DashboardViewModel(IDashboardRepository dashboardRepository, IStringLocalizer stringLocalizer)
-            : base(stringLocalizer)
+        public DashboardViewModel(IDashboardRepository dashboardRepository, IStringLocalizer stringLocalizer, IUserProfileService userProfileService)
+            : base(stringLocalizer, userProfileService)
         {
             _dashboardRepository = dashboardRepository;
 

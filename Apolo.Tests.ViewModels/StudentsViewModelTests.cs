@@ -15,6 +15,7 @@ namespace Apolo.Tests.ViewModels
         private Mock<IPayerRepository> _mockPayerRepo = null!;
         private StudentsViewModel _viewModel = null!;
         private Mock<IStringLocalizer> _localizerMock = null!;
+        private Mock<IUserProfileService> _userProfileMock = null!;
 
 
         [TestInitialize]
@@ -23,7 +24,8 @@ namespace Apolo.Tests.ViewModels
             _mockStudentRepo = new Mock<IStudentRepository>();
             _mockPayerRepo = new Mock<IPayerRepository>();
             _localizerMock = new Mock<IStringLocalizer>();
-            _viewModel = new StudentsViewModel(_mockStudentRepo.Object, _mockPayerRepo.Object, _localizerMock.Object);
+            _userProfileMock = new Mock<IUserProfileService>();
+            _viewModel = new StudentsViewModel(_mockStudentRepo.Object, _mockPayerRepo.Object, _localizerMock.Object, _userProfileMock.Object);
         }
 
         void VerifyAction(InfoBarType severity, bool isOpen, int studentsCount, int payersCount, bool isBusy = false)

@@ -27,8 +27,8 @@ namespace Apolo.ViewModels
         private static string Message_Edit_Student_Error => "Messages/Edit_Student_Error";
         private static string Message_Edit_Student_Success => "Messages/Edit_Student_Success";
 
-        public StudentsViewModel(IStudentRepository studentRepository, IPayerRepository payerRepository, IStringLocalizer stringLocalizer)
-            : base(stringLocalizer)
+        public StudentsViewModel(IStudentRepository studentRepository, IPayerRepository payerRepository, IStringLocalizer stringLocalizer, IUserProfileService userProfileService)
+            : base(stringLocalizer, userProfileService)
         {
             _studentRepository = studentRepository;
             _payerRepository = payerRepository;

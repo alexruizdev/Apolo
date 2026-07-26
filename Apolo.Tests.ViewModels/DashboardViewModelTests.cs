@@ -12,14 +12,16 @@ namespace Apolo.Tests.ViewModels
 
         private Mock<IDashboardRepository> _repositoryMock = null!;
         private Mock<IStringLocalizer> _localizerMock = null!;
+        private Mock<IUserProfileService> _userProfileMock = null!;
 
         [TestInitialize]
         public void TestInit()
         {
             _repositoryMock = new Mock<IDashboardRepository>();
             _localizerMock = new Mock<IStringLocalizer>();
+            _userProfileMock = new Mock<IUserProfileService>();
 
-            _viewModel = new DashboardViewModel(_repositoryMock.Object, _localizerMock.Object);
+            _viewModel = new DashboardViewModel(_repositoryMock.Object, _localizerMock.Object, _userProfileMock.Object);
         }
 
         [TestMethod]

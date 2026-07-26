@@ -9,16 +9,11 @@ using ViewModels;
 
 namespace Apolo.ViewModels
 {
-    public partial class LessonsViewModel : UserProfileViewModel
+    public partial class LessonsViewModel : LessonsBaseViewModel
     {
-        readonly ILessonRepository _lessonRepository;
-        readonly IStudentRepository _studentRepository;
-        readonly IServiceRepository _serviceRepository;
         readonly ISpecificationRepository _specificationRepository;
 
         public ObservableCollection<LessonSummary> Lessons { get; } = [];
-        public ObservableCollection<StudentOption> Students { get; } = [];
-        public ObservableCollection<ServiceSummary> Services { get; } = [];
 
         // Filter
         [ObservableProperty] private string _filterStudentName = string.Empty;
@@ -39,19 +34,14 @@ namespace Apolo.ViewModels
         public LessonsViewModel(ILessonRepository lessonRepository, IStudentRepository studentRepository, 
             IServiceRepository serviceRepository, ISpecificationRepository specificationRepository, IUserProfileService userProfile,
             IStringLocalizer stringLocalizer)
-            : base(userProfile, stringLocalizer)
+            : base(lessonRepository, studentRepository, serviceRepository, stringLocalizer, userProfile)
         {
-            _lessonRepository = lessonRepository;
-            _studentRepository = studentRepository;
-            _serviceRepository = serviceRepository;
             _specificationRepository = specificationRepository;
             FilterStartDate = DateTimeOffset.Now.AddMonths(-2);
         }
 
         protected static string Message_Load_Error => "Messages/Load_Lesson_Error";
         protected static string Message_Load_Success => "Messages/Load_Lesson_Success";
-        protected static string Message_Add_Error => "Messages/Add_Lesson_Error";
-        protected static string Message_Add_Success => "Messages/Add_Lesson_Success";
         protected static string Message_Delete_Error => "Messages/Delete_Lesson_Error";
         protected static string Message_Lesson_Assigned => "Messages/LessonIsAssigned";
         protected static string Message_Delete_Success => "Messages/Delete_Lesson_Success";
@@ -60,7 +50,7 @@ namespace Apolo.ViewModels
         protected static string Message_Clear_Filters_Error => "Messages/Clear Filters_Error";
 
         [RelayCommand]
-        public async Task LoadAsync()
+        public override async Task LoadAsync()
         {
             if (IsBusy)
             {
@@ -70,15 +60,7 @@ namespace Apolo.ViewModels
 
             SetEnterFunction();
 
-            var studentsItem = await _studentRepository.GetStudentOptionsAsync();
-
-            Students.Clear();
-            foreach (var item in studentsItem) Students.Add(item);
-
-            var serviceItems = await _serviceRepository.GetServicesAsync();
-
-            Services.Clear();
-            foreach (var s in serviceItems) Services.Add(s);
+            await base.LoadAsync();
 
             // Filters
 
@@ -99,11 +81,12 @@ namespace Apolo.ViewModels
                 ? DateOnly.FromDateTime(FilterEndDate.Value.DateTime)
                 : null;
 
-            var items = await _lessonRepository.GetLessonsAsync(FilterStudentName,
+            var items = await Task.Run(() => _lessonRepository.GetLessonsAsync(
+                FilterStudentName,
                 FilterPayerName,
                 repoIsPaid,
                 repoStartDate,
-                repoEndDate);
+                repoEndDate));
 
             Lessons.Clear();
             foreach (var item in items) Lessons.Add(item);
@@ -139,39 +122,7 @@ namespace Apolo.ViewModels
             SetExitFunction(string.Join(Environment.NewLine, errors), InfoBarType.Warning);
             return false;
         }
-        public bool ValidateLessonInput(ref string name, ref int? duration, bool isPricePerHour, decimal basePrice, decimal tip)
-        {
-            var errors = new List<string>();
-
-            name = (name ?? string.Empty).Trim();
-            if (string.IsNullOrWhiteSpace(name))
-                errors.Add(_loc.Get(Message_LessonNameValidation));
-
-            if (tip < 0)
-                errors.Add(_loc.Get(Message_TipValidation));
-
-            if (isPricePerHour)
-            {
-                if (duration is null)
-                    errors.Add(_loc.Get(Message_DurationValidation));
-                
-                if (duration <= 0)
-                    errors.Add(_loc.Get(Message_DurationValueValidation));
-            }
-            else
-            {
-                duration = null; // Normalize to null for easier handling in the database and UI
-            }
-
-            if (basePrice <= 0)
-                errors.Add(_loc.Get(Message_PriceValidation));
-
-            if (errors.Count == 0)
-                return true;
-
-            SetExitFunction(string.Join(Environment.NewLine, errors), InfoBarType.Warning);
-            return false;
-        }
+        
 
         public (LessonSummary lesson, int index) GetLesson(Guid id) 
         {
@@ -182,57 +133,6 @@ namespace Apolo.ViewModels
                 throw new InvalidDataException(_loc.Get(Message_Lesson_Not_Loaded));
             }
             return (lesson, Lessons.IndexOf(lesson));
-        }
-
-        public async Task AddLessonAsync(DateOnly date, string name, ServiceSummary service,
-            int? duration, decimal pricePerLesson, bool isOnline, bool isWeekendOrHoliday, decimal tip,
-            string? note, Guid studentId)
-        {
-            if (IsBusy)
-            {
-                SetExitBusy(Message_Add_Error);
-                return;
-            }
-
-            SetEnterFunction();
-            var (item, _) = GetStudent(studentId);
-
-            if (!ValidateLessonInput(ref name, ref duration, service.IsPricePerHour, pricePerLesson, tip))
-                return; 
-
-            try
-            {
-                var lesson = await _lessonRepository.AddLessonAsync(date, name, isPaid: false, studentId, null,
-                    service.IsPricePerHour, duration, pricePerLesson,
-                    isOnline, TravelAllowance, isWeekendOrHoliday, WeekendFee, tip, note);
-
-                // Add to UI
-                Lessons.Insert(0, new LessonSummary(
-                    lesson.Id,
-                    lesson.Date,
-                    lesson.Name,
-                    lesson.FinalPrice,
-                    lesson.IsPaid,
-                    lesson.StudentId,
-                    item.FullName,
-                    lesson.BillingDocumentId,
-                    string.Empty, 
-                    lesson.IsPricePerHour,
-                    lesson.DurationMinutes,
-                    lesson.BasePrice,
-                    lesson.IsOnline,
-                    lesson.TravelAllowance,
-                    lesson.IsWeekendOrHoliday,
-                    lesson.WeekendFee,
-                    lesson.Tip,
-                    lesson.Notes));
-                
-                SetExitFunction($"{_loc.Get(Message_Add_Success)}: '{lesson.Name}'.", InfoBarType.Success);
-            }
-            catch (DbUpdateException ex)
-            {
-                SetExitFunction(ex.Message, InfoBarType.Error);
-            }
         }
 
         public async Task ChangePayment(Guid id)
@@ -290,7 +190,43 @@ namespace Apolo.ViewModels
             }
         }
 
-        public async Task UpdateLessonAsync(Guid id, DateOnly date, string name,
+        public override async Task<Lesson?> AddLessonAsync(DateOnly date, string name, ServiceSummary service,
+            int? duration, decimal pricePerLesson, bool isOnline, bool isWeekendOrHoliday, decimal tip,
+            string? note, Guid studentId)
+        {
+            var lesson = await base.AddLessonAsync(
+                date, name, service, duration, pricePerLesson, isOnline, isWeekendOrHoliday, tip, note, studentId);
+
+            if (InfoBarType == InfoBarType.Success && lesson != null)
+            {
+                var (item, _) = GetStudent(studentId);
+
+                // Add to UI
+                Lessons.Insert(0, new LessonSummary(
+                    lesson.Id,
+                    lesson.Date,
+                    lesson.Name,
+                    lesson.FinalPrice,
+                    lesson.IsPaid,
+                    lesson.StudentId,
+                    item.FullName,
+                    lesson.BillingDocumentId,
+                    string.Empty,
+                    lesson.IsPricePerHour,
+                    lesson.DurationMinutes,
+                    lesson.BasePrice,
+                    lesson.IsOnline,
+                    lesson.TravelAllowance,
+                    lesson.IsWeekendOrHoliday,
+                    lesson.WeekendFee,
+                    lesson.Tip,
+                    lesson.Notes));
+            }
+
+            return null;
+        }
+
+        public override async Task UpdateLessonAsync(Guid id, DateOnly date, string name,
             bool isPricePerHour, int? duration, decimal basePrice,
             bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip, string? note)
         {
@@ -342,7 +278,7 @@ namespace Apolo.ViewModels
             }
         }
 
-        public async Task<IEnumerable<SpecificationOption>> GetSpecificationOptionsAsync(List<Guid> studentsIds)
+        public override async Task<IEnumerable<SpecificationOption>> GetSpecificationOptionsAsync(List<Guid> studentsIds)
         {
             return await _specificationRepository.GetSpecificationsForStudentAsync(studentsIds);
         }

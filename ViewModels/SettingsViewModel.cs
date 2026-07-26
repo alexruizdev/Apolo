@@ -13,7 +13,7 @@ namespace Apolo.ViewModels
 {
     
 
-    public partial class SettingsViewModel : UserProfileViewModel
+    public partial class SettingsViewModel : BaseViewModel
     {
         readonly IGeneralRepository _repository;
         readonly Excel.IReader _excelReader;
@@ -69,7 +69,7 @@ namespace Apolo.ViewModels
         public SettingsViewModel(IGeneralRepository repository, IUserProfileService userProfile,
             Excel.IReader excelReader, Excel.IWriter excelWriter, ILanguageService languageService, 
             IStringLocalizer stringLocalizer)
-            : base(userProfile, stringLocalizer)
+            : base(stringLocalizer, userProfile)
         {
             _repository = repository;
             _excelReader = excelReader;

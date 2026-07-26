@@ -9,7 +9,7 @@ namespace ViewModels
     public partial class LessonFormViewModel : BaseViewModel
     {
 
-        private readonly LessonsViewModel _parentViewModel;
+        private readonly LessonsBaseViewModel _parentViewModel;
 
         // Dropdown Items Sources
         public ObservableCollection<StudentOption> Students => _parentViewModel.Students;
@@ -49,8 +49,8 @@ namespace ViewModels
         protected static string Message_Edit_Title => "Message/Edit_Lesson";
         protected static string Message_New_Title => "Message/New_Lesson";
 
-        public LessonFormViewModel(LessonsViewModel parentViewModel)
-            : base(parentViewModel._loc)
+        public LessonFormViewModel(LessonsBaseViewModel parentViewModel)
+            : base(parentViewModel._loc, parentViewModel._userProfileService)
         {
             _parentViewModel = parentViewModel;
             IsEditMode = false;
@@ -69,8 +69,8 @@ namespace ViewModels
             Validate();
         }
 
-        public LessonFormViewModel(LessonsViewModel parentViewModel, LessonSummary lesson)
-            : base(parentViewModel._loc)
+        public LessonFormViewModel(LessonsBaseViewModel parentViewModel, LessonSummary lesson)
+            : base(parentViewModel._loc, parentViewModel._userProfileService)
         {
             _parentViewModel = parentViewModel;
 
@@ -94,29 +94,61 @@ namespace ViewModels
             Validate();
         }
 
+        public LessonFormViewModel(LessonsBaseViewModel parentViewModel, SpecificationSummary spec)
+            : base(parentViewModel._loc, parentViewModel._userProfileService)
+        {
+            _parentViewModel = parentViewModel;
+
+            IsEditMode = false;
+
+            TravelAllowance = _parentViewModel.Profile.TravelAllowance;
+            WeekendFee = _parentViewModel.Profile.WeekendFee;
+
+            PriceHeader = _loc.Get(Header_Price);
+
+            foreach (var student in Students) FilteredStudents.Add(student);
+
+            // Edit lesson with specification
+            SelectedStudent = Students.First(s => s.Id == spec.StudentId);
+            SelectedService = Services.First(s => s.Id == spec.ServiceId);
+            Name = spec.ServiceName;
+            StudentSearchText = spec.StudentName;
+            Duration = spec.DurationMinutes;
+            if (spec.Price != null)
+                Price = spec.Price.Value;
+            IsOnline = spec.IsOnline;
+            IsWeekendOrHoliday = spec.IsWeekendOrHoliday;
+
+            Validate();
+        }
+
         // --- CASCADING LOGIC ---
 
         async partial void OnSelectedStudentChanged(StudentOption? value)
         {
             SetEnterFunction();
 
-            Specifications.Clear();
-
-            if (value == null)
+            if (_parentViewModel != null)
             {
-                IsSpecificationEnabled = false;
+
+                Specifications.Clear();
+
+                if (value == null)
+                {
+                    IsSpecificationEnabled = false;
+                    SetExitFunction();
+                    Validate();
+                    return;
+                }
+
+                var ids = new List<Guid> { value.Id };
+                var specs = await _parentViewModel.GetSpecificationOptionsAsync(ids);
+
+                foreach (var spec in specs) Specifications.Add(spec);
+
+                IsSpecificationEnabled = Specifications.Any();
                 SetExitFunction();
-                Validate();
-                return;
             }
-
-            var ids = new List<Guid> { value.Id };
-            var specs = await _parentViewModel.GetSpecificationOptionsAsync(ids);
-
-            foreach (var spec in specs) Specifications.Add(spec);
-
-            IsSpecificationEnabled = Specifications.Any();
-            SetExitFunction();
 
             Validate();
         }

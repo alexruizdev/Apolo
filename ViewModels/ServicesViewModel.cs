@@ -9,7 +9,8 @@ using ViewModels;
 
 namespace Apolo.ViewModels
 {
-    public partial class ServicesViewModel(IServiceRepository serviceRepository, IStringLocalizer stringLocalizer) : BaseViewModel(stringLocalizer)
+    public partial class ServicesViewModel(IServiceRepository serviceRepository, IStringLocalizer stringLocalizer, IUserProfileService userProfileService) 
+        : BaseViewModel(stringLocalizer, userProfileService)
     {
         readonly IServiceRepository _repository = serviceRepository;
 
