@@ -46,7 +46,7 @@ namespace ViewModels
         protected static string Message_Edit_Service_Error => "Message/Edit_Specification_Service_Error";
 
         public SpecificationFormViewModel(SpecificationsViewModel parentViewModel)
-            : base(parentViewModel._loc)
+            : base(parentViewModel._loc, parentViewModel._userProfileService)
         {
             _parentViewModel = parentViewModel;
             IsEditMode = false;
@@ -57,7 +57,7 @@ namespace ViewModels
         }
 
         public SpecificationFormViewModel(SpecificationsViewModel parentViewModel, SpecificationSummary specification)
-            : base(parentViewModel._loc)
+            : base(parentViewModel._loc, parentViewModel._userProfileService)
         {
             _parentViewModel = parentViewModel;
 

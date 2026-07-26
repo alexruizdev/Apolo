@@ -77,54 +77,42 @@ public sealed partial class SpecificationsPage : Page
     {
         if (sender is not Button btn)
             return;
+
         if (btn.DataContext is not SpecificationSummary item)
             return;
 
-        var datePicker = new CalendarDatePicker { Header = Loc.Common_Date, IsTodayHighlighted = true };
-        var noteBox = new TextBox
-        {
-            Header = Loc.Common_Notes,
-            MinWidth = 400,
-            AcceptsReturn = true,
-            TextWrapping = TextWrapping.Wrap
-        };
-
-        var tipBox = new NumberBox { Header = Loc.Common_Tip, PlaceholderText = "0.00" };
-
-        var panel = new StackPanel { Spacing = 8 };
-        panel.Children.Add(datePicker);
-        panel.Children.Add(noteBox);
-        panel.Children.Add(tipBox);
-
-        var viewer = new ScrollViewer
-        {
-            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-            VerticalScrollMode = ScrollMode.Enabled,
-            MaxHeight = 500,
-            Content = panel
-        };
+        var formControl = new LessonFormDialog(ViewModel, item);
 
         var dialog = new ContentDialog()
         {
-            Title = Loc.Buttons_Create,
-            Content = viewer,
             PrimaryButtonText = Loc.Buttons_Create,
             CloseButtonText = Loc.Buttons_Cancel,
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = Content.XamlRoot
         };
 
-        
+        Binding operationsBinding = new()
+        {
+            Source = formControl.ViewModel,
+            Path = new PropertyPath("IsPrimaryButtonEnabled"),
+            Mode = BindingMode.OneWay
+        };
+        BindingOperations.SetBinding(dialog, ContentDialog.IsPrimaryButtonEnabledProperty, operationsBinding);
+
+        Binding dynamicTitleBinding = new()
+        {
+            Source = formControl.ViewModel,
+            Path = new PropertyPath("DialogTitle"),
+            Mode = BindingMode.OneWay
+        };
+        BindingOperations.SetBinding(dialog, ContentDialog.TitleProperty, dynamicTitleBinding);
+
+        dialog.Content = formControl;
+
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
         {
-            var dto = datePicker.Date ?? DateTimeOffset.Now;
-            var date = DateOnly.FromDateTime(dto.Date);
-            var notes = string.IsNullOrWhiteSpace(noteBox.Text) ? null : noteBox.Text;
-            decimal tip = 0;
-            if (!double.IsNaN(tipBox.Value))
-                tip = (decimal)tipBox.Value;
-            await ViewModel.CreateLessonFromSpecificationAsync(item.Id, date, tip, notes);
+            await formControl.ViewModel.SaveLessonAsync();
             await ViewModel.RefreshSpecifications(); // Refresh the specifications to update the usage count
         }
     }

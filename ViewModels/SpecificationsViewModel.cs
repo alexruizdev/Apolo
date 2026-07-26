@@ -13,23 +13,19 @@ namespace Apolo.ViewModels
         IServiceRepository serviceRepository,
         ILessonRepository lessonRepository,
         IUserProfileService userProfileService,
-        IStringLocalizer stringLocalizer) : UserProfileViewModel(userProfileService, stringLocalizer)
+        IStringLocalizer stringLocalizer) 
+        : LessonsBaseViewModel(lessonRepository, studentRepository, serviceRepository, stringLocalizer, userProfileService)
     {
         readonly ISpecificationRepository _specificationRepository = specificationRepository;
-        readonly IStudentRepository _studentRepository = studentRepository;
-        readonly IServiceRepository _serviceRepository = serviceRepository;
-        readonly ILessonRepository _lessonRepository = lessonRepository;
 
         public ObservableCollection<SpecificationSummary> Specifications { get; } = [];
-        public ObservableCollection<StudentOption> Students { get; } = [];
-        public ObservableCollection<ServiceSummary> Services { get; } = [];
 
         // Messages
         private static string Message_Load_Error => "Message/Load_Specification_Error";
         private static string Message_Load_Success => "Message/Load_Specification_Success";
         private static string Message_Refresh_Error => "Message/Refresh_Specification_Error";
-        private static string Message_Add_Error => "Message/Add_Specification_Error";
-        private static string Message_Add_Success => "Message/Add_Specification_Success";
+        private static string Message_Add_Spec_Error => "Message/Add_Specification_Error";
+        private static string Message_Add_Spec_Success => "Message/Add_Specification_Success";
         private static string Message_Delete_Error => "Message/Delete_Specification_Error";
         private static string Message_Delete_Success => "Message/Delete_Specification_Success";
         private static string Message_Edit_Error => "Message/Edit_Specification_Error";
@@ -48,18 +44,7 @@ namespace Apolo.ViewModels
             return (spec, Specifications.IndexOf(spec));
         }
 
-        public (ServiceSummary value, int index) GetService(Guid id)
-        {
-            var service = Services.FirstOrDefault(s => s.Id == id);
-            if (service is null)
-            {
-                SetExitFunction();
-                throw new InvalidDataException($"{_loc.Get(Message_Service_Not_Loaded, id.ToString())}.");
-            }
-            return (service, Services.IndexOf(service));
-        }
-
-        public async Task LoadAsync()
+        public override async Task LoadAsync()
         {
             if (IsBusy)
             {
@@ -69,15 +54,7 @@ namespace Apolo.ViewModels
 
             SetEnterFunction();
 
-            var studentItems = await _studentRepository.GetStudentOptionsAsync();
-
-            Students.Clear();
-            foreach (var s in studentItems) Students.Add(s);
-
-            var serviceItems = await _serviceRepository.GetServicesAsync();
-
-            Services.Clear();
-            foreach (var s in serviceItems) Services.Add(s);
+            await base.LoadAsync();
 
             var items = await _specificationRepository.GetSpecificationsAsync();
 
@@ -108,7 +85,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitBusy(Message_Add_Error);
+                SetExitBusy(Message_Add_Spec_Error);
                 return;
             }
 
@@ -145,7 +122,7 @@ namespace Apolo.ViewModels
                     specification.ServiceId, serviceName, specification.DurationMinutes, (double?)specification.Price,
                     specification.IsOnline, specification.IsWeekendOrHoliday, specification.UsageCount));
 
-                SetExitFunction($"{_loc.Get(Message_Add_Success, name, studentName)}.", InfoBarType.Success);
+                SetExitFunction($"{_loc.Get(Message_Add_Spec_Success, name, studentName)}.", InfoBarType.Success);
             }
             catch (DbUpdateException ex)
             {

@@ -21,7 +21,7 @@ namespace Apolo.ViewModels
             OnPropertyChanged(nameof(Data));
         }
     }
-    public partial class BillingViewModel : UserProfileViewModel
+    public partial class BillingViewModel : BaseViewModel
     {
         readonly IBillingRepository _billingRepository;
         readonly IPayerRepository _payerRepository;
@@ -65,7 +65,7 @@ namespace Apolo.ViewModels
         public BillingViewModel(IBillingRepository billingRepository, IPayerRepository payerRepository,  
             IUserProfileService userProfile, PDF.IWriter pdfWriter, ILessonRepository lessonRepository,
             IStringLocalizer stringLocalizer)
-            : base(userProfile, stringLocalizer)
+            : base(stringLocalizer, userProfile)
         {
             _billingRepository = billingRepository;
             _payerRepository = payerRepository;

@@ -9,8 +9,8 @@ using ViewModels;
 
 namespace Apolo.ViewModels
 {
-    public partial class PayersViewModel(IPayerRepository payerRepository, IStringLocalizer stringLocalizer) : 
-        BaseViewModel(stringLocalizer)
+    public partial class PayersViewModel(IPayerRepository payerRepository, IStringLocalizer stringLocalizer, IUserProfileService userProfileService) : 
+        BaseViewModel(stringLocalizer, userProfileService)
     {
         readonly IPayerRepository _payerRepository = payerRepository;
 

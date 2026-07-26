@@ -9,7 +9,7 @@ using System.Collections.ObjectModel;
 namespace ViewModels
 {
     public partial class ProposalViewModel(IServiceRepository serviceRepository, IUserProfileService userProfile,
-        IReportWriter reportWriter, IStringLocalizer stringLocalizer) : UserProfileViewModel(userProfile, stringLocalizer)
+        IReportWriter reportWriter, IStringLocalizer stringLocalizer) : BaseViewModel(stringLocalizer, userProfile)
     {
 
         // Input

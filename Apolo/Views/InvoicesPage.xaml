@@ -24,7 +24,7 @@
                         <Setter Target="SidebarToggle.IsChecked"
                                 Value="False" />
 
-                        <!-- NEW: Header Responsive Setters -->
+                        <!-- Header Responsive Setters -->
                         <Setter Target="HeaderContextPanel.(Grid.Row)"
                                 Value="1" />
                         <Setter Target="HeaderContextPanel.(Grid.Column)"
