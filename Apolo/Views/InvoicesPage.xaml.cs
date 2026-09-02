@@ -145,9 +145,23 @@ namespace Apolo.Views
             {
                 await ViewModel.RefreshProfileAsync();
 
-                if (e.Parameter is Guid documentId)
+                if (e.Parameter is string paramStr)
                 {
-                    await ViewModel.LoadBillLessonsAsync(documentId);
+                    if (paramStr.StartsWith("document:"))
+                    {
+                        if (Guid.TryParse(paramStr.Substring(9), out Guid documentId))
+                        {
+                            await ViewModel.LoadBillLessonsAsync(documentId);
+                        }
+                    }
+                    else if (paramStr.StartsWith("payer:"))
+                    {
+                        if (Guid.TryParse(paramStr.Substring(6), out Guid payerId))
+                        {
+                            ViewModel.SelectedPayerId = payerId;
+                            await ViewModel.LoadLessonsAsync();
+                        }
+                    }
                 }
             }
         }

@@ -114,5 +114,16 @@ namespace Apolo.Pages
                     idBox.Text);
             }
         }
+
+        private void OutstandingLink_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement element && element.DataContext is PayerSummary clickedPayer)
+            {
+                if (App.Current is App app && app.MainWindow is MainWindow mainWindow)
+                {
+                    mainWindow.NavigateToInvoice(clickedPayer.Id, "payer");
+                }
+            }
+        }
     }
 }

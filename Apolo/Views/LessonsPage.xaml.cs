@@ -136,7 +136,7 @@ namespace Apolo.Views
 
                 if (App.Current is App app && app.MainWindow is MainWindow mainWindow)
                 {
-                    mainWindow.NavigateToInvoice(clickedLesson.BillingDocumentId.Value);
+                    mainWindow.NavigateToInvoice(clickedLesson.BillingDocumentId.Value, "document");
                 }
             }
         }
