@@ -127,5 +127,18 @@ namespace Apolo.Views
                 await ViewModel.RefreshProfileAsync();
             }
         }
+
+        private void InvoiceLink_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement element && element.DataContext is LessonSummary clickedLesson)
+            {
+                if (clickedLesson.BillingDocumentId == null) return;
+
+                if (App.Current is App app && app.MainWindow is MainWindow mainWindow)
+                {
+                    mainWindow.NavigateToInvoice(clickedLesson.BillingDocumentId.Value);
+                }
+            }
+        }
     }
 }

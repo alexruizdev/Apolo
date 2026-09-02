@@ -111,6 +111,29 @@ namespace Apolo.Tests.Data
             });
         }
 
+        [TestMethod]
+        public async Task GetBillAsync()
+        {
+            var expectedDocument = _data.Bills[0];
+            var document = await _repository.GetBill(expectedDocument.Id);
+
+            Assert.AreEqual(expectedDocument.Id, document.Id);
+            Assert.AreEqual(expectedDocument.PayerId, document.PayerId);
+            Assert.AreEqual(expectedDocument.Type, document.Type);
+            Assert.AreEqual(expectedDocument.SequenceNumber, document.SequenceNumber);
+            Assert.AreEqual(expectedDocument.DocumentNumber, document.DocumentNumber);
+            Assert.AreEqual(expectedDocument.CreatedUTC, document.CreatedUTC);
+        }
+
+        [TestMethod]
+        public async Task GetBillAsyncInvalidInvoice()
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                await _repository.GetBill(Guid.NewGuid());
+            });
+        }
+
         public TestContext TestContext { get; set; }
     }
 }

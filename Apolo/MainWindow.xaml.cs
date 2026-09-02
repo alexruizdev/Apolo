@@ -121,5 +121,21 @@ namespace Apolo
                     break;
             }
         }
+
+        public void NavigateToInvoice(Guid id)
+        {
+            NavView.SelectionChanged -= NavView_SelectionChanged;
+            foreach (var item in NavView.MenuItems)
+            {
+                if (item is NavigationViewItem navItem && navItem.Tag?.ToString() == NavigationTags.Invoicing)
+                {
+                    NavView.SelectedItem = navItem;
+                    break;
+                }
+            }
+            NavView.SelectionChanged += NavView_SelectionChanged;
+
+            RootFrame.Navigate(typeof(InvoicesPage), id);
+        }
     }
 }

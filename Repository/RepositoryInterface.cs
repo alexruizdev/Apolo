@@ -67,6 +67,7 @@ namespace Repository
         Task DeleteAsync(Guid id);
         Task<IEnumerable<BillingDocument>> GetBillSuggestionsAsync(string searchTerm);
         Task<BillingDocument> EditAsync(Guid id, DocumentType type, int sequence, DateTime newDate);
+        Task<BillingDocument> GetBill(Guid id);
     }
 
     public interface IGeneralRepository

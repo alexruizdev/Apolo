@@ -200,6 +200,15 @@ namespace Apolo.ViewModels
             SetExitFunction($"{_loc.Get(Message_Load_Lessons_Success, Lessons.Count)}.", InfoBarType.Success);
         }
 
+        public async Task LoadBillLessonsAsync(Guid id)
+        {
+            var document = await _billingRepository.GetBill(id);
+            Bill = new BillSummary(document.Id, document.PayerId, document.Type, document.SequenceNumber, document.DocumentNumber,
+                document.CreatedUTC);
+
+            await LoadBillLessonsAsync();
+        }
+
         public async Task LoadBillLessonsAsync()
         {
             if (IsBusy)
