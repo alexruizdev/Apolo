@@ -122,7 +122,7 @@ namespace Apolo
             }
         }
 
-        public void NavigateToInvoice(Guid id)
+        public void NavigateToInvoice(Guid id, string mode)
         {
             NavView.SelectionChanged -= NavView_SelectionChanged;
             foreach (var item in NavView.MenuItems)
@@ -135,7 +135,7 @@ namespace Apolo
             }
             NavView.SelectionChanged += NavView_SelectionChanged;
 
-            RootFrame.Navigate(typeof(InvoicesPage), id);
+            RootFrame.Navigate(typeof(InvoicesPage), $"{mode}:{id}");
         }
     }
 }
