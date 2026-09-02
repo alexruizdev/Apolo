@@ -156,10 +156,10 @@
                                                     FontStyle="Italic"
                                                     Margin="0,4,0,0"
                                                     TextTrimming="CharacterEllipsis">
-                            <ToolTipService.ToolTip>
-                                <ToolTip Content="{x:Bind Notes}"
-                                                MaxWidth="400" />
-                            </ToolTipService.ToolTip>
+                                            <ToolTipService.ToolTip>
+                                                <ToolTip Content="{x:Bind Notes}"
+                                                                MaxWidth="400" />
+                                            </ToolTipService.ToolTip>
                                         </TextBlock>
                                     </StackPanel>
 
@@ -180,14 +180,18 @@
                                             <TextBlock Text="{x:Bind Tip, Converter={StaticResource DecimalToCurrencyConverter}}"
                                                         Style="{ThemeResource CaptionTextBlockStyle}" />
                                         </StackPanel>
-                                        <TextBlock Text="{x:Bind BillingName}"
-                                                    Style="{ThemeResource CaptionTextBlockStyle}"
-                                                    Margin="0,2,0,0"
-                                                    TextTrimming="CharacterEllipsis">
-                            <ToolTipService.ToolTip>
-                                <ToolTip x:Uid="Common/BillingDocument" />
-                            </ToolTipService.ToolTip>
-                                        </TextBlock>
+                                        <HyperlinkButton Click="InvoiceLink_Click"
+                                                         Margin="0,2,0,0">
+                                            <HyperlinkButton.Content>
+                                                <TextBlock Text="{x:Bind BillingName}"
+                                                           Style="{ThemeResource CaptionTextBlockStyle}"
+                                                           TextTrimming="CharacterEllipsis" />
+
+                                            </HyperlinkButton.Content>
+                                            <ToolTipService.ToolTip>
+                                                <ToolTip x:Uid="Common/BillingDocument" />
+                                            </ToolTipService.ToolTip>
+                                        </HyperlinkButton>
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="3"

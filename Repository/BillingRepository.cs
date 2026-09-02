@@ -118,5 +118,9 @@ namespace Repository
                 .Where(b => b.DocumentNumber.Contains(normalizedTerm, StringComparison.OrdinalIgnoreCase))
                 .Take(10)];
         }
+
+        public async Task<BillingDocument> GetBill(Guid id) =>
+           await _context.BillingDocuments .AsNoTracking() .FirstAsync(b => b.Id == id);
+        
     }
 }

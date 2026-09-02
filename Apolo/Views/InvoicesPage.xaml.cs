@@ -144,6 +144,11 @@ namespace Apolo.Views
             if (ViewModel != null)
             {
                 await ViewModel.RefreshProfileAsync();
+
+                if (e.Parameter is Guid documentId)
+                {
+                    await ViewModel.LoadBillLessonsAsync(documentId);
+                }
             }
         }
 
