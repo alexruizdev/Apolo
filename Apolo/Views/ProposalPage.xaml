@@ -314,11 +314,11 @@
                             <TextBlock Text="{x:Bind ViewModel.Report.AlternativeFee.Label, Mode=OneWay}"
                                        Style="{StaticResource ReportTitle}" />
                             <MenuFlyoutSeparator />
-                            <TextBlock Text="Frequency:"
+                            <TextBlock x:Uid="Proposal/FrequencyReport"
                                        Style="{StaticResource CaptionTextBlockStyle}" />
                             <TextBlock Text="{x:Bind ViewModel.AlternativeFeeFrequencyString, Mode=OneWay}"
                                        Style="{StaticResource BodyTextBlockStyle}" />
-                            <TextBlock Text="Estimated monthly cost:"
+                            <TextBlock x:Uid="Proposal/EstimatedMonthlyCost"
                                        Style="{StaticResource CaptionTextBlockStyle}"
                                        Margin="0,8,0,0" />
                             <TextBlock Text="{x:Bind ViewModel.Report.AlternativeFee.TotalPricePerMonth, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}}"
