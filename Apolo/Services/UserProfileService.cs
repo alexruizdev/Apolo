@@ -1,4 +1,4 @@
-﻿using Microsoft.Windows.Storage;
+using Microsoft.Windows.Storage;
 using Models;
 using System.Threading.Tasks;
 
@@ -27,7 +27,10 @@ namespace Apolo.Services
                 WeekendFee = v[nameof(UserProfile.WeekendFee)] as double? ?? 0,
                 BillingFolder = v[nameof(UserProfile.BillingFolder)] as string ?? "",
                 BackupFolder = v[nameof(UserProfile.BackupFolder)] as string ?? "",
-                Language = v[nameof(UserProfile.Language)] as string ?? ""
+                Language = v[nameof(UserProfile.Language)] as string ?? "",
+                GenerateTicketWithInvoice = v[nameof(UserProfile.GenerateTicketWithInvoice)] as bool? ?? false,
+                IncludeLessonsInTicket = v[nameof(UserProfile.IncludeLessonsInTicket)] as bool? ?? true,
+                IncludeLessonsInInvoice = v[nameof(UserProfile.IncludeLessonsInInvoice)] as bool? ?? true
             };
 
             return Task.FromResult(p);
@@ -52,6 +55,9 @@ namespace Apolo.Services
             v[nameof(UserProfile.BillingFolder)] = profile.BillingFolder;
             v[nameof(UserProfile.BackupFolder)] = profile.BackupFolder;
             v[nameof(UserProfile.Language)] = profile.Language;
+            v[nameof(UserProfile.GenerateTicketWithInvoice)] = profile.GenerateTicketWithInvoice;
+            v[nameof(UserProfile.IncludeLessonsInTicket)] = profile.IncludeLessonsInTicket;
+            v[nameof(UserProfile.IncludeLessonsInInvoice)] = profile.IncludeLessonsInInvoice;
 
             return Task.CompletedTask;
         }

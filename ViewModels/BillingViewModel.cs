@@ -1,4 +1,4 @@
-﻿using Apolo.Services;
+using Apolo.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.EntityFrameworkCore;
@@ -409,13 +409,19 @@ namespace Apolo.ViewModels
                 string successMessage;
                 if (type == DocumentType.Invoice)
                 {
-                    // Generate both invoice and ticket
+                    // Generate invoice
                     _pdfWriter.GenerateInvoice(document.DocumentNumber, payer, lessons, Profile, filePath, Bill.Date);
 
-                    var ticketFilePath = Path.Combine(Profile.BillingFolder, $"{document.DocumentNumber}-list.pdf");
-                    _pdfWriter.GenerateTicket(document.DocumentNumber, payer, lessons, Profile, ticketFilePath, Bill.Date);
-
-                    successMessage = $"Invoice and ticket saved:\n• {Path.GetFileName(filePath)}\n• {Path.GetFileName(ticketFilePath)}";
+                    if (Profile.GenerateTicketWithInvoice)
+                    {
+                        var ticketFilePath = Path.Combine(Profile.BillingFolder, $"{document.DocumentNumber}-list.pdf");
+                        _pdfWriter.GenerateTicket(document.DocumentNumber, payer, lessons, Profile, ticketFilePath, Bill.Date);
+                        successMessage = $"Invoice and ticket saved:\n• {Path.GetFileName(filePath)}\n• {Path.GetFileName(ticketFilePath)}";
+                    }
+                    else
+                    {
+                        successMessage = $"Invoice saved: {Path.GetFileName(filePath)}";
+                    }
                 }
                 else
                 {
@@ -473,13 +479,19 @@ namespace Apolo.ViewModels
             string successMessage;
             if (Bill.Type is DocumentType.Invoice)
             {
-                // Generate both invoice and ticket
+                // Generate invoice
                 _pdfWriter.GenerateInvoice(Bill.Name, payer, lessons, Profile, filePath, Bill.Date);
 
-                var ticketFilePath = Path.Combine(Profile.BillingFolder, $"{Bill.Name}-list.pdf");
-                _pdfWriter.GenerateTicket(Bill.Name, payer, lessons, Profile, ticketFilePath, Bill.Date);
-
-                successMessage = $"Invoice and ticket saved:\n• {Path.GetFileName(filePath)}\n• {Path.GetFileName(ticketFilePath)}";
+                if (Profile.GenerateTicketWithInvoice)
+                {
+                    var ticketFilePath = Path.Combine(Profile.BillingFolder, $"{Bill.Name}-list.pdf");
+                    _pdfWriter.GenerateTicket(Bill.Name, payer, lessons, Profile, ticketFilePath, Bill.Date);
+                    successMessage = $"Invoice and ticket saved:\n• {Path.GetFileName(filePath)}\n• {Path.GetFileName(ticketFilePath)}";
+                }
+                else
+                {
+                    successMessage = $"Invoice saved: {Path.GetFileName(filePath)}";
+                }
             }
             else
             {

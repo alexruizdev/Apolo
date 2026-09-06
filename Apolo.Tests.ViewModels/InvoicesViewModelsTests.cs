@@ -506,6 +506,7 @@ namespace Apolo.Tests.ViewModels
             if (!invalidDirectory)
                 Directory.CreateDirectory(tempPath);
             _viewModel.Profile.BillingFolder = tempPath;
+            _viewModel.Profile.GenerateTicketWithInvoice = true;
 
             _viewModel.Bill = new BillSummary(Guid.NewGuid(), Guid.NewGuid(), 
                 isInvoice ? DocumentType.Invoice : DocumentType.Ticket, 7, "01-2024-0007",

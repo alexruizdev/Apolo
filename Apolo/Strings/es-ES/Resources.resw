@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
     <xsd:schema id="root"
         xmlns=""
@@ -1226,4 +1226,19 @@
     <data name="App/UnexpectedErrorContent" xml:space="preserve">
         <value>Se ha producido un error crítico. La aplicación ha registrado la incidencia, pero puede comportarse de forma inesperada si continúas.\n\nDetalles: {0}</value>
     </data>
+  <data name="Settings/Fees.Header" xml:space="preserve">
+    <value>Tarifas</value>
+  </data>
+  <data name="Settings/AppConfiguration.Header" xml:space="preserve">
+    <value>Configuración de la App</value>
+  </data>
+  <data name="Settings/GenerateTicketWithInvoice.Content" xml:space="preserve">
+    <value>Generar un ticket con la factura</value>
+  </data>
+  <data name="Settings/IncludeLessonsInTicket.Content" xml:space="preserve">
+    <value>Incluir las clases en el ticket</value>
+  </data>
+  <data name="Settings/IncludeLessonsInInvoice.Content" xml:space="preserve">
+    <value>Incluir las clases en la factura</value>
+  </data>
 </root>

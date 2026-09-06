@@ -62,13 +62,25 @@
                                Value="{x:Bind ViewModel.Profile.IvaPercent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                SmallChange="1" LargeChange="5" SpinButtonPlacementMode="Inline" Margin="4,0,0,0"/>
                     </Grid>
+
+                    <!-- Billing Folder -->
+                    <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto">
+                        <TextBlock Grid.Row="0" Grid.ColumnSpan="2" x:Uid="Settings/BillingFolder" Style="{ThemeResource BodyTextBlockStyle}" Margin="0,0,0,4"/>
+                        <TextBox x:Name="BillingFolderTextBlock" Grid.Row="1" Text="{x:Bind ViewModel.Profile.BillingFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True" x:Uid="Settings/SelectFolder"/>
+                        <Button Grid.Row="1" Grid.Column="1" x:Uid="Settings/PickFolder" Click="PickBillingFolder_Click" Margin="8,0,0,0"/>
+                    </Grid>
+
+                    <!-- Billing PDF Configuration -->
+                    <CheckBox x:Uid="Settings/GenerateTicketWithInvoice" IsChecked="{x:Bind ViewModel.Profile.GenerateTicketWithInvoice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <CheckBox x:Uid="Settings/IncludeLessonsInTicket" IsChecked="{x:Bind ViewModel.Profile.IncludeLessonsInTicket, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <CheckBox x:Uid="Settings/IncludeLessonsInInvoice" IsChecked="{x:Bind ViewModel.Profile.IncludeLessonsInInvoice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
             </Expander>
 
             <!-- ========================================== -->
-            <!-- SECTION 3: CONFIGURATION & FEES            -->
+            <!-- SECTION 3: FEES                            -->
             <!-- ========================================== -->
-            <Expander x:Uid="Settings/ConfigurationFees" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+            <Expander x:Uid="Settings/Fees" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
                 <StackPanel Spacing="12" Margin="0,10,0,0">
                     <!-- Travel Allowance & Weekend Fee -->
                     <Grid ColumnDefinitions="*, *" ColumnSpacing="12">
@@ -79,15 +91,14 @@
                                Value="{x:Bind ViewModel.Profile.WeekendFee, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                PlaceholderText="0.00" SpinButtonPlacementMode="Inline" Margin="4,0,0,0"/>
                     </Grid>
-                
-                    <!-- Billing Folder -->
-                    <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto">
-                        <TextBlock Grid.Row="0" Grid.ColumnSpan="2" x:Uid="Settings/BillingFolder" Style="{ThemeResource BodyTextBlockStyle}" Margin="0,0,0,4"/>
-                        <TextBox x:Name="BillingFolderTextBlock" Grid.Row="1" Text="{x:Bind ViewModel.Profile.BillingFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True" x:Uid="Settings/SelectFolder"/>
-                        <Button Grid.Row="1" Grid.Column="1" x:Uid="Settings/PickFolder" Click="PickBillingFolder_Click" Margin="8,0,0,0"/>
+                </StackPanel>
+            </Expander>
 
-                    </Grid>
-                    
+            <!-- ========================================== -->
+            <!-- SECTION 4: APP CONFIGURATION               -->
+            <!-- ========================================== -->
+            <Expander x:Uid="Settings/AppConfiguration" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                <StackPanel Spacing="12" Margin="0,10,0,0">
                     <!-- Backup Folder -->
                     <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto">
                         <TextBlock Grid.Row="0" Grid.ColumnSpan="2" x:Uid="Settings/BackupsFolder" Style="{ThemeResource BodyTextBlockStyle}" Margin="0,0,0,4"/>

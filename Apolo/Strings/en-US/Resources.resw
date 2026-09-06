@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <xsd:schema id="root"
     xmlns=""
@@ -1243,5 +1243,20 @@
   </data>
   <data name="App/UnexpectedErrorContent" xml:space="preserve">
     <value>A critical error occurred. The application has logged the issue, but it may behave unexpectedly if you continue.\n\nDetails: {0}</value>
+  </data>
+  <data name="Settings/Fees.Header" xml:space="preserve">
+    <value>Fees</value>
+  </data>
+  <data name="Settings/AppConfiguration.Header" xml:space="preserve">
+    <value>App Configuration</value>
+  </data>
+  <data name="Settings/GenerateTicketWithInvoice.Content" xml:space="preserve">
+    <value>Generate a ticket with the invoice</value>
+  </data>
+  <data name="Settings/IncludeLessonsInTicket.Content" xml:space="preserve">
+    <value>Include lessons in the ticket</value>
+  </data>
+  <data name="Settings/IncludeLessonsInInvoice.Content" xml:space="preserve">
+    <value>Include lessons in the invoice</value>
   </data>
 </root>

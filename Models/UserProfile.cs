@@ -1,4 +1,4 @@
-﻿using Models;
+using Models;
 
 namespace Models
 {
@@ -25,6 +25,9 @@ namespace Models
         public double WeekendFee { get; set; } = 0;
         public string BillingFolder { get; set; } = string.Empty;
         public string BackupFolder { get; set; } = string.Empty;
+        public bool GenerateTicketWithInvoice { get; set; } = false;
+        public bool IncludeLessonsInTicket { get; set; } = true;
+        public bool IncludeLessonsInInvoice { get; set; } = true;
     }
 }
 
