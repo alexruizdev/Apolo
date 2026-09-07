@@ -33,7 +33,7 @@ namespace Apolo.Views
                 await ViewModel.ClearArchiveAsync();
         }
 
-        private async void ExportExcelButton_Click(object sender, RoutedEventArgs e)
+        private async void ExportBackupButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not Button button) return;
 
@@ -51,40 +51,34 @@ namespace Apolo.Views
             await ViewModel.ExportArchiveToExcel(installedPath);
         }
 
-        private async void ImportExcelButton_Click(object sender, RoutedEventArgs e)
+        private async void ImportBackupButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not Button button) return;
 
-            var picker = new FileOpenPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
-            picker.FileTypeFilter.Add(".xlsx");
-            picker.FileTypeFilter.Add(".xls"); 
-            picker.FileTypeFilter.Add(".xlsm");
-
+            var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
             picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-            picker.CommitButtonText = "Pick a file";
+            picker.CommitButtonText = "Pick a folder";
+            picker.ViewMode = PickerViewMode.List;
 
-            var file = await picker.PickSingleFileAsync();
-            if (file == null) return;
+            var folder = await picker.PickSingleFolderAsync();
+            if (folder == null) return;
 
-            await ViewModel.ImportDatabaseFromExcel(file.Path);
+            await ViewModel.ImportDatabaseFromExcel(folder.Path);
         }
 
         private async void ImportArchiveButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not Button button) return;
 
-            var picker = new FileOpenPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
-            picker.FileTypeFilter.Add(".xlsx");
-            picker.FileTypeFilter.Add(".xls");
-            picker.FileTypeFilter.Add(".xlsm");
-
+            var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
             picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-            picker.CommitButtonText = "Pick a file";
+            picker.CommitButtonText = "Pick a folder";
+            picker.ViewMode = PickerViewMode.List;
 
-            var file = await picker.PickSingleFileAsync();
-            if (file == null) return;
+            var folder = await picker.PickSingleFolderAsync();
+            if (folder == null) return;
 
-            await ViewModel.ImportArchiveFromExcel(file.Path);
+            await ViewModel.ImportArchiveFromExcel(folder.Path);
         }
 
         private async void ArchiveButton_Click(object sender, RoutedEventArgs e)

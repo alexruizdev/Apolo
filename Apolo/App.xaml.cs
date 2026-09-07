@@ -1,4 +1,4 @@
-﻿using Apolo.Services;
+using Apolo.Services;
 using Apolo.ViewModels;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.Data.Sqlite;
@@ -68,8 +68,8 @@ namespace Apolo
                 // Utilities
                 builder.AddSingleton<PDF.IWriter, PDF.Writer>();
                 builder.AddSingleton<PDF.IReportWriter, PDF.ReportWriter>();
-                builder.AddSingleton<Excel.IReader, Excel.Reader>();
-                builder.AddSingleton<Excel.IWriter, Excel.Writer>();
+                builder.AddSingleton<CSV.IReader, CSV.Reader>();
+                builder.AddSingleton<CSV.IWriter, CSV.Writer>();
 
                 // ViewModels
                 builder.AddTransient<PayersViewModel>();
