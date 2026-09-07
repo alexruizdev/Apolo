@@ -116,8 +116,8 @@
 
                         <!-- Safe/Standard File Actions -->
                         <CommandBar DefaultLabelPosition="Right"  HorizontalAlignment="Left"  Background="Transparent">
-                            <AppBarButton Label="Import backup" Icon="Import" Click="ImportExcelButton_Click"/>
-                            <AppBarButton Icon="Save" Label="Export Excel" Click="ExportExcelButton_Click"/>
+                            <AppBarButton Label="Import backup" Icon="Import" Click="ImportBackupButton_Click"/>
+                            <AppBarButton Icon="Save" Label="Export backup" Click="ExportBackupButton_Click"/>
                             <AppBarSeparator />
                             <AppBarButton Label="Import archive" Icon="ImportAll" Click="ImportArchiveButton_Click"/>
                             <AppBarButton Label="Save archive" Icon="SaveLocal" Click="ExportArchiveButton_Click"/>

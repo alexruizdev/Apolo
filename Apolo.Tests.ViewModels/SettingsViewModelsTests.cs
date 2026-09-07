@@ -1,4 +1,4 @@
-﻿using Apolo.Services;
+using Apolo.Services;
 using Apolo.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Models;
@@ -15,16 +15,16 @@ namespace Apolo.Tests.ViewModels
 
         private Mock<IGeneralRepository> _repositoryMock = null!;
         private Mock<IUserProfileService> _mockUserProfileService = null!;
-        private Mock<Excel.IWriter> _writerMock = null!;
-        private Mock<Excel.IReader> _readerMock = null!;
+        private Mock<CSV.IWriter> _writerMock = null!;
+        private Mock<CSV.IReader> _readerMock = null!;
 
         [TestInitialize]
         public void TestInit()
         {
             _repositoryMock = new Mock<IGeneralRepository>();
             _mockUserProfileService = new Mock<IUserProfileService>();
-            _writerMock = new Mock<Excel.IWriter>();
-            _readerMock = new Mock<Excel.IReader>();
+            _writerMock = new Mock<CSV.IWriter>();
+            _readerMock = new Mock<CSV.IReader>();
 
             var userProfile = new UserProfile
             {

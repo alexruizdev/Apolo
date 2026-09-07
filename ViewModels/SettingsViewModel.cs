@@ -1,4 +1,4 @@
-﻿using Apolo.Services;
+using Apolo.Services;
 using CommunityToolkit.Mvvm.Input;
 using Models;
 using Repository;
@@ -11,11 +11,11 @@ namespace Apolo.ViewModels
     public partial class SettingsViewModel : UserProfileViewModel
     {
         IGeneralRepository _repository;
-        Excel.IReader _excelReader;
-        Excel.IWriter _excelWriter;
+        CSV.IReader _excelReader;
+        CSV.IWriter _excelWriter;
 
         public SettingsViewModel(IGeneralRepository repository, IUserProfileService userProfile, 
-            Excel.IReader excelReader, Excel.IWriter excelWriter)
+            CSV.IReader excelReader, CSV.IWriter excelWriter)
             : base(userProfile)
         {
             _repository = repository;
