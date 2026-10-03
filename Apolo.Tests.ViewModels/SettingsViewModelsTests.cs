@@ -15,8 +15,8 @@ namespace Apolo.Tests.ViewModels
 
         private Mock<IGeneralRepository> _repositoryMock = null!;
         private Mock<IUserProfileService> _mockUserProfileService = null!;
-        private Mock<Excel.IWriter> _writerMock = null!;
-        private Mock<Excel.IReader> _readerMock = null!;
+        private Mock<CSV.IWriter> _writerMock = null!;
+        private Mock<CSV.IReader> _readerMock = null!;
         private Mock<ILanguageService> _languageMock = null!;
         private Mock<IStringLocalizer> _localizerMock = null!;
 
@@ -26,8 +26,8 @@ namespace Apolo.Tests.ViewModels
         {
             _repositoryMock = new Mock<IGeneralRepository>();
             _mockUserProfileService = new Mock<IUserProfileService>();
-            _writerMock = new Mock<Excel.IWriter>();
-            _readerMock = new Mock<Excel.IReader>();
+            _writerMock = new Mock<CSV.IWriter>();
+            _readerMock = new Mock<CSV.IReader>();
             _languageMock = new Mock<ILanguageService>();
             _localizerMock = new Mock<IStringLocalizer>();
 
@@ -146,12 +146,12 @@ namespace Apolo.Tests.ViewModels
             VerifyAction(InfoBarType.Success, isOpen: true);
         }
 
-        // Import database from excel
+        // Import database from CSV
         [TestMethod]
-        public async Task ImportFromExcel_WhenBusy()
+        public async Task ImportFromCSV_WhenBusy()
         {
             _viewModel.IsBusy = true;
-            await _viewModel.ImportDatabaseFromExcel("file");
+            await _viewModel.ImportDatabaseFromCSV("file");
             VerifyAction(InfoBarType.Warning, isOpen: true, isBusy: true);
         }
 
@@ -159,16 +159,16 @@ namespace Apolo.Tests.ViewModels
         [DataRow(null)]
         [DataRow("")]
         [DataRow("   ")]
-        public async Task ImportFromExcel_InvalidFile(string invalidName)
+        public async Task ImportFromCSV_InvalidFile(string invalidName)
         {
-            await _viewModel.ImportDatabaseFromExcel(invalidName);
+            await _viewModel.ImportDatabaseFromCSV(invalidName);
             VerifyAction(InfoBarType.Warning, isOpen: true);
         }
 
         [TestMethod]
-        public async Task ImportFromExcel_InvalidPath()
+        public async Task ImportFromCSV_InvalidPath()
         {
-            await _viewModel.ImportDatabaseFromExcel("\\invalid_path\\file.xlsm");
+            await _viewModel.ImportDatabaseFromCSV("\\invalid_path\\file.xlsm");
             VerifyAction(InfoBarType.Error, isOpen: true);
         }
 
@@ -178,7 +178,7 @@ namespace Apolo.Tests.ViewModels
             // --- Arrange ---
             // Create a temporary path so we don't clutter the machine
             string tempPath = Path.GetTempPath();
-            string file = Path.Combine(tempPath, "Excel.xlsm");
+            string file = Path.Combine(tempPath, "CSV.xlsm");
             string fileName = $"Summary_{DateTime.Now:yyyyMMdd_HHmm}.txt";
             string resultPath = Path.Combine(tempPath, fileName);
             Directory.CreateDirectory(tempPath);
@@ -194,10 +194,10 @@ namespace Apolo.Tests.ViewModels
                 _readerMock.Setup(r => r.Students).Returns(data.Students);
                 _readerMock.Setup(r => r.Specifications).Returns(data.Specifications);
                 _readerMock.Setup(r => r.Lessons).Returns(data.Lessons);
-                _readerMock.Setup(r => r.Invoices).Returns(data.Bills);
+                _readerMock.Setup(r => r.Bills).Returns(data.Bills);
 
                 // --- Act ---
-                await _viewModel.ImportDatabaseFromExcel(file);
+                await _viewModel.ImportDatabaseFromCSV(file);
 
                 _repositoryMock.Verify(r => r.ImportAllDataAsync(data.Services, data.Payers, data.Students, data.Specifications,
                     data.Lessons, data.Bills), Times.Once);
@@ -220,7 +220,7 @@ namespace Apolo.Tests.ViewModels
         public async Task ImportArchive_WhenBusy()
         {
             _viewModel.IsBusy = true;
-            await _viewModel.ImportArchiveFromExcel("file");
+            await _viewModel.ImportArchiveFromCSV("file");
             VerifyAction(InfoBarType.Warning, isOpen: true, isBusy: true);
         }
 
@@ -230,40 +230,40 @@ namespace Apolo.Tests.ViewModels
         [DataRow("   ")]
         public async Task ImportArchive_InvalidFile(string invalidName)
         {
-            await _viewModel.ImportArchiveFromExcel(invalidName);
+            await _viewModel.ImportArchiveFromCSV(invalidName);
             VerifyAction(InfoBarType.Warning, isOpen: true);
         }
 
         [TestMethod]
         public async Task ImportArchive_InvalidPath()
         {
-            await _viewModel.ImportArchiveFromExcel("\\invalid_path\\file.xlsm");
+            await _viewModel.ImportArchiveFromCSV("\\invalid_path\\file.xlsm");
             VerifyAction(InfoBarType.Error, isOpen: true);
         }
 
-        // Export database from excel
+        // Export database from CSV
         [TestMethod]
-        public async Task ExportToExcel_WhenBusy()
+        public async Task ExportToCSV_WhenBusy()
         {
             _viewModel.IsBusy = true;
-            await _viewModel.ExportDatabaseToExcel("installed_path");
+            await _viewModel.ExportDatabaseToCSV();
             VerifyAction(InfoBarType.Warning, isOpen: true, isBusy: true);
         }
 
         [TestMethod]
-        public async Task ExportToExcel_InvalidFolder()
+        public async Task ExportToCSV_InvalidFolder()
         {
             _viewModel.Profile.BackupFolder = "folder";
-            await _viewModel.ExportDatabaseToExcel("installed_path");
+            await _viewModel.ExportDatabaseToCSV();
             VerifyAction(InfoBarType.Warning, isOpen: true);
         }
 
         [TestMethod]
-        public async Task ExportToExcel()
+        public async Task ExportToCSV()
         {
             // Create a temporary path so we don't clutter the machine
             string tempPath = Path.GetTempPath();
-            string file = Path.Combine(tempPath, "Excel.xlsm");
+            string file = Path.Combine(tempPath, "CSV.xlsm");
             string fileName = $"Summary_{DateTime.Now:yyyyMMdd_HHmm}.txt";
             string resultPath = Path.Combine(tempPath, fileName);
             Directory.CreateDirectory(tempPath);
@@ -280,19 +280,19 @@ namespace Apolo.Tests.ViewModels
                 data.Bills
             ));
 
-            await _viewModel.ExportDatabaseToExcel("installed_path");
+            await _viewModel.ExportDatabaseToCSV();
 
             _repositoryMock.Verify(r => r.GetAllDataAsync(), Times.Once);
 
             VerifyAction(InfoBarType.Success, isOpen: true);
         }
 
-        // Export database from excel
+        // Export database from CSV
         [TestMethod]
         public async Task ExportArchive_WhenBusy()
         {
             _viewModel.IsBusy = true;
-            await _viewModel.ExportArchiveToExcel("installed_path");
+            await _viewModel.ExportArchiveToCSV("installed_path");
             VerifyAction(InfoBarType.Warning, isOpen: true, isBusy: true);
         }
 
@@ -300,7 +300,7 @@ namespace Apolo.Tests.ViewModels
         public async Task ExportArchive_InvalidFolder()
         {
             _viewModel.Profile.BackupFolder = "folder";
-            await _viewModel.ExportArchiveToExcel("installed_path");
+            await _viewModel.ExportArchiveToCSV("installed_path");
             VerifyAction(InfoBarType.Warning, isOpen: true);
         }
 
@@ -309,7 +309,7 @@ namespace Apolo.Tests.ViewModels
         {
             // Create a temporary path so we don't clutter the machine
             string tempPath = Path.GetTempPath();
-            string file = Path.Combine(tempPath, "Excel.xlsm");
+            string file = Path.Combine(tempPath, "CSV.xlsm");
             string fileName = $"Summary_{DateTime.Now:yyyyMMdd_HHmm}.txt";
             string resultPath = Path.Combine(tempPath, fileName);
             Directory.CreateDirectory(tempPath);
@@ -326,7 +326,7 @@ namespace Apolo.Tests.ViewModels
                 data.ArchiveBills
             ));
 
-            await _viewModel.ExportArchiveToExcel("installed_path");
+            await _viewModel.ExportArchiveToCSV("installed_path");
 
             _repositoryMock.Verify(r => r.ExportArchiveAsync(), Times.Once);
 

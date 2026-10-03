@@ -9,26 +9,26 @@ namespace Apolo.Controls
 {
     public static class ConfirmationDialog
     {
-        public static async Task<bool> ConfirmMenuAction(object sender, string action)
+        public static async Task<bool> ConfirmMenuAction(object sender, string action, string primaryText)
         {
             if (sender is not MenuFlyoutItem item) return false;
 
-            return await ConfirmAction(item.XamlRoot, action);
+            return await ConfirmAction(item.XamlRoot, action, primaryText);
         }
-        public static async Task<bool> ConfirmButtonAction(object sender, string action)
+        public static async Task<bool> ConfirmButtonAction(object sender, string action, string primaryText)
         {
             if (sender is not Button button) return false;
 
-            return await ConfirmAction(button.XamlRoot, action);
+            return await ConfirmAction(button.XamlRoot, action, primaryText);
         }
 
-        private static async Task<bool> ConfirmAction(XamlRoot root, string action)
+        private static async Task<bool> ConfirmAction(XamlRoot root, string action, string primaryText)
         {
             var dialog = new ContentDialog
             {
                 Title = Loc.F("Confirmation/Title", action),
                 Content = Loc.F("Confirmation/Content", action),
-                PrimaryButtonText = Loc.Buttons_Delete,
+                PrimaryButtonText = primaryText,
                 CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Close,
                 XamlRoot = root

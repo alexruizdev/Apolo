@@ -16,8 +16,8 @@ namespace Apolo.ViewModels
     public partial class SettingsViewModel : BaseViewModel
     {
         readonly IGeneralRepository _repository;
-        readonly Excel.IReader _excelReader;
-        readonly Excel.IWriter _excelWriter;
+        readonly CSV.IReader _CSVReader;
+        readonly CSV.IWriter _CSVWriter;
         readonly ILanguageService _languageService;
 
         public ObservableCollection<LanguageOption> Languages { get; } =
@@ -36,6 +36,7 @@ namespace Apolo.ViewModels
         private static string Message_Delete_Settings_Success => "Messages/Delete_Settings_Success";
         private static string Message_Delete_Database_Error => "Messages/Delete_Database_Error";
         private static string Message_Delete_Database_Success => "Messages/Delete_Database_Success";
+        private static string Message_Add_Dummy_Data_Success => "Messages/Add_Dummy_Data_Success";
         private static string Message_Delete_Archive_Error => "Messages/Delete_Archive_Error";
         private static string Message_Delete_Archive_Success => "Messages/Delete_Archive_Success";
         private static string Message_Import_Database_Error => "Messages/Import_Database_Error";
@@ -61,24 +62,25 @@ namespace Apolo.ViewModels
         private static string Message_Export_Invoices => "Messages/Settings_Export_Invoices";
         private static string Message_No_File_Reason => "Messages/No_File_Reason";
         private static string Message_No_Directory_Reason => "Messages/No_Directory_Reason";
-        private static string Message_Excel_Used_Reason => "Messages/Excel_Used_Reason";
+        private static string Message_CSV_Used_Reason => "Messages/CSV_Used_Reason";
         private static string Message_Backup_Folder_Reason => "Messages/Backup_Folder_Reason";
         private static string Message_Payer_Selection_Reason => "Messages/Payer_Selection_Reason";
 
-
         public SettingsViewModel(IGeneralRepository repository, IUserProfileService userProfile,
-            Excel.IReader excelReader, Excel.IWriter excelWriter, ILanguageService languageService, 
+            CSV.IReader CSVReader, CSV.IWriter CSVWriter, ILanguageService languageService, 
             IStringLocalizer stringLocalizer)
             : base(stringLocalizer, userProfile)
         {
             _repository = repository;
-            _excelReader = excelReader;
-            _excelWriter = excelWriter;
+            _CSVReader = CSVReader;
+            _CSVWriter = CSVWriter;
             _languageService = languageService;
 
             // Match the stored profile language string to our dropdown items
             SelectedLenguage = Languages.FirstOrDefault(l => l.Code == Profile.Language) ?? Languages.First();
         }
+
+        public bool DeveloperMode => Profile.DeveloperMode;
 
         [RelayCommand]
         public async Task SaveAsync()
@@ -116,6 +118,24 @@ namespace Apolo.ViewModels
             await _userProfileService.SaveAsync(Profile);
 
             SetExitFunction($"{_loc.Get(Message_Delete_Settings_Success)}.", InfoBarType.Success);
+        }
+
+        public async Task AddDummyData()
+        {
+            if (IsBusy)
+            {
+                SetExitBusy(Message_Delete_Database_Error);
+                return;
+            }
+
+            SetEnterFunction();
+
+            DummyData data = new();
+
+            await _repository.ImportAllDataAsync(data.Services, data.Payers, data.Students, data.Specifications, data.Lessons, data.Bills);
+            await _repository.ImportArchiveAsync(data.ArchivePayers, data.ArchiveStudents, data.ArchiveLessons, data.ArchiveBills);
+
+            SetExitFunction($"{_loc.Get(Message_Add_Dummy_Data_Success)}.", InfoBarType.Success);
         }
 
         public async Task ClearDatabaseAsync()
@@ -180,7 +200,7 @@ namespace Apolo.ViewModels
             return fullPath;
         }
 
-        public async Task ImportDatabaseFromExcel(string file)
+        public async Task ImportDatabaseFromCSV(string file)
         {
             if (IsBusy)
             {
@@ -207,24 +227,24 @@ namespace Apolo.ViewModels
             {
                 var watch = Stopwatch.StartNew();
 
-                await Task.Run(async () => await _excelReader.ReadExcel(file));
+                await Task.Run(async () => await _CSVReader.ReadCSV(file, isArchive: false));
 
                 // Insert data into database
                 await _repository.ImportAllDataAsync(
-                    _excelReader.Services,
-                    _excelReader.Payers,
-                    _excelReader.Students,
-                    _excelReader.Specifications,
-                    _excelReader.Lessons,
-                    _excelReader.Invoices);
+                    _CSVReader.Services,
+                    _CSVReader.Payers,
+                    _CSVReader.Students,
+                    _CSVReader.Specifications,
+                    _CSVReader.Lessons,
+                    _CSVReader.Bills);
 
                 string path = await GenerateExportSummary(root,
-                    _excelReader.Services.Count,
-                    _excelReader.Payers.Count,
-                    _excelReader.Students.Count,
-                    _excelReader.Specifications.Count,
-                    _excelReader.Lessons.Count,
-                    _excelReader.Invoices.Count);
+                    _CSVReader.Services.Count,
+                    _CSVReader.Payers.Count,
+                    _CSVReader.Students.Count,
+                    _CSVReader.Specifications.Count,
+                    _CSVReader.Lessons.Count,
+                    _CSVReader.Bills.Count);
 
                 watch.Stop();
                 TimeSpan ts = watch.Elapsed;
@@ -235,18 +255,18 @@ namespace Apolo.ViewModels
             }
             catch (IOException ex)
             {
-                Log.Warning(ex, "Failed to import from Excel due to file lock.");
-                SetExitFunction($"{_loc.Get(Message_Import_Database_Error)}:{_loc.Get(Message_Excel_Used_Reason)}.", InfoBarType.Error);
+                Log.Warning(ex, "Failed to import from CSV due to file lock.");
+                SetExitFunction($"{_loc.Get(Message_Import_Database_Error)}:{_loc.Get(Message_CSV_Used_Reason)}.", InfoBarType.Error);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "An unexpected error occurred during Excel import.");
+                Log.Error(ex, "An unexpected error occurred during CSV import.");
                 SetExitFunction($"{_loc.Get(Message_Import_Database_Error)}: {ex.Message}", InfoBarType.Error);
             }
 
         }
 
-        public async Task ImportArchiveFromExcel(string file)
+        public async Task ImportArchiveFromCSV(string file)
         {
             if (IsBusy)
             {
@@ -274,22 +294,22 @@ namespace Apolo.ViewModels
 
                 var watch = Stopwatch.StartNew();
 
-                await Task.Run(async () => await _excelReader.ReadExcel(file));
+                await Task.Run(async () => await _CSVReader.ReadCSV(file, isArchive: true));
 
                 // Insert data into database
                 await _repository.ImportArchiveAsync(
-                    _excelReader.Payers,
-                    _excelReader.Students,
-                    _excelReader.Lessons,
-                    _excelReader.Invoices);
+                    _CSVReader.Payers,
+                    _CSVReader.Students,
+                    _CSVReader.Lessons,
+                    _CSVReader.Bills);
 
                 string path = await GenerateExportSummary(root,
-                    _excelReader.Services.Count,
-                    _excelReader.Payers.Count,
-                    _excelReader.Students.Count,
-                    _excelReader.Specifications.Count,
-                    _excelReader.Lessons.Count,
-                    _excelReader.Invoices.Count);
+                    _CSVReader.Services.Count,
+                    _CSVReader.Payers.Count,
+                    _CSVReader.Students.Count,
+                    _CSVReader.Specifications.Count,
+                    _CSVReader.Lessons.Count,
+                    _CSVReader.Bills.Count);
 
                 watch.Stop();
                 TimeSpan ts = watch.Elapsed;
@@ -300,17 +320,17 @@ namespace Apolo.ViewModels
             }
             catch (IOException ex)
             {
-                Log.Warning(ex, "Failed to import from Excel due to file lock.");
-                SetExitFunction($"{_loc.Get(Message_Import_Archive_Error)}:{_loc.Get(Message_Excel_Used_Reason)}.", InfoBarType.Error);
+                Log.Warning(ex, "Failed to import from CSV due to file lock.");
+                SetExitFunction($"{_loc.Get(Message_Import_Archive_Error)}:{_loc.Get(Message_CSV_Used_Reason)}.", InfoBarType.Error);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "An unexpected error occurred during Excel import.");
+                Log.Error(ex, "An unexpected error occurred during CSV import.");
                 SetExitFunction($"{_loc.Get(Message_Import_Archive_Error)}: {ex.Message}", InfoBarType.Error);
             }
         }
 
-        public async Task ExportArchiveToExcel(string installedPath)
+        public async Task ExportArchiveToCSV(string installedPath)
         {
             if (IsBusy)
             {
@@ -330,10 +350,10 @@ namespace Apolo.ViewModels
             {
                 var watch = Stopwatch.StartNew();
 
-                string templatePath = Path.Combine(installedPath, "Assets", "Excel", "Template.xlsx");
+                string templatePath = Path.Combine(installedPath, "Assets", "CSV", "Template.xlsx");
 
                 var data = await _repository.ExportArchiveAsync();
-                _excelWriter.WriteExcel(templatePath, Profile.BackupFolder, in data, archive: true);
+                _CSVWriter.WriteCSV(Profile.BackupFolder, in data, archive: true);
 
                 watch.Stop();
                 TimeSpan ts = watch.Elapsed;
@@ -344,12 +364,12 @@ namespace Apolo.ViewModels
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "An unexpected error occurred during Excel export.");
+                Log.Error(ex, "An unexpected error occurred during CSV export.");
                 SetExitFunction($"{_loc.Get(Message_Export_Database_Error)}: {ex.Message}", InfoBarType.Error);
             }
         }
 
-        public async Task ExportDatabaseToExcel(string installedPath)
+        public async Task ExportDatabaseToCSV()
         {
             if (IsBusy)
             {
@@ -369,10 +389,8 @@ namespace Apolo.ViewModels
             {
                 var watch = Stopwatch.StartNew();
 
-                string templatePath = Path.Combine(installedPath, "Assets", "Excel", "Template.xlsx");
-
                 var data = await _repository.GetAllDataAsync();
-                _excelWriter.WriteExcel(templatePath, Profile.BackupFolder, in data);
+                _CSVWriter.WriteCSV(Profile.BackupFolder, in data);
 
                 watch.Stop();
                 TimeSpan ts = watch.Elapsed;
@@ -383,7 +401,7 @@ namespace Apolo.ViewModels
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "An unexpected error occurred during Excel export.");
+                Log.Error(ex, "An unexpected error occurred during CSV export.");
                 SetExitFunction($"{_loc.Get(Message_Export_Archive_Error)}: {ex.Message}", InfoBarType.Error);
             }
 

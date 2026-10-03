@@ -98,7 +98,9 @@
     <data name="Buttons/New.Label" xml:space="preserve">
         <value>Nuevo</value>
     </data>
-
+    <data name="Buttons/Add.Label" xml:space="preserve">
+        <value>Añadir</value>
+    </data>
     <data name="Buttons/Delete.Label" xml:space="preserve">
         <value>Borrar</value>
     </data>
@@ -612,6 +614,9 @@
     <data name="Messages/Delete_Database_Success" xml:space="preserve">
         <value>La base de datos se ha borrado correctamente</value>
     </data>
+    <data name="Messages/Add_Dummy_Data_Success" xml:space="preserve">
+        <value>Los datos de testeo se han añadido correctamente</value>
+    </data>
     <data name="Messages/Delete_Archive_Error" xml:space="preserve">
         <value>No se puede borrar los datos archivados</value>
     </data>
@@ -619,7 +624,7 @@
         <value>Se han borrado correctamente los datos archivados</value>
     </data>
     <data name="Messages/Import_Database_Error" xml:space="preserve">
-        <value>No se puede importar la base de datos del Excel</value>
+        <value>No se puede importar la base de datos del CSV</value>
     </data>
     <data name="Messages/No_File_Reason" xml:space="preserve">
         <value>no se ha seleccionado un fichero</value>
@@ -627,8 +632,8 @@
     <data name="Messages/No_Directory_Reason" xml:space="preserve">
         <value>No existe el directorio '{0}'</value>
     </data>
-    <data name="Messages/Excel_Used_Reason" xml:space="preserve">
-        <value>el fichero está en uso. Por favor, cierra el Excel y vuelve a intentarlo</value>
+    <data name="Messages/CSV_Used_Reason" xml:space="preserve">
+        <value>el fichero está en uso. Por favor, cierra el CSV y vuelve a intentarlo</value>
     </data>
     <data name="Messages/Import_Database_Success" xml:space="preserve">
         <value>La base de datos ha sido importada correctamente ({0}). Un resumen se ha generado en {1}</value>
@@ -739,8 +744,8 @@
     <data name="Buttons/ImportBackup.Label" xml:space="preserve">
         <value>Importar copia de seguridad</value>
     </data>
-    <data name="Buttons/ExportExcel.Label" xml:space="preserve">
-        <value>Exportar Excel</value>
+    <data name="Buttons/ExportBackup.Label" xml:space="preserve">
+        <value>Exportar copia de seguridad</value>
     </data>
     <data name="Buttons/ImportArchive.Label" xml:space="preserve">
         <value>Importar archivo</value>
@@ -1172,6 +1177,9 @@
     <data name="Settings/DangerZone.Text" xml:space="preserve">
         <value>Zona de peligro</value>
     </data>
+    <data name="Settings/Developer.Text" xml:space="preserve">
+        <value>Ajuster de desarrollador</value>
+    </data>
     <data name="Settings/ArchiveOldData" xml:space="preserve">
         <value>Archivar datos antiguos</value>
     </data>
@@ -1190,8 +1198,14 @@
     <data name="Settings/DeleteDatabase.Label" xml:space="preserve">
         <value>Borrar base de datos</value>
     </data>
+    <data name="Settings/DummyData.Label" xml:space="preserve">
+        <value>Añadir base de datos falsa</value>
+    </data>
     <data name="Settings/DeleteArchive.Label" xml:space="preserve">
         <value>Borrar archivo</value>
+    </data>
+    <data name="Actions/AddDummyData" xml:space="preserve">
+        <value>añadir base de datos y archivo con datos ficticios</value>
     </data>
     <data name="Actions/DeleteDatabase" xml:space="preserve">
         <value>borrar base de datos</value>
@@ -1226,19 +1240,22 @@
     <data name="App/UnexpectedErrorContent" xml:space="preserve">
         <value>Se ha producido un error crítico. La aplicación ha registrado la incidencia, pero puede comportarse de forma inesperada si continúas.\n\nDetalles: {0}</value>
     </data>
-  <data name="Settings/Fees.Header" xml:space="preserve">
-    <value>Tarifas</value>
-  </data>
-  <data name="Settings/AppConfiguration.Header" xml:space="preserve">
-    <value>Configuración de la App</value>
-  </data>
-  <data name="Settings/GenerateTicketWithInvoice.Content" xml:space="preserve">
-    <value>Generar un ticket con la factura</value>
-  </data>
-  <data name="Settings/IncludeLessonsInTicket.Content" xml:space="preserve">
-    <value>Incluir las clases en el ticket</value>
-  </data>
-  <data name="Settings/IncludeLessonsInInvoice.Content" xml:space="preserve">
-    <value>Incluir las clases en la factura</value>
-  </data>
+    <data name="Settings/Fees.Header" xml:space="preserve">
+        <value>Tarifas</value>
+    </data>
+    <data name="Settings/AppConfiguration.Header" xml:space="preserve">
+        <value>Configuración de la App</value>
+    </data>
+    <data name="Settings/GenerateTicketWithInvoice.Content" xml:space="preserve">
+        <value>Generar un ticket con la factura</value>
+    </data>
+    <data name="Settings/IncludeLessonsInTicket.Content" xml:space="preserve">
+        <value>Incluir las clases en el ticket</value>
+    </data>
+    <data name="Settings/IncludeLessonsInInvoice.Content" xml:space="preserve">
+        <value>Incluir las clases en la factura</value>
+    </data>
+    <data name="Settings/DeveloperMode.Content" xml:space="preserve">
+        <value>Habilitar modo desarrollador</value>
+    </data>
 </root>

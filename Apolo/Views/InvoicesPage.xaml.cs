@@ -53,13 +53,13 @@ namespace Apolo.Views
 
         private async void RemoveLesson_Click(object sender, RoutedEventArgs e)
         {
-            if (await ConfirmationDialog.ConfirmButtonAction(sender, Loc.Action_RemoveSelectedLessons))
+            if (await ConfirmationDialog.ConfirmButtonAction(sender, Loc.Action_RemoveSelectedLessons, Loc.Buttons_Delete))
                 await ViewModel.RemoveSelectedLessonsAsync();
         }
 
         private async void DeleteBill_Click(object sender, RoutedEventArgs e)
         {
-            if (await ConfirmationDialog.ConfirmButtonAction(sender, $"{Loc.Action_DeleteBill} {ViewModel.Bill.Name}"))
+            if (await ConfirmationDialog.ConfirmButtonAction(sender, $"{Loc.Action_DeleteBill} {ViewModel.Bill.Name}", Loc.Buttons_Delete))
                 await ViewModel.DeleteBillAsync();
         }
 

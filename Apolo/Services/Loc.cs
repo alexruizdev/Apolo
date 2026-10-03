@@ -71,9 +71,10 @@ namespace Apolo.Services
         public static string Menu_Dashboard => S("Menu/Dashboard");
         public static string Menu_Proposal => S("Menu/Proposal");
 
-        
+
 
         // Buttons
+        public static string Buttons_Add => S("Buttons/Add/Label");
         public static string Buttons_Delete => S("Buttons/Delete/Label");
         public static string Buttons_Cancel => S("Buttons/Cancel/Content");
         public static string Buttons_Create => S("Buttons/Create");
@@ -118,6 +119,7 @@ namespace Apolo.Services
         public static string Action_DeleteStudent => S("Actions/DeleteStudent");
         public static string Action_DeleteSpecification => S("Actions/DeleteSpecification");
         public static string Action_DeleteLesson => S("Actions/DeleteLesson");
+        public static string Action_AddDummyData => S("Actions/AddDummyData");
 
         // App / dialogs
         public static string App_UnexpectedErrorTitle => S("App/UnexpectedErrorTitle");

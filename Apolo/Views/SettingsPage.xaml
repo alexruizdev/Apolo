@@ -107,7 +107,8 @@
                     </Grid>
 
                     <!-- Language Option -->
-                    <StackPanel>
+                    <StackPanel Spacing="12"
+                                Margin="0,10,0,0">
                         <TextBlock Text="Language / Idioma"
                                    Style="{ThemeResource BodyTextBlockStyle}"
                                    FontWeight="SemiBold" />
@@ -122,6 +123,10 @@
                                    Style="{ThemeResource CaptionTextBlockStyle}"
                                    Foreground="{ThemeResource SystemControlPageTextBaseMediumBrush}" />
                     </StackPanel>
+                    
+                    <!--Developer Option-->
+                    <CheckBox x:Uid="Settings/DeveloperMode"
+                              IsChecked="{x:Bind ViewModel.Profile.DeveloperMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
             </Expander>
 
@@ -146,8 +151,8 @@
 
                         <!-- Safe/Standard File Actions -->
                         <CommandBar DefaultLabelPosition="Right"  HorizontalAlignment="Left"  Background="Transparent">
-                            <AppBarButton x:Uid="Buttons/ImportBackup" Icon="Import" Click="ImportExcelButton_Click"/>
-                            <AppBarButton Icon="Save" x:Uid="Buttons/ExportExcel" Click="ExportExcelButton_Click"/>
+                            <AppBarButton x:Uid="Buttons/ImportBackup" Icon="Import" Click="ImportBackupButton_Click"/>
+                            <AppBarButton x:Uid="Buttons/ExportBackup" Icon="Save" Click="ExportBackupButton_Click"/>
                             <AppBarSeparator />
                             <AppBarButton x:Uid="Buttons/ImportArchive" Icon="ImportAll" Click="ImportArchiveButton_Click"/>
                             <AppBarButton x:Uid="Buttons/SaveArchive" Icon="SaveLocal" Click="ExportArchiveButton_Click"/>
@@ -165,6 +170,16 @@
                                 <AppBarButton x:Uid="Settings/DeleteArchive" Icon="Delete" Foreground="{ThemeResource SystemFillColorCriticalBrush}" Click="DeleteArchiveButton_Click"/>
                             </CommandBar>
                         </StackPanel>
+
+                        <MenuFlyoutSeparator />
+                        <StackPanel Spacing="8"
+                                    Visibility="{x:Bind ViewModel.DeveloperMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <TextBlock x:Uid="Settings/Developer" Style="{StaticResource BodyStrongTextBlockStyle}"  />
+                            <CommandBar DefaultLabelPosition="Right" HorizontalAlignment="Left" Background="Transparent">
+                                <AppBarButton x:Uid="Settings/DummyData" Icon="Add"  Click="AddDummuDataButton_Click"/>
+                            </CommandBar>
+                        </StackPanel>
+                        
                     </StackPanel>
                 </Border>
             </StackPanel>

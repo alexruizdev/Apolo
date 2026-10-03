@@ -30,7 +30,8 @@ namespace Apolo.Services
                 Language = v[nameof(UserProfile.Language)] as string ?? "",
                 GenerateTicketWithInvoice = v[nameof(UserProfile.GenerateTicketWithInvoice)] as bool? ?? false,
                 IncludeLessonsInTicket = v[nameof(UserProfile.IncludeLessonsInTicket)] as bool? ?? true,
-                IncludeLessonsInInvoice = v[nameof(UserProfile.IncludeLessonsInInvoice)] as bool? ?? true
+                IncludeLessonsInInvoice = v[nameof(UserProfile.IncludeLessonsInInvoice)] as bool? ?? true,
+                DeveloperMode = v[nameof(UserProfile.DeveloperMode)] as bool? ?? false,
             };
 
             return Task.FromResult(p);
@@ -58,6 +59,7 @@ namespace Apolo.Services
             v[nameof(UserProfile.GenerateTicketWithInvoice)] = profile.GenerateTicketWithInvoice;
             v[nameof(UserProfile.IncludeLessonsInTicket)] = profile.IncludeLessonsInTicket;
             v[nameof(UserProfile.IncludeLessonsInInvoice)] = profile.IncludeLessonsInInvoice;
+            v[nameof(UserProfile.DeveloperMode)] = profile.DeveloperMode;
 
             return Task.CompletedTask;
         }
