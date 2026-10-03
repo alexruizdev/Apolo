@@ -363,7 +363,7 @@ namespace PDF
 
                                 t.Cell().AlignRight().Text($"SUBTOTAL:");
                                 t.Cell().AlignRight().Text(subTotal.ToString("C", culture));
-                                t.Cell().AlignRight().Text("IVA*:");
+                                t.Cell().AlignRight().Text(user.ShowIvaDisclaimer && ivaPercent == 0 ? "IVA*:" : "IVA:");
                                 t.Cell().AlignRight().Text($"{ivaPercent:0}%");
                                 t.Cell().AlignRight().Text($"IVA amount:");
                                 t.Cell().AlignRight().Text(ivaAmount.ToString("C", culture));
@@ -374,8 +374,11 @@ namespace PDF
 
                         col.Item().Height(15);
 
-                        col.Item().Text("*Factura exenta de IVA Artículo 20 Uno 10º de la Ley 37/1992 de 28 de diciembre del Impuesto sobre el Valor Añadido.")
-                        .Italic().FontSize(10);
+                        if (user.ShowIvaDisclaimer && ivaPercent == 0)
+                        {
+                            col.Item().Text("*Factura exenta de IVA Artículo 20 Uno 10º de la Ley 37/1992 de 28 de diciembre del Impuesto sobre el Valor Añadido.")
+                            .Italic().FontSize(10);
+                        }
 
                         col.Item().Height(20);
 

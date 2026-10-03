@@ -1258,4 +1258,7 @@
     <data name="Settings/DeveloperMode.Content" xml:space="preserve">
         <value>Habilitar modo desarrollador</value>
     </data>
+    <data name="Settings/ShowIvaDisclaimer.Content" xml:space="preserve">
+        <value>Mostrar el aviso legal de exención de IVA en la factura</value>
+    </data>
 </root>

@@ -32,6 +32,7 @@ namespace Apolo.Services
                 IncludeLessonsInTicket = v[nameof(UserProfile.IncludeLessonsInTicket)] as bool? ?? true,
                 IncludeLessonsInInvoice = v[nameof(UserProfile.IncludeLessonsInInvoice)] as bool? ?? true,
                 DeveloperMode = v[nameof(UserProfile.DeveloperMode)] as bool? ?? false,
+                ShowIvaDisclaimer = v[nameof(UserProfile.ShowIvaDisclaimer)] as bool? ?? false
             };
 
             return Task.FromResult(p);
@@ -60,6 +61,7 @@ namespace Apolo.Services
             v[nameof(UserProfile.IncludeLessonsInTicket)] = profile.IncludeLessonsInTicket;
             v[nameof(UserProfile.IncludeLessonsInInvoice)] = profile.IncludeLessonsInInvoice;
             v[nameof(UserProfile.DeveloperMode)] = profile.DeveloperMode;
+            v[nameof(UserProfile.ShowIvaDisclaimer)] = profile.ShowIvaDisclaimer;
 
             return Task.CompletedTask;
         }

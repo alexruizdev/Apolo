@@ -28,6 +28,7 @@ namespace Models
         public bool GenerateTicketWithInvoice { get; set; } = false;
         public bool IncludeLessonsInTicket { get; set; } = true;
         public bool IncludeLessonsInInvoice { get; set; } = true;
+        public bool ShowIvaDisclaimer { get; set; } = false;
         public bool DeveloperMode { get; set; } = false;
     }
 }

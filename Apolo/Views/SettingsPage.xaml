@@ -71,6 +71,7 @@
                     </Grid>
 
                     <!-- Billing PDF Configuration -->
+                    <CheckBox x:Uid="Settings/ShowIvaDisclaimer" IsChecked="{x:Bind ViewModel.Profile.ShowIvaDisclaimer, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <CheckBox x:Uid="Settings/GenerateTicketWithInvoice" IsChecked="{x:Bind ViewModel.Profile.GenerateTicketWithInvoice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <CheckBox x:Uid="Settings/IncludeLessonsInTicket" IsChecked="{x:Bind ViewModel.Profile.IncludeLessonsInTicket, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <CheckBox x:Uid="Settings/IncludeLessonsInInvoice" IsChecked="{x:Bind ViewModel.Profile.IncludeLessonsInInvoice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />

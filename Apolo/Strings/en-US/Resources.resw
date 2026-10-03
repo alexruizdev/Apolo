@@ -1276,4 +1276,7 @@
   <data name="Settings/DeveloperMode.Content" xml:space="preserve">
     <value>Enable developer mode</value>
   </data>
+  <data name="Settings/ShowIvaDisclaimer.Content" xml:space="preserve">
+    <value>Show IVA disclaimer in the invoice</value>
+  </data>
 </root>
