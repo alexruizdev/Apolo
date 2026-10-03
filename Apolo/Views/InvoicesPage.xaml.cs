@@ -149,14 +149,14 @@ namespace Apolo.Views
                 {
                     if (paramStr.StartsWith("document:"))
                     {
-                        if (Guid.TryParse(paramStr.Substring(9), out Guid documentId))
+                        if (Guid.TryParse(paramStr[9..], out Guid documentId))
                         {
                             await ViewModel.LoadBillLessonsAsync(documentId);
                         }
                     }
                     else if (paramStr.StartsWith("payer:"))
                     {
-                        if (Guid.TryParse(paramStr.Substring(6), out Guid payerId))
+                        if (Guid.TryParse(paramStr[6..], out Guid payerId))
                         {
                             ViewModel.SelectedPayerId = payerId;
                             await ViewModel.LoadLessonsAsync();

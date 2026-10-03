@@ -40,7 +40,6 @@ namespace Apolo.Views
         }
 
         private async void ExportBackupButton_Click(object sender, RoutedEventArgs e)
-        private async void ExportBackupButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not Button) return;
 
