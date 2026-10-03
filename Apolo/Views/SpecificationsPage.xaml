@@ -4,7 +4,6 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:local="using:Apolo.Views"
       xmlns:vm="using:Apolo.ViewModels"
-      xmlns:loc="using:Apolo.Services"
       xmlns:m="using:Models"
       x:Name="PageRoot"
       Loaded="Page_Loaded">
@@ -27,10 +26,10 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <TextBlock Text="{x:Bind loc:Loc.Menu_Specifications}" Style="{ThemeResource TitleLargeTextBlockStyle}" />
+            <TextBlock x:Uid="Specifications/Title" Style="{ThemeResource TitleLargeTextBlockStyle}" />
 
             <CommandBar Grid.Column="1" DefaultLabelPosition="Right" Background="Transparent" IsDynamicOverflowEnabled="False">
-                <AppBarButton Label="New" Icon="Add"
+                <AppBarButton x:Uid="Buttons/New" Icon="Add"
                   Click="NewSpecification_Click"
                   IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
             </CommandBar>
@@ -71,18 +70,18 @@
                             <!-- Service, Duration, and Price Sub-Details -->
                             <StackPanel Orientation="Horizontal" Spacing="16">
                                 <TextBlock Style="{ThemeResource CaptionTextBlockStyle}">
-                                    <Run Text="Service: " Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                                    <Run x:Uid="Specifications/Service" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
                                     <Run Text="{x:Bind ServiceName}" FontWeight="SemiBold" />
                                 </TextBlock>
 
                                 <TextBlock Style="{ThemeResource CaptionTextBlockStyle}">
-                                    <Run Text="Duration: " Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                                    <Run x:Uid="Specifications/Duration" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
                                     <Run Text="{x:Bind DurationMinutes}" FontWeight="SemiBold" />
-                                    <Run Text=" min" />
+                                    <Run x:Uid="Common/MinuteAbbrev" />
                                 </TextBlock>
 
                                 <TextBlock Style="{ThemeResource CaptionTextBlockStyle}">
-                                    <Run Text="Price: " Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
+                                    <Run x:Uid="Common/Price" Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
                                     <Run Text="{x:Bind Price, Converter={StaticResource DecimalToCurrencyConverter}}" FontWeight="SemiBold" />
                                 </TextBlock>
                             </StackPanel>
@@ -91,13 +90,13 @@
                                 <!-- Online Status Badge -->
                                 <Border Style="{StaticResource OnlineBadgeStyle}" 
                                         Visibility="{x:Bind IsOnline, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                    <TextBlock Text="ONLINE" Style="{StaticResource OnlineTextStyle}" />
+                                    <TextBlock x:Uid="Common/Online" Style="{StaticResource OnlineTextStyle}" />
                                 </Border>
 
                                 <!-- Weekend or Holiday Premium Status Badge -->
                                 <Border Style="{StaticResource WeekendBadgeStyle}"
                                         Visibility="{x:Bind IsWeekendOrHoliday, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                    <TextBlock Text="WEEKEND / HOLIDAY" Style="{StaticResource WeekendTextStyle}" />
+                                    <TextBlock x:Uid="Common/WeekendOrHoliday" Style="{StaticResource WeekendTextStyle}" />
                                 </Border>
                             </StackPanel>
                         </StackPanel>
@@ -107,17 +106,14 @@
                                     Orientation="Horizontal"
                                     Spacing="4"
                                     VerticalAlignment="Center">
-                            <Button Style="{StaticResource RowActionButtonStyle}" Click="EditSpecification_Click" IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
+                            <Button x:Uid="Common/EditSpecification" Style="{StaticResource RowActionButtonStyle}" Click="EditSpecification_Click" IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
                                 <SymbolIcon Symbol="Edit" />
-                                <ToolTipService.ToolTip>Edit specification</ToolTipService.ToolTip>
                             </Button>
-                            <Button Style="{StaticResource RowActionButtonStyle}" Click="CreateLesson_Click" IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
+                            <Button x:Uid="Common/CreateLesson" Style="{StaticResource RowActionButtonStyle}" Click="CreateLesson_Click" IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
                                 <SymbolIcon Symbol="Calendar" />
-                                <ToolTipService.ToolTip>Create lesson</ToolTipService.ToolTip>
                             </Button>
-                            <Button Style="{StaticResource RowDeleteButtonStyle}" Click="DeleteSpecification_Click" IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
+                            <Button x:Uid="Common/DeleteSpecification" Style="{StaticResource RowDeleteButtonStyle}" Click="DeleteSpecification_Click" IsEnabled="{Binding ElementName=PageRoot, Path=ViewModel.IsBusy, Converter={StaticResource InverseBooleanConverter}}">
                                 <SymbolIcon Symbol="Delete" />
-                                <ToolTipService.ToolTip>Delete specification</ToolTipService.ToolTip>
                             </Button>
                         </StackPanel>
                     </Grid>

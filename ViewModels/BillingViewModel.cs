@@ -1,4 +1,4 @@
-﻿using Apolo.Services;
+using Apolo.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +21,7 @@ namespace Apolo.ViewModels
             OnPropertyChanged(nameof(Data));
         }
     }
-    public partial class BillingViewModel : UserProfileViewModel
+    public partial class BillingViewModel : BaseViewModel
     {
         readonly IBillingRepository _billingRepository;
         readonly IPayerRepository _payerRepository;
@@ -37,14 +37,35 @@ namespace Apolo.ViewModels
         [ObservableProperty] private decimal totalSelected;
         [ObservableProperty] private decimal totalAll;
         [ObservableProperty] private bool editMode;
+        [ObservableProperty] private bool isConfigPaneOpen = true;
         [ObservableProperty] private BillSummary bill;
         [ObservableProperty] private string? lastGeneratedFolder;
+
+        protected static string Message_State_Error => "Messages/State_Bill_Error";
+        protected static string Message_Load_Error => "Messages/Load_Bill_Error";
+        protected static string Message_Load_Lessons_Error => "Messages/Load_Lessons_Error";
+        protected static string Message_Payer_Selected_Reason => "Messages/Payer_Selected_Reason";
+        protected static string Message_Load_Lessons_Success => "Messages/Load_Lessons_Success";
+        protected static string Message_Load_Bill_Lessons_Error => "Messages/Load_Bill_Lessons_Error";
+        protected static string Message_Bill_Selected_Reason => "Messages/Bill_Selected_Reason";
+        protected static string Message_Load_Bill_Lessons_Success => "Messages/Load_Bill_Lessons_Success";
+        protected static string Message_Remove_Bill_Lessons_Error => "Messages/Remove_Bill_Lessons_Error";
+        protected static string Message_Lessons_Selected_Reason => "Messages/Lessons_Selected_Reason";
+        protected static string Message_Remove_Bill_Lessons_Success => "Messages/Remove_Bill_Lessons_Success";
+        protected static string Message_Delete_Bill_Error => "Messages/Delete_Bill_Error";
+        protected static string Message_Delete_Bill_Success => "Messages/Delete_Bill_Success";
+        protected static string Message_Generate_Bill_Error => "Messages/Generate_Bill_Error";
+        protected static string Message_Generate_Bill_Success => "Messages/Generate_Bill_Success";
+        protected static string Message_Print_Bill_Error => "Messages/Print_Bill_Error";
+        protected static string Messages_Edit_Bill_Error => "Messages/Edit_Bill_Error";
+        protected static string Messages_Edit_Bill_Success => "Messages/Edit_Bill_Success";
 
         public static BillSummary ResetBill() => new(null, Guid.NewGuid(), DocumentType.Ticket, 0, "", new DateTime());
 
         public BillingViewModel(IBillingRepository billingRepository, IPayerRepository payerRepository,  
-            IUserProfileService userProfile, PDF.IWriter pdfWriter, ILessonRepository lessonRepository)
-            : base(userProfile)
+            IUserProfileService userProfile, PDF.IWriter pdfWriter, ILessonRepository lessonRepository,
+            IStringLocalizer stringLocalizer)
+            : base(stringLocalizer, userProfile)
         {
             _billingRepository = billingRepository;
             _payerRepository = payerRepository;
@@ -90,7 +111,7 @@ namespace Apolo.ViewModels
             {
                 if (IsBusy)
                 {
-                    SetExitFunction("Can't update selection while busy.", InfoBarType.Warning, false);
+                    SetExitBusy(Message_State_Error);
                     return;
                 }
 
@@ -141,7 +162,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't load payers while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Load_Error);
                 return;
             }
 
@@ -156,7 +177,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't load lessons while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Load_Lessons_Error);
                 return;
             }
 
@@ -164,7 +185,8 @@ namespace Apolo.ViewModels
 
             if (SelectedPayerId is null)
             {
-                SetExitFunction("No payer was selected", InfoBarType.Warning);
+                SetExitFunction($"{_loc.Get(Message_Load_Lessons_Error)}: {_loc.Get(Message_Payer_Selected_Reason)}.",
+                    InfoBarType.Warning);
                 return;
             }
 
@@ -175,14 +197,23 @@ namespace Apolo.ViewModels
 
             EditMode = false;
             
-            SetExitFunction($"Loaded {Lessons.Count} lessons unbilled and unpaid", InfoBarType.Success);
+            SetExitFunction($"{_loc.Get(Message_Load_Lessons_Success, Lessons.Count)}.", InfoBarType.Success);
+        }
+
+        public async Task LoadBillLessonsAsync(Guid id)
+        {
+            var document = await _billingRepository.GetBill(id);
+            Bill = new BillSummary(document.Id, document.PayerId, document.Type, document.SequenceNumber, document.DocumentNumber,
+                document.CreatedUTC);
+
+            await LoadBillLessonsAsync();
         }
 
         public async Task LoadBillLessonsAsync()
         {
             if (IsBusy)
             {
-                SetExitFunction($"Can't load {Bill.Name} lessons while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Load_Bill_Lessons_Error);
                 return;
             }
 
@@ -190,7 +221,8 @@ namespace Apolo.ViewModels
 
             if (Bill.Id is null)
             {
-                SetExitFunction("No bill was selected", InfoBarType.Warning);
+                SetExitFunction($"{_loc.Get(Message_Load_Bill_Lessons_Error)}: {_loc.Get(Message_Bill_Selected_Reason)}.",
+                    InfoBarType.Warning);
                 return;
             }
 
@@ -201,7 +233,7 @@ namespace Apolo.ViewModels
 
             EditMode = true;
 
-            SetExitFunction($"Loaded {Lessons.Count} lessons.", InfoBarType.Success);
+            SetExitFunction($"{_loc.Get(Message_Load_Bill_Lessons_Success, Bill.Name, Lessons.Count)}.", InfoBarType.Success);
         }
 
         public async Task MarkSelectedPaymentAsync(bool markAsPaid)
@@ -209,7 +241,7 @@ namespace Apolo.ViewModels
             string actionName = markAsPaid ? "paid" : "unpaid";
             if (IsBusy)
             {
-                SetExitFunction($"Can't mark lessons as {actionName} while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Change_Payment_Error);
                 return;
             }
 
@@ -219,7 +251,10 @@ namespace Apolo.ViewModels
 
             if (ids.Count == 0)
             {
-                SetExitFunction($"Please, select first a lesson to mark them as {actionName}.", InfoBarType.Info);
+                if (markAsPaid)
+                    SetExitFunction($"{_loc.Get(Message_Mark_Paid)}.", InfoBarType.Info);
+                else
+                    SetExitFunction($"{_loc.Get(Message_Mark_Unpaid)}.", InfoBarType.Info);
                 return;
             }
 
@@ -238,8 +273,11 @@ namespace Apolo.ViewModels
                 }
 
                 await UpdatePayerOptions();
-
-                SetExitFunction($"{ids.Count} were marked as {actionName} successfully.", InfoBarType.Success);
+                
+                if (markAsPaid)
+                    SetExitFunction($"{_loc.Get(Message_Lessons_Mark_Paid, ids.Count)}.", InfoBarType.Success);
+                else
+                    SetExitFunction($"{_loc.Get(Message_Lessons_Mark_Unpaid, ids.Count)}.", InfoBarType.Success);
             }
             catch (DbUpdateException ex)
             {
@@ -251,7 +289,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't remove selected lessons while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Remove_Bill_Lessons_Error);
                 return;
             }
 
@@ -261,7 +299,8 @@ namespace Apolo.ViewModels
 
             if (ids.Count == 0)
             {
-                SetExitFunction($"Please, select first a lesson to remove it.", InfoBarType.Info);
+                SetExitFunction($"{_loc.Get(Message_Remove_Bill_Lessons_Error)}: {_loc.Get(Message_Lessons_Selected_Reason)}.",
+                    InfoBarType.Info);
                 return;
             }
 
@@ -277,7 +316,7 @@ namespace Apolo.ViewModels
                         Lessons.RemoveAt(i);
                     }
                 }
-                SetExitFunction($"{ids.Count} were removed from {Bill.Name}.", InfoBarType.Success);
+                SetExitFunction($"{_loc.Get(Message_Remove_Bill_Lessons_Success, ids.Count, Bill.Name)}.", InfoBarType.Success);
 
             }
             catch (DbUpdateException ex)
@@ -290,7 +329,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't remove bill document while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Delete_Bill_Error);
                 return;
             }
 
@@ -298,7 +337,8 @@ namespace Apolo.ViewModels
 
             if (Bill.Id is null)
             {
-                SetExitFunction("Error, bill was not loaded properly.", InfoBarType.Error);
+                SetExitFunction($"{_loc.Get(Message_Delete_Bill_Error)}: {_loc.Get(Message_Bill_NotLoaded, "")}.",
+                    InfoBarType.Warning);
                 return;
             }
             try
@@ -309,7 +349,7 @@ namespace Apolo.ViewModels
                 Lessons.Clear();
                 SearchBillText = string.Empty;
                 Bill = ResetBill();
-                SetExitFunction($"Bill document '{deletedBillName}' deleted successfully.", InfoBarType.Success);
+                SetExitFunction($"{_loc.Get(Message_Delete_Bill_Success, deletedBillName)}.", InfoBarType.Success);
             }
             catch (DbUpdateException ex)
             {
@@ -322,7 +362,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't generate invoice while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Generate_Bill_Error);
                 return;
             }
 
@@ -330,13 +370,15 @@ namespace Apolo.ViewModels
 
             if (!Directory.Exists(Profile.BillingFolder))
             {
-                SetExitFunction($"Directory '{Profile.BillingFolder}' does not exist.", InfoBarType.Error);
+                SetExitFunction($"{_loc.Get(Message_Generate_Bill_Error)}: {_loc.Get(Message_Bill_Folder_Reason)}.",
+                    InfoBarType.Error);
                 return;
             }
 
             if (SelectedPayerId is null)
             {
-                SetExitFunction("No payer selected.", InfoBarType.Warning);
+                SetExitFunction($"{_loc.Get(Message_Generate_Bill_Error)}: {_loc.Get(Message_Payer_Selected_Reason)}.",
+                    InfoBarType.Warning);
                 return;
             }
 
@@ -347,7 +389,8 @@ namespace Apolo.ViewModels
 
             if (lessons.Count == 0)
             {
-                SetExitFunction("No lessons selected.", InfoBarType.Warning);
+                SetExitFunction($"{_loc.Get(Message_Generate_Bill_Error)}: {_loc.Get(Message_Lessons_Selected_Reason)}.",
+                    InfoBarType.Warning);
                 return;
             }
 
@@ -366,13 +409,19 @@ namespace Apolo.ViewModels
                 string successMessage;
                 if (type == DocumentType.Invoice)
                 {
-                    // Generate both invoice and ticket
+                    // Generate invoice
                     _pdfWriter.GenerateInvoice(document.DocumentNumber, payer, lessons, Profile, filePath, Bill.Date);
 
-                    var ticketFilePath = Path.Combine(Profile.BillingFolder, $"{document.DocumentNumber}-list.pdf");
-                    _pdfWriter.GenerateTicket(document.DocumentNumber, payer, lessons, Profile, ticketFilePath, Bill.Date);
-
-                    successMessage = $"Invoice and ticket saved:\n• {Path.GetFileName(filePath)}\n• {Path.GetFileName(ticketFilePath)}";
+                    if (Profile.GenerateTicketWithInvoice)
+                    {
+                        var ticketFilePath = Path.Combine(Profile.BillingFolder, $"{document.DocumentNumber}-list.pdf");
+                        _pdfWriter.GenerateTicket(document.DocumentNumber, payer, lessons, Profile, ticketFilePath, Bill.Date);
+                        successMessage = $"Invoice and ticket saved:\n• {Path.GetFileName(filePath)}\n• {Path.GetFileName(ticketFilePath)}";
+                    }
+                    else
+                    {
+                        successMessage = $"Invoice saved: {Path.GetFileName(filePath)}";
+                    }
                 }
                 else
                 {
@@ -396,7 +445,8 @@ namespace Apolo.ViewModels
 
                 await UpdatePayerOptions();
 
-                SetExitFunction(successMessage, InfoBarType.Info);
+                var documentName = type.ToString();
+                SetExitFunction($"{_loc.Get(Message_Generate_Bill_Success, documentName, filePath)}.", InfoBarType.Info);
             }
             catch (DbUpdateException ex)
             {
@@ -409,7 +459,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't print bill while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Print_Bill_Error);
                 return;
             }
 
@@ -417,7 +467,7 @@ namespace Apolo.ViewModels
 
             if (!Path.Exists(Profile.BillingFolder))
             {
-                SetExitFunction("Billing folder does not exist, please configure it properly in the settings view.",
+                SetExitFunction($"{_loc.Get(Message_Print_Bill_Error)}: {_loc.Get(Message_Bill_Folder_Reason)}.",
                     InfoBarType.Error);
                 return;
             }
@@ -429,13 +479,19 @@ namespace Apolo.ViewModels
             string successMessage;
             if (Bill.Type is DocumentType.Invoice)
             {
-                // Generate both invoice and ticket
+                // Generate invoice
                 _pdfWriter.GenerateInvoice(Bill.Name, payer, lessons, Profile, filePath, Bill.Date);
 
-                var ticketFilePath = Path.Combine(Profile.BillingFolder, $"{Bill.Name}-list.pdf");
-                _pdfWriter.GenerateTicket(Bill.Name, payer, lessons, Profile, ticketFilePath, Bill.Date);
-
-                successMessage = $"Invoice and ticket saved:\n• {Path.GetFileName(filePath)}\n• {Path.GetFileName(ticketFilePath)}";
+                if (Profile.GenerateTicketWithInvoice)
+                {
+                    var ticketFilePath = Path.Combine(Profile.BillingFolder, $"{Bill.Name}-list.pdf");
+                    _pdfWriter.GenerateTicket(Bill.Name, payer, lessons, Profile, ticketFilePath, Bill.Date);
+                    successMessage = $"Invoice and ticket saved:\n• {Path.GetFileName(filePath)}\n• {Path.GetFileName(ticketFilePath)}";
+                }
+                else
+                {
+                    successMessage = $"Invoice saved: {Path.GetFileName(filePath)}";
+                }
             }
             else
             {
@@ -446,7 +502,7 @@ namespace Apolo.ViewModels
 
             LastGeneratedFolder = Profile.BillingFolder;
 
-            SetExitFunction(successMessage, InfoBarType.Info);
+            SetExitFunction($"{_loc.Get(Message_Generate_Bill_Success, Bill.Name, filePath)}.", InfoBarType.Info);
         }
 
         public async Task SuggestBills(string searchTerm)
@@ -475,7 +531,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't edit bill while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Messages_Edit_Bill_Error);
                 return;
             }
 
@@ -483,7 +539,8 @@ namespace Apolo.ViewModels
 
             if (Bill.Id == null)
             {
-                SetExitFunction("Can't edit bill if not loaded", InfoBarType.Warning);
+                SetExitFunction($"{_loc.Get(Messages_Edit_Bill_Error)}: {_loc.Get(Message_Bill_Selected_Reason)}.",
+                    InfoBarType.Warning);
                 return;
             }
 
@@ -492,9 +549,9 @@ namespace Apolo.ViewModels
                 var document = await _billingRepository.EditAsync(Bill.Id.Value, type, sequence, newDate);
                 Bill = new BillSummary(document.Id, document.PayerId, document.Type, document.SequenceNumber, document.DocumentNumber,
                     document.CreatedUTC);
-                SetExitFunction($"{Bill.Name} was edited successfully.", InfoBarType.Success);
+                SetExitFunction($"{_loc.Get(Messages_Edit_Bill_Success, Bill.Name)}.", InfoBarType.Success);
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex)
             {
                 SetExitFunction(ex.Message, InfoBarType.Error);
             }

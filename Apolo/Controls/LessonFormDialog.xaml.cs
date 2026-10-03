@@ -8,16 +8,22 @@ namespace Apolo.Controls
     public sealed partial class LessonFormDialog : UserControl
     {
         public LessonFormViewModel ViewModel { get; }
-        public LessonFormDialog(LessonsViewModel parentVM)
+        public LessonFormDialog(LessonsBaseViewModel parentVM)
         {
             InitializeComponent();
             ViewModel = new LessonFormViewModel(parentVM);
         }
 
-        public LessonFormDialog(LessonsViewModel parentVM, LessonSummary lesson)
+        public LessonFormDialog(LessonsBaseViewModel parentVM, LessonSummary lesson)
         {
             InitializeComponent();
             ViewModel = new LessonFormViewModel(parentVM, lesson);
+        }
+
+        public LessonFormDialog(LessonsBaseViewModel parentVM, SpecificationSummary spec)
+        {
+            InitializeComponent();
+            ViewModel = new LessonFormViewModel(parentVM, spec);
         }
 
         private void StudentBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)

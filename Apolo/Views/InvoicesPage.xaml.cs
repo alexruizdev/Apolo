@@ -2,8 +2,6 @@ using Apolo.Controls;
 using Apolo.Services;
 using Apolo.ViewModels;
 using CommunityToolkit.Mvvm.DependencyInjection;
-using DocumentFormat.OpenXml.Drawing;
-using DocumentFormat.OpenXml.Vml;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -14,11 +12,28 @@ namespace Apolo.Views
 {
     public sealed partial class InvoicesPage : Page
     {
+        public static string ConfigureBillText => Loc.S("Common/ConfigureBill");
+        public static string SearchBillPlaceholderText => Loc.S("Common/SearchBillPlaceholder");
+
         public BillingViewModel ViewModel => (BillingViewModel)DataContext;
         public InvoicesPage()
         {
             InitializeComponent();
             DataContext = Ioc.Default.GetService<BillingViewModel>();
+        }
+
+        private static RadioButtons CreateDocumentTypeOptions(DocumentType selectedType)
+        {
+            var typeOption = new RadioButtons
+            {
+                Header = Loc.S("Common/DocumentType"),
+                SelectedIndex = selectedType == DocumentType.Invoice ? 0 : 1
+            };
+
+            typeOption.Items.Add(Loc.S("Common/Invoice"));
+            typeOption.Items.Add(Loc.S("Common/Ticket"));
+
+            return typeOption;
         }
 
         private async void Page_Loaded(object sender, RoutedEventArgs e)
@@ -38,13 +53,13 @@ namespace Apolo.Views
 
         private async void RemoveLesson_Click(object sender, RoutedEventArgs e)
         {
-            if (await ConfirmationDialog.ConfirmButtonAction(sender, "remove selected lessons"))
+            if (await ConfirmationDialog.ConfirmButtonAction(sender, Loc.Action_RemoveSelectedLessons, Loc.Buttons_Delete))
                 await ViewModel.RemoveSelectedLessonsAsync();
         }
 
         private async void DeleteBill_Click(object sender, RoutedEventArgs e)
         {
-            if (await ConfirmationDialog.ConfirmButtonAction(sender, $"delete bill {ViewModel.Bill.Name}"))
+            if (await ConfirmationDialog.ConfirmButtonAction(sender, $"{Loc.Action_DeleteBill} {ViewModel.Bill.Name}", Loc.Buttons_Delete))
                 await ViewModel.DeleteBillAsync();
         }
 
@@ -53,21 +68,16 @@ namespace Apolo.Views
             if (ViewModel.Bill.Id is null)
                 return; 
 
-            var typeOption = new RadioButtons
-            {
-                Header = "Document Type",
-                Items = { "Invoice", "Ticket" },
-                SelectedIndex = (ViewModel.Bill.Type == DocumentType.Invoice) ? 0 : 1
-            };
+            var typeOption = CreateDocumentTypeOptions(ViewModel.Bill.Type);
             var sequence = new NumberBox
             {
-                Header = "Sequence Number",
+                Header = Loc.S("Common/SequenceNumber"),
                 Minimum = 0,
                 Value = ViewModel.Bill.SequenceNumber
             };
             var datePicker = new DatePicker
             {
-                Header = "Creation Date",
+                Header = Loc.S("Common/CreationDate"),
                 Date = ViewModel.Bill.CreatedUTC
             };
             var panel = new StackPanel { Spacing = 8 };
@@ -77,9 +87,9 @@ namespace Apolo.Views
 
             var dialog = new ContentDialog()
             {
-                Title = $"Edit {ViewModel.Bill.Name}",
+                Title = Loc.F("Dialogs/EditBillTitle", ViewModel.Bill.Name),
                 Content = panel,
-                PrimaryButtonText = "Save",
+                PrimaryButtonText = Loc.Buttons_Save,
                 CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = Content.XamlRoot
@@ -97,15 +107,10 @@ namespace Apolo.Views
 
         private async void CreateBill_Click(object sender, RoutedEventArgs e)
         {
-            var typeOption = new RadioButtons
-            {
-                Header = "Document Type",
-                Items = { "Invoice", "Ticket" },
-                SelectedIndex = (ViewModel.Bill.Type == DocumentType.Invoice) ? 0 : 1
-            };
+            var typeOption = CreateDocumentTypeOptions(ViewModel.Bill.Type);
             var datePicker = new DatePicker
             {
-                Header = "Creation Date",
+                Header = Loc.S("Common/CreationDate"),
                 Date = DateTime.Now
             };
             var panel = new StackPanel { Spacing = 8 };
@@ -114,9 +119,9 @@ namespace Apolo.Views
 
             var dialog = new ContentDialog()
             {
-                Title = $"Edit {ViewModel.Bill.Name}",
+                Title = Loc.S("Dialogs/CreateBillTitle"),
                 Content = panel,
-                PrimaryButtonText = "Save",
+                PrimaryButtonText = Loc.Buttons_Create,
                 CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = Content.XamlRoot
@@ -139,6 +144,25 @@ namespace Apolo.Views
             if (ViewModel != null)
             {
                 await ViewModel.RefreshProfileAsync();
+
+                if (e.Parameter is string paramStr)
+                {
+                    if (paramStr.StartsWith("document:"))
+                    {
+                        if (Guid.TryParse(paramStr[9..], out Guid documentId))
+                        {
+                            await ViewModel.LoadBillLessonsAsync(documentId);
+                        }
+                    }
+                    else if (paramStr.StartsWith("payer:"))
+                    {
+                        if (Guid.TryParse(paramStr[6..], out Guid payerId))
+                        {
+                            ViewModel.SelectedPayerId = payerId;
+                            await ViewModel.LoadLessonsAsync();
+                        }
+                    }
+                }
             }
         }
 

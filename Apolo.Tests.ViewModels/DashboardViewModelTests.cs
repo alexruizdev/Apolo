@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using Apolo.Services;
+using Moq;
 using Repository;
 using ViewModels;
 
@@ -10,13 +11,17 @@ namespace Apolo.Tests.ViewModels
         private DashboardViewModel _viewModel = null!;
 
         private Mock<IDashboardRepository> _repositoryMock = null!;
+        private Mock<IStringLocalizer> _localizerMock = null!;
+        private Mock<IUserProfileService> _userProfileMock = null!;
 
         [TestInitialize]
         public void TestInit()
         {
             _repositoryMock = new Mock<IDashboardRepository>();
+            _localizerMock = new Mock<IStringLocalizer>();
+            _userProfileMock = new Mock<IUserProfileService>();
 
-            _viewModel = new DashboardViewModel(_repositoryMock.Object);
+            _viewModel = new DashboardViewModel(_repositoryMock.Object, _localizerMock.Object, _userProfileMock.Object);
         }
 
         [TestMethod]
@@ -40,7 +45,6 @@ namespace Apolo.Tests.ViewModels
             // Is busy
             _viewModel.IsBusy = true;
             await _viewModel.LoadAsync();
-            Assert.AreEqual("Can't load lessons while busy.", _viewModel.InfoMessage);
             Assert.IsTrue(_viewModel.OpenInfoBar);
             Assert.AreEqual(InfoBarType.Warning, _viewModel.InfoBarType);
 

@@ -1,9 +1,15 @@
-﻿using Models;
+using Models;
 
 namespace Models
 {
+    public class LanguageOption
+    {
+        public string DisplayName { get; set; } = string.Empty;
+        public string Code { get; set; } = string.Empty;
+    }
     public sealed class UserProfile
     {
+        public string Language { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
         public string ZipCode { get; set; } = string.Empty;
@@ -19,6 +25,14 @@ namespace Models
         public double WeekendFee { get; set; } = 0;
         public string BillingFolder { get; set; } = string.Empty;
         public string BackupFolder { get; set; } = string.Empty;
+        public bool GenerateTicketWithInvoice { get; set; } = false;
+        public bool IncludeLessonsInTicket { get; set; } = true;
+        public bool IncludeLessonsInInvoice { get; set; } = true;
+        public bool ShowIvaDisclaimer { get; set; } = false;
+        public bool DeveloperMode { get; set; } = false;
+        public string LessonTerm { get; set; } = string.Empty;
+        public string StudentTerm { get; set; } = string.Empty;
+        public bool HideStudentColumn { get; set; } = false;
     }
 }
 
@@ -28,6 +42,17 @@ namespace Apolo.Services
     {
         Task<UserProfile> LoadProfileAsync();
         Task SaveAsync(UserProfile profile);
+    }
+
+    public interface ILanguageService
+    {
+        void ApplyLanguage(string languageCode);
+    }
+
+    public interface IStringLocalizer
+    {
+        string Get(string key);
+        string Get(string key, params object[] args);
     }
 
 }

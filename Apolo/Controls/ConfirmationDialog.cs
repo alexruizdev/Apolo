@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using Apolo.Services;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Models;
 using System;
@@ -8,27 +9,27 @@ namespace Apolo.Controls
 {
     public static class ConfirmationDialog
     {
-        public static async Task<bool> ConfirmMenuAction(object sender, string action)
+        public static async Task<bool> ConfirmMenuAction(object sender, string action, string primaryText)
         {
             if (sender is not MenuFlyoutItem item) return false;
 
-            return await ConfirmAction(item.XamlRoot, action);
+            return await ConfirmAction(item.XamlRoot, action, primaryText);
         }
-        public static async Task<bool> ConfirmButtonAction(object sender, string action)
+        public static async Task<bool> ConfirmButtonAction(object sender, string action, string primaryText)
         {
             if (sender is not Button button) return false;
 
-            return await ConfirmAction(button.XamlRoot, action);
+            return await ConfirmAction(button.XamlRoot, action, primaryText);
         }
 
-        private static async Task<bool> ConfirmAction(XamlRoot root, string action)
+        private static async Task<bool> ConfirmAction(XamlRoot root, string action, string primaryText)
         {
             var dialog = new ContentDialog
             {
-                Title = $"Confirm: {action}",
-                Content = $"Are you sure you want to {action}? This action cannot be undone.",
-                PrimaryButtonText = "Delete",
-                CloseButtonText = "Cancel",
+                Title = Loc.F("Confirmation/Title", action),
+                Content = Loc.F("Confirmation/Content", action),
+                PrimaryButtonText = primaryText,
+                CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Close,
                 XamlRoot = root
             };
@@ -57,10 +58,10 @@ namespace Apolo.Controls
 
             var dialog = new ContentDialog
             {
-                Title = $"Confirm: {action}",
-                Content = $"Are you sure you want to {action} '{item.Name}'? This action cannot be undone.",
-                PrimaryButtonText = "Delete",
-                CloseButtonText = "Cancel",
+                Title = Loc.F("Confirmation/Title", action),
+                Content = Loc.F("Confirmation/Content", action, item.Name),
+                PrimaryButtonText = Loc.Buttons_Delete,
+                CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Close,
                 XamlRoot = root
             };

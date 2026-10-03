@@ -7,7 +7,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="using:Microsoft.UI.Xaml.Controls"
         xmlns:loc="using:Apolo.Services"
-        Title="Apolo"
+        Title="{x:Bind loc:Loc.Common_AppTitle}"
         Activated="Window_Activated"
         mc:Ignorable="d">
 
@@ -19,9 +19,9 @@
             <RowDefinition Height="*" />
             <!--  NavigationView  -->
         </Grid.RowDefinitions>
-
-        <TitleBar Title="Apolo"
-                  Subtitle="Invoice manager"
+        
+        <TitleBar Title="{x:Bind loc:Loc.Common_AppTitle}"
+                  Subtitle="{x:Bind loc:Loc.Common_InvoiceManager}"
                   IsBackButtonVisible="False"
                   IsPaneToggleButtonVisible="False">
 

@@ -1,6 +1,6 @@
-﻿using Apolo.ViewModels;
+﻿using Apolo.Services;
+using Apolo.ViewModels;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Models;
 using Moq;
 using Repository;
@@ -13,18 +13,22 @@ namespace Apolo.Tests.ViewModels
     {
         private Mock<IServiceRepository> _mockRepo = null!;
         private ServicesViewModel _viewModel = null!;
+        private Mock<IStringLocalizer> _localizerMock = null!;
+        private Mock<IUserProfileService> _userProfileMock = null!;
+
 
         [TestInitialize]
         public void TestInit()
         {
             _mockRepo = new Mock<IServiceRepository>();
-            _viewModel = new ServicesViewModel(_mockRepo.Object);
+            _localizerMock = new Mock<IStringLocalizer>();
+            _userProfileMock = new Mock<IUserProfileService>();
+            _viewModel = new ServicesViewModel(_mockRepo.Object, _localizerMock.Object, _userProfileMock.Object);
         }
 
-        void VerifyAction(string? message, InfoBarType severity, bool isOpen, int count, bool isBusy = false)
+        void VerifyAction(InfoBarType severity, bool isOpen, int count, bool isBusy = false)
         {
             Assert.HasCount(count, _viewModel.Services);
-            Assert.AreEqual(message, _viewModel.InfoMessage);           
             Assert.AreEqual(isBusy, _viewModel.IsBusy);
             Assert.AreEqual(isOpen, _viewModel.OpenInfoBar);
             Assert.AreEqual(severity, _viewModel.InfoBarType);
@@ -39,7 +43,7 @@ namespace Apolo.Tests.ViewModels
         {
             var result = _viewModel.ValidateServiceInput(ref invalidName, 60);
             Assert.IsFalse(result);
-            VerifyAction("Name is required.", InfoBarType.Warning, isOpen: true, count: 0);
+            VerifyAction(InfoBarType.Warning, isOpen: true, count: 0);
         }
 
         [TestMethod]
@@ -48,7 +52,7 @@ namespace Apolo.Tests.ViewModels
             var serviceName = "Service";
             var result = _viewModel.ValidateServiceInput(ref serviceName, -60);
             Assert.IsFalse(result);
-            VerifyAction("Enter a valid non-negative price (e.g., 42.50).", InfoBarType.Warning, isOpen: true, count: 0);
+            VerifyAction(InfoBarType.Warning, isOpen: true, count: 0);
         }
 
         [TestMethod]
@@ -58,7 +62,7 @@ namespace Apolo.Tests.ViewModels
             var result = _viewModel.ValidateServiceInput(ref serviceName, 60);
             Assert.IsTrue(result);
             Assert.AreEqual("Service", serviceName); // Name should be unchanged
-            VerifyAction(null, InfoBarType.Success, isOpen: false, count: 0);
+            VerifyAction(InfoBarType.Success, isOpen: false, count: 0);
         }
 
         // Get Service
@@ -67,7 +71,6 @@ namespace Apolo.Tests.ViewModels
         public void GetService_InvalidId()
         {
             var exception = Assert.Throws<InvalidDataException>(() => _viewModel.GetService(Guid.NewGuid()));
-            Assert.AreEqual("Service not loaded.", exception.Message);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.IsNull(_viewModel.InfoMessage);
             Assert.IsFalse(_viewModel.OpenInfoBar);
@@ -82,7 +85,7 @@ namespace Apolo.Tests.ViewModels
             var result = _viewModel.GetService(services[2].Id);
             Assert.AreEqual("Language Lessons", result.service.Name);
             Assert.AreEqual(2, result.index);
-            VerifyAction(null, InfoBarType.Success, isOpen: false, count: 6);
+            VerifyAction(InfoBarType.Success, isOpen: false, count: 6);
         }
 
         // --- LoadAsync Tests ---
@@ -94,7 +97,7 @@ namespace Apolo.Tests.ViewModels
 
             await _viewModel.LoadAsync();
 
-            VerifyAction("Can't load services while busy.", InfoBarType.Warning, isOpen: true, count: 0, isBusy: true);
+            VerifyAction(InfoBarType.Warning, isOpen: true, count: 0, isBusy: true);
             _mockRepo.Verify(r => r.GetServicesAsync(), Times.Never);
         }
 
@@ -118,7 +121,7 @@ namespace Apolo.Tests.ViewModels
             _mockRepo.Verify(r => r.GetServicesAsync(), Times.Exactly(2));
 
             // 2. Verify the UI collection was updated correctly
-            VerifyAction(null, InfoBarType.Success, isOpen: false, count: 3);
+            VerifyAction(InfoBarType.Success, isOpen: false, count: 3);
             var addedSummary = _viewModel.Services.First();
             Assert.AreEqual("Personal Coaching", addedSummary.Name);
             Assert.AreEqual(50.0, addedSummary.Price);
@@ -137,7 +140,7 @@ namespace Apolo.Tests.ViewModels
 
             // Assert
             _mockRepo.Verify(r => r.GetServicesAsync(), Times.Once);
-            VerifyAction(null, InfoBarType.Success, isOpen: false, count: 0);
+            VerifyAction(InfoBarType.Success, isOpen: false, count: 0);
         }
 
         // --- AddServiceAsync Tests ---
@@ -149,7 +152,7 @@ namespace Apolo.Tests.ViewModels
 
             await _viewModel.AddServiceAsync("Valid Name", false, 10m);
 
-            VerifyAction("Can't add service while busy.", InfoBarType.Warning, isOpen: true, count: 0, isBusy: true);
+            VerifyAction(InfoBarType.Warning, isOpen: true, count: 0, isBusy: true);
             _mockRepo.Verify(r => r.AddAsync(It.IsAny<Service>()), Times.Never);
         }
 
@@ -160,7 +163,7 @@ namespace Apolo.Tests.ViewModels
             await _viewModel.AddServiceAsync("Math Tutoring", false, -5m);
 
             // Assert
-            VerifyAction("Enter a valid non-negative price (e.g., 42.50).", InfoBarType.Warning, isOpen: true, count: 0);
+            VerifyAction(InfoBarType.Warning, isOpen: true, count: 0);
             _mockRepo.Verify(r => r.AddAsync(It.IsAny<Service>()), Times.Never);
         }
 
@@ -175,7 +178,7 @@ namespace Apolo.Tests.ViewModels
             await _viewModel.AddServiceAsync("Guitar Lesson", true, 20m);
 
             // Assert
-            VerifyAction("Database connection lost.", InfoBarType.Error, isOpen: true, count: 0);
+            VerifyAction(InfoBarType.Error, isOpen: true, count: 0);
             _mockRepo.Verify(r => r.AddAsync(It.IsAny<Service>()), Times.Once);
         }
 
@@ -193,7 +196,7 @@ namespace Apolo.Tests.ViewModels
                 s.Price == 45.00m)), Times.Once);
 
             // 2. Verify the UI collection was updated correctly
-            VerifyAction("Service 'Guitar Lesson' added successfully.", InfoBarType.Success, isOpen: true, count: 1);
+            VerifyAction(InfoBarType.Success, isOpen: true, count: 1);
             var addedSummary = _viewModel.Services.First();
             Assert.AreEqual("Guitar Lesson", addedSummary.Name); 
             Assert.AreEqual(45.0, addedSummary.Price); 
@@ -213,7 +216,7 @@ namespace Apolo.Tests.ViewModels
             await _viewModel.DeleteServiceAsync(itemToDelete.Id);
 
             // Assert
-            VerifyAction("Can't delete service while busy.", InfoBarType.Warning, isOpen: true, count: 0, isBusy: true);
+            VerifyAction(InfoBarType.Warning, isOpen: true, count: 0, isBusy: true);
             _mockRepo.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Never);
         }
 
@@ -234,7 +237,7 @@ namespace Apolo.Tests.ViewModels
             // Act
             await _viewModel.DeleteServiceAsync(targetId);
             // Assert
-            VerifyAction("Constraint failed", InfoBarType.Error, isOpen: true, count: 1);
+            VerifyAction(InfoBarType.Error, isOpen: true, count: 1);
             _mockRepo.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Once);
         }
 
@@ -258,7 +261,7 @@ namespace Apolo.Tests.ViewModels
             _mockRepo.Verify(r => r.DeleteAsync(targetId), Times.Once);
 
             // 2. Verify the UI list was updated correctly
-            VerifyAction($"Service '{itemToDelete.Name}' deleted successfully.", InfoBarType.Success, isOpen: true, count: 1);
+            VerifyAction(InfoBarType.Success, isOpen: true, count: 1);
             _mockRepo.Verify(r => r.DeleteAsync(targetId), Times.Once);
             Assert.AreEqual("History", _viewModel.Services[0].Name); // Only the kept item remains
             Assert.IsFalse(_viewModel.Services[0].IsPricePerHour); 
@@ -277,7 +280,7 @@ namespace Apolo.Tests.ViewModels
             await _viewModel.UpdateServiceAsync(Guid.NewGuid(), "Test", true, 10.0m);
 
             // Assert
-            VerifyAction("Can't update service while busy.", InfoBarType.Warning, isOpen: true, count: 0, isBusy: true);
+            VerifyAction(InfoBarType.Warning, isOpen: true, count: 0, isBusy: true);
             _mockRepo.Verify(r => r.UpdateAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<decimal>()), Times.Never);
         }
 
@@ -288,7 +291,7 @@ namespace Apolo.Tests.ViewModels
             await _viewModel.UpdateServiceAsync(Guid.NewGuid(), "Math", true, -5.0m);
 
             // Assert
-            VerifyAction("Enter a valid non-negative price (e.g., 42.50).", InfoBarType.Warning, isOpen: true, count: 0);
+            VerifyAction(InfoBarType.Warning, isOpen: true, count: 0);
             _mockRepo.Verify(r => r.UpdateAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<decimal>()), Times.Never);
         }
 
@@ -310,7 +313,7 @@ namespace Apolo.Tests.ViewModels
             await _viewModel.UpdateServiceAsync(targetId, "Math", true, 50m);
 
             // Assert
-            VerifyAction("Update failed due to lock.", InfoBarType.Error, isOpen: true, count: 2);
+            VerifyAction(InfoBarType.Error, isOpen: true, count: 2);
             _mockRepo.Verify(r => r.UpdateAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<decimal>()), Times.Once);
         }
 
@@ -333,7 +336,7 @@ namespace Apolo.Tests.ViewModels
             _mockRepo.Verify(r => r.UpdateAsync(targetId, "Advanced Math", true, 55.0m), Times.Once);
 
             // 2. Verify UI Update
-            VerifyAction($"Service 'Advanced Math' updated successfully.", InfoBarType.Success, isOpen: true, count: 2);
+            VerifyAction(InfoBarType.Success, isOpen: true, count: 2);
 
             // The item at index 0 should be our updated record
             var updatedItem = _viewModel.Services[0];

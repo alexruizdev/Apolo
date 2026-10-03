@@ -89,13 +89,13 @@ namespace Repository
         public async Task ClearDatabaseAsync()
         {
             await _context.Database.EnsureDeletedAsync();
-            await _context.Database.EnsureCreatedAsync();
+            await _context.Database.MigrateAsync();
         }
 
         public async Task ClearArchiveAsync()
         {
             await _archiveDb.Database.EnsureDeletedAsync();
-            await _archiveDb.Database.EnsureCreatedAsync();
+            await _archiveDb.Database.MigrateAsync();
         }
 
         public async Task<List<PayerActivityInfo>> GetPayersWithActivityAsync()

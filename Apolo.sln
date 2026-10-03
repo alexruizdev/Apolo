@@ -1,4 +1,4 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.4.11626.88
@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repository", "Repository\Re
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models", "Models\Models.csproj", "{C0E8D22C-816C-4D02-A51A-0906373C40E3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Excel", "CSV\CSV.csproj", "{FF91A80A-4275-4736-8F1F-029ED9F3FE7C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSV", "CSV\CSV.csproj", "{FF91A80A-4275-4736-8F1F-029ED9F3FE7C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Apolo.Tests.Data", "Apolo.Tests.Data\Apolo.Tests.Data.csproj", "{F236391A-5186-4378-8FCA-F8803639E7BE}"
 EndProject
@@ -20,6 +20,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Apolo.Tests.ViewModels", "Apolo.Tests.ViewModels\Apolo.Tests.ViewModels.csproj", "{0A4B79C5-F613-4EB7-B1E3-AFAEE84ECE86}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDF", "PDF\PDF.csproj", "{32586967-E506-47BB-A118-AD4FE9A3A55C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Apolo.Tests.CSV", "Apolo.Tests.CSV\Apolo.Tests.CSV.csproj", "{72F6420A-F33A-4D03-A920-D9B286F65530}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -145,6 +147,18 @@ Global
 		{32586967-E506-47BB-A118-AD4FE9A3A55C}.Release|x64.Build.0 = Release|Any CPU
 		{32586967-E506-47BB-A118-AD4FE9A3A55C}.Release|x86.ActiveCfg = Release|Any CPU
 		{32586967-E506-47BB-A118-AD4FE9A3A55C}.Release|x86.Build.0 = Release|Any CPU
+		{72F6420A-F33A-4D03-A920-D9B286F65530}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{72F6420A-F33A-4D03-A920-D9B286F65530}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{72F6420A-F33A-4D03-A920-D9B286F65530}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{72F6420A-F33A-4D03-A920-D9B286F65530}.Debug|x64.Build.0 = Debug|Any CPU
+		{72F6420A-F33A-4D03-A920-D9B286F65530}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{72F6420A-F33A-4D03-A920-D9B286F65530}.Debug|x86.Build.0 = Debug|Any CPU
+		{72F6420A-F33A-4D03-A920-D9B286F65530}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{72F6420A-F33A-4D03-A920-D9B286F65530}.Release|ARM64.Build.0 = Release|Any CPU
+		{72F6420A-F33A-4D03-A920-D9B286F65530}.Release|x64.ActiveCfg = Release|Any CPU
+		{72F6420A-F33A-4D03-A920-D9B286F65530}.Release|x64.Build.0 = Release|Any CPU
+		{72F6420A-F33A-4D03-A920-D9B286F65530}.Release|x86.ActiveCfg = Release|Any CPU
+		{72F6420A-F33A-4D03-A920-D9B286F65530}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

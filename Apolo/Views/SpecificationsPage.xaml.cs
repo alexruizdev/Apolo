@@ -25,7 +25,7 @@ public sealed partial class SpecificationsPage : Page
 
     private async void DeleteSpecification_Click(object sender, RoutedEventArgs e)
     {
-        Guid? id = await ConfirmationDialog.ConfirmButtonItemAction(sender, "delete specification");
+        Guid? id = await ConfirmationDialog.ConfirmButtonItemAction(sender, Loc.Action_DeleteSpecification);
         if (id is not null)
         {
             await ViewModel.DeleteSpecificationAsync(id.Value);
@@ -41,13 +41,13 @@ public sealed partial class SpecificationsPage : Page
 
         var dialog = new ContentDialog()
         {
-            PrimaryButtonText = "Edit",
+            PrimaryButtonText = Loc.Buttons_Edit,
             CloseButtonText = Loc.Buttons_Cancel,
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = Content.XamlRoot
         };
 
-        Binding operationsBinding = new Binding
+        Binding operationsBinding = new()
         {
             Source = formControl.ViewModel,
             Path = new PropertyPath("IsPrimaryButtonEnabled"),
@@ -55,7 +55,7 @@ public sealed partial class SpecificationsPage : Page
         };
         BindingOperations.SetBinding(dialog, ContentDialog.IsPrimaryButtonEnabledProperty, operationsBinding);
 
-        Binding dynamicTitleBinding = new Binding
+        Binding dynamicTitleBinding = new()
         {
             Source = formControl.ViewModel,
             Path = new PropertyPath("DialogTitle"),
@@ -77,54 +77,42 @@ public sealed partial class SpecificationsPage : Page
     {
         if (sender is not Button btn)
             return;
+
         if (btn.DataContext is not SpecificationSummary item)
             return;
 
-        var datePicker = new CalendarDatePicker { Header = "Date", IsTodayHighlighted = true };
-        var noteBox = new TextBox
-        {
-            Header = "Notes",
-            MinWidth = 400,
-            AcceptsReturn = true,
-            TextWrapping = TextWrapping.Wrap
-        };
-
-        var tipBox = new NumberBox { Header = "Tip:", PlaceholderText = "0.00" };
-
-        var panel = new StackPanel { Spacing = 8 };
-        panel.Children.Add(datePicker);
-        panel.Children.Add(noteBox);
-        panel.Children.Add(tipBox);
-
-        var viewer = new ScrollViewer
-        {
-            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-            VerticalScrollMode = ScrollMode.Enabled,
-            MaxHeight = 500,
-            Content = panel
-        };
+        var formControl = new LessonFormDialog(ViewModel, item);
 
         var dialog = new ContentDialog()
         {
-            Title = "Create lesson",
-            Content = viewer,
-            PrimaryButtonText = "Create",
+            PrimaryButtonText = Loc.Buttons_Create,
             CloseButtonText = Loc.Buttons_Cancel,
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = Content.XamlRoot
         };
 
-        
+        Binding operationsBinding = new()
+        {
+            Source = formControl.ViewModel,
+            Path = new PropertyPath("IsPrimaryButtonEnabled"),
+            Mode = BindingMode.OneWay
+        };
+        BindingOperations.SetBinding(dialog, ContentDialog.IsPrimaryButtonEnabledProperty, operationsBinding);
+
+        Binding dynamicTitleBinding = new()
+        {
+            Source = formControl.ViewModel,
+            Path = new PropertyPath("DialogTitle"),
+            Mode = BindingMode.OneWay
+        };
+        BindingOperations.SetBinding(dialog, ContentDialog.TitleProperty, dynamicTitleBinding);
+
+        dialog.Content = formControl;
+
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
         {
-            var dto = datePicker.Date ?? DateTimeOffset.Now;
-            var date = DateOnly.FromDateTime(dto.Date);
-            var notes = string.IsNullOrWhiteSpace(noteBox.Text) ? null : noteBox.Text;
-            decimal tip = 0;
-            if (!double.IsNaN(tipBox.Value))
-                tip = (decimal)tipBox.Value;
-            await ViewModel.CreateLessonFromSpecificationAsync(item.Id, date, tip, notes);
+            await formControl.ViewModel.SaveLessonAsync();
             await ViewModel.RefreshSpecifications(); // Refresh the specifications to update the usage count
         }
     }
@@ -135,13 +123,13 @@ public sealed partial class SpecificationsPage : Page
 
         var dialog = new ContentDialog()
         {
-            PrimaryButtonText = "Create",
+            PrimaryButtonText = Loc.Buttons_Create,
             CloseButtonText = Loc.Buttons_Cancel,
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = Content.XamlRoot
         };
 
-        Binding operationsBinding = new Binding
+        Binding operationsBinding = new()
         {
             Source = formControl.ViewModel,
             Path = new PropertyPath("IsPrimaryButtonEnabled"),
@@ -149,7 +137,7 @@ public sealed partial class SpecificationsPage : Page
         };
         BindingOperations.SetBinding(dialog, ContentDialog.IsPrimaryButtonEnabledProperty, operationsBinding);
 
-        Binding dynamicTitleBinding = new Binding
+        Binding dynamicTitleBinding = new()
         {
             Source = formControl.ViewModel,
             Path = new PropertyPath("DialogTitle"),

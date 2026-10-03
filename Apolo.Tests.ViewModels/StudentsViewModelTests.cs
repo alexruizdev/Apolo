@@ -1,4 +1,5 @@
-﻿using Apolo.ViewModels;
+﻿using Apolo.Services;
+using Apolo.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Moq;
@@ -13,20 +14,24 @@ namespace Apolo.Tests.ViewModels
         private Mock<IStudentRepository> _mockStudentRepo = null!;
         private Mock<IPayerRepository> _mockPayerRepo = null!;
         private StudentsViewModel _viewModel = null!;
+        private Mock<IStringLocalizer> _localizerMock = null!;
+        private Mock<IUserProfileService> _userProfileMock = null!;
+
 
         [TestInitialize]
         public void TestInit()
         {
             _mockStudentRepo = new Mock<IStudentRepository>();
             _mockPayerRepo = new Mock<IPayerRepository>();
-            _viewModel = new StudentsViewModel(_mockStudentRepo.Object, _mockPayerRepo.Object);
+            _localizerMock = new Mock<IStringLocalizer>();
+            _userProfileMock = new Mock<IUserProfileService>();
+            _viewModel = new StudentsViewModel(_mockStudentRepo.Object, _mockPayerRepo.Object, _localizerMock.Object, _userProfileMock.Object);
         }
 
-        void VerifyAction(string? message, InfoBarType severity, bool isOpen, int studentsCount, int payersCount, bool isBusy = false)
+        void VerifyAction(InfoBarType severity, bool isOpen, int studentsCount, int payersCount, bool isBusy = false)
         {
             Assert.HasCount(studentsCount, _viewModel.Students);
             Assert.HasCount(payersCount, _viewModel.Payers);
-            Assert.AreEqual(message, _viewModel.InfoMessage);
             Assert.AreEqual(isBusy, _viewModel.IsBusy);
             Assert.AreEqual(isOpen, _viewModel.OpenInfoBar);
             Assert.AreEqual(severity, _viewModel.InfoBarType);
@@ -44,8 +49,7 @@ namespace Apolo.Tests.ViewModels
             var result = _viewModel.ValidateStudentInput(ref invalidName, ref invalidName);
 
             // Assert
-            VerifyAction("Enter at least a first or last name.", 
-                InfoBarType.Warning, isOpen: true, studentsCount: 0, payersCount: 0);
+            VerifyAction(InfoBarType.Warning, isOpen: true, studentsCount: 0, payersCount: 0);
             Assert.IsFalse(result);
         }
 
@@ -58,7 +62,7 @@ namespace Apolo.Tests.ViewModels
             var result = _viewModel.ValidateStudentInput(ref firstName, ref lastName);
 
             // Assert
-            VerifyAction(null, InfoBarType.Success, isOpen: false, studentsCount: 0, payersCount: 0);
+            VerifyAction(InfoBarType.Success, isOpen: false, studentsCount: 0, payersCount: 0);
             Assert.IsTrue(result);
             Assert.AreEqual("Student", firstName);
             Assert.AreEqual("X", lastName);
@@ -81,9 +85,9 @@ namespace Apolo.Tests.ViewModels
         {
             var student = new StudentSummary(Guid.NewGuid(), "First", "Last", Guid.NewGuid(), "Payer");
             _viewModel.Students.Add(student);
-            var result = _viewModel.GetStudent(student.Id);
+            var (_, index) = _viewModel.GetStudent(student.Id);
             Assert.AreEqual("First Last", student.Name);
-            Assert.AreEqual(0, result.index);
+            Assert.AreEqual(0, index);
             Assert.IsFalse(_viewModel.IsBusy);
             Assert.IsNull(_viewModel.InfoMessage);
         }
@@ -97,8 +101,7 @@ namespace Apolo.Tests.ViewModels
 
             await _viewModel.LoadAsync();
 
-            VerifyAction("Can't load students while busy.", InfoBarType.Warning, isOpen: true,
-                studentsCount: 0, payersCount: 0, isBusy: true);
+            VerifyAction(InfoBarType.Warning, isOpen: true, studentsCount: 0, payersCount: 0, isBusy: true);
             _mockPayerRepo.Verify(r => r.GetPayerOptionsAsync(), Times.Never);
             _mockStudentRepo.Verify(r => r.GetSudentsAsync(), Times.Never);
         }
@@ -106,18 +109,26 @@ namespace Apolo.Tests.ViewModels
         [TestMethod]
         public async Task LoadAsync_ValidInput_PopulatesStudentAndPayerCollection()
         {
-            var firstPayerLoad = new List<PayerOption>();
-            firstPayerLoad.Add(new PayerOption(Guid.NewGuid(), "Old Man"));
-            firstPayerLoad.Add(new PayerOption(Guid.NewGuid(), "Old Kid"));
-            var secondPayerLoad = new List<PayerOption>();
-            secondPayerLoad.Add(new PayerOption(Guid.NewGuid(), "New Man"));
-            secondPayerLoad.Add(new PayerOption(Guid.NewGuid(), "New Kid"));
-            var firstStudentLoad = new List<StudentSummary>();
-            firstStudentLoad.Add(new StudentSummary(Guid.NewGuid(), "Old", "Human", firstPayerLoad[0].Id, firstPayerLoad[0].FullName));
-            firstStudentLoad.Add(new StudentSummary(Guid.NewGuid(), "Old", "Child", firstPayerLoad[1].Id, firstPayerLoad[1].FullName));
-            var secondStudentLoad = new List<StudentSummary>();
-            secondStudentLoad.Add(new StudentSummary(Guid.NewGuid(), "New", "Human", secondPayerLoad[0].Id, secondPayerLoad[0].FullName));
-            secondStudentLoad.Add(new StudentSummary(Guid.NewGuid(), "New", "Child", secondPayerLoad[1].Id, secondPayerLoad[1].FullName));
+            var firstPayerLoad = new List<PayerOption>
+            {
+                new(Guid.NewGuid(), "Old Man"),
+                new(Guid.NewGuid(), "Old Kid")
+            };
+            var secondPayerLoad = new List<PayerOption>
+            {
+                new(Guid.NewGuid(), "New Man"),
+                new(Guid.NewGuid(), "New Kid")
+            };
+            var firstStudentLoad = new List<StudentSummary>
+            {
+                new(Guid.NewGuid(), "Old", "Human", firstPayerLoad[0].Id, firstPayerLoad[0].FullName),
+                new(Guid.NewGuid(), "Old", "Child", firstPayerLoad[1].Id, firstPayerLoad[1].FullName)
+            };
+            var secondStudentLoad = new List<StudentSummary>
+            {
+                new(Guid.NewGuid(), "New", "Human", secondPayerLoad[0].Id, secondPayerLoad[0].FullName),
+                new(Guid.NewGuid(), "New", "Child", secondPayerLoad[1].Id, secondPayerLoad[1].FullName)
+            };
 
             _mockPayerRepo.SetupSequence(r => r.GetPayerOptionsAsync())
              .ReturnsAsync(firstPayerLoad)
@@ -135,7 +146,7 @@ namespace Apolo.Tests.ViewModels
             _mockStudentRepo.Verify(r => r.GetSudentsAsync(), Times.Exactly(2));
 
             // 2. Verify the UI collection was updated correctly
-            VerifyAction("2 loaded", InfoBarType.Success, isOpen: true, payersCount: 2, studentsCount: 2);
+            VerifyAction(InfoBarType.Success, isOpen: true, payersCount: 2, studentsCount: 2);
             var addedStudent = _viewModel.Students.First();
             var addedPayer = _viewModel.Payers.First();
             Assert.AreEqual("New Human", addedStudent.Name);
@@ -146,16 +157,16 @@ namespace Apolo.Tests.ViewModels
         public async Task LoadAsync_EmptyRepository_ResultingCollectionIsEmpty()
         {
             _mockPayerRepo.SetupSequence(r => r.GetPayerOptionsAsync())
-                .ReturnsAsync(new List<PayerOption>());
+                .ReturnsAsync([]);
             _mockStudentRepo.SetupSequence(r => r.GetSudentsAsync())
-                .ReturnsAsync(new List<StudentSummary>());
+                .ReturnsAsync([]);
 
 
             await _viewModel.LoadAsync();
 
             _mockPayerRepo.Verify(r => r.GetPayerOptionsAsync(), Times.Once);
             _mockStudentRepo.Verify(r => r.GetSudentsAsync(), Times.Once);
-            VerifyAction("0 loaded", InfoBarType.Success, isOpen: true, studentsCount: 0, payersCount: 0);
+            VerifyAction(InfoBarType.Success, isOpen: true, studentsCount: 0, payersCount: 0);
         }
 
         // --- AddStudentAsync Tests ---
@@ -167,8 +178,7 @@ namespace Apolo.Tests.ViewModels
 
             await _viewModel.AddStudentAsync("New", "Student", null);
 
-            VerifyAction("Can't add student while busy.", InfoBarType.Warning, isOpen: true,
-                payersCount: 0, studentsCount: 0, isBusy: true);
+            VerifyAction(InfoBarType.Warning, isOpen: true, payersCount: 0, studentsCount: 0, isBusy: true);
             _mockStudentRepo.Verify(r => r.AddAsync(It.IsAny<Student>()), Times.Never);
             _mockPayerRepo.Verify(r => r.AddAsync(It.IsAny<Payer>()), Times.Never);
         }
@@ -178,8 +188,7 @@ namespace Apolo.Tests.ViewModels
         {
             await _viewModel.AddStudentAsync("", "", null);
 
-            VerifyAction("Enter at least a first or last name.", InfoBarType.Warning, isOpen: true,
-                payersCount: 0, studentsCount: 0);
+            VerifyAction(InfoBarType.Warning, isOpen: true, payersCount: 0, studentsCount: 0);
             _mockStudentRepo.Verify(r => r.AddAsync(It.IsAny<Student>()), Times.Never);
             _mockPayerRepo.Verify(r => r.AddAsync(It.IsAny<Payer>()), Times.Never);
         }
@@ -192,7 +201,7 @@ namespace Apolo.Tests.ViewModels
 
             await _viewModel.AddStudentAsync("New", "Student", null);
 
-            VerifyAction("Database connection lost.", InfoBarType.Error, isOpen: true, payersCount: 0, studentsCount: 0);
+            VerifyAction(InfoBarType.Error, isOpen: true, payersCount: 0, studentsCount: 0);
             _mockPayerRepo.Verify(r => r.AddAsync(It.IsAny<Payer>()), Times.Once);
             _mockStudentRepo.Verify(r => r.AddAsync(It.IsAny<Student>()), Times.Never);
         }
@@ -208,7 +217,7 @@ namespace Apolo.Tests.ViewModels
 
             await _viewModel.AddStudentAsync("New", "Student", existingPayerId);
 
-            VerifyAction("Database connection lost.", InfoBarType.Error, isOpen: true, payersCount: 1, studentsCount: 0);
+            VerifyAction(InfoBarType.Error, isOpen: true, payersCount: 1, studentsCount: 0);
             _mockPayerRepo.Verify(r => r.AddAsync(It.IsAny<Payer>()), Times.Never);
             _mockStudentRepo.Verify(r => r.AddAsync(It.IsAny<Student>()), Times.Once);
         }
@@ -229,8 +238,7 @@ namespace Apolo.Tests.ViewModels
                 s.LastName == "Student")), Times.Once);
 
             // 2. Verify the UI collection was updated correctly
-            VerifyAction("Student 'New Student' added successfully. Created payer with same name.", InfoBarType.Success,
-                isOpen: true, payersCount: 1, studentsCount: 1);
+            VerifyAction(InfoBarType.Success, isOpen: true, payersCount: 1, studentsCount: 1);
             var addedSummary = _viewModel.Students.First();
             Assert.AreEqual("New", addedSummary.FirstName);
             Assert.AreEqual("Student", addedSummary.LastName);
@@ -254,8 +262,7 @@ namespace Apolo.Tests.ViewModels
                 s.LastName == "Student")), Times.Once);
 
             // 2. Verify the UI collection was updated correctly
-            VerifyAction("Student 'New Student' added successfully.", InfoBarType.Success,
-                isOpen: true, payersCount: 1, studentsCount: 1);
+            VerifyAction(InfoBarType.Success, isOpen: true, payersCount: 1, studentsCount: 1);
             var addedSummary = _viewModel.Students.First();
             Assert.AreEqual("New", addedSummary.FirstName);
             Assert.AreEqual("Student", addedSummary.LastName);
@@ -276,8 +283,7 @@ namespace Apolo.Tests.ViewModels
             await _viewModel.DeleteStudentAsync(itemToDelete.Id);
 
             // Assert
-            VerifyAction("Can't delete student while busy.", InfoBarType.Warning, isOpen: true,
-                studentsCount: 0, payersCount:0, isBusy: true);
+            VerifyAction(InfoBarType.Warning, isOpen: true, studentsCount: 0, payersCount:0, isBusy: true);
             _mockStudentRepo.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Never);
         }
 
@@ -298,7 +304,7 @@ namespace Apolo.Tests.ViewModels
             // Act
             await _viewModel.DeleteStudentAsync(targetId);
             // Assert
-            VerifyAction("Constraint failed", InfoBarType.Error, isOpen: true, payersCount: 0, studentsCount: 1);
+            VerifyAction(InfoBarType.Error, isOpen: true, payersCount: 0, studentsCount: 1);
             _mockStudentRepo.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Once);
         }
 
@@ -324,8 +330,7 @@ namespace Apolo.Tests.ViewModels
             _mockStudentRepo.Verify(r => r.DeleteAsync(targetId), Times.Once);
 
             // 2. Verify the UI list was updated correctly
-            VerifyAction("Student 'Student Name' deleted successfully.", InfoBarType.Success, isOpen: true,
-                studentsCount: 1, payersCount: 1);
+            VerifyAction(InfoBarType.Success, isOpen: true, studentsCount: 1, payersCount: 1);
             _mockStudentRepo.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Once);
             Assert.AreEqual("Keep Student", _viewModel.Students[0].Name); // Only the kept item remains
         }
@@ -342,8 +347,7 @@ namespace Apolo.Tests.ViewModels
             await _viewModel.UpdateStudentAsync(Guid.NewGuid(), "Student", "Name", Guid.NewGuid());
 
             // Assert
-            VerifyAction("Can't update student while busy.", InfoBarType.Warning, isOpen: true,
-                payersCount: 0, studentsCount: 0, isBusy: true);
+            VerifyAction(InfoBarType.Warning, isOpen: true, payersCount: 0, studentsCount: 0, isBusy: true);
             _mockStudentRepo.Verify(r => r.UpdateAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<string>(), 
                 It.IsAny<string>()), Times.Never);
         }
@@ -358,8 +362,7 @@ namespace Apolo.Tests.ViewModels
             await _viewModel.UpdateStudentAsync(Guid.NewGuid(), "", "", Guid.NewGuid());
 
             // Assert
-            VerifyAction("Enter at least a first or last name.", InfoBarType.Warning, isOpen: true,
-                payersCount: 0, studentsCount: 0);
+            VerifyAction(InfoBarType.Warning, isOpen: true, payersCount: 0, studentsCount: 0);
             _mockStudentRepo.Verify(r => r.UpdateAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<string>(),
                 It.IsAny<string>()), Times.Never);
         }
@@ -386,7 +389,7 @@ namespace Apolo.Tests.ViewModels
             // Act
             await _viewModel.UpdateStudentAsync(targetId, "Student", "Name", p2.Id);
             // Assert
-            VerifyAction("Update failed due to lock.", InfoBarType.Error, isOpen: true, payersCount: 2, studentsCount: 2);
+            VerifyAction(InfoBarType.Error, isOpen: true, payersCount: 2, studentsCount: 2);
             _mockStudentRepo.Verify(r => r.UpdateAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<string>(),
                 It.IsAny<string>()), Times.Once);
         }
@@ -414,8 +417,7 @@ namespace Apolo.Tests.ViewModels
             _mockStudentRepo.Verify(r => r.UpdateAsync(targetId, p2.Id, "New", "Name"), Times.Once);
 
             // 2. Verify UI Update
-            VerifyAction("Student 'Update Student' updated successfully.", InfoBarType.Success, isOpen: true,
-                studentsCount: 2, payersCount: 2);
+            VerifyAction(InfoBarType.Success, isOpen: true, studentsCount: 2, payersCount: 2);
 
             // The item at index 0 should be our updated record
             var updatedItem = _viewModel.Students[0];

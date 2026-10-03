@@ -1,4 +1,4 @@
-﻿using Models;
+using Models;
 using System.Globalization;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
@@ -246,7 +246,7 @@ namespace PDF
             doc.GeneratePdf(filename);
         }
     }
-    public class Writer : IWriter
+    public class Writer(Apolo.Services.IStringLocalizer loc) : IWriter
     {
         public void GenerateInvoice(string invoiceName, PayerSummary payer, IEnumerable<LessonLine> lessons, 
             UserProfile user, string filename, string dateText)
@@ -315,36 +315,44 @@ namespace PDF
                         col.Item().Height(15);
 
                         // Lessons table
-
-                        col.Item().Table(t =>
+                        if (user.IncludeLessonsInInvoice)
                         {
-                            t.ColumnsDefinition(c =>
+                            col.Item().Table(t =>
                             {
-                                c.ConstantColumn(85); // Date
-                                c.RelativeColumn(); // Lesson
-                                c.RelativeColumn(); // Student
-                                c.ConstantColumn(95); // Price
+                                t.ColumnsDefinition(c =>
+                                {
+                                    c.ConstantColumn(85); // Date
+                                    c.RelativeColumn(); // Lesson
+                                    if (!user.HideStudentColumn)
+                                        c.RelativeColumn(); // Student
+                                    c.ConstantColumn(95); // Price
+                                });
+
+                                string lessonHeader = string.IsNullOrWhiteSpace(user.LessonTerm) ? loc.Get("Invoice/Lesson") : user.LessonTerm;
+                                string studentHeader = string.IsNullOrWhiteSpace(user.StudentTerm) ? loc.Get("Invoice/Student") : user.StudentTerm;
+
+                                t.Header(h =>
+                                {
+                                    h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text(loc.Get("Invoice/Date")).SemiBold();
+                                    h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text(lessonHeader).SemiBold();
+                                    if (!user.HideStudentColumn)
+                                        h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text(studentHeader).SemiBold();
+                                    h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text(loc.Get("Invoice/Price")).SemiBold();
+                                });
+
+                                foreach (var l in list)
+                                {
+                                    t.Cell().PaddingVertical(4).Text(l.Date.ToString("dd-MM-yyyy"));
+                                    t.Cell().PaddingVertical(4).Text(l.Name);
+                                    if (!user.HideStudentColumn)
+                                        t.Cell().PaddingVertical(4).Text(l.StudentName);
+                                    t.Cell().PaddingVertical(4).AlignRight().Text(l.FinalPrice.ToString("C", culture));
+                                }
+
                             });
 
-                            t.Header(h =>
-                            {
-                                h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Date").SemiBold();
-                                h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Lesson");
-                                h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Student");
-                                h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Price");
-                            });
-
-                            foreach (var l in list)
-                            {
-                                t.Cell().PaddingVertical(4).Text(l.Date.ToString("dd-MM-yyyy"));
-                                t.Cell().PaddingVertical(4).Text(l.Name);
-                                t.Cell().PaddingVertical(4).Text(l.StudentName);
-                                t.Cell().PaddingVertical(4).AlignRight().Text(l.FinalPrice.ToString("C", culture));
-                            }
-
-                        });
-
-                        col.Item().Height(15);
+                            col.Item().Height(15);
+                        }
 
                         // Totals
                         col.Item().Row(r =>
@@ -361,7 +369,7 @@ namespace PDF
 
                                 t.Cell().AlignRight().Text($"SUBTOTAL:");
                                 t.Cell().AlignRight().Text(subTotal.ToString("C", culture));
-                                t.Cell().AlignRight().Text("IVA*:");
+                                t.Cell().AlignRight().Text(user.ShowIvaDisclaimer && ivaPercent == 0 ? "IVA*:" : "IVA:");
                                 t.Cell().AlignRight().Text($"{ivaPercent:0}%");
                                 t.Cell().AlignRight().Text($"IVA amount:");
                                 t.Cell().AlignRight().Text(ivaAmount.ToString("C", culture));
@@ -372,8 +380,11 @@ namespace PDF
 
                         col.Item().Height(15);
 
-                        col.Item().Text("*Factura exenta de IVA Artículo 20 Uno 10º de la Ley 37/1992 de 28 de diciembre del Impuesto sobre el Valor Añadido.")
-                        .Italic().FontSize(10);
+                        if (user.ShowIvaDisclaimer && ivaPercent == 0)
+                        {
+                            col.Item().Text("*Factura exenta de IVA Artículo 20 Uno 10º de la Ley 37/1992 de 28 de diciembre del Impuesto sobre el Valor Añadido.")
+                            .Italic().FontSize(10);
+                        }
 
                         col.Item().Height(20);
 
@@ -432,37 +443,46 @@ namespace PDF
                         col.Item().Height(15);
 
                         // Lessons table
-                        col.Item().Table(t =>
+                        if (user.IncludeLessonsInTicket)
                         {
-                            t.ColumnsDefinition(c =>
+                            col.Item().Table(t =>
                             {
-                                c.ConstantColumn(90); // Date
-                                c.RelativeColumn(2); // Lesson - more space
-                                c.RelativeColumn(1.5f); // Student - good space
-                                c.ConstantColumn(70); // Duration
-                                c.ConstantColumn(85); // Price
+                                t.ColumnsDefinition(c =>
+                                {
+                                    c.ConstantColumn(90); // Date
+                                    c.RelativeColumn(2); // Lesson - more space
+                                    if (!user.HideStudentColumn)
+                                        c.RelativeColumn(1.5f); // Student - good space
+                                    c.ConstantColumn(70); // Duration
+                                    c.ConstantColumn(85); // Price
+                                });
+
+                                string lessonHeader = string.IsNullOrWhiteSpace(user.LessonTerm) ? loc.Get("Invoice/Lesson") : user.LessonTerm;
+                                string studentHeader = string.IsNullOrWhiteSpace(user.StudentTerm) ? loc.Get("Invoice/Student") : user.StudentTerm;
+
+                                t.Header(h =>
+                                {
+                                    h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text(loc.Get("Invoice/Date")).SemiBold();
+                                    h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text(lessonHeader).SemiBold();
+                                    if (!user.HideStudentColumn)
+                                        h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text(studentHeader).SemiBold();
+                                    h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text(loc.Get("Invoice/Duration")).SemiBold();
+                                    h.Cell().AlignRight().Background(Colors.Grey.Lighten3).Padding(5).Text(loc.Get("Invoice/Price")).SemiBold();
+                                });
+
+                                foreach (var l in list)
+                                {
+                                    t.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(6).PaddingHorizontal(5).Text(l.Date.ToString("dd-MM-yyyy"));
+                                    t.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(6).PaddingHorizontal(5).Text(l.Name);
+                                    if (!user.HideStudentColumn)
+                                        t.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(6).PaddingHorizontal(5).Text(l.StudentName);
+                                    t.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(6).PaddingHorizontal(5).Text(l.DurationMinutes.HasValue ? $"{l.DurationMinutes.Value} min" : "-");
+                                    t.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(6).PaddingHorizontal(5).AlignRight().Text(l.FinalPrice.ToString("C", culture));
+                                }
                             });
 
-                            t.Header(h =>
-                            {
-                                h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Date").SemiBold();
-                                h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Lesson").SemiBold();
-                                h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Student").SemiBold();
-                                h.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Duration").SemiBold();
-                                h.Cell().AlignRight().Background(Colors.Grey.Lighten3).Padding(5).Text("Price").SemiBold();
-                            });
-
-                            foreach (var l in list)
-                            {
-                                t.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(6).PaddingHorizontal(5).Text(l.Date.ToString("dd-MM-yyyy"));
-                                t.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(6).PaddingHorizontal(5).Text(l.Name);
-                                t.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(6).PaddingHorizontal(5).Text(l.StudentName);
-                                t.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(6).PaddingHorizontal(5).Text(l.DurationMinutes.HasValue ? $"{l.DurationMinutes.Value} min" : "-");
-                                t.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(6).PaddingHorizontal(5).AlignRight().Text(l.FinalPrice.ToString("C", culture));
-                            }
-                        });
-
-                        col.Item().Height(20);
+                            col.Item().Height(20);
+                        }
 
                         // Totals
                         col.Item().Row(r =>

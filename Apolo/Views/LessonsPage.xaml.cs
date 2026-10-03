@@ -13,6 +13,8 @@ namespace Apolo.Views
 {
     public sealed partial class LessonsPage : Page
     {
+        public static bool Not(bool value) => !value;
+
         public LessonsViewModel ViewModel => (LessonsViewModel)DataContext;
         public LessonsPage()
         {
@@ -29,7 +31,7 @@ namespace Apolo.Views
 
             var dialog = new ContentDialog()
             {
-                PrimaryButtonText = "Create",
+                PrimaryButtonText = Loc.Buttons_Create,
                 CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = Content.XamlRoot
@@ -63,7 +65,7 @@ namespace Apolo.Views
 
         private async void DeleteLesson_Click(object sender, RoutedEventArgs e)
         {
-            Guid? id = await ConfirmationDialog.ConfirmMenuItemAction(sender, "delete lesson");
+            Guid? id = await ConfirmationDialog.ConfirmMenuItemAction(sender, Loc.Action_DeleteLesson);
             if (id is not null)
                 await ViewModel.DeleteLessonAsync(id.Value);
 
@@ -83,7 +85,7 @@ namespace Apolo.Views
 
             var dialog = new ContentDialog()
             {
-                PrimaryButtonText = "Edit",
+                PrimaryButtonText = Loc.Buttons_Edit,
                 CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = Content.XamlRoot
@@ -123,6 +125,19 @@ namespace Apolo.Views
             if (ViewModel != null)
             {
                 await ViewModel.RefreshProfileAsync();
+            }
+        }
+
+        private void InvoiceLink_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement element && element.DataContext is LessonSummary clickedLesson)
+            {
+                if (clickedLesson.BillingDocumentId == null) return;
+
+                if (App.Current is App app && app.MainWindow is MainWindow mainWindow)
+                {
+                    mainWindow.NavigateToInvoice(clickedLesson.BillingDocumentId.Value, "document");
+                }
             }
         }
     }

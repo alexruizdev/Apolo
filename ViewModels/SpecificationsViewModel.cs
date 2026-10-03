@@ -8,29 +8,30 @@ using ViewModels;
 
 namespace Apolo.ViewModels
 {
-    public partial class SpecificationsViewModel : UserProfileViewModel
+    public partial class SpecificationsViewModel(ISpecificationRepository specificationRepository,
+        IStudentRepository studentRepository,
+        IServiceRepository serviceRepository,
+        ILessonRepository lessonRepository,
+        IUserProfileService userProfileService,
+        IStringLocalizer stringLocalizer) 
+        : LessonsBaseViewModel(lessonRepository, studentRepository, serviceRepository, stringLocalizer, userProfileService)
     {
-        ISpecificationRepository _specificationRepository;
-        IStudentRepository _studentRepository;
-        IServiceRepository _serviceRepository;
-        ILessonRepository _lessonRepository;
+        readonly ISpecificationRepository _specificationRepository = specificationRepository;
 
-        public ObservableCollection<SpecificationSummary> Specifications { get; } = new();
-        public ObservableCollection<StudentOption> Students { get; } = new();
-        public ObservableCollection<ServiceSummary> Services { get; } = new();
+        public ObservableCollection<SpecificationSummary> Specifications { get; } = [];
 
-        public SpecificationsViewModel(ISpecificationRepository specificationRepository,
-            IStudentRepository studentRepository,
-            IServiceRepository serviceRepository,
-            ILessonRepository lessonRepository,
-            IUserProfileService userProfileService)
-            : base(userProfileService)
-        {
-            _specificationRepository = specificationRepository;
-            _studentRepository = studentRepository;
-            _serviceRepository = serviceRepository;
-            _lessonRepository = lessonRepository;
-        }
+        // Messages
+        private static string Message_Load_Error => "Message/Load_Specification_Error";
+        private static string Message_Load_Success => "Message/Load_Specification_Success";
+        private static string Message_Refresh_Error => "Message/Refresh_Specification_Error";
+        private static string Message_Add_Spec_Error => "Message/Add_Specification_Error";
+        private static string Message_Add_Spec_Success => "Message/Add_Specification_Success";
+        private static string Message_Delete_Error => "Message/Delete_Specification_Error";
+        private static string Message_Delete_Success => "Message/Delete_Specification_Success";
+        private static string Message_Edit_Error => "Message/Edit_Specification_Error";
+        private static string Message_Edit_Success => "Message/Edit_Specification_Success";
+        private static string Message_Create_Lesson_Error => "Message/Create_Lesson_Specification_Error";
+        private static string Message_Create_Lesson_Success => "Message/Create_Lesson_Specification_Success";
 
         public (SpecificationSummary value, int index) GetSpecification(Guid id)
         {
@@ -38,55 +39,36 @@ namespace Apolo.ViewModels
             if (spec is null)
             {
                 SetExitFunction();
-                throw new InvalidDataException("Specification not loaded.");
+                throw new InvalidDataException($"{_loc.Get(Message_Specification_Not_Loaded, id.ToString())}.");
             }
             return (spec, Specifications.IndexOf(spec));
         }
 
-        public (ServiceSummary value, int index) GetService(Guid id)
-        {
-            var service = Services.FirstOrDefault(s => s.Id == id);
-            if (service is null)
-            {
-                SetExitFunction();
-                throw new InvalidDataException("Service not loaded.");
-            }
-            return (service, Services.IndexOf(service));
-        }
-
-        public async Task LoadAsync()
+        public override async Task LoadAsync()
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't load specifications while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Load_Error);
                 return;
             }
 
             SetEnterFunction();
 
-            var studentItems = await _studentRepository.GetStudentOptionsAsync();
-
-            Students.Clear();
-            foreach (var s in studentItems) Students.Add(s);
-
-            var serviceItems = await _serviceRepository.GetServicesAsync();
-
-            Services.Clear();
-            foreach (var s in serviceItems) Services.Add(s);
+            await base.LoadAsync();
 
             var items = await _specificationRepository.GetSpecificationsAsync();
 
             Specifications.Clear();
             foreach (var item in items) Specifications.Add(item);
 
-            SetExitFunction($"{Specifications.Count} loaded.", InfoBarType.Success);
+            SetExitFunction($"{_loc.Get(Message_Load_Success, Specifications.Count)}.", InfoBarType.Success);
         }
 
         public async Task RefreshSpecifications()
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't refresh specifications while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Refresh_Error);
                 return;
             }
 
@@ -103,7 +85,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't add specification while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Add_Spec_Error);
                 return;
             }
 
@@ -113,11 +95,10 @@ namespace Apolo.ViewModels
                 return;
 
             if (!Services.Any(s => s.Id == serviceId))
-                throw new InvalidDataException("Service ID is not recognize.");
+                throw new InvalidDataException($"{_loc.Get(Message_Service_Not_Loaded, serviceId)}.");
             
             if (!Students.Any(s => s.Id == studentId))
-                throw new InvalidDataException("Student ID is not recognize.");
-            
+                throw new InvalidDataException($"{_loc.Get(Message_Student_Not_Loaded, studentId)}.");
 
             try
             {
@@ -141,7 +122,7 @@ namespace Apolo.ViewModels
                     specification.ServiceId, serviceName, specification.DurationMinutes, (double?)specification.Price,
                     specification.IsOnline, specification.IsWeekendOrHoliday, specification.UsageCount));
 
-                SetExitFunction($"Specification '{name}' added for {studentName}.", InfoBarType.Success);
+                SetExitFunction($"{_loc.Get(Message_Add_Spec_Success, name, studentName)}.", InfoBarType.Success);
             }
             catch (DbUpdateException ex)
             {
@@ -154,20 +135,19 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't delete specification while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Delete_Error);
                 return;
             }
 
             SetEnterFunction();
-
-            var oldSpec = GetSpecification(id);
+            var (value, _) = GetSpecification(id);
 
             try
             {
                 await _specificationRepository.DeleteAsync(id);
 
-                Specifications.Remove(oldSpec.value);
-                SetExitFunction($"Specification '{oldSpec.value.Name}' deleted for {oldSpec.value.StudentName}.",
+                Specifications.Remove(value);
+                SetExitFunction($"{_loc.Get(Message_Delete_Success, value.Name, value.StudentName)}.",
                     InfoBarType.Success);
             }
             catch (DbUpdateException ex)
@@ -178,22 +158,27 @@ namespace Apolo.ViewModels
 
         public bool ValidateSpecificationInput(ref string name, int durationMinutes, ref double? price)
         {
+            var errors = new List<string>();
+
             name = (name ?? "").Trim();
             if (string.IsNullOrEmpty(name))
-            {
-                SetExitFunction("Specification name is required.", InfoBarType.Warning);
-                return false;
-            }
+                errors.Add(_loc.Get(Message_SpecificationNameValidation));
+
             if (durationMinutes <= 0)
-            {
-                SetExitFunction("Enter a valid non-negative duration (e.g., 60).", InfoBarType.Warning);
-                return false;
-            }
+                errors.Add(_loc.Get(Message_DurationValueValidation));
+
             if (price is not null) // TODO: test
             {
                 price =  double.IsNaN(price.Value) ? null : price;
             }
-            return true;
+            if (price <= 0)
+                errors.Add(_loc.Get(Message_PriceValidation));
+
+            if (errors.Count == 0)
+                return true;
+
+            SetExitFunction(string.Join(Environment.NewLine, errors), InfoBarType.Warning);
+            return false;
         }
 
         public async Task UpdateSpecificationAsync(Guid id, string name, int durationMinutes, double? price,
@@ -201,7 +186,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't update specification while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Edit_Error);
                 return;
             }
 
@@ -212,7 +197,7 @@ namespace Apolo.ViewModels
                 return;
             }
 
-            var oldSpec = GetSpecification(id);
+            var (value, index) = GetSpecification(id);
 
             try
             {
@@ -220,7 +205,7 @@ namespace Apolo.ViewModels
 
 
                 var serviceName = Services.First(s => s.Id == serviceId).Name;
-                Specifications[oldSpec.index] = oldSpec.value with
+                Specifications[index] = value with
                 {
                     Name = name,
                     DurationMinutes = durationMinutes,
@@ -230,7 +215,7 @@ namespace Apolo.ViewModels
                     ServiceId = serviceId,
                     ServiceName = serviceName
                 };
-                SetExitFunction($"Specification '{oldSpec.value.Name}' updated for {oldSpec.value.StudentName}.",
+                SetExitFunction($"{_loc.Get(Message_Edit_Success, value.Name, value.StudentName)}.",
                     InfoBarType.Success);
             }
             catch (DbUpdateException ex)
@@ -243,7 +228,7 @@ namespace Apolo.ViewModels
         {
             if (IsBusy)
             {
-                SetExitFunction("Can't create lesson while busy.", InfoBarType.Warning, false);
+                SetExitBusy(Message_Create_Lesson_Error);
                 return;
             }
 
@@ -251,25 +236,25 @@ namespace Apolo.ViewModels
 
             if (tip < 0)
             {
-                SetExitFunction("Tip can't be negative.", InfoBarType.Error);
+                SetExitFunction(_loc.Get(Message_TipValidation), InfoBarType.Error);
                 return;
             }
 
-            var spec = GetSpecification(id);
+            var (value, _) = GetSpecification(id);
 
-            var (service, _) = GetService(spec.value.ServiceId);
+            var (service, _) = GetService(value.ServiceId);
 
             try
             {
                 await _lessonRepository.AddLessonAsync(
-                    date, spec.value.ServiceName, isPaid: false, spec.value.StudentId, null,
-                    service.IsPricePerHour, spec.value.DurationMinutes, (decimal)(spec.value.Price ?? service.Price),
-                    spec.value.IsOnline, TravelAllowance, spec.value.IsWeekendOrHoliday, WeekendFee,
+                    date, value.ServiceName, isPaid: false, value.StudentId, null,
+                    service.IsPricePerHour, value.DurationMinutes, (decimal)(value.Price ?? service.Price),
+                    value.IsOnline, TravelAllowance, value.IsWeekendOrHoliday, WeekendFee,
                     tip, notes);
 
                 await _specificationRepository.IncrementUsageAsync(id);
 
-                SetExitFunction($"Lesson '{spec.value.ServiceName}' created for {spec.value.StudentName}.",
+                SetExitFunction($"{_loc.Get(Message_Create_Lesson_Success, value.ServiceName, value.StudentName)}.",
                     InfoBarType.Success); 
             }
             catch (DbUpdateException ex)

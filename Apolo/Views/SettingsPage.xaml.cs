@@ -23,62 +23,68 @@ namespace Apolo.Views
 
         private async void DeleteDatabaseButton_Click(object sender, RoutedEventArgs e)
         {
-            if (await ConfirmationDialog.ConfirmButtonAction(sender, "delete database"))
+            if (await ConfirmationDialog.ConfirmButtonAction(sender, Loc.Action_DeleteDatabase, Loc.Buttons_Delete))
                 await ViewModel.ClearDatabaseAsync();
+        }
+
+        private async void AddDummuDataButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (await ConfirmationDialog.ConfirmButtonAction(sender, Loc.Action_AddDummyData, Loc.Buttons_Add))
+                await ViewModel.AddDummyData();
         }
 
         private async void DeleteArchiveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (await ConfirmationDialog.ConfirmButtonAction(sender, "delete archive"))
+            if (await ConfirmationDialog.ConfirmButtonAction(sender, Loc.Action_DeleteArchive, Loc.Buttons_Delete))
                 await ViewModel.ClearArchiveAsync();
         }
 
         private async void ExportBackupButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not Button button) return;
+            if (sender is not Button) return;
 
-            var installedPath = Windows.ApplicationModel.Package.Current.InstalledPath;
-
-            await ViewModel.ExportDatabaseToExcel(installedPath);
+            await ViewModel.ExportDatabaseToCSV();
         }
 
         private async void ExportArchiveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not Button button) return;
+            if (sender is not Button) return;
 
             var installedPath = Windows.ApplicationModel.Package.Current.InstalledPath;
 
-            await ViewModel.ExportArchiveToExcel(installedPath);
+            await ViewModel.ExportArchiveToCSV(installedPath);
         }
 
         private async void ImportBackupButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not Button button) return;
 
-            var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
-            picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-            picker.CommitButtonText = "Pick a folder";
-            picker.ViewMode = PickerViewMode.List;
+            var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId)
+            {
+                SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
+                CommitButtonText = Loc.Buttons_PickFile
+            };
 
             var folder = await picker.PickSingleFolderAsync();
             if (folder == null) return;
 
-            await ViewModel.ImportDatabaseFromExcel(folder.Path);
+            await ViewModel.ImportDatabaseFromCSV(folder.Path);
         }
 
         private async void ImportArchiveButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not Button button) return;
 
-            var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
-            picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-            picker.CommitButtonText = "Pick a folder";
-            picker.ViewMode = PickerViewMode.List;
+            var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId)
+            {
+                SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
+                CommitButtonText = Loc.Buttons_PickFile
+            };
 
             var folder = await picker.PickSingleFolderAsync();
             if (folder == null) return;
 
-            await ViewModel.ImportArchiveFromExcel(folder.Path);
+            await ViewModel.ImportArchiveFromCSV(folder.Path);
         }
 
         private async void ArchiveButton_Click(object sender, RoutedEventArgs e)
@@ -89,12 +95,12 @@ namespace Apolo.Views
 
             var payersList = new ListView
             {
-                Header = "Payers",
+                Header = Loc.Common_Payer,
                 SelectionMode = ListViewSelectionMode.Multiple,
                 ItemsSource = payers,
-                MaxHeight = 240
+                MaxHeight = 240,
+                DisplayMemberPath = "Display"
             };
-            payersList.DisplayMemberPath = "Display";
 
             var panel = new StackPanel { Spacing = 8 };
             panel.Children.Add(payersList);
@@ -109,9 +115,9 @@ namespace Apolo.Views
 
             var dialog = new ContentDialog()
             {
-                Title = "Archive old data",
+                Title = Loc.Settings_ArchiveOldData,
                 Content = viewer,
-                PrimaryButtonText = "Archive",
+                PrimaryButtonText = Loc.Buttons_Archive,
                 CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = Content.XamlRoot
@@ -133,12 +139,12 @@ namespace Apolo.Views
 
             var payersList = new ListView
             {
-                Header = "Payers",
+                Header = Loc.Common_Payer,
                 SelectionMode = ListViewSelectionMode.Multiple,
                 ItemsSource = payers,
-                MaxHeight = 240
+                MaxHeight = 240,
+                DisplayMemberPath = "Name"
             };
-            payersList.DisplayMemberPath = "Name";
 
             var panel = new StackPanel { Spacing = 8 };
             panel.Children.Add(payersList);
@@ -153,9 +159,9 @@ namespace Apolo.Views
 
             var dialog = new ContentDialog()
             {
-                Title = "Select payers to retrieve from archive.",
+                Title = Loc.Settings_SelectPayersArchive,
                 Content = viewer,
-                PrimaryButtonText = "Retrieve",
+                PrimaryButtonText = Loc.Buttons_Retrieve,
                 CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = Content.XamlRoot
@@ -184,11 +190,12 @@ namespace Apolo.Views
         {
             if (sender is not Button button) return;
 
-            var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
-
-            picker.CommitButtonText = "Pick Folder";
-            picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-            picker.ViewMode = PickerViewMode.List;
+            var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId)
+            {
+                CommitButtonText = Loc.Buttons_PickFolder,
+                SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
+                ViewMode = PickerViewMode.List
+            };
 
             // Show the picker dialog window
             var folder = await picker.PickSingleFolderAsync();
@@ -202,11 +209,12 @@ namespace Apolo.Views
         {
             if (sender is not Button button) return;
 
-            var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId);
-
-            picker.CommitButtonText = "Pick Folder";
-            picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-            picker.ViewMode = PickerViewMode.List;
+            var picker = new FolderPicker(button.XamlRoot.ContentIslandEnvironment.AppWindowId)
+            {
+                CommitButtonText = Loc.Buttons_PickFolder,
+                SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
+                ViewMode = PickerViewMode.List
+            };
 
             // Show the picker dialog window
             var folder = await picker.PickSingleFolderAsync();

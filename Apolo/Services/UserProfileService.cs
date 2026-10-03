@@ -1,4 +1,4 @@
-﻿using Microsoft.Windows.Storage;
+using Microsoft.Windows.Storage;
 using Models;
 using System.Threading.Tasks;
 
@@ -26,7 +26,16 @@ namespace Apolo.Services
                 TravelAllowance = v[nameof(UserProfile.TravelAllowance)] as double? ?? 0,
                 WeekendFee = v[nameof(UserProfile.WeekendFee)] as double? ?? 0,
                 BillingFolder = v[nameof(UserProfile.BillingFolder)] as string ?? "",
-                BackupFolder = v[nameof(UserProfile.BackupFolder)] as string ?? ""
+                BackupFolder = v[nameof(UserProfile.BackupFolder)] as string ?? "",
+                Language = v[nameof(UserProfile.Language)] as string ?? "",
+                GenerateTicketWithInvoice = v[nameof(UserProfile.GenerateTicketWithInvoice)] as bool? ?? false,
+                IncludeLessonsInTicket = v[nameof(UserProfile.IncludeLessonsInTicket)] as bool? ?? true,
+                IncludeLessonsInInvoice = v[nameof(UserProfile.IncludeLessonsInInvoice)] as bool? ?? true,
+                DeveloperMode = v[nameof(UserProfile.DeveloperMode)] as bool? ?? false,
+                ShowIvaDisclaimer = v[nameof(UserProfile.ShowIvaDisclaimer)] as bool? ?? false,
+                LessonTerm = v[nameof(UserProfile.LessonTerm)] as string ?? "",
+                StudentTerm = v[nameof(UserProfile.StudentTerm)] as string ?? "",
+                HideStudentColumn = v[nameof(UserProfile.HideStudentColumn)] as bool? ?? false
             };
 
             return Task.FromResult(p);
@@ -50,6 +59,15 @@ namespace Apolo.Services
             v[nameof(UserProfile.WeekendFee)] = profile.WeekendFee;
             v[nameof(UserProfile.BillingFolder)] = profile.BillingFolder;
             v[nameof(UserProfile.BackupFolder)] = profile.BackupFolder;
+            v[nameof(UserProfile.Language)] = profile.Language;
+            v[nameof(UserProfile.GenerateTicketWithInvoice)] = profile.GenerateTicketWithInvoice;
+            v[nameof(UserProfile.IncludeLessonsInTicket)] = profile.IncludeLessonsInTicket;
+            v[nameof(UserProfile.IncludeLessonsInInvoice)] = profile.IncludeLessonsInInvoice;
+            v[nameof(UserProfile.DeveloperMode)] = profile.DeveloperMode;
+            v[nameof(UserProfile.ShowIvaDisclaimer)] = profile.ShowIvaDisclaimer;
+            v[nameof(UserProfile.LessonTerm)] = profile.LessonTerm;
+            v[nameof(UserProfile.StudentTerm)] = profile.StudentTerm;
+            v[nameof(UserProfile.HideStudentColumn)] = profile.HideStudentColumn;
 
             return Task.CompletedTask;
         }

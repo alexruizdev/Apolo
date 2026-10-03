@@ -17,6 +17,9 @@ namespace Apolo.Tests.ViewModels
         private Mock<IUserProfileService> _mockUserProfileService = null!;
         private Mock<CSV.IWriter> _writerMock = null!;
         private Mock<CSV.IReader> _readerMock = null!;
+        private Mock<ILanguageService> _languageMock = null!;
+        private Mock<IStringLocalizer> _localizerMock = null!;
+
 
         [TestInitialize]
         public void TestInit()
@@ -25,6 +28,8 @@ namespace Apolo.Tests.ViewModels
             _mockUserProfileService = new Mock<IUserProfileService>();
             _writerMock = new Mock<CSV.IWriter>();
             _readerMock = new Mock<CSV.IReader>();
+            _languageMock = new Mock<ILanguageService>();
+            _localizerMock = new Mock<IStringLocalizer>();
 
             var userProfile = new UserProfile
             {
@@ -46,19 +51,11 @@ namespace Apolo.Tests.ViewModels
                 .ReturnsAsync(userProfile);
 
             _viewModel = new SettingsViewModel(_repositoryMock.Object, _mockUserProfileService.Object,
-                _readerMock.Object, _writerMock.Object);
+                _readerMock.Object, _writerMock.Object, _languageMock.Object, _localizerMock.Object);
         }
 
-        void VerifyAction(string? message, InfoBarType severity, bool isOpen, bool isBusy = false, bool contains = false)
+        void VerifyAction(InfoBarType severity, bool isOpen, bool isBusy = false)
         {
-            if (contains)
-            {
-                Assert.IsNotNull(_viewModel.InfoMessage);
-                Assert.IsNotNull(message);
-                Assert.Contains(message, _viewModel.InfoMessage);
-            }
-            else
-                Assert.AreEqual(message, _viewModel.InfoMessage);
             Assert.AreEqual(isBusy, _viewModel.IsBusy);
             Assert.AreEqual(isOpen, _viewModel.OpenInfoBar);
             Assert.AreEqual(severity, _viewModel.InfoBarType);
@@ -72,7 +69,7 @@ namespace Apolo.Tests.ViewModels
 
             await _viewModel.SaveAsync();
 
-            VerifyAction("Can't save settings while busy.", InfoBarType.Warning, isOpen: true, isBusy: true);
+            VerifyAction(InfoBarType.Warning, isOpen: true, isBusy: true);
         }
 
         [TestMethod]
@@ -80,7 +77,7 @@ namespace Apolo.Tests.ViewModels
         {
             await _viewModel.SaveAsync();
 
-            VerifyAction("User profile saved successfully.", InfoBarType.Success, isOpen: true);
+            VerifyAction(InfoBarType.Success, isOpen: true);
         }
 
         // Delete async
@@ -91,7 +88,7 @@ namespace Apolo.Tests.ViewModels
 
             await _viewModel.DeleteAsync();
 
-            VerifyAction("Can't delete settings while busy.", InfoBarType.Warning, isOpen: true, isBusy: true);
+            VerifyAction(InfoBarType.Warning, isOpen: true, isBusy: true);
         }
 
         [TestMethod]
@@ -114,7 +111,7 @@ namespace Apolo.Tests.ViewModels
             Assert.AreEqual(string.Empty, _viewModel.Profile.BillingFolder);
             Assert.AreEqual(string.Empty, _viewModel.Profile.BackupFolder);
 
-            VerifyAction("User profile deleted successfully.", InfoBarType.Success, isOpen: true);
+            VerifyAction(InfoBarType.Success, isOpen: true);
         }
 
         // Clear database
@@ -123,14 +120,14 @@ namespace Apolo.Tests.ViewModels
         {
             _viewModel.IsBusy = true;
             await _viewModel.ClearDatabaseAsync();
-            VerifyAction("Can't clear database while busy.", InfoBarType.Warning, isOpen: true, isBusy: true);
+            VerifyAction(InfoBarType.Warning, isOpen: true, isBusy: true);
         }
 
         [TestMethod]
         public async Task ClearDatabase()
         {
             await _viewModel.ClearDatabaseAsync();
-            VerifyAction("Database has been clear successfully.", InfoBarType.Success, isOpen: true);
+            VerifyAction(InfoBarType.Success, isOpen: true);
         }
 
         // Clear archive
@@ -139,40 +136,40 @@ namespace Apolo.Tests.ViewModels
         {
             _viewModel.IsBusy = true;
             await _viewModel.ClearArchiveAsync();
-            VerifyAction("Can't clear archive while busy.", InfoBarType.Warning, isOpen: true, isBusy: true);
+            VerifyAction(InfoBarType.Warning, isOpen: true, isBusy: true);
         }
 
         [TestMethod]
         public async Task ClearArchive()
         {
             await _viewModel.ClearArchiveAsync();
-            VerifyAction("Archive has been clear successfully.", InfoBarType.Success, isOpen: true);
+            VerifyAction(InfoBarType.Success, isOpen: true);
         }
 
-        // Import database from excel
+        // Import database from CSV
         [TestMethod]
-        public async Task ImportFromExcel_WhenBusy()
+        public async Task ImportFromCSV_WhenBusy()
         {
             _viewModel.IsBusy = true;
-            await _viewModel.ImportDatabaseFromExcel("file");
-            VerifyAction("Can't import database from Excel while busy.", InfoBarType.Warning, isOpen: true, isBusy: true);
+            await _viewModel.ImportDatabaseFromCSV("file");
+            VerifyAction(InfoBarType.Warning, isOpen: true, isBusy: true);
         }
 
         [TestMethod]
         [DataRow(null)]
         [DataRow("")]
         [DataRow("   ")]
-        public async Task ImportFromExcel_InvalidFile(string invalidName)
+        public async Task ImportFromCSV_InvalidFile(string invalidName)
         {
-            await _viewModel.ImportDatabaseFromExcel(invalidName);
-            VerifyAction("No file selected.", InfoBarType.Warning, isOpen: true);
+            await _viewModel.ImportDatabaseFromCSV(invalidName);
+            VerifyAction(InfoBarType.Warning, isOpen: true);
         }
 
         [TestMethod]
-        public async Task ImportFromExcel_InvalidPath()
+        public async Task ImportFromCSV_InvalidPath()
         {
-            await _viewModel.ImportDatabaseFromExcel("\\invalid_path\\file.xlsm");
-            VerifyAction("Directory '\\invalid_path' does not exist.", InfoBarType.Error, isOpen: true);
+            await _viewModel.ImportDatabaseFromCSV("\\invalid_path\\file.xlsm");
+            VerifyAction(InfoBarType.Error, isOpen: true);
         }
 
         [TestMethod]
@@ -181,7 +178,7 @@ namespace Apolo.Tests.ViewModels
             // --- Arrange ---
             // Create a temporary path so we don't clutter the machine
             string tempPath = Path.GetTempPath();
-            string file = Path.Combine(tempPath, "Excel.xlsm");
+            string file = Path.Combine(tempPath, "CSV.xlsm");
             string fileName = $"Summary_{DateTime.Now:yyyyMMdd_HHmm}.txt";
             string resultPath = Path.Combine(tempPath, fileName);
             Directory.CreateDirectory(tempPath);
@@ -197,22 +194,16 @@ namespace Apolo.Tests.ViewModels
                 _readerMock.Setup(r => r.Students).Returns(data.Students);
                 _readerMock.Setup(r => r.Specifications).Returns(data.Specifications);
                 _readerMock.Setup(r => r.Lessons).Returns(data.Lessons);
-                _readerMock.Setup(r => r.Invoices).Returns(data.Bills);
+                _readerMock.Setup(r => r.Bills).Returns(data.Bills);
 
                 // --- Act ---
-                await _viewModel.ImportDatabaseFromExcel(file);
+                await _viewModel.ImportDatabaseFromCSV(file);
 
                 _repositoryMock.Verify(r => r.ImportAllDataAsync(data.Services, data.Payers, data.Students, data.Specifications,
                     data.Lessons, data.Bills), Times.Once);
 
                 string fileContent = await File.ReadAllTextAsync(resultPath, TestContext.CancellationToken);
-                VerifyAction($"Summary saved to {resultPath}", InfoBarType.Success, isOpen: true, contains: true);
-
-                // 3. Verify specific data points are inside the string
-                Assert.Contains("APOLO APP - IMPORT SUMMARY", fileContent);
-                Assert.Contains($"- Services Imported: 6", fileContent);
-                Assert.Contains($"- Invoices Processed: 24", fileContent);
-                Assert.Contains("STATUS: Success", fileContent);
+                VerifyAction(InfoBarType.Success, isOpen: true);
             }
             finally
             {
@@ -229,8 +220,8 @@ namespace Apolo.Tests.ViewModels
         public async Task ImportArchive_WhenBusy()
         {
             _viewModel.IsBusy = true;
-            await _viewModel.ImportArchiveFromExcel("file");
-            VerifyAction("Can't import archive from Excel while busy.", InfoBarType.Warning, isOpen: true, isBusy: true);
+            await _viewModel.ImportArchiveFromCSV("file");
+            VerifyAction(InfoBarType.Warning, isOpen: true, isBusy: true);
         }
 
         [TestMethod]
@@ -239,40 +230,40 @@ namespace Apolo.Tests.ViewModels
         [DataRow("   ")]
         public async Task ImportArchive_InvalidFile(string invalidName)
         {
-            await _viewModel.ImportArchiveFromExcel(invalidName);
-            VerifyAction("No file selected.", InfoBarType.Warning, isOpen: true);
+            await _viewModel.ImportArchiveFromCSV(invalidName);
+            VerifyAction(InfoBarType.Warning, isOpen: true);
         }
 
         [TestMethod]
         public async Task ImportArchive_InvalidPath()
         {
-            await _viewModel.ImportArchiveFromExcel("\\invalid_path\\file.xlsm");
-            VerifyAction("Directory '\\invalid_path' does not exist.", InfoBarType.Error, isOpen: true);
+            await _viewModel.ImportArchiveFromCSV("\\invalid_path\\file.xlsm");
+            VerifyAction(InfoBarType.Error, isOpen: true);
         }
 
-        // Export database from excel
+        // Export database from CSV
         [TestMethod]
-        public async Task ExportToExcel_WhenBusy()
+        public async Task ExportToCSV_WhenBusy()
         {
             _viewModel.IsBusy = true;
-            await _viewModel.ExportDatabaseToExcel("installed_path");
-            VerifyAction("Can't export database while busy.", InfoBarType.Warning, isOpen: true, isBusy: true);
+            await _viewModel.ExportDatabaseToCSV();
+            VerifyAction(InfoBarType.Warning, isOpen: true, isBusy: true);
         }
 
         [TestMethod]
-        public async Task ExportToExcel_InvalidFolder()
+        public async Task ExportToCSV_InvalidFolder()
         {
             _viewModel.Profile.BackupFolder = "folder";
-            await _viewModel.ExportDatabaseToExcel("installed_path");
-            VerifyAction("Directory 'folder' does not exist.", InfoBarType.Error, isOpen: true);
+            await _viewModel.ExportDatabaseToCSV();
+            VerifyAction(InfoBarType.Warning, isOpen: true);
         }
 
         [TestMethod]
-        public async Task ExportToExcel()
+        public async Task ExportToCSV()
         {
             // Create a temporary path so we don't clutter the machine
             string tempPath = Path.GetTempPath();
-            string file = Path.Combine(tempPath, "Excel.xlsm");
+            string file = Path.Combine(tempPath, "CSV.xlsm");
             string fileName = $"Summary_{DateTime.Now:yyyyMMdd_HHmm}.txt";
             string resultPath = Path.Combine(tempPath, fileName);
             Directory.CreateDirectory(tempPath);
@@ -289,28 +280,28 @@ namespace Apolo.Tests.ViewModels
                 data.Bills
             ));
 
-            await _viewModel.ExportDatabaseToExcel("installed_path");
+            await _viewModel.ExportDatabaseToCSV();
 
             _repositoryMock.Verify(r => r.GetAllDataAsync(), Times.Once);
 
-            VerifyAction($"Export completed", InfoBarType.Success, isOpen: true, contains: true);
+            VerifyAction(InfoBarType.Success, isOpen: true);
         }
 
-        // Export database from excel
+        // Export database from CSV
         [TestMethod]
         public async Task ExportArchive_WhenBusy()
         {
             _viewModel.IsBusy = true;
-            await _viewModel.ExportArchiveToExcel("installed_path");
-            VerifyAction("Can't export archive while busy.", InfoBarType.Warning, isOpen: true, isBusy: true);
+            await _viewModel.ExportArchiveToCSV("installed_path");
+            VerifyAction(InfoBarType.Warning, isOpen: true, isBusy: true);
         }
 
         [TestMethod]
         public async Task ExportArchive_InvalidFolder()
         {
             _viewModel.Profile.BackupFolder = "folder";
-            await _viewModel.ExportArchiveToExcel("installed_path");
-            VerifyAction("Directory 'folder' does not exist.", InfoBarType.Error, isOpen: true);
+            await _viewModel.ExportArchiveToCSV("installed_path");
+            VerifyAction(InfoBarType.Warning, isOpen: true);
         }
 
         [TestMethod]
@@ -318,7 +309,7 @@ namespace Apolo.Tests.ViewModels
         {
             // Create a temporary path so we don't clutter the machine
             string tempPath = Path.GetTempPath();
-            string file = Path.Combine(tempPath, "Excel.xlsm");
+            string file = Path.Combine(tempPath, "CSV.xlsm");
             string fileName = $"Summary_{DateTime.Now:yyyyMMdd_HHmm}.txt";
             string resultPath = Path.Combine(tempPath, fileName);
             Directory.CreateDirectory(tempPath);
@@ -335,11 +326,11 @@ namespace Apolo.Tests.ViewModels
                 data.ArchiveBills
             ));
 
-            await _viewModel.ExportArchiveToExcel("installed_path");
+            await _viewModel.ExportArchiveToCSV("installed_path");
 
             _repositoryMock.Verify(r => r.ExportArchiveAsync(), Times.Once);
 
-            VerifyAction($"Export completed", InfoBarType.Success, isOpen: true, contains: true);
+            VerifyAction(InfoBarType.Success, isOpen: true);
         }
 
         // Get payers with activity
@@ -362,7 +353,7 @@ namespace Apolo.Tests.ViewModels
 
             await _viewModel.ArchiveOldData([Guid.NewGuid()]);
 
-            VerifyAction("Can't archive data while busy.", InfoBarType.Warning, isOpen: true, isBusy: true);
+            VerifyAction(InfoBarType.Warning, isOpen: true, isBusy: true);
 
             _repositoryMock.Verify(r => r.ArchiveOldDataAsync(It.IsAny<List<Guid>>()), Times.Never);
         }
@@ -372,7 +363,7 @@ namespace Apolo.Tests.ViewModels
         {
             await _viewModel.ArchiveOldData([]);
 
-            VerifyAction("No payers were selected.", InfoBarType.Info, isOpen: true);
+            VerifyAction(InfoBarType.Info, isOpen: true);
 
             _repositoryMock.Verify(r => r.ArchiveOldDataAsync(It.IsAny<List<Guid>>()), Times.Never);
         }
@@ -387,7 +378,7 @@ namespace Apolo.Tests.ViewModels
 
             await _viewModel.ArchiveOldData(ids);
 
-            VerifyAction("Database connection lost.", InfoBarType.Error, isOpen: true);
+            VerifyAction(InfoBarType.Error, isOpen: true);
 
             _repositoryMock.Verify(r => r.ArchiveOldDataAsync(ids), Times.Once);
         }
@@ -399,7 +390,7 @@ namespace Apolo.Tests.ViewModels
 
             await _viewModel.ArchiveOldData(ids);
 
-            VerifyAction("Archived data successfully.", InfoBarType.Success, isOpen: true);
+            VerifyAction(InfoBarType.Success, isOpen: true);
 
             _repositoryMock.Verify(r => r.ArchiveOldDataAsync(ids), Times.Once);
         }
@@ -422,7 +413,7 @@ namespace Apolo.Tests.ViewModels
 
             await _viewModel.RetrieveDataFromArchive([Guid.NewGuid()]);
 
-            VerifyAction("Can't retrieve data from archive while busy.", InfoBarType.Warning, isOpen: true, isBusy: true);
+            VerifyAction(InfoBarType.Warning, isOpen: true, isBusy: true);
 
             _repositoryMock.Verify(r => r.RetrieveDataFromArchiveAsync(It.IsAny<List<Guid>>()), Times.Never);
         }
@@ -432,7 +423,7 @@ namespace Apolo.Tests.ViewModels
         {
             await _viewModel.RetrieveDataFromArchive([]);
 
-            VerifyAction("No payers were selected.", InfoBarType.Info, isOpen: true);
+            VerifyAction(InfoBarType.Info, isOpen: true);
 
             _repositoryMock.Verify(r => r.RetrieveDataFromArchiveAsync(It.IsAny<List<Guid>>()), Times.Never);
         }
@@ -447,7 +438,7 @@ namespace Apolo.Tests.ViewModels
 
             await _viewModel.RetrieveDataFromArchive(ids);
 
-            VerifyAction("Database connection lost.", InfoBarType.Error, isOpen: true);
+            VerifyAction(InfoBarType.Error, isOpen: true);
 
             _repositoryMock.Verify(r => r.RetrieveDataFromArchiveAsync(ids), Times.Once);
         }
@@ -459,7 +450,7 @@ namespace Apolo.Tests.ViewModels
 
             await _viewModel.RetrieveDataFromArchive(ids);
 
-            VerifyAction("Data retrieved successfully from archive.", InfoBarType.Success, isOpen: true);
+            VerifyAction(InfoBarType.Success, isOpen: true);
 
             _repositoryMock.Verify(r => r.RetrieveDataFromArchiveAsync(ids), Times.Once);
         }

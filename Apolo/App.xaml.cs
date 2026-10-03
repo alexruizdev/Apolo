@@ -6,8 +6,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Repository;
+using Serilog;
 using System;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using ViewModels;
 using Windows.Storage;
 
@@ -19,7 +22,24 @@ namespace Apolo
 
         public App()
         {
+            // Initialize Logger
+            string logFilePath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "Logs", "apolo_log_.txt");
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Information()
+                .WriteTo.File(logFilePath, rollingInterval: RollingInterval.Day, retainedFileCountLimit: 7)
+                .CreateLogger();
+
+            Log.Information("Apolo App starting up...");
+
+            // Hook up global exception handlers
+            UnhandledException += App_UnhandledExceptionAsync;
+            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+
+            // Perform automated backups before the DB is locked by EF Core
+            PerformAutomatedBackup();
+
             Services = ConfigureServices;
+            InitializeApplicationLanguage();
             InitializeDatabase();
             InitializeComponent();
         }
@@ -43,8 +63,8 @@ namespace Apolo
                     return connectionStringBuilder.ToString();
                 }
 
-                var dbPath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "app.context");
-                var archiveDbPath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "archive.context");
+                var dbPath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "apolo.db");
+                var archiveDbPath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "apolo_archive.db");
 
                 builder.AddDbContext<ApoloContext>(options =>
                     options.UseSqlite(GetConnectionString(dbPath)));
@@ -54,6 +74,8 @@ namespace Apolo
 
                 // Services
                 builder.AddSingleton<IUserProfileService, UserProfileService>();
+                builder.AddSingleton<ILanguageService, LanguageService>();
+                builder.AddSingleton<IStringLocalizer, StringLocalizer>();
 
                 // Repositories
                 builder.AddTransient<IPayerRepository, PayerRepository>();
@@ -94,10 +116,10 @@ namespace Apolo
         {
             using var scope = Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<ApoloContext>();
-            context.Database.EnsureCreated();
+            context.Database.Migrate();
 
             var archive = scope.ServiceProvider.GetRequiredService<ApoloArchiveContext>();
-            archive.Database.EnsureCreated();
+            archive.Database.Migrate();
 
             context.Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL;");
             archive.Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL;");
@@ -108,6 +130,109 @@ namespace Apolo
             m_window = new MainWindow();
             MainWindow = m_window;
             m_window.Activate();
+        }
+
+        private async void App_UnhandledExceptionAsync(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            Log.Fatal(e.Exception, "A fatal UI exception occurred.");
+            e.Handled = true; // Attempt to prevent the app from crashing instantly
+
+            if (MainWindow?.Content?.XamlRoot != null)
+            {
+                var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
+                {
+                    Title = Loc.App_UnexpectedErrorTitle,
+                    Content = Loc.F("App/UnexpectedErrorContent", e.Exception.Message),
+                    CloseButtonText = Loc.Buttons_Understood,
+                    XamlRoot = MainWindow.Content.XamlRoot
+                };
+
+                try
+                {
+                    await dialog.ShowAsync();
+                }
+                catch (Exception dialogEx)
+                {
+                    // If the UI thread is too corrupted to show a dialog, catch it so we don't cause a secondary crash
+                    Log.Error(dialogEx, "Failed to display the unhandled exception dialog.");
+                }
+            }
+        }
+
+        private void TaskScheduler_UnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+        {
+            Log.Error(e.Exception, "An unobserved background task exception occurred.");
+            e.SetObserved(); // Prevent the app from tearing down
+        }
+
+        private static void PerformAutomatedBackup()
+        {
+            try
+            {
+                var localFolder = ApplicationData.Current.LocalFolder.Path;
+                var backupFolder = Path.Combine(localFolder, "Backups");
+
+                if (!Directory.Exists(backupFolder))
+                {
+                    Directory.CreateDirectory(backupFolder);
+                }
+
+                string today = DateTime.Now.ToString("yyyyMMdd");
+                string appDbPath = Path.Combine(localFolder, "apolo.db");
+                string archiveDbPath = Path.Combine(localFolder, "apolo_archive.db");
+
+                string backupAppDbPath = Path.Combine(backupFolder, $"apolo_{today}.db");
+                string backupArchiveDbPath = Path.Combine(backupFolder, $"apolo_archive_{today}.db");
+
+                // Only perform the backup if today's backup doesn't exist yet
+                if (!File.Exists(backupAppDbPath) && File.Exists(appDbPath))
+                {
+                    Log.Information("Performing daily automated database backup...");
+
+                    // File.Copy is safe here because we run this BEFORE Entity Framework starts
+                    File.Copy(appDbPath, backupAppDbPath);
+
+                    if (File.Exists(archiveDbPath))
+                    {
+                        File.Copy(archiveDbPath, backupArchiveDbPath);
+                    }
+
+                    // Prune old backups (keep the last 7 days to save disk space)
+                    var oldFiles = Directory.GetFiles(backupFolder, "*.db")
+                                            .Select(f => new FileInfo(f))
+                                            .Where(f => f.CreationTime < DateTime.Now.AddDays(-7));
+
+                    foreach (var file in oldFiles)
+                    {
+                        file.Delete();
+                    }
+
+                    Log.Information("Automated backup completed and old files pruned successfully.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to perform automated database backup.");
+            }
+        }
+
+        private void InitializeApplicationLanguage()
+        {
+            try
+            {
+                using var scope = Services.CreateScope();
+                var profileService = scope.ServiceProvider.GetRequiredService<IUserProfileService>();
+
+                var profile = profileService.LoadProfileAsync().Result;
+
+                Loc.ApplyLanguage(profile?.Language ?? string.Empty);
+                
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to apply user configuration language during app initialization.");
+                Loc.ApplyLanguage(string.Empty);
+            }
         }
 
         public Window? MainWindow { get; private set; }
