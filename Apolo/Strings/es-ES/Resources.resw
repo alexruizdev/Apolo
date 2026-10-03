@@ -52,7 +52,7 @@
         <value>Presupuesto</value>
     </data>
     <data name="Menu/Lessons" xml:space="preserve">
-        <value>Clases</value>
+        <value>Sesiones</value>
     </data>
     <data name="Menu/Invoicing" xml:space="preserve">
         <value>Facturación</value>
@@ -67,7 +67,7 @@
         <value>Especificaciones</value>
     </data>
     <data name="Menu/Students" xml:space="preserve">
-        <value>Alumnos</value>
+        <value>Clientes</value>
     </data>
     <data name="Menu/Settings" xml:space="preserve">
         <value>Configuración</value>
@@ -121,13 +121,13 @@
 
     <!-- Tool Tip-->
     <data name="Edit_Lesson.ToolTipService.ToolTip" xml:space="preserve">
-        <value>Editar clase</value>
+        <value>Editar sesión</value>
     </data>
     <data name="Change_Payment.ToolTipService.ToolTip" xml:space="preserve">
         <value>Cambiar estado de pago</value>
     </data>
     <data name="Delete_Lesson.ToolTipService.ToolTip" xml:space="preserve">
-        <value>Borrar clase</value>
+        <value>Borrar sesión</value>
     </data>
     <data name="Billing_Document.ToolTipService.ToolTip" xml:space="preserve">
         <value>Identificador del recibo</value>
@@ -144,7 +144,7 @@
         <value>SIN PAGAR</value>
     </data>
     <data name="Lesson_Details.Text" xml:space="preserve">
-        <value>Detalles de clase</value>
+        <value>Detalles de sesión</value>
     </data>
     <data name="Pricing_Details.Text" xml:space="preserve">
         <value>Precio &amp; Opciones</value>
@@ -155,16 +155,16 @@
 
     <!-- Forms -->
     <data name="Search_Student.Header" xml:space="preserve">
-        <value>Nombre del Alumno</value>
+        <value>Nombre del Cliente</value>
     </data>
     <data name="Search_Student.PlaceholderText" xml:space="preserve">
-        <value>Buscar alumno...</value>
+        <value>Buscar cliente...</value>
     </data>
     <data name="Search_Payer.Header" xml:space="preserve">
         <value>Nombre del Pagador</value>
     </data>
     <data name="Lesson_Name.Header" xml:space="preserve">
-        <value>Nombre de la clase</value>
+        <value>Nombre de la sesión</value>
     </data>
     <data name="Search_Payer.PlaceholderText" xml:space="preserve">
         <value>Buscar Pagador...</value>
@@ -194,7 +194,7 @@
         <value>Propina:</value>
     </data>
     <data name="Form/Online.Header" xml:space="preserve">
-        <value>Modalidad de clase:</value>
+        <value>Modalidad de sesión:</value>
     </data>
     <data name="Form/Online.OnContent" xml:space="preserve">
         <value>Sesión en remoto</value>
@@ -247,7 +247,7 @@
         <value>Pagador '{0}' no cargado.</value>
     </data>
     <data name="Messages/Lesson_Not_Loaded" xml:space="preserve">
-        <value>Clase '{0}' no cargada.</value>
+        <value>Sesión '{0}' no cargada.</value>
     </data>
     <data name="Messages/Bill_Not_Loaded" xml:space="preserve">
         <value>Factura '{0}' no cargada</value>
@@ -256,7 +256,7 @@
         <value>Especificación '{0}' no cargada</value>
     </data>
     <data name="Messages/Lesson_Name_Validation" xml:space="preserve">
-        <value>• Es necesario rellenar el nombre de clase.</value>
+        <value>• Es necesario rellenar el nombre de sesión.</value>
     </data>
     <data name="Messages/Service_Name_Validation" xml:space="preserve">
         <value>• Es necesario rellenar el nombre de servicio.</value>
@@ -271,7 +271,7 @@
         <value>• Introduce un valor non negativo para la propina (ej., 15.5).</value>
     </data>
     <data name="Messages/Duration_Validation" xml:space="preserve">
-        <value>• Es necesario rellenar la duración cuando la clase se paga por horas.</value>
+        <value>• Es necesario rellenar la duración cuando la sesión se paga por horas.</value>
     </data>
     <data name="Messages/Duration_Value_Validation" xml:space="preserve">
         <value>• Introduce un valor no negativo para la duración (ej., 60).</value>
@@ -286,10 +286,10 @@
         <value>• Seleccion un servicio.</value>
     </data>
     <data name="Messages/Lesson_Paid_Validation" xml:space="preserve">
-        <value>• No se puede editar una clase si está marcada como pagada.</value>
+        <value>• No se puede editar una sesión si está marcada como pagada.</value>
     </data>
     <data name="Messages/Lesson_Bill_Validation" xml:space="preserve">
-        <value>• No se puede editar una clase si está asociada a una factura.</value>
+        <value>• No se puede editar una sesión si está asociada a una factura.</value>
     </data>
     <data name="Messages/Frequency_Validation" xml:space="preserve">
         <value>• La frecuando tiene que ser un valor positivo.</value>
@@ -298,22 +298,22 @@
         <value>No se puede cambiar el estado de pago</value>
     </data>
     <data name="Messages/Mark_Paid_Reason" xml:space="preserve">
-        <value>Por favor, selecciona primero una clase para marcarla como pagada</value>
+        <value>Por favor, selecciona primero una sesión para marcarla como pagada</value>
     </data>
     <data name="Messages/Mark_Unpaid_Reason" xml:space="preserve">
-        <value>Por favor, selecciona primero una clase para marcarla como sin pagar</value>
+        <value>Por favor, selecciona primero una sesión para marcarla como sin pagar</value>
     </data>
     <data name="Messages/Mark_Paid_Success" xml:space="preserve">
-        <value>Clase '{0}' marcada como pagada correctamente</value>
+        <value>Sesión '{0}' marcada como pagada correctamente</value>
     </data>
     <data name="Messages/Mark_Unpaid_Success" xml:space="preserve">
-        <value>Clase '{0}' marcada como sin pagar correctamente</value>
+        <value>Sesión '{0}' marcada como sin pagar correctamente</value>
     </data>
     <data name="Messages/Lessons_Mark_Paid_Success" xml:space="preserve">
-        <value>{0} clases marcadas como pagadas correctamente</value>
+        <value>{0} sesiones marcadas como pagadas correctamente</value>
     </data>
     <data name="Messages/Lessons_Mark_Unpaid_Success" xml:space="preserve">
-        <value>{0} clases marcadas como sin pagar correctamente</value>
+        <value>{0} sesiones marcadas como sin pagar correctamente</value>
     </data>
     <data name="Messages/Reason_Busy" xml:space="preserve">
         <value>applicación ocupada</value>
@@ -336,7 +336,7 @@
         <value>No se puede borrar pagador</value>
     </data>
     <data name="Messages/Associated_Student_Reason" xml:space="preserve">
-        <value>el pagador tiene asociado algún alumno ({0})</value>
+        <value>el pagador tiene asociado algún cliente ({0})</value>
     </data>
     <data name="Messages/Delete_Payer_Success" xml:space="preserve">
         <value>Pagador '{0}' borrado correctamente</value>
@@ -350,31 +350,31 @@
 
     <!-- Messages - Lessons -->
     <data name="Messages/Load_Lesson_Error" xml:space="preserve">
-        <value>No se puede cargar la ventana de Clases</value>
+        <value>No se puede cargar la ventana de Sesiones</value>
     </data>
     <data name="Messages/Load_Lesson_Success" xml:space="preserve">
-        <value>{0} clase(s) extraídas</value>
+        <value>{0} sesión(s) extraídas</value>
     </data>
     <data name="Messages/Add_Lesson_Error" xml:space="preserve">
-        <value>No se puede añadir clase</value>
+        <value>No se puede añadir sesión</value>
     </data>
     <data name="Messages/Add_Lesson_Success" xml:space="preserve">
-        <value>Clase '{0}' añadida correctamente</value>
+        <value>Sesión '{0}' añadida correctamente</value>
     </data>
     <data name="Messages/Delete_Lesson_Error" xml:space="preserve">
-        <value>No se puede borrar clase</value>
+        <value>No se puede borrar sesión</value>
     </data>
     <data name="Messages/LessonIsAssigned" xml:space="preserve">
         <value>'{0}-{1}' está asociada a una factura '{2}'</value>
     </data>
     <data name="Messages/Delete_Lesson_Success" xml:space="preserve">
-        <value>Clase '{0}' borrada correctamente para '{1}'</value>
+        <value>Sesión '{0}' borrada correctamente para '{1}'</value>
     </data>
     <data name="Messages/Edit_Lesson_Error" xml:space="preserve">
-        <value>No se puede editar clase</value>
+        <value>No se puede editar sesión</value>
     </data>
     <data name="Messages/Edit_Lesson_Success" xml:space="preserve">
-        <value>"Clase '{0}' actualizada correctamente</value>
+        <value>"Sesión '{0}' actualizada correctamente</value>
     </data>
     <data name="Messages/Clear Filters_Error" xml:space="preserve">
         <value>No se pueden borrar filtros</value>
@@ -391,16 +391,16 @@
         <value>Factura '{0}' editada correctamente</value>
     </data>
     <data name="Messages/Load_Bill_Error" xml:space="preserve">
-        <value>No se pueden cargar las clases para la factura</value>
+        <value>No se pueden cargar las sesiones para la factura</value>
     </data>
     <data name="Messages/Load_Lessons_Error" xml:space="preserve">
-        <value>No se puede cargar las clases</value>
+        <value>No se puede cargar las sesiones</value>
     </data>
     <data name="Messages/Payer_Selected_Reason" xml:space="preserve">
         <value>no se ha seleccionado a un pagador</value>
     </data>
     <data name="Messages/Load_Lessons_Success" xml:space="preserve">
-        <value>{0} clase(s) cargadas sin factura asociada ni pagadas</value>
+        <value>{0} sesión(s) cargadas sin factura asociada ni pagadas</value>
     </data>
     <data name="Messages/Load_Bill_Lessons_Error" xml:space="preserve">
         <value>No se pueden carga la factura</value>
@@ -409,16 +409,16 @@
         <value>no se ha seleccionado una factura</value>
     </data>
     <data name="Messages/Load_Bill_Lessons_Success" xml:space="preserve">
-        <value>'{0}' cargada ({1} clase(s))</value>
+        <value>'{0}' cargada ({1} sesión(s))</value>
     </data>
     <data name="Messages/Remove_Bill_Lessons_Error" xml:space="preserve">
-        <value>No se puede quitar la(s) clase(s) seleccionada(s)</value>
+        <value>No se puede quitar la(s) sesión(s) seleccionada(s)</value>
     </data>
     <data name="Messages/Lessons_Selected_Reason" xml:space="preserve">
-        <value>no se ha seleccionado ninguna clase</value>
+        <value>no se ha seleccionado ninguna sesión</value>
     </data>
     <data name="Messages/Remove_Bill_Lessons_Success" xml:space="preserve">
-        <value>{0} clase(s) borrada(s) de {1}</value>
+        <value>{0} sesión(s) borrada(s) de {1}</value>
     </data>
     <data name="Messages/Delete_Bill_Error" xml:space="preserve">
         <value>No se puede eleminar la factura</value>
@@ -461,10 +461,10 @@
 
     <!-- Messages - LessonForm -->
     <data name="Message/New_Lesson" xml:space="preserve">
-        <value>Crear clase — Total: {0}</value>
+        <value>Crear sesión — Total: {0}</value>
     </data>
     <data name="Message/Edit_Lesson" xml:space="preserve">
-        <value>Editar clase — Total: {0}</value>
+        <value>Editar sesión — Total: {0}</value>
     </data>
 
     <!-- Messages - Services -->
@@ -520,10 +520,10 @@
         <value>Especificación '{0}' actualizada para {1}</value>
     </data>
     <data name="Message/Create_Lesson_Specification_Error" xml:space="preserve">
-        <value>No se puede crear una clase a partir de la especificación</value>
+        <value>No se puede crear una sesión a partir de la especificación</value>
     </data>
     <data name="Message/Create_Lesson_Specification_Success" xml:space="preserve">
-        <value>Clase '{0}' creada para {1}</value>
+        <value>Sesión '{0}' creada para {1}</value>
     </data>
 
     <!-- Messages - SpecificationForm -->
@@ -545,31 +545,31 @@
 
     <!-- Messages - Students -->
     <data name="Messages/Load_Students_Error" xml:space="preserve">
-        <value>No se puede cargar la ventana de Alumnos</value>
+        <value>No se puede cargar la ventana de Clientes</value>
     </data>
     <data name="Messages/Load_Students_Success" xml:space="preserve">
-        <value>{0} alumno(s) cargado(s)</value>
+        <value>{0} cliente(s) cargado(s)</value>
     </data>
     <data name="Messages/Add_Student_Error" xml:space="preserve">
-        <value>No se puede añadir alumno</value>
+        <value>No se puede añadir cliente</value>
     </data>
     <data name="Messages/Add_Student_Success" xml:space="preserve">
-        <value>Alumno '{0}' añadido correctamente</value>
+        <value>Cliente '{0}' añadido correctamente</value>
     </data>
     <data name="Messages/Add_Student_Extra" xml:space="preserve">
         <value>Creado un pagador con el mismo nombre</value>
     </data>
     <data name="Messages/Delete_Student_Error" xml:space="preserve">
-        <value>No se puede borrar al alumno</value>
+        <value>No se puede borrar al cliente</value>
     </data>
     <data name="Messages/Delete_Student_Success" xml:space="preserve">
-        <value>Alumno '{0}' borrado correctamente</value>
+        <value>Cliente '{0}' borrado correctamente</value>
     </data>
     <data name="Messages/Edit_Student_Error" xml:space="preserve">
-        <value>No se puede editar al alumno</value>
+        <value>No se puede editar al cliente</value>
     </data>
     <data name="Messages/Edit_Student_Success" xml:space="preserve">
-        <value>Alumno '{0}' actualizado correctamente</value>
+        <value>Cliente '{0}' actualizado correctamente</value>
     </data>
 
     <!-- Messages / Proposal -->
@@ -691,13 +691,13 @@
         <value>Pagadores Importados</value>
     </data>
     <data name="Messages/Settings_Export_Students" xml:space="preserve">
-        <value>Alumnos Importados</value>
+        <value>Clientes Importados</value>
     </data>
     <data name="Messages/Settings_Export_Specifications" xml:space="preserve">
         <value>Especificaciones Importadas</value>
     </data>
     <data name="Messages/Settings_Export_Lessons" xml:space="preserve">
-        <value>Clases Importadas</value>
+        <value>Sesiones Importadas</value>
     </data>
     <data name="Messages/Settings_Export_Invoices" xml:space="preserve">
         <value>Facturas Importadas</value>
@@ -712,7 +712,7 @@
         <value>Aplicar filtros</value>
     </data>
     <data name="Buttons/LoadLessons.Content" xml:space="preserve">
-        <value>Cargar clases</value>
+        <value>Cargar sesiones</value>
     </data>
     <data name="Buttons/LoadBill.Content" xml:space="preserve">
         <value>Cargar factura</value>
@@ -817,7 +817,7 @@
         <value>Ticket</value>
     </data>
     <data name="Common/LessonActions" xml:space="preserve">
-        <value>Acciones de la clase</value>
+        <value>Acciones de la sesión</value>
     </data>
     <data name="Common/MinuteAbbrev.Text" xml:space="preserve">
         <value>min</value>
@@ -844,10 +844,10 @@
         <value>Editar servicio</value>
     </data>
     <data name="Common/CreateStudent" xml:space="preserve">
-        <value>Crear alumno</value>
+        <value>Crear cliente</value>
     </data>
     <data name="Common/EditStudent" xml:space="preserve">
-        <value>Editar alumno</value>
+        <value>Editar cliente</value>
     </data>
     <data name="Common/CreateSpecification" xml:space="preserve">
         <value>Crear especificación</value>
@@ -856,13 +856,13 @@
         <value>Editar especificación</value>
     </data>
     <data name="Common/CreateLesson.ToolTipService.ToolTip" xml:space="preserve">
-        <value>Crear clase</value>
+        <value>Crear sesión</value>
     </data>
     <data name="Common/DeleteSpecification.ToolTipService.ToolTip" xml:space="preserve">
         <value>Borrar especificación</value>
     </data>
     <data name="Common/EditLesson" xml:space="preserve">
-        <value>Editar clase</value>
+        <value>Editar sesión</value>
     </data>
     <data name="Common/Filters.Text" xml:space="preserve">
         <value>Filtros</value>
@@ -934,10 +934,10 @@
         <value>Servicio</value>
     </data>
     <data name="Common/LessonDetails.Text" xml:space="preserve">
-        <value>Detalles de clase</value>
+        <value>Detalles de sesión</value>
     </data>
     <data name="Common/LessonName.Header" xml:space="preserve">
-        <value>Nombre de la clase</value>
+        <value>Nombre de la sesión</value>
     </data>
     <data name="Common/SpecificationName.Header" xml:space="preserve">
         <value>Nombre de la especificación</value>
@@ -1009,21 +1009,21 @@
         <value>Crear factura</value>
     </data>
     <data name="Lessons/RowActions.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-        <value>Acciones de la clase</value>
+        <value>Acciones de la sesión</value>
     </data>
     <data name="Lessons/EditLessonMenuItem.Text" xml:space="preserve">
-        <value>Editar clase</value>
+        <value>Editar sesión</value>
     </data>
     <data name="Lessons/ChangePaymentMenuItem.Text" xml:space="preserve">
         <value>Cambiar estado de pago</value>
     </data>
     <data name="Lessons/DeleteLessonMenuItem.Text" xml:space="preserve">
-        <value>Borrar clase</value>
+        <value>Borrar sesión</value>
     </data>
 
     <!-- Lessons -->
     <data name="Lessons/Title.Text" xml:space="preserve">
-        <value>Clases</value>
+        <value>Sesiones</value>
     </data>
 
     <!-- Servicios -->
@@ -1047,7 +1047,7 @@
         <value>Total sin pagar (histórico)</value>
     </data>
     <data name="Dashboard/LessonsSelectedMonth.Text" xml:space="preserve">
-        <value>Clases (mes seleccionado)</value>
+        <value>Sesiones (mes seleccionado)</value>
     </data>
     <data name="Dashboard/IncomesPerYearComparison.Text" xml:space="preserve">
         <value>Comparación de ingresos por año</value>
@@ -1120,7 +1120,7 @@
 
     <!-- Students -->
     <data name="Students/Title.Text" xml:space="preserve">
-        <value>Alumnos</value>
+        <value>Clientes</value>
     </data>
     <data name="Students/Payer.Text" xml:space="preserve">
         <value>Pagador</value>
@@ -1214,7 +1214,7 @@
         <value>borrar archivo</value>
     </data>
     <data name="Actions/RemoveSelectedLessons" xml:space="preserve">
-        <value>quitar clases seleccionadas</value>
+        <value>quitar sesiones seleccionadas</value>
     </data>
     <data name="Actions/DeleteBill" xml:space="preserve">
         <value>borrar factura</value>
@@ -1226,13 +1226,13 @@
         <value>borrar servicio</value>
     </data>
     <data name="Actions/DeleteStudent" xml:space="preserve">
-        <value>borrar alumno</value>
+        <value>borrar cliente</value>
     </data>
     <data name="Actions/DeleteSpecification" xml:space="preserve">
         <value>borrar especificación</value>
     </data>
     <data name="Actions/DeleteLesson" xml:space="preserve">
-        <value>borrar clase</value>
+        <value>borrar sesión</value>
     </data>
     <data name="App/UnexpectedErrorTitle" xml:space="preserve">
         <value>Error inesperado</value>
@@ -1250,15 +1250,47 @@
         <value>Generar un ticket con la factura</value>
     </data>
     <data name="Settings/IncludeLessonsInTicket.Content" xml:space="preserve">
-        <value>Incluir las clases en el ticket</value>
+        <value>Incluir las sesiones en el ticket</value>
     </data>
     <data name="Settings/IncludeLessonsInInvoice.Content" xml:space="preserve">
-        <value>Incluir las clases en la factura</value>
+        <value>Incluir las sesiones en la factura</value>
     </data>
     <data name="Settings/DeveloperMode.Content" xml:space="preserve">
         <value>Habilitar modo desarrollador</value>
     </data>
     <data name="Settings/ShowIvaDisclaimer.Content" xml:space="preserve">
         <value>Mostrar el aviso legal de exención de IVA en la factura</value>
+    </data>
+    
+    <!-- Custom terms and invoice PDF -->
+    <data name="Settings/CustomLessonTerm.Header" xml:space="preserve">
+      <value>Término personalizado 'Concepto'</value>
+    </data>
+    <data name="Settings/CustomLessonTerm.PlaceholderText" xml:space="preserve">
+      <value>Por defecto: Concepto</value>
+    </data>
+    <data name="Settings/CustomStudentTerm.Header" xml:space="preserve">
+      <value>Término personalizado 'Cliente'</value>
+    </data>
+    <data name="Settings/CustomStudentTerm.PlaceholderText" xml:space="preserve">
+      <value>Por defecto: Cliente</value>
+    </data>
+    <data name="Settings/HideStudentColumn.Content" xml:space="preserve">
+      <value>Ocultar columna 'Cliente' en el PDF</value>
+    </data>
+    <data name="Invoice/Date" xml:space="preserve">
+      <value>Fecha</value>
+    </data>
+    <data name="Invoice/Lesson" xml:space="preserve">
+      <value>Concepto</value>
+    </data>
+    <data name="Invoice/Student" xml:space="preserve">
+      <value>Cliente</value>
+    </data>
+    <data name="Invoice/Duration" xml:space="preserve">
+      <value>Duración</value>
+    </data>
+    <data name="Invoice/Price" xml:space="preserve">
+      <value>Precio</value>
     </data>
 </root>

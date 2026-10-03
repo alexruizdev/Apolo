@@ -32,7 +32,10 @@ namespace Apolo.Services
                 IncludeLessonsInTicket = v[nameof(UserProfile.IncludeLessonsInTicket)] as bool? ?? true,
                 IncludeLessonsInInvoice = v[nameof(UserProfile.IncludeLessonsInInvoice)] as bool? ?? true,
                 DeveloperMode = v[nameof(UserProfile.DeveloperMode)] as bool? ?? false,
-                ShowIvaDisclaimer = v[nameof(UserProfile.ShowIvaDisclaimer)] as bool? ?? false
+                ShowIvaDisclaimer = v[nameof(UserProfile.ShowIvaDisclaimer)] as bool? ?? false,
+                LessonTerm = v[nameof(UserProfile.LessonTerm)] as string ?? "",
+                StudentTerm = v[nameof(UserProfile.StudentTerm)] as string ?? "",
+                HideStudentColumn = v[nameof(UserProfile.HideStudentColumn)] as bool? ?? false
             };
 
             return Task.FromResult(p);
@@ -62,6 +65,9 @@ namespace Apolo.Services
             v[nameof(UserProfile.IncludeLessonsInInvoice)] = profile.IncludeLessonsInInvoice;
             v[nameof(UserProfile.DeveloperMode)] = profile.DeveloperMode;
             v[nameof(UserProfile.ShowIvaDisclaimer)] = profile.ShowIvaDisclaimer;
+            v[nameof(UserProfile.LessonTerm)] = profile.LessonTerm;
+            v[nameof(UserProfile.StudentTerm)] = profile.StudentTerm;
+            v[nameof(UserProfile.HideStudentColumn)] = profile.HideStudentColumn;
 
             return Task.CompletedTask;
         }

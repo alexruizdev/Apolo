@@ -30,6 +30,9 @@ namespace Models
         public bool IncludeLessonsInInvoice { get; set; } = true;
         public bool ShowIvaDisclaimer { get; set; } = false;
         public bool DeveloperMode { get; set; } = false;
+        public string LessonTerm { get; set; } = string.Empty;
+        public string StudentTerm { get; set; } = string.Empty;
+        public bool HideStudentColumn { get; set; } = false;
     }
 }
 
