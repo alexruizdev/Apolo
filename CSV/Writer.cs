@@ -102,7 +102,7 @@ namespace CSV
             var exportData = lessons.Select(lesson => new
             {
                 Id = lesson.Id,
-                Date = lesson.Date,
+                Date = lesson.Date.ToString("dd-MM-yyyy"),
                 Name = lesson.Name,
                 StudentName = studentLookup.TryGetValue(lesson.StudentId, out var stu) ? stu.FullName : "",
                 FinalPrice = lesson.FinalPrice,
@@ -138,7 +138,7 @@ namespace CSV
             {
                 DocumentNumber = bill.DocumentNumber,
                 Type = bill.Type,
-                CreatedUTC = bill.CreatedUTC,
+                CreatedUTC = bill.CreatedUTC.ToString("dd-MM-yyyy HH:mm:ss"),
                 PayerName = payerLookup.TryGetValue(bill.PayerId, out var pName) ? pName : "",
                 Total = billLookup.TryGetValue(bill.Id, out var total) ? total : 0m,
                 PayerId = bill.PayerId,

@@ -26,6 +26,10 @@ namespace Repository
                 _context.BillingDocuments.AddRange(invoices);
                 _context.Lessons.AddRange(lessons);
                 await _context.SaveChangesAsync();
+
+                _archiveDb.ChangeTracker.Clear();
+                _context.ChangeTracker.Clear();
+
                 await transaction.CommitAsync();
             }
             catch
@@ -49,6 +53,10 @@ namespace Repository
                 _archiveDb.BillingDocuments.AddRange(invoices);
                 _archiveDb.Lessons.AddRange(lessons);
                 await _archiveDb.SaveChangesAsync();
+
+                _archiveDb.ChangeTracker.Clear();
+                _context.ChangeTracker.Clear();
+
                 await transaction.CommitAsync();
             }
             catch
