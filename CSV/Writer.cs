@@ -57,11 +57,11 @@ namespace CSV
 
             var exportData = students.Select(student => new
             {
-                FirstName = student.FirstName,
-                LastName = student.LastName,
+                student.FirstName,
+                student.LastName,
                 PayerName = payerLookup.TryGetValue(student.PayerId, out var payer) ? payer.FullName : "",
-                Id = student.Id,
-                PayerId = student.PayerId
+                student.Id,
+                student.PayerId
             });
 
             using var sw = new StreamWriter(Path.Combine(folder, "Students.csv"));
@@ -76,17 +76,17 @@ namespace CSV
 
             var exportData = specifications.Select(spec => new
             {
-                Name = spec.Name,
+                spec.Name,
                 StudentName = studentLookup.TryGetValue(spec.StudentId, out var stu) ? stu.FullName : "",
                 ServiceName = serviceLookup.TryGetValue(spec.ServiceId, out var srv) ? srv.Name : "",
-                DurationMinutes = spec.DurationMinutes,
-                Price = spec.Price,
-                IsOnline = spec.IsOnline,
-                IsWeekendOrHoliday = spec.IsWeekendOrHoliday,
-                UsageCount = spec.UsageCount,
-                Id = spec.Id,
-                StudentId = spec.StudentId,
-                ServiceId = spec.ServiceId
+                spec.DurationMinutes,
+                spec.Price,
+                spec.IsOnline,
+                spec.IsWeekendOrHoliday,
+                spec.UsageCount,
+                spec.Id,
+                spec.StudentId,
+                spec.ServiceId
             });
 
             using var sw = new StreamWriter(Path.Combine(folder, "Specifications.csv"));
@@ -101,23 +101,23 @@ namespace CSV
 
             var exportData = lessons.Select(lesson => new
             {
-                Id = lesson.Id,
-                Date = lesson.Date,
-                Name = lesson.Name,
+                lesson.Id,
+                Date = lesson.Date.ToString("dd-MM-yyyy"),
+                lesson.Name,
                 StudentName = studentLookup.TryGetValue(lesson.StudentId, out var stu) ? stu.FullName : "",
-                FinalPrice = lesson.FinalPrice,
-                IsPaid = lesson.IsPaid,
+                lesson.FinalPrice,
+                lesson.IsPaid,
                 Notes = lesson.Notes ?? string.Empty,
                 BillName = lesson.BillingDocumentId.HasValue && billLookup.TryGetValue(lesson.BillingDocumentId.Value, out var b) ? b.DocumentNumber : "",
-                IsPricePerHour = lesson.IsPricePerHour,
-                DurationMinutes = lesson.DurationMinutes,
-                BasePrice = lesson.BasePrice,
-                IsOnline = lesson.IsOnline,
-                TravelAllowance = lesson.TravelAllowance,
-                IsWeekendOrHoliday = lesson.IsWeekendOrHoliday,
-                WeekendFee = lesson.WeekendFee,
-                Tip = lesson.Tip,
-                StudentId = lesson.StudentId,
+                lesson.IsPricePerHour,
+                lesson.DurationMinutes,
+                lesson.BasePrice,
+                lesson.IsOnline,
+                lesson.TravelAllowance,
+                lesson.IsWeekendOrHoliday,
+                lesson.WeekendFee,
+                lesson.Tip,
+                lesson.StudentId,
                 BillId = lesson.BillingDocumentId
             });
 
@@ -136,14 +136,14 @@ namespace CSV
 
             var exportData = bills.Select(bill => new
             {
-                DocumentNumber = bill.DocumentNumber,
-                Type = bill.Type,
-                CreatedUTC = bill.CreatedUTC,
+                bill.DocumentNumber,
+                bill.Type,
+                CreatedUTC = bill.CreatedUTC.ToString("dd-MM-yyyy HH:mm:ss"),
                 PayerName = payerLookup.TryGetValue(bill.PayerId, out var pName) ? pName : "",
                 Total = billLookup.TryGetValue(bill.Id, out var total) ? total : 0m,
-                PayerId = bill.PayerId,
-                Id = bill.Id,
-                SequenceNumber = bill.SequenceNumber
+                bill.PayerId,
+                bill.Id,
+                bill.SequenceNumber
             });
 
             using var sw = new StreamWriter(Path.Combine(folder, "Bills.csv"));

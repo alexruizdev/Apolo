@@ -113,8 +113,11 @@ namespace CSV
             var lessons = csv.GetRecords<LessonData>();
 
             Lessons.AddRange([.. lessons.Select(l => new Lesson(l.Date, l.Name, l.IsPaid, l.StudentId, l.BillingDocumentId,
-                l.IsPricePerHour, l.DurationMinutes, l.BasePrice, l.IsOnline, l.TravelAllowance, l.IsWeekendOrHoliday, 
-                l.WeekendFee, l.Tip, l.Notes))]);
+                l.IsPricePerHour, l.DurationMinutes, l.BasePrice, l.IsOnline, l.TravelAllowance, l.IsWeekendOrHoliday,
+                l.WeekendFee, l.Tip, l.Notes) 
+            {
+                Id = l.Id
+            })]);
         }
 
         private void ReadBills(string folder)
@@ -124,8 +127,15 @@ namespace CSV
             using var reader = new StreamReader(path);
             using var csv = new CsvReader(reader, Config);
             csv.Context.RegisterClassMap<BillMap>();
+            var bills = csv.GetRecords<BillData>();
 
-            Bills.AddRange([.. csv.GetRecords<BillingDocument>()]);
+            Bills.AddRange([.. bills.Select(b => new BillingDocument(b.CreatedUTC) 
+            { 
+                Id = b.Id, 
+                Type = b.Type,
+                PayerId = b.PayerId,
+                SequenceNumber = b.SequenceNumber
+            })]);
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using CsvHelper.Configuration;
-using Microsoft.EntityFrameworkCore;
 using Models;
-using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 
 namespace CSV
 {
@@ -82,7 +81,7 @@ namespace CSV
         public LessonMap()
         {
             Map(x => x.Id).Name("Id");
-            Map(x => x.Date).Name("Date");
+            Map(x => x.Date).Name("Date").TypeConverterOption.Format("dd-MM-yyyy");
             Map(x => x.Name).Name("Name");
             Map(x => x.FinalPrice).Name("FinalPrice");
             Map(x => x.IsPaid).Name("IsPaid");
@@ -100,14 +99,25 @@ namespace CSV
         }
     }
 
-    public class BillMap : ClassMap<BillingDocument>
+    public class BillData
+    {
+        public Guid Id { get; set; }
+        public DocumentType Type { get; set; }
+        public int SequenceNumber { get; set; }
+        public DateTime CreatedUTC { get; set; }
+        public string DocumentNumber = string.Empty;
+        public Guid PayerId { get; set; }
+    }
+
+    public class BillMap : ClassMap<BillData>
     {
         public BillMap()
         {
             Map(x => x.Id).Name("Id");
             Map(x => x.DocumentNumber).Name("DocumentNumber");
             Map(x => x.Type).Name("Type");
-            Map(x => x.CreatedUTC).Name("CreatedUTC");
+            Map(x => x.CreatedUTC).Name("CreatedUTC").TypeConverterOption.Format("dd-MM-yyyy HH:mm:ss")
+                .TypeConverterOption.CultureInfo(CultureInfo.InvariantCulture); ;
             Map(x => x.PayerId).Name("PayerId");
             Map(x => x.SequenceNumber).Name("SequenceNumber");
         }

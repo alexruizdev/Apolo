@@ -117,7 +117,7 @@ namespace Apolo.Views
             {
                 Title = Loc.Settings_ArchiveOldData,
                 Content = viewer,
-                PrimaryButtonText = Loc.Buttons_Archive,
+                PrimaryButtonText = Loc.Button_Archive,
                 CloseButtonText = Loc.Buttons_Cancel,
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = Content.XamlRoot
