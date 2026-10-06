@@ -29,6 +29,7 @@ namespace Apolo.ViewModels
         readonly PDF.IWriter _pdfWriter;
 
         public ObservableCollection<PayerOption> Payers { get; } = [];
+        public ObservableCollection<PayerOption> AllPayers { get; } = [];
         public ObservableCollection<InvoiceLine> Lessons { get; } = [];
         public ObservableCollection<BillingDocument> BillSuggestions { get; } = []; 
 
@@ -40,6 +41,12 @@ namespace Apolo.ViewModels
         [ObservableProperty] private bool isConfigPaneOpen = true;
         [ObservableProperty] private BillSummary bill;
         [ObservableProperty] private string? lastGeneratedFolder;
+
+        public ObservableCollection<BillingDocument> AdvancedSearchResults { get; } = [];
+        [ObservableProperty] private Guid? filterPayerId;
+        [ObservableProperty] private int filterPaymentStatusIndex = 0; // 0: All, 1: Paid, 2: Unpaid
+        [ObservableProperty] private DateTimeOffset? filterStartDate;
+        [ObservableProperty] private DateTimeOffset? filterEndDate;
 
         protected static string Message_State_Error => "Messages/State_Bill_Error";
         protected static string Message_Load_Error => "Messages/Load_Bill_Error";
@@ -169,6 +176,10 @@ namespace Apolo.ViewModels
             SetEnterFunction();
 
             await UpdatePayerOptions();
+            
+            var allPayers = await _payerRepository.GetPayerOptionsAsync();
+            AllPayers.Clear();
+            foreach (var p in allPayers) AllPayers.Add(p);
 
             SetExitFunction();
         }
@@ -580,6 +591,30 @@ namespace Apolo.ViewModels
             {
                 // Silently fail if we can't open the folder
             }
+        }
+
+        [RelayCommand]
+        public async Task FilterBillsAsync()
+        {
+            if (IsBusy) return;
+            SetEnterFunction();
+
+            bool? isPaid = FilterPaymentStatusIndex switch
+            {
+                1 => true,
+                2 => false,
+                _ => null
+            };
+
+            var results = await _billingRepository.AdvancedSearchBillsAsync(FilterPayerId, isPaid, FilterStartDate?.Date, FilterEndDate?.Date);
+
+            AdvancedSearchResults.Clear();
+            foreach (var b in results)
+            {
+                AdvancedSearchResults.Add(b);
+            }
+
+            SetExitFunction();
         }
     }
 }

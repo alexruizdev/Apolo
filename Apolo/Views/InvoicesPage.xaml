@@ -5,8 +5,7 @@
       xmlns:local="using:Apolo.Views"
       xmlns:vm="using:Apolo.ViewModels"
       xmlns:m="using:Models"
-      x:Name="PageRoot"
-      Loaded="Page_Loaded">
+      x:Name="PageRoot">
 
     <Grid Style="{StaticResource MainGridStyle}">
 
@@ -219,6 +218,53 @@
                                             Style="{ThemeResource AccentButtonStyle}"
                                             IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
                                             Margin="0,8,0,0" />
+
+                                    <TextBlock x:Uid="Common/AdvancedSearch" Text="Advanced Search"
+                                               Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                               Margin="0,16,0,8" />
+                                    <ComboBox x:Uid="Common/Payer"
+                                              AutomationProperties.AutomationId="Invoices.AdvancedSearchPayer"
+                                              ItemsSource="{x:Bind ViewModel.AllPayers, Mode=OneWay}"
+                                              SelectedValuePath="Id"
+                                              DisplayMemberPath="FullName"
+                                              SelectedValue="{x:Bind ViewModel.FilterPayerId, Mode=TwoWay}"
+                                              HorizontalAlignment="Stretch"
+                                              Margin="0,0,0,8" />
+                                    <ComboBox x:Uid="Common/PaymentStatus"
+                                              SelectedIndex="{x:Bind ViewModel.FilterPaymentStatusIndex, Mode=TwoWay}"
+                                              HorizontalAlignment="Stretch"
+                                              Margin="0,0,0,8">
+                                        <ComboBoxItem x:Uid="Buttons/PaymentOption_All" />
+                                        <ComboBoxItem x:Uid="Buttons/PaymentOption_Paid" />
+                                        <ComboBoxItem x:Uid="Buttons/PaymentOption_Unpaid" />
+                                    </ComboBox>
+                                    <CalendarDatePicker x:Uid="Common/StartDate"
+                                                        Date="{x:Bind ViewModel.FilterStartDate, Mode=TwoWay}"
+                                                        HorizontalAlignment="Stretch"
+                                                        Margin="0,0,0,8" />
+                                    <CalendarDatePicker x:Uid="Common/EndDate"
+                                                        Date="{x:Bind ViewModel.FilterEndDate, Mode=TwoWay}"
+                                                        HorizontalAlignment="Stretch"
+                                                        Margin="0,0,0,8" />
+                                    
+                                    <Button x:Uid="Buttons/Apply_Filters"
+                                            Command="{x:Bind ViewModel.FilterBillsCommand}"
+                                            IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}"
+                                            Margin="0,0,0,16" />
+
+                                    <ListView ItemsSource="{x:Bind ViewModel.AdvancedSearchResults, Mode=OneWay}"
+                                              SelectionChanged="AdvancedSearchList_SelectionChanged"
+                                              MaxHeight="200"
+                                              Margin="0,0,0,8">
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate x:DataType="m:BillingDocument">
+                                                <StackPanel Padding="4">
+                                                    <TextBlock Text="{x:Bind DocumentNumber}" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{x:Bind Payer.FullName}" Style="{ThemeResource CaptionTextBlockStyle}" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
                                 </StackPanel>
 
                             </StackPanel>

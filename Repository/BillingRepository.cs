@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Models;
 using System.Data;
 
@@ -121,6 +121,47 @@ namespace Repository
 
         public async Task<BillingDocument> GetBill(Guid id) =>
            await _context.BillingDocuments .AsNoTracking() .FirstAsync(b => b.Id == id);
+           
+        public async Task<IEnumerable<BillingDocument>> AdvancedSearchBillsAsync(Guid? payerId, bool? isPaid, DateTime? startDate, DateTime? endDate)
+        {
+            var query = _context.BillingDocuments
+                .Include(b => b.Payer)
+                .Include(b => b.Lines)
+                .AsNoTracking()
+                .AsQueryable();
+
+            if (payerId.HasValue)
+            {
+                query = query.Where(b => b.PayerId == payerId.Value);
+            }
+
+            if (startDate.HasValue)
+            {
+                query = query.Where(b => b.CreatedUTC >= startDate.Value);
+            }
+
+            if (endDate.HasValue)
+            {
+                query = query.Where(b => b.CreatedUTC <= endDate.Value);
+            }
+
+            if (isPaid.HasValue)
+            {
+                if (isPaid.Value)
+                {
+                    query = query.Where(b => b.Lines.All(l => l.IsPaid));
+                }
+                else
+                {
+                    query = query.Where(b => b.Lines.Any(l => !l.IsPaid));
+                }
+            }
+
+            return await query
+                .OrderByDescending(b => b.CreatedUTC)
+                .Take(5)
+                .ToListAsync();
+        }
         
     }
 }

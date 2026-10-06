@@ -1,4 +1,4 @@
-﻿using Models;
+using Models;
 
 namespace Repository
 {
@@ -68,6 +68,7 @@ namespace Repository
         Task<IEnumerable<BillingDocument>> GetBillSuggestionsAsync(string searchTerm);
         Task<BillingDocument> EditAsync(Guid id, DocumentType type, int sequence, DateTime newDate);
         Task<BillingDocument> GetBill(Guid id);
+        Task<IEnumerable<BillingDocument>> AdvancedSearchBillsAsync(Guid? payerId, bool? isPaid, DateTime? startDate, DateTime? endDate);
     }
 
     public interface IGeneralRepository

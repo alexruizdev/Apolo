@@ -36,9 +36,6 @@ namespace Apolo.Views
             return typeOption;
         }
 
-        private async void Page_Loaded(object sender, RoutedEventArgs e)
-            => await ViewModel.LoadAsync();
-
         private async void LoadForPayer_Click(object sender, RoutedEventArgs e)
             => await ViewModel.LoadLessonsAsync();
 
@@ -144,6 +141,7 @@ namespace Apolo.Views
             if (ViewModel != null)
             {
                 await ViewModel.RefreshProfileAsync();
+                await ViewModel.LoadAsync();
 
                 if (e.Parameter is string paramStr)
                 {
@@ -160,6 +158,10 @@ namespace Apolo.Views
                         {
                             ViewModel.SelectedPayerId = payerId;
                             await ViewModel.LoadLessonsAsync();
+
+                            ViewModel.FilterPayerId = payerId;
+                            ViewModel.FilterPaymentStatusIndex = 2; // Unpaid
+                            await ViewModel.FilterBillsAsync();
                         }
                     }
                 }
@@ -180,6 +182,15 @@ namespace Apolo.Views
             // Cast the selected item back to a BillingDocument
             if (args.SelectedItem is BillingDocument selectedBill)
             {
+                ViewModel.SelectBillToEdit(selectedBill);
+            }
+        }
+
+        private void AdvancedSearchList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count > 0 && e.AddedItems[0] is BillingDocument selectedBill)
+            {
+                ViewModel.SearchBillText = selectedBill.DocumentNumber;
                 ViewModel.SelectBillToEdit(selectedBill);
             }
         }

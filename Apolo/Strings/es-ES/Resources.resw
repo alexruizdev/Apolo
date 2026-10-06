@@ -756,6 +756,9 @@
     <data name="Buttons/Archive.Label" xml:space="preserve">
         <value>Archivar</value>
     </data>
+    <data name="Button/Archive" xml:space="preserve">
+        <value>Archivar</value>
+    </data>
     <data name="Buttons/Retrieve.Label" xml:space="preserve">
         <value>Recuperar</value>
     </data>
