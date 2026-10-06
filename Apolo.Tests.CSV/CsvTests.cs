@@ -1,5 +1,6 @@
 using CSV;
 using Models;
+using FluentAssertions;
 
 namespace Apolo.Tests.CSV
 {
@@ -33,12 +34,15 @@ namespace Apolo.Tests.CSV
             var reader = new Reader();
             await reader.ReadCSV(exportFolder, false);
 
-            Assert.HasCount(dummy.Services.Count, reader.Services, "Services count mismatch");
-            Assert.HasCount(dummy.Payers.Count, reader.Payers, "Payers count mismatch");
-            Assert.HasCount(dummy.Students.Count, reader.Students, "Students count mismatch");
-            Assert.HasCount(dummy.Specifications.Count, reader.Specifications, "Specifications count mismatch");
-            Assert.HasCount(dummy.Lessons.Count, reader.Lessons, "Lessons count mismatch");
-            Assert.HasCount(dummy.Bills.Count, reader.Bills, "Bills count mismatch");
+            foreach (var lesson in dummy.Lessons) 
+                lesson.Notes ??= string.Empty;
+
+            reader.Services.Should().BeEquivalentTo(dummy.Services);
+            reader.Payers.Should().BeEquivalentTo(dummy.Payers);
+            reader.Students.Should().BeEquivalentTo(dummy.Students);
+            reader.Specifications.Should().BeEquivalentTo(dummy.Specifications);
+            reader.Lessons.Should().BeEquivalentTo(dummy.Lessons);
+            reader.Bills.Should().BeEquivalentTo(dummy.Bills);
 
             Directory.Delete(tempPath, true);
         }
@@ -70,12 +74,15 @@ namespace Apolo.Tests.CSV
             var reader = new Reader();
             await reader.ReadCSV(exportFolder, true);
 
-            Assert.IsEmpty(reader.Services, "Services count should be 0 in archive mode");
-            Assert.HasCount(dummy.ArchivePayers.Count, reader.Payers, "Payers count mismatch");
-            Assert.HasCount(dummy.ArchiveStudents.Count, reader.Students, "Students count mismatch");
-            Assert.IsEmpty(reader.Specifications, "Specifications count should be 0 in archive mode");
-            Assert.HasCount(dummy.ArchiveLessons.Count, reader.Lessons, "Lessons count mismatch");
-            Assert.HasCount(dummy.ArchiveBills.Count, reader.Bills, "Bills count mismatch");
+            foreach (var lesson in dummy.ArchiveLessons)
+                lesson.Notes ??= string.Empty;
+
+            reader.Services.Should().BeEmpty();
+            reader.Payers.Should().BeEquivalentTo(dummy.ArchivePayers);
+            reader.Students.Should().BeEquivalentTo(dummy.ArchiveStudents);
+            reader.Specifications.Should().BeEmpty();
+            reader.Lessons.Should().BeEquivalentTo(dummy.ArchiveLessons);
+            reader.Bills.Should().BeEquivalentTo(dummy.ArchiveBills);
 
             Directory.Delete(tempPath, true);
         }
