@@ -70,23 +70,68 @@
                         <Button Grid.Row="1" Grid.Column="1" x:Uid="Settings/PickFolder" Click="PickBillingFolder_Click" Margin="8,0,0,0"/>
                     </Grid>
 
-                    <!-- Custom Terms Configuration -->
-                    <Grid ColumnDefinitions="*, *" ColumnSpacing="12">
-                        <TextBox Grid.Column="0" x:Uid="Settings/CustomLessonTerm" Text="{x:Bind ViewModel.Profile.LessonTerm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
-                        <TextBox Grid.Column="1" x:Uid="Settings/CustomStudentTerm" Text="{x:Bind ViewModel.Profile.StudentTerm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="4,0,0,0"/>
-                    </Grid>
-                    
-                    <!-- Billing PDF Configuration -->
-                    <CheckBox x:Uid="Settings/ShowIvaDisclaimer" IsChecked="{x:Bind ViewModel.Profile.ShowIvaDisclaimer, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <CheckBox x:Uid="Settings/GenerateTicketWithInvoice" IsChecked="{x:Bind ViewModel.Profile.GenerateTicketWithInvoice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <CheckBox x:Uid="Settings/IncludeLessonsInTicket" IsChecked="{x:Bind ViewModel.Profile.IncludeLessonsInTicket, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <CheckBox x:Uid="Settings/IncludeLessonsInInvoice" IsChecked="{x:Bind ViewModel.Profile.IncludeLessonsInInvoice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <CheckBox x:Uid="Settings/HideStudentColumn" IsChecked="{x:Bind ViewModel.Profile.HideStudentColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
             </Expander>
 
             <!-- ========================================== -->
-            <!-- SECTION 3: FEES                            -->
+            <!-- SECTION 3: BILLING DOCUMENT CONFIGURATION  -->
+            <!-- ========================================== -->
+            <Expander x:Uid="Settings/DocumentConfiguration" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                <StackPanel Spacing="16" Padding="0,8,0,4">
+                    
+                    <!-- General PDF Options -->
+                    <StackPanel Spacing="8">
+                        <TextBlock x:Uid="Settings/PdfGeneralOptions" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <CheckBox x:Uid="Settings/ShowIvaDisclaimer" IsChecked="{x:Bind ViewModel.Profile.ShowIvaDisclaimer, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <CheckBox x:Uid="Settings/GenerateTicketWithInvoice" IsChecked="{x:Bind ViewModel.Profile.GenerateTicketWithInvoice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+
+                    <!-- Custom Terms -->
+                    <StackPanel Spacing="8">
+                        <TextBlock x:Uid="Settings/CustomTerms" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <Grid ColumnDefinitions="*, *" ColumnSpacing="12">
+                            <TextBox Grid.Column="0" x:Uid="Settings/CustomLessonTerm" Text="{x:Bind ViewModel.Profile.LessonTerm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
+                            <TextBox Grid.Column="1" x:Uid="Settings/CustomStudentTerm" Text="{x:Bind ViewModel.Profile.StudentTerm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="4,0,0,0"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Invoice Columns -->
+                    <StackPanel Spacing="8">
+                        <TextBlock x:Uid="Settings/InvoiceColumns" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
+                                BorderThickness="1" CornerRadius="4" Padding="12">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <ToggleButton x:Uid="Settings/ColumnDate" IsChecked="{x:Bind ViewModel.Profile.ShowInvoiceDateColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <ToggleButton x:Uid="Settings/ColumnConcept" IsChecked="{x:Bind ViewModel.Profile.ShowInvoiceConceptColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <ToggleButton x:Uid="Settings/ColumnClient" IsChecked="{x:Bind ViewModel.Profile.ShowInvoiceStudentColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <ToggleButton x:Uid="Settings/ColumnDuration" IsChecked="{x:Bind ViewModel.Profile.ShowInvoiceDurationColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <ToggleButton x:Uid="Settings/ColumnPrice" IsChecked="{x:Bind ViewModel.Profile.ShowInvoicePriceColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Ticket Columns -->
+                    <StackPanel Spacing="8">
+                        <TextBlock x:Uid="Settings/TicketColumns" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
+                                BorderThickness="1" CornerRadius="4" Padding="12">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <ToggleButton x:Uid="Settings/ColumnDate" IsChecked="{x:Bind ViewModel.Profile.ShowTicketDateColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <ToggleButton x:Uid="Settings/ColumnConcept" IsChecked="{x:Bind ViewModel.Profile.ShowTicketConceptColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <ToggleButton x:Uid="Settings/ColumnClient" IsChecked="{x:Bind ViewModel.Profile.ShowTicketStudentColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <ToggleButton x:Uid="Settings/ColumnDuration" IsChecked="{x:Bind ViewModel.Profile.ShowTicketDurationColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <ToggleButton x:Uid="Settings/ColumnPrice" IsChecked="{x:Bind ViewModel.Profile.ShowTicketPriceColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                </StackPanel>
+            </Expander>
+
+            <!-- ========================================== -->
+            <!-- SECTION 4: FEES                            -->
             <!-- ========================================== -->
             <Expander x:Uid="Settings/Fees" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
                 <StackPanel Spacing="12" Margin="0,10,0,0">
@@ -103,7 +148,7 @@
             </Expander>
 
             <!-- ========================================== -->
-            <!-- SECTION 4: APP CONFIGURATION               -->
+            <!-- SECTION 5: APP CONFIGURATION               -->
             <!-- ========================================== -->
             <Expander x:Uid="Settings/AppConfiguration" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
                 <StackPanel Spacing="12" Margin="0,10,0,0">

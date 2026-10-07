@@ -1296,4 +1296,36 @@
     <data name="Invoice/Price" xml:space="preserve">
       <value>Precio</value>
     </data>
+  <data name="Settings/DocumentConfiguration.Header" xml:space="preserve">
+    <value>Configuración de Documento de Facturación</value>
+  </data>
+  <data name="Settings/PdfGeneralOptions.Text" xml:space="preserve">
+    <value>Opciones Generales</value>
+  </data>
+  <data name="Settings/CustomTerms.Text" xml:space="preserve">
+    <value>Términos Personalizados</value>
+  </data>
+  <data name="Settings/InvoiceColumns.Text" xml:space="preserve">
+    <value>Columnas de la Tabla de Factura</value>
+  </data>
+  <data name="Settings/TicketColumns.Text" xml:space="preserve">
+    <value>Columnas de la Tabla de Ticket</value>
+  </data>
+  <data name="Settings/ColumnDate.Content" xml:space="preserve">
+    <value>Fecha</value>
+  </data>
+  <data name="Settings/ColumnConcept.Content" xml:space="preserve">
+    <value>Concepto</value>
+  </data>
+  <data name="Settings/ColumnClient.Content" xml:space="preserve">
+    <value>Cliente</value>
+  </data>
+  <data name="Settings/ColumnDuration.Content" xml:space="preserve">
+    <value>Duración</value>
+  </data>
+  <data name="Settings/ColumnPrice.Content" xml:space="preserve">
+    <value>Precio</value>
+  </data>
 </root>
+
+

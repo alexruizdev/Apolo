@@ -29,13 +29,20 @@ namespace Apolo.Services
                 BackupFolder = v[nameof(UserProfile.BackupFolder)] as string ?? "",
                 Language = v[nameof(UserProfile.Language)] as string ?? "",
                 GenerateTicketWithInvoice = v[nameof(UserProfile.GenerateTicketWithInvoice)] as bool? ?? false,
-                IncludeLessonsInTicket = v[nameof(UserProfile.IncludeLessonsInTicket)] as bool? ?? true,
-                IncludeLessonsInInvoice = v[nameof(UserProfile.IncludeLessonsInInvoice)] as bool? ?? true,
                 DeveloperMode = v[nameof(UserProfile.DeveloperMode)] as bool? ?? false,
                 ShowIvaDisclaimer = v[nameof(UserProfile.ShowIvaDisclaimer)] as bool? ?? false,
                 LessonTerm = v[nameof(UserProfile.LessonTerm)] as string ?? "",
                 StudentTerm = v[nameof(UserProfile.StudentTerm)] as string ?? "",
-                HideStudentColumn = v[nameof(UserProfile.HideStudentColumn)] as bool? ?? false
+                ShowInvoiceDateColumn = v[nameof(UserProfile.ShowInvoiceDateColumn)] as bool? ?? true,
+                ShowInvoiceConceptColumn = v[nameof(UserProfile.ShowInvoiceConceptColumn)] as bool? ?? true,
+                ShowInvoiceStudentColumn = v[nameof(UserProfile.ShowInvoiceStudentColumn)] as bool? ?? true,
+                ShowInvoiceDurationColumn = v[nameof(UserProfile.ShowInvoiceDurationColumn)] as bool? ?? true,
+                ShowInvoicePriceColumn = v[nameof(UserProfile.ShowInvoicePriceColumn)] as bool? ?? true,
+                ShowTicketDateColumn = v[nameof(UserProfile.ShowTicketDateColumn)] as bool? ?? true,
+                ShowTicketConceptColumn = v[nameof(UserProfile.ShowTicketConceptColumn)] as bool? ?? true,
+                ShowTicketStudentColumn = v[nameof(UserProfile.ShowTicketStudentColumn)] as bool? ?? true,
+                ShowTicketDurationColumn = v[nameof(UserProfile.ShowTicketDurationColumn)] as bool? ?? true,
+                ShowTicketPriceColumn = v[nameof(UserProfile.ShowTicketPriceColumn)] as bool? ?? true
             };
 
             return Task.FromResult(p);
@@ -61,13 +68,20 @@ namespace Apolo.Services
             v[nameof(UserProfile.BackupFolder)] = profile.BackupFolder;
             v[nameof(UserProfile.Language)] = profile.Language;
             v[nameof(UserProfile.GenerateTicketWithInvoice)] = profile.GenerateTicketWithInvoice;
-            v[nameof(UserProfile.IncludeLessonsInTicket)] = profile.IncludeLessonsInTicket;
-            v[nameof(UserProfile.IncludeLessonsInInvoice)] = profile.IncludeLessonsInInvoice;
             v[nameof(UserProfile.DeveloperMode)] = profile.DeveloperMode;
             v[nameof(UserProfile.ShowIvaDisclaimer)] = profile.ShowIvaDisclaimer;
             v[nameof(UserProfile.LessonTerm)] = profile.LessonTerm;
             v[nameof(UserProfile.StudentTerm)] = profile.StudentTerm;
-            v[nameof(UserProfile.HideStudentColumn)] = profile.HideStudentColumn;
+            v[nameof(UserProfile.ShowInvoiceDateColumn)] = profile.ShowInvoiceDateColumn;
+            v[nameof(UserProfile.ShowInvoiceConceptColumn)] = profile.ShowInvoiceConceptColumn;
+            v[nameof(UserProfile.ShowInvoiceStudentColumn)] = profile.ShowInvoiceStudentColumn;
+            v[nameof(UserProfile.ShowInvoiceDurationColumn)] = profile.ShowInvoiceDurationColumn;
+            v[nameof(UserProfile.ShowInvoicePriceColumn)] = profile.ShowInvoicePriceColumn;
+            v[nameof(UserProfile.ShowTicketDateColumn)] = profile.ShowTicketDateColumn;
+            v[nameof(UserProfile.ShowTicketConceptColumn)] = profile.ShowTicketConceptColumn;
+            v[nameof(UserProfile.ShowTicketStudentColumn)] = profile.ShowTicketStudentColumn;
+            v[nameof(UserProfile.ShowTicketDurationColumn)] = profile.ShowTicketDurationColumn;
+            v[nameof(UserProfile.ShowTicketPriceColumn)] = profile.ShowTicketPriceColumn;
 
             return Task.CompletedTask;
         }

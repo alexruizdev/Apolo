@@ -26,13 +26,24 @@ namespace Models
         public string BillingFolder { get; set; } = string.Empty;
         public string BackupFolder { get; set; } = string.Empty;
         public bool GenerateTicketWithInvoice { get; set; } = false;
-        public bool IncludeLessonsInTicket { get; set; } = true;
-        public bool IncludeLessonsInInvoice { get; set; } = true;
         public bool ShowIvaDisclaimer { get; set; } = false;
         public bool DeveloperMode { get; set; } = false;
         public string LessonTerm { get; set; } = string.Empty;
         public string StudentTerm { get; set; } = string.Empty;
-        public bool HideStudentColumn { get; set; } = false;
+
+        // Invoice Columns
+        public bool ShowInvoiceDateColumn { get; set; } = true;
+        public bool ShowInvoiceConceptColumn { get; set; } = true;
+        public bool ShowInvoiceStudentColumn { get; set; } = true;
+        public bool ShowInvoiceDurationColumn { get; set; } = true;
+        public bool ShowInvoicePriceColumn { get; set; } = true;
+
+        // Ticket Columns
+        public bool ShowTicketDateColumn { get; set; } = true;
+        public bool ShowTicketConceptColumn { get; set; } = true;
+        public bool ShowTicketStudentColumn { get; set; } = true;
+        public bool ShowTicketDurationColumn { get; set; } = true;
+        public bool ShowTicketPriceColumn { get; set; } = true;
     }
 }
 
