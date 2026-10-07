@@ -259,10 +259,12 @@
 
                             <CalendarDatePicker x:Uid="Common/StartDate"
                                                 HorizontalAlignment="Stretch"
+                                                FirstDayOfWeek="Monday"
                                                 Date="{x:Bind ViewModel.FilterStartDate, Mode=TwoWay}"
                                                 DateFormat="{}{day.integer}/{month.integer}/{year.full}" />
                             <CalendarDatePicker x:Uid="Common/EndDate"
                                                 HorizontalAlignment="Stretch"
+                                                FirstDayOfWeek="Monday"
                                                 Date="{x:Bind ViewModel.FilterEndDate, Mode=TwoWay}"
                                                 DateFormat="{}{day.integer}/{month.integer}/{year.full}" />
 
