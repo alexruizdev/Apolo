@@ -1,6 +1,0 @@
-Name,StudentName,ServiceName,DurationMinutes,Price,IsOnline,IsWeekendOrHoliday,UsageCount,Id,StudentId,ServiceId
-German Lessons - Leon,Leon Müller,Math Tutoring,60,,True,False,7,07f3b2e6-ef00-4e98-a7ae-040adda1ab35,de4cc202-3d1f-4c64-a4c4-db031882d622,fc863b10-0fb7-41d4-b80e-a65b561bd2ba
-Fitness Session - Marco,Marco Rossi,Personal Coaching,60,,False,True,4,286dd3ca-d565-414c-b35a-5a0912ca2351,ad1bc06d-6950-43b3-8391-4573e7b577e6,8f95ea36-9407-4e33-89ad-a4f04ad5a8ed
-Spanish Practice - Sofia,Sofia Lopez,Math Tutoring,45,35.0,True,False,10,6e2e3794-40a4-42fb-875e-da6185f2f106,9a476174-de5c-458e-b90b-10a293c63961,fc863b10-0fb7-41d4-b80e-a65b561bd2ba
-French Lessons - Chloe,Chloe Dubois,Math Tutoring,60,55.0,True,True,9,6ef20af4-d6d9-4506-858f-eb7465ee9e05,b53e4176-141f-4cc6-8806-f0bd46a949cb,fc863b10-0fb7-41d4-b80e-a65b561bd2ba
-Business Coaching - Emily,Emily Brown,Science Tutoring,120,150.0,True,False,1,91f533b9-fe69-42cf-ab90-b8bf2c45c858,820af8ee-2f08-4da9-b805-48ce1d534f53,3b737de4-49af-4936-9682-3daee2b1c3c0

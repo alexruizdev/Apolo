@@ -1314,4 +1314,36 @@
   <data name="Invoice/Price" xml:space="preserve">
     <value>Price</value>
   </data>
+  <data name="Settings/DocumentConfiguration.Header" xml:space="preserve">
+    <value>Billing Document Configuration</value>
+  </data>
+  <data name="Settings/PdfGeneralOptions.Text" xml:space="preserve">
+    <value>General Options</value>
+  </data>
+  <data name="Settings/CustomTerms.Text" xml:space="preserve">
+    <value>Custom Terms</value>
+  </data>
+  <data name="Settings/InvoiceColumns.Text" xml:space="preserve">
+    <value>Invoice Table Columns</value>
+  </data>
+  <data name="Settings/TicketColumns.Text" xml:space="preserve">
+    <value>Ticket Table Columns</value>
+  </data>
+  <data name="Settings/ColumnDate.Content" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="Settings/ColumnConcept.Content" xml:space="preserve">
+    <value>Concept</value>
+  </data>
+  <data name="Settings/ColumnClient.Content" xml:space="preserve">
+    <value>Client</value>
+  </data>
+  <data name="Settings/ColumnDuration.Content" xml:space="preserve">
+    <value>Duration</value>
+  </data>
+  <data name="Settings/ColumnPrice.Content" xml:space="preserve">
+    <value>Price</value>
+  </data>
 </root>
+
+
