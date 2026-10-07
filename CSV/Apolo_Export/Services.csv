@@ -1,7 +1,0 @@
-Name,Price,IsPricePerHour,Id
-Science Tutoring,45.0,True,3b737de4-49af-4936-9682-3daee2b1c3c0
-Language Lessons,35.0,True,8ab2115f-80b1-4aac-83e2-551cd3e9faf1
-Personal Coaching,50.0,True,8f95ea36-9407-4e33-89ad-a4f04ad5a8ed
-Programming Lessons,60.0,True,a40fb2f3-b65e-4021-9502-afe2a2844ca5
-Exam Preparation Package,300.0,False,e1fbc173-9f37-48ff-86ef-b56d4262ba75
-Math Tutoring,40.0,True,fc863b10-0fb7-41d4-b80e-a65b561bd2ba
