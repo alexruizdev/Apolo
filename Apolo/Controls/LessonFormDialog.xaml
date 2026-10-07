@@ -82,6 +82,7 @@
                         <!-- Date -->
                         <CalendarDatePicker Grid.Column="0"
                                             x:Uid="Date"
+                                            FirstDayOfWeek="Monday"
                                             IsTodayHighlighted="True"
                                             HorizontalAlignment="Stretch"
                                             DateFormat="{}{day.integer(2)}/{month.integer(2)}/{year.full}"
