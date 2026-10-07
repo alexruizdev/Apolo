@@ -46,7 +46,7 @@ QuestPDF is used as the PDF writer for this application.
 ## Models
 * Service: core of the application, it contains the business offer for the user.
 * Payer: is one of the 2 roles the client can have, it is the one who pays the bill. A payer can have associated multiple clients.
-* Client: is one of the 2 roles the client can have, it is the one who receives the service. A client can have only one payer associated.
+* Client/Student: is one of the 2 roles the client can have, it is the one who receives the service. A client can have only one payer associated.
 * Lesson/Session (both name can be used for the same thing): an instance of a service that has been delivered.
 * Specification: a preloaded description of a lesson, it is used to create lessons with the same characteristics.
 * Billing document: is a group of lessons/sessions associated to a payer. Can be a ticket (simplified invoice) or a invoice.
