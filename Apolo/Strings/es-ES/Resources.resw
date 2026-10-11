@@ -1273,6 +1273,9 @@
     <data name="Settings/ShowIvaDisclaimer.Content" xml:space="preserve">
         <value>Mostrar el aviso legal de exención de IVA en la factura</value>
     </data>
+    <data name="Settings/ShowProposalCancellationPolicy.Content" xml:space="preserve">
+        <value>Incluir política de cancelación y operativa en el PDF de presupuestos</value>
+    </data>
     
     <!-- Custom terms and invoice PDF -->
     <data name="Settings/CustomLessonTerm.Header" xml:space="preserve">
@@ -1307,6 +1310,9 @@
     </data>
   <data name="Settings/DocumentConfiguration.Header" xml:space="preserve">
     <value>Configuración de Documento de Facturación</value>
+  </data>
+  <data name="Settings/ProposalConfiguration.Header" xml:space="preserve">
+    <value>Configuración de Presupuestos</value>
   </data>
   <data name="Settings/PdfGeneralOptions.Text" xml:space="preserve">
     <value>Opciones Generales</value>

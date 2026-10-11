@@ -63,8 +63,11 @@ namespace ViewModels
 
             SetEnterFunction();
 
+            await RefreshProfileAsync();
+
             _input.TravelAllowance = (decimal)Profile.TravelAllowance;
             _input.WeekendFee = (decimal)Profile.WeekendFee;
+            _input.IncludeCancellationPolicy = Profile.ShowProposalCancellationPolicy;
             Duration = 60;
             Frequency = 1;
 
@@ -112,6 +115,8 @@ namespace ViewModels
                 filename = Path.Combine(directoryPath, $"{baseFilename} ({counter}).pdf");
                 counter++;
             }
+
+            Report.IncludeCancellationPolicy = Profile.ShowProposalCancellationPolicy;
 
             try
             {
@@ -236,7 +241,8 @@ namespace ViewModels
                 Report = new ProposalReport
                 {
                     IncludeFrequencyScalingBudgets = IncludeFrequencyScalingBudgets,
-                    IncludeAlternativeOperationalScenarios = IncludeAlternativeOperationalScenarios
+                    IncludeAlternativeOperationalScenarios = IncludeAlternativeOperationalScenarios,
+                    IncludeCancellationPolicy = Profile.ShowProposalCancellationPolicy
                 };
                 SetExitFunction(string.Join(Environment.NewLine, errors), InfoBarType.Error);
             }

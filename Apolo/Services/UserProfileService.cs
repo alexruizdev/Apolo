@@ -31,6 +31,7 @@ namespace Apolo.Services
                 GenerateTicketWithInvoice = v[nameof(UserProfile.GenerateTicketWithInvoice)] as bool? ?? false,
                 DeveloperMode = v[nameof(UserProfile.DeveloperMode)] as bool? ?? false,
                 ShowIvaDisclaimer = v[nameof(UserProfile.ShowIvaDisclaimer)] as bool? ?? false,
+                ShowProposalCancellationPolicy = v[nameof(UserProfile.ShowProposalCancellationPolicy)] as bool? ?? true,
                 LessonTerm = v[nameof(UserProfile.LessonTerm)] as string ?? "",
                 StudentTerm = v[nameof(UserProfile.StudentTerm)] as string ?? "",
                 ShowInvoiceDateColumn = v[nameof(UserProfile.ShowInvoiceDateColumn)] as bool? ?? true,
@@ -70,6 +71,7 @@ namespace Apolo.Services
             v[nameof(UserProfile.GenerateTicketWithInvoice)] = profile.GenerateTicketWithInvoice;
             v[nameof(UserProfile.DeveloperMode)] = profile.DeveloperMode;
             v[nameof(UserProfile.ShowIvaDisclaimer)] = profile.ShowIvaDisclaimer;
+            v[nameof(UserProfile.ShowProposalCancellationPolicy)] = profile.ShowProposalCancellationPolicy;
             v[nameof(UserProfile.LessonTerm)] = profile.LessonTerm;
             v[nameof(UserProfile.StudentTerm)] = profile.StudentTerm;
             v[nameof(UserProfile.ShowInvoiceDateColumn)] = profile.ShowInvoiceDateColumn;

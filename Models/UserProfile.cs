@@ -27,6 +27,7 @@ namespace Models
         public string BackupFolder { get; set; } = string.Empty;
         public bool GenerateTicketWithInvoice { get; set; } = false;
         public bool ShowIvaDisclaimer { get; set; } = false;
+        public bool ShowProposalCancellationPolicy { get; set; } = true;
         public bool DeveloperMode { get; set; } = false;
         public string LessonTerm { get; set; } = string.Empty;
         public string StudentTerm { get; set; } = string.Empty;

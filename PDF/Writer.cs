@@ -198,7 +198,10 @@ namespace PDF
                     });
                 }
 
-                ComposeCancellationPolicy(column.Item());
+                if (_report.IncludeCancellationPolicy)
+                {
+                    ComposeCancellationPolicy(column.Item());
+                }
             });
         }
 
@@ -226,7 +229,7 @@ namespace PDF
 
                 // Section: Client Policy
                 column.Item().PaddingTop(10).Text("Client Cancellations").FontSize(10).Bold();
-                column.Item().Text("Cancellations or reschedules require at least 24 hours' notice. Failure to provide this notice will result in the full lesson fee being charged.").FontSize(9);
+                column.Item().Text("Cancellations or reschedules require at least 24 hours' notice. Failure to provide this notice will result in the full session fee being charged.").FontSize(9);
 
                 // Section: Provider Policy
                 column.Item().PaddingTop(10).Text("Provider Cancellations & Emergencies").FontSize(10).Bold();

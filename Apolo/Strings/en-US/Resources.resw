@@ -1291,6 +1291,9 @@
   <data name="Settings/ShowIvaDisclaimer.Content" xml:space="preserve">
     <value>Show IVA disclaimer in the invoice</value>
   </data>
+  <data name="Settings/ShowProposalCancellationPolicy.Content" xml:space="preserve">
+    <value>Include Cancellation &amp; Operational Policy in proposal PDF</value>
+  </data>
   
   <!-- Custom terms and invoice PDF -->
   <data name="Settings/CustomLessonTerm.Header" xml:space="preserve">
@@ -1325,6 +1328,9 @@
   </data>
   <data name="Settings/DocumentConfiguration.Header" xml:space="preserve">
     <value>Billing Document Configuration</value>
+  </data>
+  <data name="Settings/ProposalConfiguration.Header" xml:space="preserve">
+    <value>Proposal Configuration</value>
   </data>
   <data name="Settings/PdfGeneralOptions.Text" xml:space="preserve">
     <value>General Options</value>

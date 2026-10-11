@@ -131,7 +131,16 @@
             </Expander>
 
             <!-- ========================================== -->
-            <!-- SECTION 4: FEES                            -->
+            <!-- SECTION 4: PROPOSAL CONFIGURATION          -->
+            <!-- ========================================== -->
+            <Expander x:Uid="Settings/ProposalConfiguration" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                <StackPanel Spacing="16" Padding="0,8,0,4">
+                    <CheckBox x:Uid="Settings/ShowProposalCancellationPolicy" IsChecked="{x:Bind ViewModel.Profile.ShowProposalCancellationPolicy, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+            </Expander>
+
+            <!-- ========================================== -->
+            <!-- SECTION 5: FEES                            -->
             <!-- ========================================== -->
             <Expander x:Uid="Settings/Fees" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
                 <StackPanel Spacing="12" Margin="0,10,0,0">
@@ -148,7 +157,7 @@
             </Expander>
 
             <!-- ========================================== -->
-            <!-- SECTION 5: APP CONFIGURATION               -->
+            <!-- SECTION 6: APP CONFIGURATION               -->
             <!-- ========================================== -->
             <Expander x:Uid="Settings/AppConfiguration" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
                 <StackPanel Spacing="12" Margin="0,10,0,0">
