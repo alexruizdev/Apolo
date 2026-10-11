@@ -85,21 +85,22 @@ namespace Apolo.Tests.ViewModels
             Assert.IsFalse(_viewModel._input.IsWeekendOrHoliday);
             Assert.AreEqual(20, _viewModel._input.WeekendFee);
             Assert.IsFalse(_viewModel._input.IsPricePerHour);
-            Assert.AreEqual(0, _viewModel._input.Duration);
+            Assert.AreEqual(60, _viewModel._input.Duration);
             Assert.AreEqual(1, _viewModel._input.Frequency);
             Assert.AreEqual(FrequencyUnit.PerWeek, _viewModel._input.Unit);
 
             // Select service
             _viewModel.SelectedService =_viewModel.Services.First();
-            Assert.IsNotNull(_viewModel.InfoMessage);
-            Assert.IsTrue(_viewModel.OpenInfoBar);
-            Assert.AreEqual(InfoBarType.Error, _viewModel.InfoBarType);
+            Assert.IsNull(_viewModel.InfoMessage);
+            Assert.IsFalse(_viewModel.OpenInfoBar);
+            Assert.AreEqual(InfoBarType.Success, _viewModel.InfoBarType);
             Assert.IsNotNull(_viewModel.SelectedService);
             Assert.IsNotNull(_viewModel.Report);
-            Assert.IsEmpty(_viewModel.Report.ServiceName);
-            Assert.AreEqual(0, _viewModel.Report.PricePerSession);
+            Assert.AreEqual("Math Tutoring", _viewModel.Report.ServiceName);
+            Assert.AreEqual(50, _viewModel.Report.PricePerSession);
             Assert.AreEqual(40, _viewModel.BasePrice);
             Assert.IsFalse(_viewModel.IsOnline);
+            Assert.IsFalse(_viewModel.IsWeekendOrHoliday);
             Assert.IsFalse(_viewModel.IsWeekendOrHoliday);
             Assert.AreEqual(1, _viewModel.Frequency);
             Assert.AreEqual(FrequencyUnit.PerWeek, _viewModel.Unit);
