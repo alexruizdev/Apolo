@@ -18,7 +18,7 @@ namespace ViewModels
         [ObservableProperty] private bool _isOnline;
         [ObservableProperty] private bool _isWeekendOrHoliday;
         [ObservableProperty] private double _duration;
-        [ObservableProperty] private int _frequency = 1;
+        [ObservableProperty] private int _frequency;
         [ObservableProperty] private FrequencyUnit _unit = FrequencyUnit.PerWeek;
 
         // Report
@@ -63,6 +63,8 @@ namespace ViewModels
 
             _input.TravelAllowance = (decimal)Profile.TravelAllowance;
             _input.WeekendFee = (decimal)Profile.WeekendFee;
+            Duration = 60;
+            Frequency = 1;
 
             var serviceItems = await serviceRepository.GetServicesAsync();
 
