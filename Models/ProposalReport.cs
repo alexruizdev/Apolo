@@ -1,4 +1,6 @@
-﻿namespace Models
+using System.Globalization;
+
+namespace Models
 {
     public enum FrequencyUnit
     {
@@ -52,6 +54,32 @@
         public BudgetColumn BudgetMinus { get; set; } = new();
         public BudgetColumn BudgetRequested { get; set; } = new();
         public BudgetColumn BudgetPlus { get; set; } = new();
+
+        // Display simplification rules
+        public decimal RawBasePrice => BasePrice - WeekendFeeApplied;
+
+        public bool ShowWeekendFee => WeekendFeeApplied > 0m;
+
+        public bool ShowTravelAllowance => TravelAllowanceApplied > 0m;
+
+        public bool ShowDurationMultiplier
+        {
+            get
+            {
+                var cleanRate = RateMultiplier.TrimStart('x', 'X', '×', ' ').Replace(',', '.');
+                if (decimal.TryParse(cleanRate, NumberStyles.Any, CultureInfo.InvariantCulture, out var rate))
+                {
+                    return rate != 1m;
+                }
+                return false;
+            }
+        }
+
+        public bool ShowSubtotal => ShowWeekendFee || ShowDurationMultiplier;
+
+        public bool ShowBasePrice => ShowWeekendFee || ShowTravelAllowance || ShowDurationMultiplier;
+
+        public bool ShowDetailsBreakdown => ShowBasePrice;
     }
 
     public static class ProposalService

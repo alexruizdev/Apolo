@@ -64,12 +64,15 @@ namespace PDF
                     {
                         c.Item().PaddingBottom(6).Text("Session Cost Breakdown").FontSize(11).Bold();
 
-                        c.Item().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(4).Row(r => {
-                            r.RelativeItem().Text("Base Price");
-                            r.ConstantItem(80).Text($"{_report.BasePrice:C}").AlignRight();
-                        });
+                        if (_report.ShowBasePrice)
+                        {
+                            c.Item().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(4).Row(r => {
+                                r.RelativeItem().Text("Base Price");
+                                r.ConstantItem(80).Text($"{_report.RawBasePrice:C}").AlignRight();
+                            });
+                        }
 
-                        if (_report.WeekendFeeApplied > 0)
+                        if (_report.ShowWeekendFee)
                         {
                             c.Item().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(4).Row(r => {
                                 r.RelativeItem().Text("Weekend / Holiday Fee");
@@ -77,20 +80,23 @@ namespace PDF
                             });
                         }
 
-                        if (_report.Duration > 1.0 || _report.WeekendFeeApplied > 0) // display rate mapping details
+                        if (_report.ShowDurationMultiplier)
                         {
                             c.Item().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(4).Row(r => {
                                 r.RelativeItem().Text("Duration Multiplier");
-                                r.ConstantItem(80).Text($"× {_report.RateMultiplier:F2} hrs").AlignRight();
+                                r.ConstantItem(80).Text($"× {_report.RateMultiplier} hrs").AlignRight();
                             });
+                        }
 
+                        if (_report.ShowSubtotal)
+                        {
                             c.Item().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(4).Row(r => {
                                 r.RelativeItem().Text("Subtotal").Bold();
                                 r.ConstantItem(80).Text($"{_report.Subtotal:C}").AlignRight().Bold();
                             });
                         }
 
-                        if (_report.TravelAllowanceApplied > 0)
+                        if (_report.ShowTravelAllowance)
                         {
                             c.Item().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(4).Row(r => {
                                 r.RelativeItem().Text("Travel Allowance (In-Person)");
