@@ -1120,6 +1120,15 @@
     <data name="Proposal/Hours.Text" xml:space="preserve">
         <value> h</value>
     </data>
+    <data name="Proposal/PdfOptions.Text" xml:space="preserve">
+        <value>Opciones de exportación PDF</value>
+    </data>
+    <data name="Proposal/IncludeFrequencyScalingBudgets.Header" xml:space="preserve">
+        <value>Incluir presupuestos por frecuencia</value>
+    </data>
+    <data name="Proposal/IncludeAlternativeOperationalScenarios.Header" xml:space="preserve">
+        <value>Incluir escenarios operativos alternativos</value>
+    </data>
 
     <!-- Students -->
     <data name="Students/Title.Text" xml:space="preserve">

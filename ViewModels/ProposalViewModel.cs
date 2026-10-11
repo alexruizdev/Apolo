@@ -1,4 +1,4 @@
-﻿using Apolo.Services;
+using Apolo.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Models;
@@ -28,6 +28,8 @@ namespace ViewModels
         [ObservableProperty] private string _priceHeader = string.Empty;
         [ObservableProperty] private bool _isPricePerHour = false;
         [ObservableProperty] private bool _isPrimaryButtonEnabled;
+        [ObservableProperty] private bool _includeFrequencyScalingBudgets = false;
+        [ObservableProperty] private bool _includeAlternativeOperationalScenarios = false;
 
         public readonly ProposalInput _input = new();
 
@@ -177,6 +179,16 @@ namespace ViewModels
             _input.Unit = value;
             Validate();
         }
+        partial void OnIncludeFrequencyScalingBudgetsChanged(bool value)
+        {
+            _input.IncludeFrequencyScalingBudgets = value;
+            Report.IncludeFrequencyScalingBudgets = value;
+        }
+        partial void OnIncludeAlternativeOperationalScenariosChanged(bool value)
+        {
+            _input.IncludeAlternativeOperationalScenarios = value;
+            Report.IncludeAlternativeOperationalScenarios = value;
+        }
 
         // --- VALIDATION LOGIC ---
 
@@ -199,7 +211,11 @@ namespace ViewModels
 
             if (!IsPrimaryButtonEnabled)
             {
-                Report = new ProposalReport();
+                Report = new ProposalReport
+                {
+                    IncludeFrequencyScalingBudgets = IncludeFrequencyScalingBudgets,
+                    IncludeAlternativeOperationalScenarios = IncludeAlternativeOperationalScenarios
+                };
                 SetExitFunction(string.Join(Environment.NewLine, errors), InfoBarType.Error);
             }
             else

@@ -140,6 +140,19 @@
                             </StackPanel>
                         </StackPanel>
                     </Border>
+
+                    <!-- PDF Options -->
+                    <Border Style="{StaticResource MetricBorder}">
+                        <StackPanel Spacing="12">
+                            <TextBlock x:Uid="Proposal/PdfOptions" Style="{ThemeResource SubtitleTextBlockStyle}"/>
+
+                            <ToggleSwitch x:Uid="Proposal/IncludeFrequencyScalingBudgets"
+                                          IsOn="{x:Bind ViewModel.IncludeFrequencyScalingBudgets, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                            <ToggleSwitch x:Uid="Proposal/IncludeAlternativeOperationalScenarios"
+                                          IsOn="{x:Bind ViewModel.IncludeAlternativeOperationalScenarios, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </ScrollViewer>
 

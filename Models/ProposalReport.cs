@@ -20,6 +20,8 @@ namespace Models
         public double Duration { get; set; }
         public int Frequency { get; set; } = 1;
         public FrequencyUnit Unit { get; set; } = FrequencyUnit.PerWeek;
+        public bool IncludeFrequencyScalingBudgets { get; set; }
+        public bool IncludeAlternativeOperationalScenarios { get; set; }
     }
 
     public record BudgetColumn
@@ -54,6 +56,10 @@ namespace Models
         public BudgetColumn BudgetMinus { get; set; } = new();
         public BudgetColumn BudgetRequested { get; set; } = new();
         public BudgetColumn BudgetPlus { get; set; } = new();
+
+        // PDF Generation Options
+        public bool IncludeFrequencyScalingBudgets { get; set; }
+        public bool IncludeAlternativeOperationalScenarios { get; set; }
 
         // Display simplification rules
         public decimal RawBasePrice => BasePrice - WeekendFeeApplied;
@@ -94,7 +100,9 @@ namespace Models
                 BasePrice = (decimal)input.BasePrice,
                 Duration = input.Duration,
                 WeekendFeeApplied = input.IsWeekendOrHoliday ? input.WeekendFee : 0m,
-                TravelAllowanceApplied = input.IsOnline ? 0m : input.TravelAllowance
+                TravelAllowanceApplied = input.IsOnline ? 0m : input.TravelAllowance,
+                IncludeFrequencyScalingBudgets = input.IncludeFrequencyScalingBudgets,
+                IncludeAlternativeOperationalScenarios = input.IncludeAlternativeOperationalScenarios
             };
 
             report.BasePrice += report.WeekendFeeApplied;

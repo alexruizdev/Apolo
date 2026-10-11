@@ -127,70 +127,76 @@ namespace PDF
                     });
                 });
 
-                column.Item().PaddingTop(1, Unit.Centimetre);
-
-                // 3. Three-Column Budget Matrix Row
-                column.Item().PaddingBottom(8).Text("Frequency Scaling Budgets").FontSize(12).Bold();
-                column.Item().Row(row =>
+                if (_report.IncludeFrequencyScalingBudgets)
                 {
-                    // Column Minus
-                    row.RelativeItem().Border(1).BorderColor(Colors.Grey.Lighten2).Padding(10).Column(c =>
+                    column.Item().PaddingTop(1, Unit.Centimetre);
+
+                    // 3. Three-Column Budget Matrix Row
+                    column.Item().PaddingBottom(8).Text("Frequency Scaling Budgets").FontSize(12).Bold();
+                    column.Item().Row(row =>
                     {
-                        c.Item().Text(_report.BudgetMinus.Label).Bold().FontSize(10).FontColor(Colors.Orange.Darken3);
-                        c.Item().PaddingTop(4).Text($"{_report.BudgetMinus.TotalPricePerMonth:C} /month").FontSize(13).Bold();
-                        c.Item().Text($"{_report.BudgetMinus.Frequency} session(s) / {frequencyStr}").FontSize(9).FontColor(Colors.Grey.Darken1);
-                        if (_report.BudgetRequested.Unit == FrequencyUnit.PerWeek)
-                            c.Item().Text($"({_report.BudgetMinus.SessionsPerMonth:F1} total/month)").FontSize(9).FontColor(Colors.Grey.Darken1);
+                        // Column Minus
+                        row.RelativeItem().Border(1).BorderColor(Colors.Grey.Lighten2).Padding(10).Column(c =>
+                        {
+                            c.Item().Text(_report.BudgetMinus.Label).Bold().FontSize(10).FontColor(Colors.Orange.Darken3);
+                            c.Item().PaddingTop(4).Text($"{_report.BudgetMinus.TotalPricePerMonth:C} /month").FontSize(13).Bold();
+                            c.Item().Text($"{_report.BudgetMinus.Frequency} session(s) / {frequencyStr}").FontSize(9).FontColor(Colors.Grey.Darken1);
+                            if (_report.BudgetRequested.Unit == FrequencyUnit.PerWeek)
+                                c.Item().Text($"({_report.BudgetMinus.SessionsPerMonth:F1} total/month)").FontSize(9).FontColor(Colors.Grey.Darken1);
+                        });
+
+                        row.ConstantItem(12); // Grid margin spacing
+
+                        // Column Requested
+                        row.RelativeItem().Border(2).BorderColor(Colors.Blue.Darken1).Padding(10).Column(c =>
+                        {
+                            c.Item().Text("Target Setup").Bold().FontSize(10).FontColor(Colors.Blue.Darken2);
+                            c.Item().PaddingTop(4).Text($"{_report.BudgetRequested.TotalPricePerMonth:C} /month").FontSize(13).Bold();
+                            c.Item().Text($"{_report.BudgetRequested.Frequency} session(s) / {frequencyStr}").FontSize(9).FontColor(Colors.Grey.Darken1);
+                            if (_report.BudgetRequested.Unit == FrequencyUnit.PerWeek)
+                                c.Item().Text($"({_report.BudgetRequested.SessionsPerMonth:F1} total/month)").FontSize(9).FontColor(Colors.Grey.Darken1);
+                        });
+
+                        row.ConstantItem(12); // Grid margin spacing
+
+                        // Column Plus
+                        row.RelativeItem().Border(1).BorderColor(Colors.Grey.Lighten2).Padding(10).Column(c =>
+                        {
+                            c.Item().Text(_report.BudgetPlus.Label).Bold().FontSize(10).FontColor(Colors.Green.Darken3);
+                            c.Item().PaddingTop(4).Text($"{_report.BudgetPlus.TotalPricePerMonth:C} /month").FontSize(13).Bold();
+                            c.Item().Text($"{_report.BudgetPlus.Frequency} session(s) / {frequencyStr}").FontSize(9).FontColor(Colors.Grey.Darken1);
+                            if (_report.BudgetRequested.Unit == FrequencyUnit.PerWeek)
+                                c.Item().Text($"({_report.BudgetPlus.SessionsPerMonth:F1} total/month)").FontSize(9).FontColor(Colors.Grey.Darken1);
+                        });
                     });
+                }
 
-                    row.ConstantItem(12); // Grid margin spacing
-
-                    // Column Requested
-                    row.RelativeItem().Border(2).BorderColor(Colors.Blue.Darken1).Padding(10).Column(c =>
-                    {
-                        c.Item().Text("Target Setup").Bold().FontSize(10).FontColor(Colors.Blue.Darken2);
-                        c.Item().PaddingTop(4).Text($"{_report.BudgetRequested.TotalPricePerMonth:C} /month").FontSize(13).Bold();
-                        c.Item().Text($"{_report.BudgetRequested.Frequency} session(s) / {frequencyStr}").FontSize(9).FontColor(Colors.Grey.Darken1);
-                        if (_report.BudgetRequested.Unit == FrequencyUnit.PerWeek)
-                            c.Item().Text($"({_report.BudgetRequested.SessionsPerMonth:F1} total/month)").FontSize(9).FontColor(Colors.Grey.Darken1);
-                    });
-
-                    row.ConstantItem(12); // Grid margin spacing
-
-                    // Column Plus
-                    row.RelativeItem().Border(1).BorderColor(Colors.Grey.Lighten2).Padding(10).Column(c =>
-                    {
-                        c.Item().Text(_report.BudgetPlus.Label).Bold().FontSize(10).FontColor(Colors.Green.Darken3);
-                        c.Item().PaddingTop(4).Text($"{_report.BudgetPlus.TotalPricePerMonth:C} /month").FontSize(13).Bold();
-                        c.Item().Text($"{_report.BudgetPlus.Frequency} session(s) / {frequencyStr}").FontSize(9).FontColor(Colors.Grey.Darken1);
-                        if (_report.BudgetRequested.Unit == FrequencyUnit.PerWeek)
-                            c.Item().Text($"({_report.BudgetPlus.SessionsPerMonth:F1} total/month)").FontSize(9).FontColor(Colors.Grey.Darken1);
-                    });
-                });
-
-                column.Item().PaddingTop(1, Unit.Centimetre);
-
-                // 4. Alternative Operational Frameworks (Cross Modality Previews)
-                column.Item().PaddingBottom(6).Text("Alternative Operational Scenarios").FontSize(12).Bold();
-                column.Item().Table(table =>
+                if (_report.IncludeAlternativeOperationalScenarios)
                 {
-                    table.ColumnsDefinition(columns =>
+                    column.Item().PaddingTop(1, Unit.Centimetre);
+
+                    // 4. Alternative Operational Frameworks (Cross Modality Previews)
+                    column.Item().PaddingBottom(6).Text("Alternative Operational Scenarios").FontSize(12).Bold();
+                    column.Item().Table(table =>
                     {
-                        columns.RelativeColumn();
-                        columns.ConstantColumn(120);
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.RelativeColumn();
+                            columns.ConstantColumn(120);
+                        });
+
+                        table.Cell().Background(Colors.Grey.Lighten4).Padding(6).Text("Alternative Operational Setup").Bold().FontSize(10);
+                        table.Cell().Background(Colors.Grey.Lighten4).Padding(6).Text("Estimated Price/Month").Bold().FontSize(10).AlignRight();
+
+                        // Row Modality Framework
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(6).Text(_report.AlternativeTravel.Label);
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(6).Text($"{_report.AlternativeTravel.TotalPricePerMonth:C}").AlignRight();
+
+                        // Row Calendar Framework
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(6).Text(_report.AlternativeFee.Label);
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(6).Text($"{_report.AlternativeFee.TotalPricePerMonth:C}").AlignRight();
                     });
-
-                    table.Cell().Background(Colors.Grey.Lighten4).Padding(6).Text("Alternative Operational Setup").Bold().FontSize(10);
-                    table.Cell().Background(Colors.Grey.Lighten4).Padding(6).Text("Estimated Price/Month").Bold().FontSize(10).AlignRight();
-
-                    // Row Modality Framework
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(6).Text(_report.AlternativeTravel.Label);
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(6).Text($"{_report.AlternativeTravel.TotalPricePerMonth:C}").AlignRight();
-
-                    // Row Calendar Framework
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(6).Text(_report.AlternativeFee.Label);
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(6).Text($"{_report.AlternativeFee.TotalPricePerMonth:C}").AlignRight();
-                });
+                }
 
                 ComposeCancellationPolicy(column.Item());
             });
