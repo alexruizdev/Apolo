@@ -99,7 +99,20 @@ namespace ViewModels
             var date = DateTime.Now.ToString("dd-MM-yyyy");
             var directoryPath = Path.Combine(Profile.BillingFolder, "Budget");
             Directory.CreateDirectory(directoryPath);
-            var filename = Path.Combine(directoryPath, $"Proposal_{date}.pdf");
+
+            var cleanServiceName = SanitizeFileName(Report.ServiceName);
+            var baseFilename = string.IsNullOrWhiteSpace(cleanServiceName)
+                ? $"Proposal_{date}"
+                : $"Proposal_{cleanServiceName}_{date}";
+
+            var filename = Path.Combine(directoryPath, $"{baseFilename}.pdf");
+            int counter = 1;
+            while (File.Exists(filename))
+            {
+                filename = Path.Combine(directoryPath, $"{baseFilename} ({counter}).pdf");
+                counter++;
+            }
+
             try
             {
                 reportWriter.GenerateProposal(filename, Report);
@@ -110,6 +123,15 @@ namespace ViewModels
             {
                 SetExitFunction($"{_loc.Get(Message_Generate_Error)} '{filename}': {ex.Message}", InfoBarType.Error);
             }
+        }
+
+        private static string SanitizeFileName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return string.Empty;
+
+            var invalidChars = Path.GetInvalidFileNameChars();
+            return new string(name.Where(c => !invalidChars.Contains(c)).ToArray()).Trim();
         }
 
         private string FormatFreq(BudgetColumn col) =>
