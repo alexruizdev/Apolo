@@ -80,10 +80,25 @@ namespace Apolo.ViewModels
             SelectedLenguage = Languages.FirstOrDefault(l => l.Code == Profile.Language) ?? Languages.First();
         }
 
+        [RelayCommand]
+        public void AddPolicyItem()
+        {
+            Profile.ProposalCancellationPolicyItems.Add(new SectionItem());
+        }
+
+        [RelayCommand]
+        public void RemovePolicyItem(SectionItem item)
+        {
+            if (item != null)
+            {
+                Profile.ProposalCancellationPolicyItems.Remove(item);
+            }
+        }
+
         public bool DeveloperMode => Profile.DeveloperMode;
 
         [RelayCommand]
-        public async Task SaveAsync()
+        public async Task SaveProfileAsync()
         {
             if (IsBusy)
             {
@@ -95,7 +110,7 @@ namespace Apolo.ViewModels
 
             Profile.Language = SelectedLenguage.Code;
 
-            await _userProfileService.SaveAsync(Profile);
+            await _userProfileService.SaveAsync(Profile.Export());
 
             _languageService.ApplyLanguage(Profile.Language);
 
@@ -103,7 +118,7 @@ namespace Apolo.ViewModels
         }
 
         [RelayCommand]
-        public async Task DeleteAsync()
+        public async Task DeleteProfileAsync()
         {
             if (IsBusy)
             {
@@ -113,9 +128,9 @@ namespace Apolo.ViewModels
 
             SetEnterFunction();
 
-            Profile = new UserProfile();
+            Profile = new UserSetting();
 
-            await _userProfileService.SaveAsync(Profile);
+            await _userProfileService.SaveAsync(Profile.Export());
 
             SetExitFunction($"{_loc.Get(Message_Delete_Settings_Success)}.", InfoBarType.Success);
         }

@@ -421,12 +421,12 @@ namespace Apolo.ViewModels
                 if (type == DocumentType.Invoice)
                 {
                     // Generate invoice
-                    _pdfWriter.GenerateInvoice(document.DocumentNumber, payer, lessons, Profile, filePath, Bill.Date);
+                    _pdfWriter.GenerateInvoice(document.DocumentNumber, payer, lessons, Profile.Export(), filePath, Bill.Date);
 
                     if (Profile.GenerateTicketWithInvoice)
                     {
                         var ticketFilePath = Path.Combine(Profile.BillingFolder, $"{document.DocumentNumber}-list.pdf");
-                        _pdfWriter.GenerateTicket(document.DocumentNumber, payer, lessons, Profile, ticketFilePath, Bill.Date);
+                        _pdfWriter.GenerateTicket(document.DocumentNumber, payer, lessons, Profile.Export(), ticketFilePath, Bill.Date);
                         successMessage = $"Invoice and ticket saved:\n• {Path.GetFileName(filePath)}\n• {Path.GetFileName(ticketFilePath)}";
                     }
                     else
@@ -437,7 +437,7 @@ namespace Apolo.ViewModels
                 else
                 {
                     // Generate only ticket
-                    _pdfWriter.GenerateTicket(document.DocumentNumber, payer, lessons, Profile, filePath, Bill.Date);
+                    _pdfWriter.GenerateTicket(document.DocumentNumber, payer, lessons, Profile.Export(), filePath, Bill.Date);
                     successMessage = $"Ticket saved: {Path.GetFileName(filePath)}";
                 }
 
@@ -491,12 +491,12 @@ namespace Apolo.ViewModels
             if (Bill.Type is DocumentType.Invoice)
             {
                 // Generate invoice
-                _pdfWriter.GenerateInvoice(Bill.Name, payer, lessons, Profile, filePath, Bill.Date);
+                _pdfWriter.GenerateInvoice(Bill.Name, payer, lessons, Profile.Export(), filePath, Bill.Date);
 
                 if (Profile.GenerateTicketWithInvoice)
                 {
                     var ticketFilePath = Path.Combine(Profile.BillingFolder, $"{Bill.Name}-list.pdf");
-                    _pdfWriter.GenerateTicket(Bill.Name, payer, lessons, Profile, ticketFilePath, Bill.Date);
+                    _pdfWriter.GenerateTicket(Bill.Name, payer, lessons, Profile.Export(), ticketFilePath, Bill.Date);
                     successMessage = $"Invoice and ticket saved:\n• {Path.GetFileName(filePath)}\n• {Path.GetFileName(ticketFilePath)}";
                 }
                 else
@@ -507,7 +507,7 @@ namespace Apolo.ViewModels
             else
             {
                 // Generate only ticket
-                _pdfWriter.GenerateTicket(Bill.Name, payer, lessons, Profile, filePath, Bill.Date);
+                _pdfWriter.GenerateTicket(Bill.Name, payer, lessons, Profile.Export(), filePath, Bill.Date);
                 successMessage = $"Ticket saved: {Path.GetFileName(filePath)}";
             }
 

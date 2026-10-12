@@ -1,4 +1,6 @@
-﻿namespace Models
+using System.Globalization;
+
+namespace Models
 {
     public enum FrequencyUnit
     {
@@ -18,6 +20,11 @@
         public double Duration { get; set; }
         public int Frequency { get; set; } = 1;
         public FrequencyUnit Unit { get; set; } = FrequencyUnit.PerWeek;
+        public bool IncludeFrequencyScalingBudgets { get; set; }
+        public bool IncludeAlternativeOperationalScenarios { get; set; }
+        public bool IncludeCancellationPolicy { get; set; } = true;
+        public string CancellationPolicyTitle { get; set; } = string.Empty;
+        public List<PolicySectionItem> CancellationPolicyItems { get; set; } = [];
     }
 
     public record BudgetColumn
@@ -52,6 +59,39 @@
         public BudgetColumn BudgetMinus { get; set; } = new();
         public BudgetColumn BudgetRequested { get; set; } = new();
         public BudgetColumn BudgetPlus { get; set; } = new();
+
+        // PDF Generation Options
+        public bool IncludeFrequencyScalingBudgets { get; set; }
+        public bool IncludeAlternativeOperationalScenarios { get; set; }
+        public bool IncludeCancellationPolicy { get; set; } = true;
+        public string CancellationPolicyTitle { get; set; } = string.Empty;
+        public List<PolicySectionItem> CancellationPolicyItems { get; set; } = [];
+
+        // Display simplification rules
+        public decimal RawBasePrice => BasePrice - WeekendFeeApplied;
+
+        public bool ShowWeekendFee => WeekendFeeApplied > 0m;
+
+        public bool ShowTravelAllowance => TravelAllowanceApplied > 0m;
+
+        public bool ShowDurationMultiplier
+        {
+            get
+            {
+                var cleanRate = RateMultiplier.TrimStart('x', 'X', '×', ' ').Replace(',', '.');
+                if (decimal.TryParse(cleanRate, NumberStyles.Any, CultureInfo.InvariantCulture, out var rate))
+                {
+                    return rate != 1m;
+                }
+                return false;
+            }
+        }
+
+        public bool ShowSubtotal => ShowWeekendFee || ShowDurationMultiplier;
+
+        public bool ShowBasePrice => ShowWeekendFee || ShowTravelAllowance || ShowDurationMultiplier;
+
+        public bool ShowDetailsBreakdown => ShowBasePrice;
     }
 
     public static class ProposalService
@@ -66,7 +106,12 @@
                 BasePrice = (decimal)input.BasePrice,
                 Duration = input.Duration,
                 WeekendFeeApplied = input.IsWeekendOrHoliday ? input.WeekendFee : 0m,
-                TravelAllowanceApplied = input.IsOnline ? 0m : input.TravelAllowance
+                TravelAllowanceApplied = input.IsOnline ? 0m : input.TravelAllowance,
+                IncludeFrequencyScalingBudgets = input.IncludeFrequencyScalingBudgets,
+                IncludeAlternativeOperationalScenarios = input.IncludeAlternativeOperationalScenarios,
+                IncludeCancellationPolicy = input.IncludeCancellationPolicy,
+                CancellationPolicyTitle = input.CancellationPolicyTitle,
+                CancellationPolicyItems = input.CancellationPolicyItems != null ? [.. input.CancellationPolicyItems] : new()
             };
 
             report.BasePrice += report.WeekendFeeApplied;

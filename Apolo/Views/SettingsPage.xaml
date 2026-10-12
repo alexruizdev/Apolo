@@ -3,7 +3,7 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:local="using:Apolo.Views"
-      xmlns:vm="using:Apolo.ViewModels"
+      xmlns:vm="using:ViewModels"
       xmlns:m="using:Models"
       x:Name="PageRoot">
 
@@ -131,7 +131,66 @@
             </Expander>
 
             <!-- ========================================== -->
-            <!-- SECTION 4: FEES                            -->
+            <!-- SECTION 4: PROPOSAL CONFIGURATION          -->
+            <!-- ========================================== -->
+            <Expander x:Uid="Settings/ProposalConfiguration" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                <StackPanel Spacing="16" Padding="0,8,0,4">
+                    <CheckBox x:Uid="Settings/ShowProposalCancellationPolicy" IsChecked="{x:Bind ViewModel.Profile.ShowProposalCancellationPolicy, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <StackPanel Spacing="16"
+                                Visibility="{x:Bind ViewModel.Profile.ShowProposalCancellationPolicy, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <!-- Section Title -->
+                        <TextBox x:Uid="Settings/ProposalCancellationPolicyTitle"
+                                 Text="{x:Bind ViewModel.Profile.ProposalCancellationPolicyTitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                        <!-- Section Header Bar with Title and Action Buttons -->
+                        <Grid ColumnDefinitions="*, Auto" Margin="0,4,0,0">
+                            <TextBlock x:Uid="Settings/ProposalPolicySections" Style="{StaticResource BodyStrongTextBlockStyle}" VerticalAlignment="Center"/>
+                            <Button Grid.Column="1" x:Uid="Settings/AddPolicySection" Click="AddPolicySection_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <FontIcon Glyph="&#xE710;" FontSize="12" />
+                                    <TextBlock x:Uid="Settings/AddSectionButtonText" Text="Add Section" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+
+                        <!-- Items List -->
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.Profile.ProposalCancellationPolicyItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:SectionItem">
+                                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
+                                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
+                                            BorderThickness="1" CornerRadius="4" Padding="12" Margin="0,0,0,8">
+                                        <StackPanel Spacing="10">
+                                            <Grid ColumnDefinitions="*, Auto">
+                                                <TextBlock Text="{x:Bind Subtitle, Mode=OneWay}" 
+                                                           Style="{StaticResource BodyStrongTextBlockStyle}" 
+                                                           VerticalAlignment="Center" />
+                                                <Button Grid.Column="1" Click="RemovePolicySection_Click" 
+                                                        Foreground="{ThemeResource SystemFillColorCriticalBrush}">
+                                                    <FontIcon Glyph="&#xE74D;" FontSize="14" />
+                                                </Button>
+                                            </Grid>
+                                            <TextBox x:Uid="Settings/PolicySectionSubtitle"
+                                                     Text="{x:Bind Subtitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                            <TextBox x:Uid="Settings/PolicySectionContent"
+                                                     TextWrapping="Wrap" 
+                                                     AcceptsReturn="True" 
+                                                     MinHeight="64"
+                                                     Text="{x:Bind Content, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                            <TextBox x:Uid="Settings/PolicySectionNote"
+                                                     Text="{x:Bind Note, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </StackPanel>
+            </Expander>
+
+            <!-- ========================================== -->
+            <!-- SECTION 5: FEES                            -->
             <!-- ========================================== -->
             <Expander x:Uid="Settings/Fees" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
                 <StackPanel Spacing="12" Margin="0,10,0,0">
@@ -148,7 +207,7 @@
             </Expander>
 
             <!-- ========================================== -->
-            <!-- SECTION 5: APP CONFIGURATION               -->
+            <!-- SECTION 6: APP CONFIGURATION               -->
             <!-- ========================================== -->
             <Expander x:Uid="Settings/AppConfiguration" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
                 <StackPanel Spacing="12" Margin="0,10,0,0">
@@ -185,11 +244,11 @@
 
             <!-- PRIMARY SAVING ACTION TOOLBAR -->
             <CommandBar DefaultLabelPosition="Right" HorizontalAlignment="Left" Background="Transparent" Margin="0,4,0,0">
-                <AppBarButton Icon="Save" x:Uid="Buttons/Save" Command="{Binding SaveCommand}"/>
+                <AppBarButton Icon="Save" x:Uid="Buttons/Save" Command="{Binding SaveProfileCommand}"/>
                 <AppBarSeparator />
                 <AppBarButton Icon="Refresh" x:Uid="Buttons/DiscardChanges"  Command="{Binding RefreshProfileCommand}"/>
                 <AppBarSeparator />
-                <AppBarButton Icon="Delete" x:Uid="Buttons/DeleteProfile" Foreground="{ThemeResource SystemFillColorCriticalBrush}"  Command="{Binding DeleteCommand}"/>
+                <AppBarButton Icon="Delete" x:Uid="Buttons/DeleteProfile" Foreground="{ThemeResource SystemFillColorCriticalBrush}"  Command="{Binding DeleteProfileCommand}"/>
             </CommandBar>
 
             <!-- ========================================== -->

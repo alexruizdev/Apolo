@@ -20,6 +20,7 @@ namespace Apolo.Tests.ViewModels
             _repositoryMock = new Mock<IDashboardRepository>();
             _localizerMock = new Mock<IStringLocalizer>();
             _userProfileMock = new Mock<IUserProfileService>();
+            _userProfileMock.Setup(u => u.LoadProfileAsync()).ReturnsAsync(Models.DummyData.Profile());
 
             _viewModel = new DashboardViewModel(_repositoryMock.Object, _localizerMock.Object, _userProfileMock.Object);
         }

@@ -64,12 +64,15 @@ namespace PDF
                     {
                         c.Item().PaddingBottom(6).Text("Session Cost Breakdown").FontSize(11).Bold();
 
-                        c.Item().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(4).Row(r => {
-                            r.RelativeItem().Text("Base Price");
-                            r.ConstantItem(80).Text($"{_report.BasePrice:C}").AlignRight();
-                        });
+                        if (_report.ShowBasePrice)
+                        {
+                            c.Item().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(4).Row(r => {
+                                r.RelativeItem().Text("Base Price");
+                                r.ConstantItem(80).Text($"{_report.RawBasePrice:C}").AlignRight();
+                            });
+                        }
 
-                        if (_report.WeekendFeeApplied > 0)
+                        if (_report.ShowWeekendFee)
                         {
                             c.Item().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(4).Row(r => {
                                 r.RelativeItem().Text("Weekend / Holiday Fee");
@@ -77,20 +80,23 @@ namespace PDF
                             });
                         }
 
-                        if (_report.Duration > 1.0 || _report.WeekendFeeApplied > 0) // display rate mapping details
+                        if (_report.ShowDurationMultiplier)
                         {
                             c.Item().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(4).Row(r => {
                                 r.RelativeItem().Text("Duration Multiplier");
-                                r.ConstantItem(80).Text($"× {_report.RateMultiplier:F2} hrs").AlignRight();
+                                r.ConstantItem(80).Text($"× {_report.RateMultiplier} hrs").AlignRight();
                             });
+                        }
 
+                        if (_report.ShowSubtotal)
+                        {
                             c.Item().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(4).Row(r => {
                                 r.RelativeItem().Text("Subtotal").Bold();
                                 r.ConstantItem(80).Text($"{_report.Subtotal:C}").AlignRight().Bold();
                             });
                         }
 
-                        if (_report.TravelAllowanceApplied > 0)
+                        if (_report.ShowTravelAllowance)
                         {
                             c.Item().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(4).Row(r => {
                                 r.RelativeItem().Text("Travel Allowance (In-Person)");
@@ -121,72 +127,81 @@ namespace PDF
                     });
                 });
 
-                column.Item().PaddingTop(1, Unit.Centimetre);
-
-                // 3. Three-Column Budget Matrix Row
-                column.Item().PaddingBottom(8).Text("Frequency Scaling Budgets").FontSize(12).Bold();
-                column.Item().Row(row =>
+                if (_report.IncludeFrequencyScalingBudgets)
                 {
-                    // Column Minus
-                    row.RelativeItem().Border(1).BorderColor(Colors.Grey.Lighten2).Padding(10).Column(c =>
+                    column.Item().PaddingTop(1, Unit.Centimetre);
+
+                    // 3. Three-Column Budget Matrix Row
+                    column.Item().PaddingBottom(8).Text("Frequency Scaling Budgets").FontSize(12).Bold();
+                    column.Item().Row(row =>
                     {
-                        c.Item().Text(_report.BudgetMinus.Label).Bold().FontSize(10).FontColor(Colors.Orange.Darken3);
-                        c.Item().PaddingTop(4).Text($"{_report.BudgetMinus.TotalPricePerMonth:C} /month").FontSize(13).Bold();
-                        c.Item().Text($"{_report.BudgetMinus.Frequency} session(s) / {frequencyStr}").FontSize(9).FontColor(Colors.Grey.Darken1);
-                        if (_report.BudgetRequested.Unit == FrequencyUnit.PerWeek)
-                            c.Item().Text($"({_report.BudgetMinus.SessionsPerMonth:F1} total/month)").FontSize(9).FontColor(Colors.Grey.Darken1);
+                        // Column Minus
+                        row.RelativeItem().Border(1).BorderColor(Colors.Grey.Lighten2).Padding(10).Column(c =>
+                        {
+                            c.Item().Text(_report.BudgetMinus.Label).Bold().FontSize(10).FontColor(Colors.Orange.Darken3);
+                            c.Item().PaddingTop(4).Text($"{_report.BudgetMinus.TotalPricePerMonth:C} /month").FontSize(13).Bold();
+                            c.Item().Text($"{_report.BudgetMinus.Frequency} session(s) / {frequencyStr}").FontSize(9).FontColor(Colors.Grey.Darken1);
+                            if (_report.BudgetRequested.Unit == FrequencyUnit.PerWeek)
+                                c.Item().Text($"({_report.BudgetMinus.SessionsPerMonth:F1} total/month)").FontSize(9).FontColor(Colors.Grey.Darken1);
+                        });
+
+                        row.ConstantItem(12); // Grid margin spacing
+
+                        // Column Requested
+                        row.RelativeItem().Border(2).BorderColor(Colors.Blue.Darken1).Padding(10).Column(c =>
+                        {
+                            c.Item().Text("Target Setup").Bold().FontSize(10).FontColor(Colors.Blue.Darken2);
+                            c.Item().PaddingTop(4).Text($"{_report.BudgetRequested.TotalPricePerMonth:C} /month").FontSize(13).Bold();
+                            c.Item().Text($"{_report.BudgetRequested.Frequency} session(s) / {frequencyStr}").FontSize(9).FontColor(Colors.Grey.Darken1);
+                            if (_report.BudgetRequested.Unit == FrequencyUnit.PerWeek)
+                                c.Item().Text($"({_report.BudgetRequested.SessionsPerMonth:F1} total/month)").FontSize(9).FontColor(Colors.Grey.Darken1);
+                        });
+
+                        row.ConstantItem(12); // Grid margin spacing
+
+                        // Column Plus
+                        row.RelativeItem().Border(1).BorderColor(Colors.Grey.Lighten2).Padding(10).Column(c =>
+                        {
+                            c.Item().Text(_report.BudgetPlus.Label).Bold().FontSize(10).FontColor(Colors.Green.Darken3);
+                            c.Item().PaddingTop(4).Text($"{_report.BudgetPlus.TotalPricePerMonth:C} /month").FontSize(13).Bold();
+                            c.Item().Text($"{_report.BudgetPlus.Frequency} session(s) / {frequencyStr}").FontSize(9).FontColor(Colors.Grey.Darken1);
+                            if (_report.BudgetRequested.Unit == FrequencyUnit.PerWeek)
+                                c.Item().Text($"({_report.BudgetPlus.SessionsPerMonth:F1} total/month)").FontSize(9).FontColor(Colors.Grey.Darken1);
+                        });
                     });
+                }
 
-                    row.ConstantItem(12); // Grid margin spacing
-
-                    // Column Requested
-                    row.RelativeItem().Border(2).BorderColor(Colors.Blue.Darken1).Padding(10).Column(c =>
-                    {
-                        c.Item().Text("Target Setup").Bold().FontSize(10).FontColor(Colors.Blue.Darken2);
-                        c.Item().PaddingTop(4).Text($"{_report.BudgetRequested.TotalPricePerMonth:C} /month").FontSize(13).Bold();
-                        c.Item().Text($"{_report.BudgetRequested.Frequency} session(s) / {frequencyStr}").FontSize(9).FontColor(Colors.Grey.Darken1);
-                        if (_report.BudgetRequested.Unit == FrequencyUnit.PerWeek)
-                            c.Item().Text($"({_report.BudgetRequested.SessionsPerMonth:F1} total/month)").FontSize(9).FontColor(Colors.Grey.Darken1);
-                    });
-
-                    row.ConstantItem(12); // Grid margin spacing
-
-                    // Column Plus
-                    row.RelativeItem().Border(1).BorderColor(Colors.Grey.Lighten2).Padding(10).Column(c =>
-                    {
-                        c.Item().Text(_report.BudgetPlus.Label).Bold().FontSize(10).FontColor(Colors.Green.Darken3);
-                        c.Item().PaddingTop(4).Text($"{_report.BudgetPlus.TotalPricePerMonth:C} /month").FontSize(13).Bold();
-                        c.Item().Text($"{_report.BudgetPlus.Frequency} session(s) / {frequencyStr}").FontSize(9).FontColor(Colors.Grey.Darken1);
-                        if (_report.BudgetRequested.Unit == FrequencyUnit.PerWeek)
-                            c.Item().Text($"({_report.BudgetPlus.SessionsPerMonth:F1} total/month)").FontSize(9).FontColor(Colors.Grey.Darken1);
-                    });
-                });
-
-                column.Item().PaddingTop(1, Unit.Centimetre);
-
-                // 4. Alternative Operational Frameworks (Cross Modality Previews)
-                column.Item().PaddingBottom(6).Text("Alternative Operational Scenarios").FontSize(12).Bold();
-                column.Item().Table(table =>
+                if (_report.IncludeAlternativeOperationalScenarios)
                 {
-                    table.ColumnsDefinition(columns =>
+                    column.Item().PaddingTop(1, Unit.Centimetre);
+
+                    // 4. Alternative Operational Frameworks (Cross Modality Previews)
+                    column.Item().PaddingBottom(6).Text("Alternative Operational Scenarios").FontSize(12).Bold();
+                    column.Item().Table(table =>
                     {
-                        columns.RelativeColumn();
-                        columns.ConstantColumn(120);
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.RelativeColumn();
+                            columns.ConstantColumn(120);
+                        });
+
+                        table.Cell().Background(Colors.Grey.Lighten4).Padding(6).Text("Alternative Operational Setup").Bold().FontSize(10);
+                        table.Cell().Background(Colors.Grey.Lighten4).Padding(6).Text("Estimated Price/Month").Bold().FontSize(10).AlignRight();
+
+                        // Row Modality Framework
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(6).Text(_report.AlternativeTravel.Label);
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(6).Text($"{_report.AlternativeTravel.TotalPricePerMonth:C}").AlignRight();
+
+                        // Row Calendar Framework
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(6).Text(_report.AlternativeFee.Label);
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(6).Text($"{_report.AlternativeFee.TotalPricePerMonth:C}").AlignRight();
                     });
+                }
 
-                    table.Cell().Background(Colors.Grey.Lighten4).Padding(6).Text("Alternative Operational Setup").Bold().FontSize(10);
-                    table.Cell().Background(Colors.Grey.Lighten4).Padding(6).Text("Estimated Price/Month").Bold().FontSize(10).AlignRight();
-
-                    // Row Modality Framework
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(6).Text(_report.AlternativeTravel.Label);
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(6).Text($"{_report.AlternativeTravel.TotalPricePerMonth:C}").AlignRight();
-
-                    // Row Calendar Framework
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(6).Text(_report.AlternativeFee.Label);
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(6).Text($"{_report.AlternativeFee.TotalPricePerMonth:C}").AlignRight();
-                });
-
-                ComposeCancellationPolicy(column.Item());
+                if (_report.IncludeCancellationPolicy)
+                {
+                    ComposeCancellationPolicy(column.Item());
+                }
             });
         }
 
@@ -207,20 +222,49 @@ namespace PDF
 
         private void ComposeCancellationPolicy(IContainer container)
         {
+            var hasTitle = !string.IsNullOrWhiteSpace(_report.CancellationPolicyTitle);
+            var items = _report.CancellationPolicyItems;
+            var hasItems = items != null && items.Count > 0;
+
+            if (!hasTitle && !hasItems)
+                return;
+
             container.PaddingTop(1, Unit.Centimetre).Column(column =>
             {
-                column.Item().Text("Cancellation & Operational Policy").FontSize(12).Bold().FontColor(Colors.Blue.Darken2);
-                column.Item().PaddingTop(5).BorderTop(1).BorderColor(Colors.Grey.Lighten2);
+                if (hasTitle)
+                {
+                    column.Item().Text(_report.CancellationPolicyTitle).FontSize(12).Bold().FontColor(Colors.Blue.Darken2);
+                    column.Item().PaddingTop(5).BorderTop(1).BorderColor(Colors.Grey.Lighten2);
+                }
 
-                // Section: Client Policy
-                column.Item().PaddingTop(10).Text("Client Cancellations").FontSize(10).Bold();
-                column.Item().Text("Cancellations or reschedules require at least 24 hours' notice. Failure to provide this notice will result in the full lesson fee being charged.").FontSize(9);
+                if (hasItems && items != null)
+                {
+                    foreach (var item in items)
+                    {
+                        if (!string.IsNullOrWhiteSpace(item.Subtitle))
+                        {
+                            column.Item().PaddingTop(10).Text(item.Subtitle).FontSize(10).Bold();
+                        }
 
-                // Section: Provider Policy
-                column.Item().PaddingTop(10).Text("Provider Cancellations & Emergencies").FontSize(10).Bold();
-                column.Item().Text("In the event of teacher cancellation, you will have the choice to reschedule or receive a full refund for the affected session. Technical difficulties during online sessions will be resolved by rescheduling the remainder of the lesson at no extra cost.").FontSize(9);
+                        if (!string.IsNullOrWhiteSpace(item.Content))
+                        {
+                            var topPadding = string.IsNullOrWhiteSpace(item.Subtitle) ? 10 : 0;
+                            if (topPadding > 0)
+                            {
+                                column.Item().PaddingTop(topPadding).Text(item.Content).FontSize(9);
+                            }
+                            else
+                            {
+                                column.Item().Text(item.Content).FontSize(9);
+                            }
+                        }
 
-                column.Item().PaddingTop(10).Text("Emergency situations (medical or family crises) will be handled with flexibility. Please notify me as soon as possible.").FontSize(9).Italic();
+                        if (!string.IsNullOrWhiteSpace(item.Note))
+                        {
+                            column.Item().PaddingTop(6).Text(item.Note).FontSize(9).Italic();
+                        }
+                    }
+                }
             });
         }
 

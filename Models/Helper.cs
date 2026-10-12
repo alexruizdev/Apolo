@@ -1,10 +1,75 @@
 ﻿
 using System.Linq.Expressions;
+using System.Net;
+using System.Reflection.Emit;
 
 namespace Models
 {
     public class DummyData
     {
+        // ================================================================= //
+        //  USER PROFILE                                                     //
+        // ================================================================= //
+        public static UserProfile Profile() =>
+            new()
+            {
+                // Main information
+                FullName = "Max Verstapen",
+                Address = "Monaco Street",
+                ZipCode = "98000",
+                City = "Monaco",
+                Phone = "+377 93 12 34 56",
+
+                // Billing & Tax Details
+                TaxId = "FR99999999999",
+                Email = "max_verstapen@f1.com",
+                BankAccount = "MC58 1122 2000 0101 2345 6789 030",
+                BankName = "CMB Monaco",
+                IvaPercent = 10,
+                BillingFolder = "\\somepath\\invented",
+
+                // Billing Document Configuration
+                ShowIvaDisclaimer = true,
+                GenerateTicketWithInvoice = true,
+                LessonTerm = string.Empty,
+                StudentTerm = string.Empty,
+                ShowInvoiceDateColumn = true,
+                ShowInvoiceConceptColumn = true,
+                ShowInvoiceStudentColumn = true,
+                ShowInvoiceDurationColumn = true,
+                ShowInvoicePriceColumn = true,
+                ShowTicketDateColumn = true,
+                ShowTicketConceptColumn = true,
+                ShowTicketStudentColumn = true,
+                ShowTicketDurationColumn = true,
+                ShowTicketPriceColumn = true,
+
+                // Proposal Configuration
+                ShowProposalCancellationPolicy = true,
+                ProposalCancellationPolicyTitle = "Cancellation & Operational Policy",
+                ProposalCancellationPolicyItems =
+                [
+                    new PolicySectionItem()
+                    {
+                        Subtitle = "Client Cancellations",
+                        Content = "Cancellations or reschedules require at least 24 hours' notice. Failure to provide this notice will result in the full session\r\nfeebeing charged."
+                    },
+                    new PolicySectionItem()
+                    {
+                        Subtitle = "Provider Cancellations & Emergencies",
+                        Content = "In the event of teacher cancellation, you will have the choice to reschedule or receive a full refund for the affected\r\nsession.Technical difficulties during online sessions will be resolved by rescheduling the remainder of the lesson at no extra\r\ncost.",
+                        Note = "Emergency situations (medical or family crises) will be handled with flexibility. Please notify me as soon as possible."
+                    }
+                ],
+
+                // fees
+                TravelAllowance = 10,
+                WeekendFee = 20,
+
+                // App Configuration
+                DeveloperMode = true
+            };
+
         // ================================================================= //
         //  SERVICES : 6                                                     //
         // ================================================================= //

@@ -27,28 +27,8 @@ namespace Apolo.Tests.ViewModels
             _mockPayerRepo = new Mock<IPayerRepository>();
             _mockLessonRepo = new Mock<ILessonRepository>();
             _mockUserProfileService = new Mock<IUserProfileService>();
+            _mockUserProfileService.Setup(u => u.LoadProfileAsync()).ReturnsAsync(Models.DummyData.Profile());
             _mockPDFWriter = new Mock<PDF.IWriter>();
-
-            var userProfile = new UserProfile
-            {
-                FullName = "Test User",
-                Address = "Test Address",
-                ZipCode = "12345",
-                City = "Test City",
-                Phone = "123-456-7890",
-                TaxId = "TAX123456",
-                Email = "test@example.com",
-                BankName = "Test Bank",
-                BankAccount = "123456234567",
-                IvaPercent = 25,
-                TravelAllowance = 10,
-                WeekendFee = 20,
-                BillingFolder = "\\somepath\\invented"
-            };
-
-            _mockUserProfileService.Setup(r => r.LoadProfileAsync())
-                .ReturnsAsync(userProfile);
-
             _localizerMock = new Mock<IStringLocalizer>();
 
             _viewModel = new BillingViewModel(_mockInvoiceRepo.Object, _mockPayerRepo.Object, _mockUserProfileService.Object,
@@ -551,16 +531,16 @@ namespace Apolo.Tests.ViewModels
             // Create invoice
             if (isInvoice && success)
             {
-                _mockPDFWriter.Verify(r => r.GenerateInvoice("01-2024-0007", It.IsAny<PayerSummary>(), lessons, _viewModel.Profile,
+                _mockPDFWriter.Verify(r => r.GenerateInvoice("01-2024-0007", It.IsAny<PayerSummary>(), lessons, It.IsAny<UserProfile>(),
                     It.IsAny<string>(), _viewModel.Bill.Date),
                     Times.Once);
-                _mockPDFWriter.Verify(r => r.GenerateTicket("01-2024-0007", It.IsAny<PayerSummary>(), lessons, _viewModel.Profile,
+                _mockPDFWriter.Verify(r => r.GenerateTicket("01-2024-0007", It.IsAny<PayerSummary>(), lessons, It.IsAny<UserProfile>(),
                     It.IsAny<string>(), _viewModel.Bill.Date),
                     Times.Once);
             }
             if (!isInvoice && success)
             {
-                _mockPDFWriter.Verify(r => r.GenerateTicket("01-2024-0007", It.IsAny<PayerSummary>(), lessons, _viewModel.Profile,
+                _mockPDFWriter.Verify(r => r.GenerateTicket("01-2024-0007", It.IsAny<PayerSummary>(), lessons, It.IsAny<UserProfile>(),
                     It.IsAny<string>(), _viewModel.Bill.Date),
                     Times.Once);
                 _mockPDFWriter.Verify(r => r.GenerateInvoice(It.IsAny<string>(), It.IsAny<PayerSummary>(), It.IsAny<List<LessonLine>>(), It.IsAny<UserProfile>(),

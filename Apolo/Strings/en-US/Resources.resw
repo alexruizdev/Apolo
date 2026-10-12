@@ -1138,6 +1138,15 @@
   <data name="Proposal/Hours.Text" xml:space="preserve">
     <value> hrs</value>
   </data>
+  <data name="Proposal/PdfOptions.Text" xml:space="preserve">
+    <value>PDF Export Options</value>
+  </data>
+  <data name="Proposal/IncludeFrequencyScalingBudgets.Header" xml:space="preserve">
+    <value>Include Frequency Scaling Budgets</value>
+  </data>
+  <data name="Proposal/IncludeAlternativeOperationalScenarios.Header" xml:space="preserve">
+    <value>Include Alternative Operational Scenarios</value>
+  </data>
 
   <!-- Students -->
   <data name="Students/Title.Text" xml:space="preserve">
@@ -1282,6 +1291,9 @@
   <data name="Settings/ShowIvaDisclaimer.Content" xml:space="preserve">
     <value>Show IVA disclaimer in the invoice</value>
   </data>
+  <data name="Settings/ShowProposalCancellationPolicy.Content" xml:space="preserve">
+    <value>Include custom terms &amp; policy in proposal PDF</value>
+  </data>
   
   <!-- Custom terms and invoice PDF -->
   <data name="Settings/CustomLessonTerm.Header" xml:space="preserve">
@@ -1316,6 +1328,39 @@
   </data>
   <data name="Settings/DocumentConfiguration.Header" xml:space="preserve">
     <value>Billing Document Configuration</value>
+  </data>
+  <data name="Settings/ProposalConfiguration.Header" xml:space="preserve">
+    <value>Proposal Configuration</value>
+  </data>
+  <data name="Settings/ProposalCancellationPolicyTitle.Header" xml:space="preserve">
+    <value>Section Title</value>
+  </data>
+  <data name="Settings/ProposalCancellationPolicyTitle.PlaceholderText" xml:space="preserve">
+    <value>e.g. Terms and Conditions, Cancellation Policy, etc.</value>
+  </data>
+  <data name="Settings/ProposalPolicySections.Text" xml:space="preserve">
+    <value>Custom Sections</value>
+  </data>
+  <data name="Settings/AddSectionButtonText.Text" xml:space="preserve">
+    <value>Add Section</value>
+  </data>
+  <data name="Settings/PolicySectionSubtitle.Header" xml:space="preserve">
+    <value>Subtitle / Heading</value>
+  </data>
+  <data name="Settings/PolicySectionSubtitle.PlaceholderText" xml:space="preserve">
+    <value>e.g. Terms, Client Policy, Delivery...</value>
+  </data>
+  <data name="Settings/PolicySectionContent.Header" xml:space="preserve">
+    <value>Content / Paragraph Body</value>
+  </data>
+  <data name="Settings/PolicySectionContent.PlaceholderText" xml:space="preserve">
+    <value>Content body text...</value>
+  </data>
+  <data name="Settings/PolicySectionNote.Header" xml:space="preserve">
+    <value>Note (Optional footer note)</value>
+  </data>
+  <data name="Settings/PolicySectionNote.PlaceholderText" xml:space="preserve">
+    <value>e.g. Additional remarks or notes...</value>
   </data>
   <data name="Settings/PdfGeneralOptions.Text" xml:space="preserve">
     <value>General Options</value>

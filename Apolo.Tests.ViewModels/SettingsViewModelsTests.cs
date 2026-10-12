@@ -26,29 +26,11 @@ namespace Apolo.Tests.ViewModels
         {
             _repositoryMock = new Mock<IGeneralRepository>();
             _mockUserProfileService = new Mock<IUserProfileService>();
+            _mockUserProfileService.Setup(u => u.LoadProfileAsync()).ReturnsAsync(Models.DummyData.Profile());
             _writerMock = new Mock<CSV.IWriter>();
             _readerMock = new Mock<CSV.IReader>();
             _languageMock = new Mock<ILanguageService>();
             _localizerMock = new Mock<IStringLocalizer>();
-
-            var userProfile = new UserProfile
-            {
-                FullName = "Test",
-                Address = "Address",
-                ZipCode = "Code",
-                City = "City",
-                Phone = "123456789",
-                TaxId = "000000001W",
-                Email = "test@email.com",
-                BankName = "Bank",
-                BankAccount = "123-456-789",
-                IvaPercent = 5,
-                TravelAllowance = 10,
-                WeekendFee = 20
-            };
-
-            _mockUserProfileService.Setup(r => r.LoadProfileAsync())
-                .ReturnsAsync(userProfile);
 
             _viewModel = new SettingsViewModel(_repositoryMock.Object, _mockUserProfileService.Object,
                 _readerMock.Object, _writerMock.Object, _languageMock.Object, _localizerMock.Object);
@@ -67,7 +49,7 @@ namespace Apolo.Tests.ViewModels
         {
             _viewModel.IsBusy = true;
 
-            await _viewModel.SaveAsync();
+            await _viewModel.SaveProfileAsync();
 
             VerifyAction(InfoBarType.Warning, isOpen: true, isBusy: true);
         }
@@ -75,7 +57,7 @@ namespace Apolo.Tests.ViewModels
         [TestMethod]
         public async Task SaveAsync()
         {
-            await _viewModel.SaveAsync();
+            await _viewModel.SaveProfileAsync();
 
             VerifyAction(InfoBarType.Success, isOpen: true);
         }
@@ -86,7 +68,7 @@ namespace Apolo.Tests.ViewModels
         {
             _viewModel.IsBusy = true;
 
-            await _viewModel.DeleteAsync();
+            await _viewModel.DeleteProfileAsync();
 
             VerifyAction(InfoBarType.Warning, isOpen: true, isBusy: true);
         }
@@ -94,7 +76,7 @@ namespace Apolo.Tests.ViewModels
         [TestMethod]
         public async Task DeleteAsync()
         {
-            await _viewModel.DeleteAsync();
+            await _viewModel.DeleteProfileAsync();
 
             Assert.AreEqual(string.Empty, _viewModel.Profile.FullName);
             Assert.AreEqual(string.Empty, _viewModel.Profile.Address);

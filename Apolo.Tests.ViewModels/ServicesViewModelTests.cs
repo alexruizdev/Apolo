@@ -23,6 +23,7 @@ namespace Apolo.Tests.ViewModels
             _mockRepo = new Mock<IServiceRepository>();
             _localizerMock = new Mock<IStringLocalizer>();
             _userProfileMock = new Mock<IUserProfileService>();
+            _userProfileMock.Setup(u => u.LoadProfileAsync()).ReturnsAsync(Models.DummyData.Profile());
             _viewModel = new ServicesViewModel(_mockRepo.Object, _localizerMock.Object, _userProfileMock.Object);
         }
 

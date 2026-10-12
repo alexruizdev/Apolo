@@ -1,4 +1,4 @@
-﻿using Apolo.Services;
+using Apolo.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Models;
@@ -18,7 +18,7 @@ namespace ViewModels
         [ObservableProperty] private bool _isOnline;
         [ObservableProperty] private bool _isWeekendOrHoliday;
         [ObservableProperty] private double _duration;
-        [ObservableProperty] private int _frequency = 1;
+        [ObservableProperty] private int _frequency;
         [ObservableProperty] private FrequencyUnit _unit = FrequencyUnit.PerWeek;
 
         // Report
@@ -28,6 +28,8 @@ namespace ViewModels
         [ObservableProperty] private string _priceHeader = string.Empty;
         [ObservableProperty] private bool _isPricePerHour = false;
         [ObservableProperty] private bool _isPrimaryButtonEnabled;
+        [ObservableProperty] private bool _includeFrequencyScalingBudgets = false;
+        [ObservableProperty] private bool _includeAlternativeOperationalScenarios = false;
 
         public readonly ProposalInput _input = new();
 
@@ -61,8 +63,15 @@ namespace ViewModels
 
             SetEnterFunction();
 
+            await RefreshProfileAsync();
+
             _input.TravelAllowance = (decimal)Profile.TravelAllowance;
             _input.WeekendFee = (decimal)Profile.WeekendFee;
+            _input.IncludeCancellationPolicy = Profile.ShowProposalCancellationPolicy;
+            _input.CancellationPolicyTitle = Profile.ProposalCancellationPolicyTitle;
+            _input.CancellationPolicyItems = Profile.GetSections();
+            Duration = 60;
+            Frequency = 1;
 
             var serviceItems = await serviceRepository.GetServicesAsync();
 
@@ -95,7 +104,24 @@ namespace ViewModels
             var date = DateTime.Now.ToString("dd-MM-yyyy");
             var directoryPath = Path.Combine(Profile.BillingFolder, "Budget");
             Directory.CreateDirectory(directoryPath);
-            var filename = Path.Combine(directoryPath, $"Proposal_{date}.pdf");
+
+            var cleanServiceName = SanitizeFileName(Report.ServiceName);
+            var baseFilename = string.IsNullOrWhiteSpace(cleanServiceName)
+                ? $"Proposal_{date}"
+                : $"Proposal_{cleanServiceName}_{date}";
+
+            var filename = Path.Combine(directoryPath, $"{baseFilename}.pdf");
+            int counter = 1;
+            while (File.Exists(filename))
+            {
+                filename = Path.Combine(directoryPath, $"{baseFilename} ({counter}).pdf");
+                counter++;
+            }
+
+            Report.IncludeCancellationPolicy = Profile.ShowProposalCancellationPolicy;
+            Report.CancellationPolicyTitle = Profile.ProposalCancellationPolicyTitle;
+            Report.CancellationPolicyItems = Profile.GetSections();
+
             try
             {
                 reportWriter.GenerateProposal(filename, Report);
@@ -106,6 +132,15 @@ namespace ViewModels
             {
                 SetExitFunction($"{_loc.Get(Message_Generate_Error)} '{filename}': {ex.Message}", InfoBarType.Error);
             }
+        }
+
+        private static string SanitizeFileName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return string.Empty;
+
+            var invalidChars = Path.GetInvalidFileNameChars();
+            return new string([.. name.Where(c => !invalidChars.Contains(c))]).Trim();
         }
 
         private string FormatFreq(BudgetColumn col) =>
@@ -175,6 +210,16 @@ namespace ViewModels
             _input.Unit = value;
             Validate();
         }
+        partial void OnIncludeFrequencyScalingBudgetsChanged(bool value)
+        {
+            _input.IncludeFrequencyScalingBudgets = value;
+            Report.IncludeFrequencyScalingBudgets = value;
+        }
+        partial void OnIncludeAlternativeOperationalScenariosChanged(bool value)
+        {
+            _input.IncludeAlternativeOperationalScenarios = value;
+            Report.IncludeAlternativeOperationalScenarios = value;
+        }
 
         // --- VALIDATION LOGIC ---
 
@@ -197,7 +242,14 @@ namespace ViewModels
 
             if (!IsPrimaryButtonEnabled)
             {
-                Report = new ProposalReport();
+                Report = new ProposalReport
+                {
+                    IncludeFrequencyScalingBudgets = IncludeFrequencyScalingBudgets,
+                    IncludeAlternativeOperationalScenarios = IncludeAlternativeOperationalScenarios,
+                    IncludeCancellationPolicy = Profile.ShowProposalCancellationPolicy,
+                    CancellationPolicyTitle = Profile.ProposalCancellationPolicyTitle,
+                    CancellationPolicyItems = Profile.GetSections()
+                };
                 SetExitFunction(string.Join(Environment.NewLine, errors), InfoBarType.Error);
             }
             else

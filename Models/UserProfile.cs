@@ -15,19 +15,16 @@ namespace Models
         public string ZipCode { get; set; } = string.Empty;
         public string City { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
+
         public string TaxId { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string BankName { get; set; } = string.Empty;
         public string BankAccount { get; set; } = string.Empty;
         public double IvaPercent { get; set; } = 0;
-
-        public double TravelAllowance { get; set; } = 0;
-        public double WeekendFee { get; set; } = 0;
         public string BillingFolder { get; set; } = string.Empty;
-        public string BackupFolder { get; set; } = string.Empty;
-        public bool GenerateTicketWithInvoice { get; set; } = false;
+
         public bool ShowIvaDisclaimer { get; set; } = false;
-        public bool DeveloperMode { get; set; } = false;
+        public bool GenerateTicketWithInvoice { get; set; } = false;
         public string LessonTerm { get; set; } = string.Empty;
         public string StudentTerm { get; set; } = string.Empty;
 
@@ -44,6 +41,16 @@ namespace Models
         public bool ShowTicketStudentColumn { get; set; } = true;
         public bool ShowTicketDurationColumn { get; set; } = true;
         public bool ShowTicketPriceColumn { get; set; } = true;
+
+        public double TravelAllowance { get; set; } = 0;
+        public double WeekendFee { get; set; } = 0;
+        public string BackupFolder { get; set; } = string.Empty;
+        public bool ShowProposalCancellationPolicy { get; set; } = true;
+        public string ProposalCancellationPolicyTitle { get; set; } = string.Empty;
+        public List<PolicySectionItem> ProposalCancellationPolicyItems { get; set; } = [];
+
+        public bool DeveloperMode { get; set; } = false;
+
     }
 }
 

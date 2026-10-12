@@ -1,5 +1,6 @@
 using Microsoft.Windows.Storage;
 using Models;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Apolo.Services
@@ -11,6 +12,20 @@ namespace Apolo.Services
         {
             // Load from local settings or file
             var v = _ls.Values;
+            var policyItemsJson = v[nameof(UserProfile.ProposalCancellationPolicyItems)] as string;
+            List<PolicySectionItem>? policyItems = null;
+            if (!string.IsNullOrWhiteSpace(policyItemsJson))
+            {
+                try
+                {
+                    policyItems = System.Text.Json.JsonSerializer.Deserialize<List<PolicySectionItem>>(policyItemsJson);
+                }
+                catch
+                {
+                    // Fallback to defaults if deserialization fails
+                }
+            }
+
             var p = new UserProfile
             {
                 FullName = v[nameof(UserProfile.FullName)] as string ?? "",
@@ -31,6 +46,9 @@ namespace Apolo.Services
                 GenerateTicketWithInvoice = v[nameof(UserProfile.GenerateTicketWithInvoice)] as bool? ?? false,
                 DeveloperMode = v[nameof(UserProfile.DeveloperMode)] as bool? ?? false,
                 ShowIvaDisclaimer = v[nameof(UserProfile.ShowIvaDisclaimer)] as bool? ?? false,
+                ShowProposalCancellationPolicy = v[nameof(UserProfile.ShowProposalCancellationPolicy)] as bool? ?? true,
+                ProposalCancellationPolicyTitle = v[nameof(UserProfile.ProposalCancellationPolicyTitle)] as string ?? string.Empty,
+                ProposalCancellationPolicyItems = policyItems ?? [],
                 LessonTerm = v[nameof(UserProfile.LessonTerm)] as string ?? "",
                 StudentTerm = v[nameof(UserProfile.StudentTerm)] as string ?? "",
                 ShowInvoiceDateColumn = v[nameof(UserProfile.ShowInvoiceDateColumn)] as bool? ?? true,
@@ -51,7 +69,6 @@ namespace Apolo.Services
         public Task SaveAsync(UserProfile profile)
         {
             var v = _ls.Values;
-            var localSettings = ApplicationData.GetDefault().LocalSettings;
             v[nameof(UserProfile.FullName)]  = profile.FullName;
             v[nameof(UserProfile.Address)] = profile.Address;
             v[nameof(UserProfile.Email)] = profile.Email;
@@ -70,6 +87,9 @@ namespace Apolo.Services
             v[nameof(UserProfile.GenerateTicketWithInvoice)] = profile.GenerateTicketWithInvoice;
             v[nameof(UserProfile.DeveloperMode)] = profile.DeveloperMode;
             v[nameof(UserProfile.ShowIvaDisclaimer)] = profile.ShowIvaDisclaimer;
+            v[nameof(UserProfile.ShowProposalCancellationPolicy)] = profile.ShowProposalCancellationPolicy;
+            v[nameof(UserProfile.ProposalCancellationPolicyTitle)] = profile.ProposalCancellationPolicyTitle ?? string.Empty;
+            v[nameof(UserProfile.ProposalCancellationPolicyItems)] = System.Text.Json.JsonSerializer.Serialize(profile.ProposalCancellationPolicyItems ?? []);
             v[nameof(UserProfile.LessonTerm)] = profile.LessonTerm;
             v[nameof(UserProfile.StudentTerm)] = profile.StudentTerm;
             v[nameof(UserProfile.ShowInvoiceDateColumn)] = profile.ShowInvoiceDateColumn;

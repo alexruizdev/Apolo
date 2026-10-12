@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Models;
 using Repository;
 using System.Collections.ObjectModel;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ViewModels
 {
@@ -16,13 +15,183 @@ namespace ViewModels
         Error,
         Info
     }
+
+    public partial class SectionItem : ObservableObject
+    {
+        [ObservableProperty] string subtitle = string.Empty;
+        [ObservableProperty] string content = string.Empty;
+        [ObservableProperty] string? note;
+        public SectionItem() { }
+        public SectionItem(PolicySectionItem i)
+        {
+            Subtitle = i.Subtitle;
+            Content = i.Content;
+            Note = i.Note;
+        }
+    }
+
+    public partial class UserSetting : ObservableObject
+    {
+        [ObservableProperty] string language = string.Empty;
+        [ObservableProperty] string fullName = string.Empty;
+        [ObservableProperty] string address = string.Empty;
+        [ObservableProperty] string zipCode = string.Empty;
+        [ObservableProperty] string city = string.Empty;
+        [ObservableProperty] string phone = string.Empty;
+        [ObservableProperty] string taxId = string.Empty;
+        [ObservableProperty] string email = string.Empty;
+        [ObservableProperty] string bankName = string.Empty;
+        [ObservableProperty] string bankAccount = string.Empty;
+        [ObservableProperty] double ivaPercent = 0;
+
+        [ObservableProperty] double travelAllowance = 0;
+        [ObservableProperty] double weekendFee = 0;
+        [ObservableProperty] string billingFolder = string.Empty;
+        [ObservableProperty] string backupFolder = string.Empty;
+        [ObservableProperty] bool generateTicketWithInvoice = false;
+        [ObservableProperty] bool showIvaDisclaimer = false;
+        [ObservableProperty] bool showProposalCancellationPolicy = true;
+        [ObservableProperty] string proposalCancellationPolicyTitle = string.Empty;
+        public ObservableCollection<SectionItem> ProposalCancellationPolicyItems = [];
+
+        [ObservableProperty] bool developerMode = false;
+        [ObservableProperty] string lessonTerm = string.Empty;
+        [ObservableProperty] string studentTerm = string.Empty;
+
+        // Invoice Columns
+        [ObservableProperty] bool showInvoiceDateColumn = true;
+        [ObservableProperty] bool showInvoiceConceptColumn = true;
+        [ObservableProperty] bool showInvoiceStudentColumn = true;
+        [ObservableProperty] bool showInvoiceDurationColumn = true;
+        [ObservableProperty] bool showInvoicePriceColumn = true;
+
+        // Ticket Columns
+        [ObservableProperty] bool showTicketDateColumn = true;
+        [ObservableProperty] bool showTicketConceptColumn = true;
+        [ObservableProperty] bool showTicketStudentColumn = true;
+        [ObservableProperty] bool showTicketDurationColumn = true;
+        [ObservableProperty] bool showTicketPriceColumn = true;
+
+        public UserSetting(UserProfile p)
+        {
+            // Main information
+            FullName = p.FullName;
+            Address = p.Address;
+            ZipCode = p.ZipCode;
+            City = p.City;
+            Phone = p.Phone;
+
+            // Billing & Tax Details
+            TaxId = p.TaxId;
+            Email = p.Email;
+            BankName = p.BankName;
+            BankAccount = p.BankAccount;
+            IvaPercent = p.IvaPercent;
+            BillingFolder = p.BillingFolder;
+
+            // Billing Document Configuration
+            ShowIvaDisclaimer = p.ShowIvaDisclaimer;
+            GenerateTicketWithInvoice = p.GenerateTicketWithInvoice;
+            LessonTerm = p.LessonTerm;
+            StudentTerm = p.StudentTerm;
+            ShowInvoiceDateColumn = p.ShowInvoiceDateColumn;
+            ShowInvoiceConceptColumn = p.ShowInvoiceConceptColumn;
+            ShowInvoiceStudentColumn = p.ShowInvoiceStudentColumn;
+            ShowInvoiceDurationColumn = p.ShowInvoiceDurationColumn;
+            ShowInvoicePriceColumn = p.ShowInvoicePriceColumn;
+            ShowTicketDateColumn = p.ShowTicketDateColumn;
+            ShowTicketConceptColumn = p.ShowTicketConceptColumn;
+            ShowTicketStudentColumn = p.ShowTicketStudentColumn;
+            ShowTicketDurationColumn = p.ShowTicketDurationColumn;
+            ShowTicketPriceColumn = p.ShowTicketPriceColumn;
+
+            // Proposal Configuration
+            ShowProposalCancellationPolicy = p.ShowProposalCancellationPolicy;
+            ProposalCancellationPolicyTitle = p.ProposalCancellationPolicyTitle;
+            ProposalCancellationPolicyItems.Clear();
+            foreach (var i in p.ProposalCancellationPolicyItems)
+                ProposalCancellationPolicyItems.Add(new SectionItem(i));
+
+            // fees
+            TravelAllowance = p.TravelAllowance;
+            WeekendFee = p.WeekendFee;
+
+            // App Configuration
+            BackupFolder = p.BackupFolder;
+            Language = p.Language;
+            DeveloperMode = p.DeveloperMode;
+        }
+
+        public UserSetting() { }
+
+        public UserProfile Export()
+        {
+            return new UserProfile()
+            {
+                // Main information
+                FullName = FullName,
+                Address = Address,
+                ZipCode = ZipCode,
+                City = City,
+                Phone = Phone,
+
+                // Billing & Tax Details
+                TaxId = TaxId,
+                Email = Email,
+                BankAccount = BankAccount,
+                BankName = BankName,
+                IvaPercent = IvaPercent,
+                BillingFolder = BillingFolder,
+
+                // Billing Document Configuration
+                ShowIvaDisclaimer = ShowIvaDisclaimer,
+                GenerateTicketWithInvoice = GenerateTicketWithInvoice,
+                LessonTerm = LessonTerm,
+                StudentTerm = StudentTerm,
+                ShowInvoiceDateColumn = ShowInvoiceDateColumn,
+                ShowInvoiceConceptColumn = ShowInvoiceConceptColumn,
+                ShowInvoiceStudentColumn = ShowInvoiceStudentColumn,
+                ShowInvoiceDurationColumn = ShowInvoiceDurationColumn,
+                ShowInvoicePriceColumn = ShowInvoicePriceColumn,
+                ShowTicketDateColumn = ShowTicketDateColumn,
+                ShowTicketConceptColumn = ShowTicketConceptColumn,
+                ShowTicketStudentColumn = ShowTicketStudentColumn,
+                ShowTicketDurationColumn = ShowTicketDurationColumn,
+                ShowTicketPriceColumn = ShowTicketPriceColumn,
+
+                // Proposal Configuration
+                ShowProposalCancellationPolicy = ShowProposalCancellationPolicy,
+                ProposalCancellationPolicyTitle = ProposalCancellationPolicyTitle,
+                ProposalCancellationPolicyItems = GetSections(),
+
+                // fees
+                TravelAllowance = TravelAllowance,
+                WeekendFee = WeekendFee,
+
+                // App Configuration
+                BackupFolder = BackupFolder,
+                Language = Language,
+                DeveloperMode = DeveloperMode,
+            };
+        }
+
+        public List<PolicySectionItem> GetSections()
+        {
+            return [.. ProposalCancellationPolicyItems.Select(i => new PolicySectionItem()
+            {
+                Content = i.Content,
+                Subtitle = i.Subtitle,
+                Note = i.Note
+            })];
+        }
+    }
     public partial class BaseViewModel(IStringLocalizer stringLocalizer, IUserProfileService userProfileService) : ObservableObject
     {
         [ObservableProperty] protected bool isBusy;
         [ObservableProperty] protected string? infoMessage;
         [ObservableProperty] protected bool openInfoBar;
         [ObservableProperty] protected InfoBarType infoBarType;
-        [ObservableProperty] protected UserProfile profile = userProfileService.LoadProfileAsync().Result;
+        [ObservableProperty] protected UserSetting profile = new(userProfileService.LoadProfileAsync().Result);
 
         public IStringLocalizer _loc = stringLocalizer;
         public IUserProfileService _userProfileService = userProfileService;
@@ -34,7 +203,7 @@ namespace ViewModels
         [RelayCommand]
         public async Task RefreshProfileAsync()
         {
-            Profile = await _userProfileService.LoadProfileAsync();
+            Profile = new UserSetting(await _userProfileService.LoadProfileAsync());
         }
 
         protected void SetEnterFunction()
@@ -102,7 +271,7 @@ namespace ViewModels
         protected static string Header_PricePerHour => "Messages/PricePerHour";
     }
 
-    public partial class LessonsBaseViewModel (ILessonRepository lessonRepository, IStudentRepository studentRepository, IServiceRepository serviceRepository, IStringLocalizer stringLocalizer, IUserProfileService userProfileService) : 
+    public partial class LessonsBaseViewModel(ILessonRepository lessonRepository, IStudentRepository studentRepository, IServiceRepository serviceRepository, IStringLocalizer stringLocalizer, IUserProfileService userProfileService) :
         BaseViewModel(stringLocalizer, userProfileService)
     {
         readonly IStudentRepository _studentRepository = studentRepository;

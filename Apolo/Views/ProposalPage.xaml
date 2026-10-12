@@ -140,6 +140,19 @@
                             </StackPanel>
                         </StackPanel>
                     </Border>
+
+                    <!-- PDF Options -->
+                    <Border Style="{StaticResource MetricBorder}">
+                        <StackPanel Spacing="12">
+                            <TextBlock x:Uid="Proposal/PdfOptions" Style="{ThemeResource SubtitleTextBlockStyle}"/>
+
+                            <ToggleSwitch x:Uid="Proposal/IncludeFrequencyScalingBudgets"
+                                          IsOn="{x:Bind ViewModel.IncludeFrequencyScalingBudgets, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                            <ToggleSwitch x:Uid="Proposal/IncludeAlternativeOperationalScenarios"
+                                          IsOn="{x:Bind ViewModel.IncludeAlternativeOperationalScenarios, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </ScrollViewer>
 
@@ -165,63 +178,89 @@
                         <StackPanel Spacing="16" Padding="4">
 
                             <TextBlock x:Uid="Proposal/PricePerSession" Style="{ThemeResource ReportTitle}" />
-                            <TextBlock Text="{x:Bind ViewModel.Report.PricePerSession, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}}"
-                                           Style="{StaticResource HeaderTextBlockStyle}"
-                                           Foreground="{ThemeResource SystemFillColorSuccessBrush}"
-                                           FontWeight="SemiBold" />
-                        
-                            <!-- Price break down -->
-                            <Grid RowSpacing="10"
-                                  ColumnSpacing="12">
 
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-                            
+                            <!-- Price break down -->
+                            <StackPanel Spacing="10"
+                                        Visibility="{x:Bind ViewModel.Report.ShowDetailsBreakdown, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+
                                 <!-- Base price -->
-                                <TextBlock Grid.Row="0" Grid.Column="0" x:Uid="Proposal/BasePrice" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind ViewModel.BasePrice, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}}" Style="{ThemeResource BodyTextBlockStyle}" HorizontalAlignment="Right" />
-                            
+                                <Grid ColumnSpacing="12"
+                                      Visibility="{x:Bind ViewModel.Report.ShowBasePrice, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" x:Uid="Proposal/BasePrice" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.Report.RawBasePrice, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}}" Style="{ThemeResource BodyTextBlockStyle}" HorizontalAlignment="Right" />
+                                </Grid>
+
                                 <!-- Weekend fee -->
-                                <TextBlock Grid.Row="1" Grid.Column="0" x:Uid="Proposal/WeekendHolidayFee" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.Report.WeekendFeeApplied, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}, TargetNullValue='+ $0.00'}" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource SystemFillColorAttentionBrush}" HorizontalAlignment="Right" />
-                            
+                                <Grid ColumnSpacing="12"
+                                      Visibility="{x:Bind ViewModel.Report.ShowWeekendFee, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" x:Uid="Proposal/WeekendHolidayFee" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.Report.WeekendFeeApplied, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}, TargetNullValue='+ $0.00'}" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource SystemFillColorAttentionBrush}" HorizontalAlignment="Right" />
+                                </Grid>
+
                                 <!-- Duration multiplier -->
-                                <TextBlock Grid.Row="2" Grid.Column="0" x:Uid="Proposal/DurationMultiplier" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                <StackPanel Grid.Row="2"
-                                            Grid.Column="1"
-                                            Orientation="Horizontal"
-                                            HorizontalAlignment="Right">
-                                    <TextBlock Text="× "
-                                               Style="{ThemeResource BodyTextBlockStyle}"
-                                               Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
-                                    <TextBlock Text="{x:Bind ViewModel.Report.RateMultiplier, Mode=OneWay}"
-                                               Style="{ThemeResource BodyTextBlockStyle}" />
-                                    <TextBlock x:Uid="Proposal/Hours"
-                                               Style="{ThemeResource BodyTextBlockStyle}"
-                                               Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
-                                </StackPanel>
-                            
-                                <MenuFlyoutSeparator Grid.Row="3" Grid.ColumnSpan="2" Margin="0,4,0,4" />
-                            
+                                <Grid ColumnSpacing="12"
+                                      Visibility="{x:Bind ViewModel.Report.ShowDurationMultiplier, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" x:Uid="Proposal/DurationMultiplier" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    <StackPanel Grid.Column="1"
+                                                Orientation="Horizontal"
+                                                HorizontalAlignment="Right">
+                                        <TextBlock Text="× "
+                                                   Style="{ThemeResource BodyTextBlockStyle}"
+                                                   Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                        <TextBlock Text="{x:Bind ViewModel.Report.RateMultiplier, Mode=OneWay}"
+                                                   Style="{ThemeResource BodyTextBlockStyle}" />
+                                        <TextBlock x:Uid="Proposal/Hours"
+                                                   Style="{ThemeResource BodyTextBlockStyle}"
+                                                   Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                    </StackPanel>
+                                </Grid>
+
                                 <!-- Subtotal -->
-                                <TextBlock Grid.Row="4" Grid.Column="0" x:Uid="Proposal/Subtotal" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                <TextBlock Grid.Row="4" Grid.Column="1" Text="{x:Bind ViewModel.Report.Subtotal, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}}" Style="{ThemeResource BodyStrongTextBlockStyle}" HorizontalAlignment="Right" />
-                            
+                                <StackPanel Spacing="10"
+                                            Visibility="{x:Bind ViewModel.Report.ShowSubtotal, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <MenuFlyoutSeparator Margin="0,2,0,2" />
+                                    <Grid ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" x:Uid="Proposal/Subtotal" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                        <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.Report.Subtotal, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}}" Style="{ThemeResource BodyStrongTextBlockStyle}" HorizontalAlignment="Right" />
+                                    </Grid>
+                                </StackPanel>
+
                                 <!-- Travel allowance -->
-                                <TextBlock Grid.Row="5" Grid.Column="0" x:Uid="Proposal/TravelAllowance" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                <TextBlock Grid.Row="5" Grid.Column="1" Text="{x:Bind ViewModel.Report.TravelAllowanceApplied, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}}" Style="{ThemeResource BodyTextBlockStyle}" HorizontalAlignment="Right" />
-                            
-                            </Grid>
+                                <Grid ColumnSpacing="12"
+                                      Visibility="{x:Bind ViewModel.Report.ShowTravelAllowance, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" x:Uid="Proposal/TravelAllowance" Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.Report.TravelAllowanceApplied, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}}" Style="{ThemeResource BodyTextBlockStyle}" HorizontalAlignment="Right" />
+                                </Grid>
+
+                                <MenuFlyoutSeparator Margin="0,4,0,4" />
+                            </StackPanel>
+
+                            <!-- Final Price -->
+                            <TextBlock Text="{x:Bind ViewModel.Report.PricePerSession, Mode=OneWay, Converter={StaticResource DecimalToCurrencyConverter}}"
+                                       Style="{StaticResource HeaderTextBlockStyle}"
+                                       Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                       FontWeight="SemiBold" />
+
                          </StackPanel>
                     </Border>
                 
