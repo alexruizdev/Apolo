@@ -38,13 +38,11 @@
 
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <!--Header-->
-        <Grid Grid.Row="0"
-                Margin="0,0,0,16">
+        <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
@@ -76,18 +74,8 @@
             </StackPanel>
         </Grid>
 
-        <!--Status / errors-->
-        <StackPanel Grid.Row="1"
-                    Spacing="4">
-            <ProgressBar IsIndeterminate="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
-            <InfoBar IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}"
-                        Severity="{x:Bind ViewModel.InfoBarType, Converter={StaticResource InfoBarTypeConverter}, Mode=TwoWay}"
-                        Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}" />
-
-        </StackPanel>
-            
         <!--List-->
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="1">
 
             <SplitView x:Name="FilterSplitView"
                         PanePlacement="Right"

@@ -19,15 +19,13 @@
             <RowDefinition Height="*" />
             <!--  NavigationView  -->
         </Grid.RowDefinitions>
-        
+
         <TitleBar Title="{x:Bind loc:Loc.Common_AppTitle}"
                   Subtitle="{x:Bind loc:Loc.Common_InvoiceManager}"
                   IsBackButtonVisible="False"
                   IsPaneToggleButtonVisible="False">
 
         </TitleBar>
-
-
 
         <ui:NavigationView x:Name="NavView"
                            Grid.Row="1"
@@ -84,7 +82,33 @@
                                        Tag="settings" />
             </ui:NavigationView.MenuItems>
 
-            <Frame x:Name="RootFrame" />
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- Status / errors -->
+                <StackPanel Grid.Row="0"
+                            Spacing="4"
+                            Margin="24,10,24,0">
+                    <ProgressBar IsIndeterminate="{x:Bind CurrentViewModel.IsBusy, Mode=OneWay}"
+                                 Visibility="{x:Bind GetProgressBarVisibility(CurrentViewModel.IsBusy), Mode=OneWay}" />
+                    <InfoBar x:Name="AppInfoBar"
+                             IsOpen="{x:Bind CurrentViewModel.OpenInfoBar, Mode=TwoWay}"
+                             Severity="{x:Bind GetInfoBarSeverity(CurrentViewModel.InfoBarType), Mode=OneWay}"
+                             Message="{x:Bind CurrentViewModel.InfoMessage, Mode=OneWay}">
+                        <InfoBar.ActionButton>
+                            <Button Content="{x:Bind CurrentViewModel.ActionButtonText, Mode=OneWay}"
+                                    Command="{x:Bind CurrentViewModel.ActionButtonCommand, Mode=OneWay}"
+                                    Visibility="{x:Bind GetActionButtonVisibility(CurrentViewModel.ActionButtonText), Mode=OneWay}" />
+                        </InfoBar.ActionButton>
+                    </InfoBar>
+                </StackPanel>
+
+                <Frame x:Name="RootFrame"
+                       Grid.Row="1" />
+            </Grid>
         </ui:NavigationView>
 
     </Grid>

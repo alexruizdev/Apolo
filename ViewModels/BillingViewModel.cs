@@ -457,7 +457,7 @@ namespace Apolo.ViewModels
                 await UpdatePayerOptions();
 
                 var documentName = type.ToString();
-                SetExitFunction($"{_loc.Get(Message_Generate_Bill_Success, documentName, filePath)}.", InfoBarType.Info);
+                SetExitFunction($"{_loc.Get(Message_Generate_Bill_Success, documentName, filePath)}.", InfoBarType.Info, "Open Folder", OpenBillingFolderCommand);
             }
             catch (DbUpdateException ex)
             {
@@ -513,7 +513,7 @@ namespace Apolo.ViewModels
 
             LastGeneratedFolder = Profile.BillingFolder;
 
-            SetExitFunction($"{_loc.Get(Message_Generate_Bill_Success, Bill.Name, filePath)}.", InfoBarType.Info);
+            SetExitFunction($"{_loc.Get(Message_Generate_Bill_Success, Bill.Name, filePath)}.", InfoBarType.Info, "Open Folder", OpenBillingFolderCommand);
         }
 
         public async Task SuggestBills(string searchTerm)
