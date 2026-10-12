@@ -12,7 +12,6 @@
 
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -37,18 +36,7 @@
 
         </Grid>
 
-        <!-- ========================================== -->
-        <!-- STATE ZONE                                 -->
-        <!-- ========================================== -->
-        <StackPanel Grid.Row="1"
-                    Spacing="4">
-            <ProgressBar IsIndeterminate="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
-            <InfoBar IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}"
-                     Severity="{x:Bind ViewModel.InfoBarType, Converter={StaticResource InfoBarTypeConverter}, Mode=TwoWay}"
-                     Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}" />
-        </StackPanel>
-
-        <Grid Grid.Row="2" ColumnSpacing="4">
+        <Grid Grid.Row="1" ColumnSpacing="4">
 
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />

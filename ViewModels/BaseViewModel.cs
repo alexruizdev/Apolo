@@ -1,4 +1,4 @@
-﻿using Apolo.Services;
+using Apolo.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.EntityFrameworkCore;
@@ -191,6 +191,8 @@ namespace ViewModels
         [ObservableProperty] protected string? infoMessage;
         [ObservableProperty] protected bool openInfoBar;
         [ObservableProperty] protected InfoBarType infoBarType;
+        [ObservableProperty] protected string? actionButtonText;
+        [ObservableProperty] protected System.Windows.Input.ICommand? actionButtonCommand;
         [ObservableProperty] protected UserSetting profile = new(userProfileService.LoadProfileAsync().Result);
 
         public IStringLocalizer _loc = stringLocalizer;
@@ -212,6 +214,8 @@ namespace ViewModels
             InfoMessage = null;
             OpenInfoBar = false;
             InfoBarType = InfoBarType.Success;
+            ActionButtonText = null;
+            ActionButtonCommand = null;
         }
 
         protected void SetExitFunction()
@@ -220,14 +224,18 @@ namespace ViewModels
             OpenInfoBar = false;
             InfoMessage = null;
             InfoBarType = InfoBarType.Success;
+            ActionButtonText = null;
+            ActionButtonCommand = null;
         }
 
-        protected void SetExitFunction(string message, InfoBarType severity)
+        protected void SetExitFunction(string message, InfoBarType severity, string? actionText = null, System.Windows.Input.ICommand? actionCommand = null)
         {
             IsBusy = false;
             InfoBarType = severity;
             InfoMessage = message;
             OpenInfoBar = true;
+            ActionButtonText = actionText;
+            ActionButtonCommand = actionCommand;
         }
 
         protected void SetExitBusy(string message_error)
@@ -235,6 +243,8 @@ namespace ViewModels
             InfoBarType = InfoBarType.Warning;
             InfoMessage = $"{_loc.Get(message_error)}: {_loc.Get(Message_Reason_Busy)}.";
             OpenInfoBar = true;
+            ActionButtonText = null;
+            ActionButtonCommand = null;
         }
 
         // Messages

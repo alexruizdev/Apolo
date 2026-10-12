@@ -7,7 +7,11 @@ using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
+using Microsoft.UI.Xaml.Navigation;
 using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using ViewModels;
 using WinRT;
 
 namespace Apolo
@@ -24,8 +28,57 @@ namespace Apolo
         public const string Proposal = "proposal";
         public const string Settings = "settings";
     }
-    public sealed partial class MainWindow : Window
+    public sealed partial class MainWindow : Window, INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler? PropertyChanged;
+        private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private BaseViewModel? _currentViewModel;
+        public BaseViewModel? CurrentViewModel
+        {
+            get => _currentViewModel;
+            set
+            {
+                if (_currentViewModel != value)
+                {
+                    if (_currentViewModel != null)
+                    {
+                        _currentViewModel.PropertyChanged -= CurrentViewModel_PropertyChanged;
+                    }
+                    _currentViewModel = value;
+                    if (_currentViewModel != null)
+                    {
+                        _currentViewModel.PropertyChanged += CurrentViewModel_PropertyChanged;
+                    }
+                    OnPropertyChanged();
+                    Bindings.Update();
+                }
+            }
+        }
+
+        private void CurrentViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            Bindings.Update();
+        }
+
+        public InfoBarSeverity GetInfoBarSeverity(InfoBarType type) => type switch
+        {
+            InfoBarType.Success => InfoBarSeverity.Success,
+            InfoBarType.Warning => InfoBarSeverity.Warning,
+            InfoBarType.Error => InfoBarSeverity.Error,
+            InfoBarType.Info => InfoBarSeverity.Informational,
+            _ => InfoBarSeverity.Informational
+        };
+
+        public Visibility GetProgressBarVisibility(bool isBusy) =>
+            isBusy ? Visibility.Visible : Visibility.Collapsed;
+
+        public Visibility GetActionButtonVisibility(string? text) =>
+            string.IsNullOrWhiteSpace(text) ? Visibility.Collapsed : Visibility.Visible;
+
         MicaController? _mica;
         SystemBackdropConfiguration? _config;
         public MainWindow()
@@ -34,8 +87,46 @@ namespace Apolo
             TrySetMicaBackdrop();
             ExtendsContentIntoTitleBar = true;
             Loc.LanguageChanged += Loc_LanguageChanged;
+            RootFrame.Navigated += RootFrame_Navigated;
             NavView.SelectedItem = NavView.MenuItems[0] as NavigationViewItem;
             RootFrame.Navigate(typeof(LessonsPage));
+        }
+
+        private void RootFrame_Navigated(object sender, NavigationEventArgs e)
+        {
+            UpdateCurrentViewModel();
+        }
+
+        private void UpdateCurrentViewModel()
+        {
+            if (RootFrame.Content is Page page)
+            {
+                if (page.DataContext is BaseViewModel vm)
+                {
+                    CurrentViewModel = vm;
+                }
+                else
+                {
+                    page.DataContextChanged -= Page_DataContextChanged;
+                    page.DataContextChanged += Page_DataContextChanged;
+                }
+            }
+            else
+            {
+                CurrentViewModel = null;
+            }
+        }
+
+        private void Page_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            if (sender is Page page)
+            {
+                page.DataContextChanged -= Page_DataContextChanged;
+                if (page.DataContext is BaseViewModel vm)
+                {
+                    CurrentViewModel = vm;
+                }
+            }
         }
 
         private void Loc_LanguageChanged(object? sender, EventArgs e)

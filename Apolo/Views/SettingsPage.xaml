@@ -18,13 +18,6 @@
             <HyperlinkButton x:Uid="Settings/UserManual"
                              NavigateUri="https://github.com/alexruizdev/Apolo/wiki/Manual" />
 
-            <StackPanel Spacing="4">
-                <ProgressBar IsIndeterminate="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
-                <InfoBar IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}"
-                         Severity="{x:Bind ViewModel.InfoBarType, Converter={StaticResource InfoBarTypeConverter}, Mode=TwoWay}"
-                         Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}" />
-            </StackPanel>
-
             <!-- ========================================== -->
             <!-- SECTION 1: MAIN INFORMATION                -->
             <!-- ========================================== -->

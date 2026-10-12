@@ -12,7 +12,6 @@
         
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         
@@ -35,15 +34,7 @@
             
         </Grid>
 
-        <!--Status / errors-->
-        <StackPanel Grid.Row="1" Spacing="4">
-            <ProgressBar IsIndeterminate="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
-            <InfoBar IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}"
-                     Severity="{x:Bind ViewModel.InfoBarType, Converter={StaticResource InfoBarTypeConverter}, Mode=TwoWay}"
-                     Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}" />
-        </StackPanel>
-
-        <ListView Grid.Row="2" 
+        <ListView Grid.Row="1" 
                   ItemsSource="{Binding Services}"
                   SelectionMode="None">
             <ListView.ItemTemplate>

@@ -12,8 +12,7 @@
 
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" /> <!-- 1. Header & Actions Zone -->
-            <RowDefinition Height="Auto" /> <!-- 2. System Messages Zone -->
-            <RowDefinition Height="*" />    <!-- 3. Main Data List View -->
+            <RowDefinition Height="*" />    <!-- 2. Main Data List View -->
         </Grid.RowDefinitions>
 
         <!-- ========================================== -->
@@ -36,19 +35,9 @@
         </Grid>
 
         <!-- ========================================== -->
-        <!-- 2. SYSTEM MESSAGES ZONE                    -->
+        <!-- 2. MAIN DATA LIST VIEW                     -->
         <!-- ========================================== -->
-        <StackPanel Grid.Row="1" Spacing="4">
-            <ProgressBar IsIndeterminate="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
-            <InfoBar IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}"
-                     Severity="{x:Bind ViewModel.InfoBarType, Converter={StaticResource InfoBarTypeConverter}, Mode=TwoWay}"
-                     Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}" />
-        </StackPanel>
-
-        <!-- ========================================== -->
-        <!-- 3. MAIN DATA LIST VIEW                     -->
-        <!-- ========================================== -->
-        <ListView ItemsSource="{Binding Specifications}" Grid.Row="2" SelectionMode="None">
+        <ListView ItemsSource="{Binding Specifications}" Grid.Row="1" SelectionMode="None">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="m:SpecificationSummary">
                     <Grid Style="{StaticResource CardGridStyle}">

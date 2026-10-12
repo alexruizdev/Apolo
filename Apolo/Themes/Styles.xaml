@@ -9,7 +9,7 @@
     
     <!-- Grid -->
     <Style x:Key="MainGridStyle" TargetType="Grid">
-        <Setter Property="Padding" Value="24"/>
+        <Setter Property="Padding" Value="24 0"/>
         <Setter Property="RowSpacing" Value="16"/>
     </Style>
 

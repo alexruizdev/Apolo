@@ -275,10 +275,8 @@
                 </SplitView.Pane>
 
                 <SplitView.Content>
-                    <Grid RowSpacing="12"
-                          Margin="16,0,0,0">
+                    <Grid RowSpacing="12">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
@@ -295,22 +293,8 @@
                     <AppBarButton x:Uid="Delete" AutomationProperties.AutomationId="Invoices.DeleteBill" Icon="Delete" Foreground="{ThemeResource SystemFillColorCriticalBrush}" Click="DeleteBill_Click" Visibility="{x:Bind ViewModel.EditMode, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
                 </CommandBar>
 
-                        <StackPanel Grid.Row="1"
-                                    Spacing="4">
-                            <ProgressBar IsIndeterminate="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
-                            <InfoBar IsOpen="{x:Bind ViewModel.OpenInfoBar, Mode=TwoWay}"
-                                     Severity="{x:Bind ViewModel.InfoBarType, Converter={StaticResource InfoBarTypeConverter}, Mode=TwoWay}"
-                                     Message="{x:Bind ViewModel.InfoMessage, Mode=TwoWay}">
-                                <InfoBar.ActionButton>
-                                    <Button Content="Open Folder"
-                                            Command="{x:Bind ViewModel.OpenBillingFolderCommand}"
-                                            Visibility="{x:Bind ViewModel.LastGeneratedFolder, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}" />
-                                </InfoBar.ActionButton>
-                            </InfoBar>
-                        </StackPanel>
-
                         <ListView x:Name="InvoicesListView"
-                                  Grid.Row="2"
+                                  Grid.Row="1"
                                   AutomationProperties.AutomationId="Invoices.Lessons"
                                   ItemsSource="{x:Bind ViewModel.Lessons, Mode=OneWay}"
                                   SelectionMode="None">
