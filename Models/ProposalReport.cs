@@ -23,6 +23,8 @@ namespace Models
         public bool IncludeFrequencyScalingBudgets { get; set; }
         public bool IncludeAlternativeOperationalScenarios { get; set; }
         public bool IncludeCancellationPolicy { get; set; } = true;
+        public string CancellationPolicyTitle { get; set; } = string.Empty;
+        public List<PolicySectionItem> CancellationPolicyItems { get; set; } = [];
     }
 
     public record BudgetColumn
@@ -62,6 +64,8 @@ namespace Models
         public bool IncludeFrequencyScalingBudgets { get; set; }
         public bool IncludeAlternativeOperationalScenarios { get; set; }
         public bool IncludeCancellationPolicy { get; set; } = true;
+        public string CancellationPolicyTitle { get; set; } = string.Empty;
+        public List<PolicySectionItem> CancellationPolicyItems { get; set; } = [];
 
         // Display simplification rules
         public decimal RawBasePrice => BasePrice - WeekendFeeApplied;
@@ -105,7 +109,9 @@ namespace Models
                 TravelAllowanceApplied = input.IsOnline ? 0m : input.TravelAllowance,
                 IncludeFrequencyScalingBudgets = input.IncludeFrequencyScalingBudgets,
                 IncludeAlternativeOperationalScenarios = input.IncludeAlternativeOperationalScenarios,
-                IncludeCancellationPolicy = input.IncludeCancellationPolicy
+                IncludeCancellationPolicy = input.IncludeCancellationPolicy,
+                CancellationPolicyTitle = input.CancellationPolicyTitle,
+                CancellationPolicyItems = input.CancellationPolicyItems != null ? [.. input.CancellationPolicyItems] : new()
             };
 
             report.BasePrice += report.WeekendFeeApplied;

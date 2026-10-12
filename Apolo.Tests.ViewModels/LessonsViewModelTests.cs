@@ -27,16 +27,8 @@ namespace Apolo.Tests.ViewModels
             _mockServiceRepo = new Mock<IServiceRepository>();
             _mockSpecificationRepo = new Mock<ISpecificationRepository>();
             _mockUserProfileService = new Mock<IUserProfileService>();
+            _mockUserProfileService.Setup(u => u.LoadProfileAsync()).ReturnsAsync(Models.DummyData.Profile());
             _localizerMock = new Mock<IStringLocalizer>();
-
-            var userProfile = new UserProfile
-            {
-                TravelAllowance = 10,
-                WeekendFee = 20
-            };
-
-            _mockUserProfileService.Setup(r => r.LoadProfileAsync())
-                .ReturnsAsync(userProfile);
 
             _viewModel = new LessonsViewModel(
                 _mockLessonRepo.Object,

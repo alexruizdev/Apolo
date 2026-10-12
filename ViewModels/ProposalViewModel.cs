@@ -68,6 +68,8 @@ namespace ViewModels
             _input.TravelAllowance = (decimal)Profile.TravelAllowance;
             _input.WeekendFee = (decimal)Profile.WeekendFee;
             _input.IncludeCancellationPolicy = Profile.ShowProposalCancellationPolicy;
+            _input.CancellationPolicyTitle = Profile.ProposalCancellationPolicyTitle;
+            _input.CancellationPolicyItems = Profile.GetSections();
             Duration = 60;
             Frequency = 1;
 
@@ -117,6 +119,8 @@ namespace ViewModels
             }
 
             Report.IncludeCancellationPolicy = Profile.ShowProposalCancellationPolicy;
+            Report.CancellationPolicyTitle = Profile.ProposalCancellationPolicyTitle;
+            Report.CancellationPolicyItems = Profile.GetSections();
 
             try
             {
@@ -136,7 +140,7 @@ namespace ViewModels
                 return string.Empty;
 
             var invalidChars = Path.GetInvalidFileNameChars();
-            return new string(name.Where(c => !invalidChars.Contains(c)).ToArray()).Trim();
+            return new string([.. name.Where(c => !invalidChars.Contains(c))]).Trim();
         }
 
         private string FormatFreq(BudgetColumn col) =>
@@ -242,7 +246,9 @@ namespace ViewModels
                 {
                     IncludeFrequencyScalingBudgets = IncludeFrequencyScalingBudgets,
                     IncludeAlternativeOperationalScenarios = IncludeAlternativeOperationalScenarios,
-                    IncludeCancellationPolicy = Profile.ShowProposalCancellationPolicy
+                    IncludeCancellationPolicy = Profile.ShowProposalCancellationPolicy,
+                    CancellationPolicyTitle = Profile.ProposalCancellationPolicyTitle,
+                    CancellationPolicyItems = Profile.GetSections()
                 };
                 SetExitFunction(string.Join(Environment.NewLine, errors), InfoBarType.Error);
             }

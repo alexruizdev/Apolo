@@ -9,6 +9,7 @@ using Microsoft.Windows.Storage.Pickers;
 using Models;
 using System;
 using System.Linq;
+using ViewModels;
 
 namespace Apolo.Views
 {
@@ -222,6 +223,19 @@ namespace Apolo.Views
                 return;
 
             BackupFolderTextBlock.Text = folder.Path;
+        }
+
+        private void AddPolicySection_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.AddPolicyItem();
+        }
+
+        private void RemovePolicySection_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement element && element.DataContext is SectionItem item)
+            {
+                ViewModel.RemovePolicyItem(item);
+            }
         }
     }
 }

@@ -24,27 +24,8 @@ namespace Apolo.Tests.ViewModels
             _mockServiceRepo = new Mock<IServiceRepository>();
             _mockPDFWriter = new Mock<IReportWriter>();
             _mockUserProfileService = new Mock<IUserProfileService>();
+            _mockUserProfileService.Setup(u => u.LoadProfileAsync()).ReturnsAsync(Models.DummyData.Profile());
             _localizerMock = new Mock<IStringLocalizer>();
-
-            var userProfile = new UserProfile
-            {
-                FullName = "Test User",
-                Address = "Test Address",
-                ZipCode = "12345",
-                City = "Test City",
-                Phone = "123-456-7890",
-                TaxId = "TAX123456",
-                Email = "test@example.com",
-                BankName = "Test Bank",
-                BankAccount = "123456234567",
-                IvaPercent = 25,
-                TravelAllowance = 10,
-                WeekendFee = 20,
-                BillingFolder = "\\somepath\\invented"
-            };
-
-            _mockUserProfileService.Setup(r => r.LoadProfileAsync())
-                .ReturnsAsync(userProfile);
 
             _viewModel = new ProposalViewModel(_mockServiceRepo.Object, _mockUserProfileService.Object,
                 _mockPDFWriter.Object, _localizerMock.Object);
