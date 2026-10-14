@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Models;
 
 namespace Repository
@@ -81,10 +81,10 @@ namespace Repository
         public async Task<Lesson> AddLessonAsync(DateOnly date, string name, bool isPaid, Guid studentId,
             Guid? billingDocumentId, bool isPricePerHour, int? duration, decimal basePrice,
             bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip,
-             string? notes)
+            string? notes, decimal priceRounding = 0.5m)
         {
             var lesson = new Lesson(date, name, isPaid, studentId, billingDocumentId, isPricePerHour, duration, basePrice,
-                isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, tip, notes);
+                isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, tip, notes, priceRounding);
 
             _context.Lessons.Add(lesson);
             await _context.SaveChangesAsync();
@@ -94,7 +94,8 @@ namespace Repository
 
         public async Task<Lesson> UpdateLesson(Guid id, DateOnly date, string name, 
             bool isPricePerHour, int? duration, decimal pricePerStudent,
-            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip, string? note)
+            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip, string? note,
+            decimal priceRounding = 0.5m)
         {
             var entity = await _context.Lessons.FirstOrDefaultAsync(i => i.Id == id);
 
@@ -104,7 +105,7 @@ namespace Repository
             entity.Date = date;
             entity.Name = name;
             var canEdit = entity.Set(isPricePerHour, duration, pricePerStudent, isOnline, travelAllowance,
-                isWeekendOrHoliday, weekendFee);
+                isWeekendOrHoliday, weekendFee, priceRounding);
             if (!canEdit)
             {
                 var reason = entity.IsPaid ? "is marked as paid." : "is assigned to a ticket/invoice.";

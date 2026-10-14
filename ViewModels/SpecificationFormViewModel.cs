@@ -1,4 +1,4 @@
-﻿using Apolo.Services;
+using Apolo.Services;
 using Apolo.ViewModels;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel.__Internals;
@@ -161,7 +161,7 @@ namespace ViewModels
 
             decimal finalPrice = Lesson.GetPrice(IsOnline, _parentViewModel.TravelAllowance,
                 IsWeekendOrHoliday, _parentViewModel.WeekendFee,
-                basePrice, IsPricePerHour, (int)Duration);
+                basePrice, IsPricePerHour, (int)Duration, _parentViewModel.PriceRounding);
 
 
             // Update the string property bound to the dialog title

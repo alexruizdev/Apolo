@@ -1371,6 +1371,18 @@
   <data name="Settings/ColumnPrice.Content" xml:space="preserve">
     <value>Precio</value>
   </data>
+  <data name="Settings/PriceRounding.Text" xml:space="preserve">
+    <value>Redondeo de precios</value>
+  </data>
+  <data name="Settings/PriceRoundingDescription.Text" xml:space="preserve">
+    <value>Determina cómo se redondean los precios calculados de las sesiones, o desactiva el redondeo.</value>
+  </data>
+  <data name="Settings/PriceRoundingDisabled" xml:space="preserve">
+    <value>Desactivado</value>
+  </data>
+  <data name="Settings/PriceRoundingExample" xml:space="preserve">
+    <value>Ejemplo: {0} → {1}</value>
+  </data>
 </root>
 
 

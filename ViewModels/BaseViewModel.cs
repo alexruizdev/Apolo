@@ -55,6 +55,7 @@ namespace ViewModels
         public ObservableCollection<SectionItem> ProposalCancellationPolicyItems = [];
 
         [ObservableProperty] bool developerMode = false;
+        [ObservableProperty] double priceRounding = 0.5;
         [ObservableProperty] string lessonTerm = string.Empty;
         [ObservableProperty] string studentTerm = string.Empty;
 
@@ -120,6 +121,7 @@ namespace ViewModels
             BackupFolder = p.BackupFolder;
             Language = p.Language;
             DeveloperMode = p.DeveloperMode;
+            PriceRounding = p.PriceRounding;
         }
 
         public UserSetting() { }
@@ -172,6 +174,7 @@ namespace ViewModels
                 BackupFolder = BackupFolder,
                 Language = Language,
                 DeveloperMode = DeveloperMode,
+                PriceRounding = PriceRounding,
             };
         }
 
@@ -201,9 +204,10 @@ namespace ViewModels
 
         public decimal TravelAllowance => (decimal)Profile.TravelAllowance;
         public decimal WeekendFee => (decimal)Profile.WeekendFee;
+        public decimal PriceRounding => (decimal)Profile.PriceRounding;
 
         [RelayCommand]
-        public async Task RefreshProfileAsync()
+        public virtual async Task RefreshProfileAsync()
         {
             Profile = new UserSetting(await _userProfileService.LoadProfileAsync());
         }
@@ -373,7 +377,7 @@ namespace ViewModels
             {
                 var lesson = await _lessonRepository.AddLessonAsync(date, name, isPaid: false, studentId, null,
                     service.IsPricePerHour, duration, pricePerLesson,
-                    isOnline, TravelAllowance, isWeekendOrHoliday, WeekendFee, tip, note);
+                    isOnline, TravelAllowance, isWeekendOrHoliday, WeekendFee, tip, note, PriceRounding);
 
 
                 SetExitFunction($"{_loc.Get(Message_Add_Success)}: '{lesson.Name}'.", InfoBarType.Success);

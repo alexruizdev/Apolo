@@ -1,4 +1,4 @@
-﻿using Apolo.Services;
+using Apolo.Services;
 using Models;
 using Moq;
 using ViewModels;
@@ -31,7 +31,8 @@ namespace Apolo.Tests.ViewModels
             var userProfile = new UserProfile
             {
                 TravelAllowance = 15,
-                WeekendFee = 25
+                WeekendFee = 25,
+                PriceRounding = 1.00
             };
             _mockUserProfileService.Setup(r => r.LoadProfileAsync())
                 .ReturnsAsync(userProfile);
@@ -40,6 +41,7 @@ namespace Apolo.Tests.ViewModels
             // Assert
             Assert.AreEqual(15, _viewModel.TravelAllowance);
             Assert.AreEqual(25, _viewModel.WeekendFee);
+            Assert.AreEqual(1.00m, _viewModel.PriceRounding);
         }
     }
 }

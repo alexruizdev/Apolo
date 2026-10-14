@@ -228,6 +228,29 @@
                                    Style="{ThemeResource CaptionTextBlockStyle}"
                                    Foreground="{ThemeResource SystemControlPageTextBaseMediumBrush}" />
                     </StackPanel>
+
+                    <!-- Price Rounding Option -->
+                    <StackPanel Spacing="6"
+                                Margin="0,10,0,0">
+                        <TextBlock x:Uid="Settings/PriceRounding"
+                                   Style="{ThemeResource BodyTextBlockStyle}"
+                                   FontWeight="SemiBold" />
+
+                        <ComboBox x:Name="PriceRoundingComboBox"
+                                  Width="300"
+                                  ItemsSource="{x:Bind ViewModel.PriceRoundings}"
+                                  SelectedItem="{x:Bind ViewModel.SelectedPriceRounding, Mode=TwoWay}"
+                                  DisplayMemberPath="DisplayName" />
+
+                        <TextBlock x:Uid="Settings/PriceRoundingDescription"
+                                   Style="{ThemeResource CaptionTextBlockStyle}"
+                                   Foreground="{ThemeResource SystemControlPageTextBaseMediumBrush}" />
+
+                        <TextBlock Text="{x:Bind ViewModel.PriceRoundingExample, Mode=OneWay}"
+                                   Style="{ThemeResource CaptionTextBlockStyle}"
+                                   Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                   FontWeight="SemiBold" />
+                    </StackPanel>
                     
                     <!--Developer Option-->
                     <CheckBox x:Uid="Settings/DeveloperMode"

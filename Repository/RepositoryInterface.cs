@@ -50,10 +50,12 @@ namespace Repository
             DateOnly? endDate);
         Task<Lesson> AddLessonAsync(DateOnly date, string name, bool isPaid, Guid studentId,
             Guid? billingDocumentId, bool isPricePerHour, int? duration, decimal basePrice,
-            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip, string? notes);
+            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip, string? notes,
+            decimal priceRounding = 0.5m);
         Task<Lesson> UpdateLesson(Guid id, DateOnly date, string name,
             bool isPricePerHour, int? duration, decimal pricePerStudent,
-            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip, string? note);
+            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip, string? note,
+            decimal priceRounding = 0.5m);
         Task UpdateLessonsPayment(IEnumerable<Guid> lessonsIds, bool isPaid);
         Task DeleteAsync(Guid id);
         Task UnassignBillToLessons(IEnumerable<Guid> lessonsIds);

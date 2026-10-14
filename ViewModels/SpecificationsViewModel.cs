@@ -1,4 +1,4 @@
-﻿using Apolo.Services;
+using Apolo.Services;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.EntityFrameworkCore;
 using Models;
@@ -250,7 +250,7 @@ namespace Apolo.ViewModels
                     date, value.ServiceName, isPaid: false, value.StudentId, null,
                     service.IsPricePerHour, value.DurationMinutes, (decimal)(value.Price ?? service.Price),
                     value.IsOnline, TravelAllowance, value.IsWeekendOrHoliday, WeekendFee,
-                    tip, notes);
+                    tip, notes, PriceRounding);
 
                 await _specificationRepository.IncrementUsageAsync(id);
 

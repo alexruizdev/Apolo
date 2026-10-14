@@ -16,6 +16,7 @@ namespace Models
         public decimal TravelAllowance { get; set; }
         public bool IsWeekendOrHoliday { get; set; }
         public decimal WeekendFee { get; set; }
+        public decimal PriceRounding { get; set; } = 0.5m;
         public bool IsPricePerHour { get; set; }
         public double Duration { get; set; }
         public int Frequency { get; set; } = 1;
@@ -119,7 +120,7 @@ namespace Models
             // Calculate Single Session Price based on your rules:
             // Weekend Fee is added to the base price before multiplying by duration.
             report.PricePerSession = Lesson.GetPrice(input.IsOnline, input.TravelAllowance,
-            input.IsWeekendOrHoliday, input.WeekendFee, (decimal)input.BasePrice, input.IsPricePerHour, (int)input.Duration);
+            input.IsWeekendOrHoliday, input.WeekendFee, (decimal)input.BasePrice, input.IsPricePerHour, (int)input.Duration, input.PriceRounding);
             report.Subtotal = report.PricePerSession - report.TravelAllowanceApplied;
             report.RateMultiplier = Lesson.GetRate(input.IsPricePerHour, (int)input.Duration);
 
@@ -129,11 +130,11 @@ namespace Models
 
             // Generate Cross-Modality Matrix Previews for request budget
             var alternativeTravelPrice = Lesson.GetPrice(isOnline: !input.IsOnline, input.TravelAllowance,
-                input.IsWeekendOrHoliday, input.WeekendFee, (decimal)input.BasePrice, input.IsPricePerHour, (int)input.Duration);
+                input.IsWeekendOrHoliday, input.WeekendFee, (decimal)input.BasePrice, input.IsPricePerHour, (int)input.Duration, input.PriceRounding);
             var alternativeTravelTitle = input.IsOnline ? "IN-PERSON" : "ONLINE";
             report.AlternativeTravel = BuildColumn($"{alternativeTravelTitle} OPTION", input.Frequency, input.Unit, alternativeTravelPrice);
             var alternativeFeePrice = Lesson.GetPrice(isOnline: input.IsOnline, input.TravelAllowance,
-                !input.IsWeekendOrHoliday, input.WeekendFee, (decimal)input.BasePrice, input.IsPricePerHour, (int)input.Duration);
+                !input.IsWeekendOrHoliday, input.WeekendFee, (decimal)input.BasePrice, input.IsPricePerHour, (int)input.Duration, input.PriceRounding);
             var alternativeFeeTitle = input.IsWeekendOrHoliday ? "WEEK DAY" : "WEEKEND OR HOLIDAY";
             report.AlternativeFee = BuildColumn($"{alternativeFeeTitle} OPTION", input.Frequency, input.Unit, alternativeFeePrice);
 

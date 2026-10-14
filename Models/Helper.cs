@@ -1,4 +1,4 @@
-﻿
+
 using System.Linq.Expressions;
 using System.Net;
 using System.Reflection.Emit;
@@ -67,7 +67,8 @@ namespace Models
                 WeekendFee = 20,
 
                 // App Configuration
-                DeveloperMode = true
+                DeveloperMode = true,
+                PriceRounding = 0.5
             };
 
         // ================================================================= //

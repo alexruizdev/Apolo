@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace Models
@@ -66,6 +66,15 @@ namespace Models
         public Lesson(DateOnly date, string name, bool isPaid, Guid studentId, Guid? billingDocumentId, 
             bool isPricePerHour, int? durationMinutes, decimal basePrice, 
             bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip, string? notes)
+            : this(date, name, isPaid, studentId, billingDocumentId, isPricePerHour, durationMinutes, basePrice,
+                  isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, tip, notes, 0.5m)
+        {
+        }
+
+        public Lesson(DateOnly date, string name, bool isPaid, Guid studentId, Guid? billingDocumentId, 
+            bool isPricePerHour, int? durationMinutes, decimal basePrice, 
+            bool isOnline, decimal travelAllowance, bool isWeekendOrHoliday, decimal weekendFee, decimal tip, string? notes,
+            decimal priceRounding)
         {
             Date = date;
             Name = name;
@@ -81,11 +90,14 @@ namespace Models
             WeekendFee = weekendFee;
             Tip = tip;
             Notes = notes;
-            FinalPrice = GetPrice();
+            FinalPrice = GetPrice(priceRounding);
         }
 
         // We allow to update lesson core information when is not paid
         public bool Set(bool isPricePerHour, int? duration, decimal price, bool online, decimal travel, bool weekend, decimal fee)
+            => Set(isPricePerHour, duration, price, online, travel, weekend, fee, 0.5m);
+
+        public bool Set(bool isPricePerHour, int? duration, decimal price, bool online, decimal travel, bool weekend, decimal fee, decimal priceRounding)
         {
             if (IsPaid || BillingDocumentId is not null)
                 return false;
@@ -96,16 +108,17 @@ namespace Models
             TravelAllowance = travel;
             IsWeekendOrHoliday = weekend;
             WeekendFee = fee;
-            FinalPrice = GetPrice();
+            FinalPrice = GetPrice(priceRounding);
             return true;
         }
 
-        private decimal GetPrice() => GetPrice(IsOnline, TravelAllowance, IsWeekendOrHoliday, WeekendFee,
-            BasePrice, IsPricePerHour, DurationMinutes);
+        private decimal GetPrice(decimal priceRounding = 0.5m) => GetPrice(IsOnline, TravelAllowance, IsWeekendOrHoliday, WeekendFee,
+            BasePrice, IsPricePerHour, DurationMinutes, priceRounding);
 
         public static decimal GetPrice(bool isOnline, decimal travelAllowance,
             bool isWeekend, decimal weekendFee, 
-            decimal basePrice, bool isPricePerHour, int? duration)
+            decimal basePrice, bool isPricePerHour, int? duration,
+            decimal priceRounding = 0.5m)
         {
             decimal travel = isOnline ? 0 : travelAllowance;
             decimal price = isWeekend ? weekendFee + basePrice : basePrice;
@@ -118,7 +131,18 @@ namespace Models
                 price *= duration.Value / 60m;
             }
             decimal total = travel + price;
-            return Math.Round(total * 2m, MidpointRounding.AwayFromZero) / 2m;
+            return RoundPrice(total, priceRounding);
+        }
+
+        public static decimal RoundPrice(decimal total, decimal priceRounding)
+        {
+            if (priceRounding <= 0m)
+            {
+                return Math.Round(total, 2, MidpointRounding.AwayFromZero);
+            }
+
+            decimal factor = 1m / priceRounding;
+            return Math.Round(total * factor, MidpointRounding.AwayFromZero) / factor;
         }
 
         public static string GetRate(bool isPricePerHour, int duration)

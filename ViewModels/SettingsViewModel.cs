@@ -29,7 +29,14 @@ namespace Apolo.ViewModels
 
         [ObservableProperty] private LanguageOption _selectedLenguage;
 
+        public ObservableCollection<PriceRoundingOption> PriceRoundings { get; } = [];
+
+        [ObservableProperty] private PriceRoundingOption _selectedPriceRounding;
+        [ObservableProperty] private string _priceRoundingExample = string.Empty;
+
         // Message
+        private static string Message_PriceRounding_Disabled => "Settings/PriceRoundingDisabled";
+        private static string Message_PriceRounding_Example => "Settings/PriceRoundingExample";
         private static string Message_Save_Settings_Error => "Messages/Save_Settings_Error";
         private static string Message_Save_Settings_Success => "Messages/Save_Settings_Success";
         private static string Message_Delete_Settings_Error => "Messages/Delete_Settings_Error";
@@ -78,6 +85,38 @@ namespace Apolo.ViewModels
 
             // Match the stored profile language string to our dropdown items
             SelectedLenguage = Languages.FirstOrDefault(l => l.Code == Profile.Language) ?? Languages.First();
+
+            PopulatePriceRoundings();
+            SelectedPriceRounding = PriceRoundings.FirstOrDefault(r => Math.Abs(r.Value - Profile.PriceRounding) < 0.001)
+                ?? PriceRoundings.FirstOrDefault(r => Math.Abs(r.Value - 0.50) < 0.001)
+                ?? PriceRoundings.First();
+            UpdatePriceRoundingExample();
+        }
+
+        partial void OnSelectedPriceRoundingChanged(PriceRoundingOption value)
+        {
+            UpdatePriceRoundingExample();
+        }
+
+        private void UpdatePriceRoundingExample()
+        {
+            const decimal sample = 23.37m;
+            decimal step = (decimal)(SelectedPriceRounding?.Value ?? 0.5);
+            decimal rounded = Lesson.RoundPrice(sample, step);
+            string sampleFormatted = sample.ToString("C2", System.Globalization.CultureInfo.CurrentCulture);
+            string roundedFormatted = rounded.ToString("C2", System.Globalization.CultureInfo.CurrentCulture);
+            PriceRoundingExample = _loc.Get(Message_PriceRounding_Example, sampleFormatted, roundedFormatted);
+        }
+
+        private void PopulatePriceRoundings()
+        {
+            PriceRoundings.Clear();
+            PriceRoundings.Add(new PriceRoundingOption { DisplayName = _loc.Get(Message_PriceRounding_Disabled), Value = 0 });
+            PriceRoundings.Add(new PriceRoundingOption { DisplayName = "0.05", Value = 0.05 });
+            PriceRoundings.Add(new PriceRoundingOption { DisplayName = "0.10", Value = 0.10 });
+            PriceRoundings.Add(new PriceRoundingOption { DisplayName = "0.25", Value = 0.25 });
+            PriceRoundings.Add(new PriceRoundingOption { DisplayName = "0.50", Value = 0.50 });
+            PriceRoundings.Add(new PriceRoundingOption { DisplayName = "1.00", Value = 1.00 });
         }
 
         [RelayCommand]
@@ -109,10 +148,17 @@ namespace Apolo.ViewModels
             SetEnterFunction();
 
             Profile.Language = SelectedLenguage.Code;
+            Profile.PriceRounding = SelectedPriceRounding?.Value ?? 0.5;
 
             await _userProfileService.SaveAsync(Profile.Export());
 
             _languageService.ApplyLanguage(Profile.Language);
+
+            var currentValue = SelectedPriceRounding?.Value ?? Profile.PriceRounding;
+            PopulatePriceRoundings();
+            SelectedPriceRounding = PriceRoundings.FirstOrDefault(r => Math.Abs(r.Value - currentValue) < 0.001)
+                ?? PriceRoundings.First();
+            UpdatePriceRoundingExample();
 
             SetExitFunction($"{_loc.Get(Message_Save_Settings_Success)}.", InfoBarType.Success);
         }
@@ -129,10 +175,25 @@ namespace Apolo.ViewModels
             SetEnterFunction();
 
             Profile = new UserSetting();
+            SelectedLenguage = Languages.FirstOrDefault(l => l.Code == Profile.Language) ?? Languages.First();
+            SelectedPriceRounding = PriceRoundings.FirstOrDefault(r => Math.Abs(r.Value - Profile.PriceRounding) < 0.001)
+                ?? PriceRoundings.FirstOrDefault(r => Math.Abs(r.Value - 0.50) < 0.001)
+                ?? PriceRoundings.First();
+            UpdatePriceRoundingExample();
 
             await _userProfileService.SaveAsync(Profile.Export());
 
             SetExitFunction($"{_loc.Get(Message_Delete_Settings_Success)}.", InfoBarType.Success);
+        }
+
+        public override async Task RefreshProfileAsync()
+        {
+            await base.RefreshProfileAsync();
+            SelectedLenguage = Languages.FirstOrDefault(l => l.Code == Profile.Language) ?? Languages.First();
+            SelectedPriceRounding = PriceRoundings.FirstOrDefault(r => Math.Abs(r.Value - Profile.PriceRounding) < 0.001)
+                ?? PriceRoundings.FirstOrDefault(r => Math.Abs(r.Value - 0.50) < 0.001)
+                ?? PriceRoundings.First();
+            UpdatePriceRoundingExample();
         }
 
         public async Task AddDummyData()

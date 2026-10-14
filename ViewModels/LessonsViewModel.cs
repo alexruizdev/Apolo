@@ -1,4 +1,4 @@
-﻿using Apolo.Services;
+using Apolo.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.EntityFrameworkCore;
@@ -252,7 +252,7 @@ namespace Apolo.ViewModels
             {
                 var entity = await _lessonRepository.UpdateLesson(id, date, name, 
                     isPricePerHour, duration, basePrice,
-                    isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, tip, note);
+                    isOnline, travelAllowance, isWeekendOrHoliday, weekendFee, tip, note, PriceRounding);
 
                 // Update item in UI list
                 Lessons[idx] = oldItem with

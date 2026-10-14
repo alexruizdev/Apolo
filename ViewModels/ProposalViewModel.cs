@@ -67,6 +67,7 @@ namespace ViewModels
 
             _input.TravelAllowance = (decimal)Profile.TravelAllowance;
             _input.WeekendFee = (decimal)Profile.WeekendFee;
+            _input.PriceRounding = (decimal)Profile.PriceRounding;
             _input.IncludeCancellationPolicy = Profile.ShowProposalCancellationPolicy;
             _input.CancellationPolicyTitle = Profile.ProposalCancellationPolicyTitle;
             _input.CancellationPolicyItems = Profile.GetSections();

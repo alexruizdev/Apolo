@@ -60,7 +60,8 @@ namespace Apolo.Services
                 ShowTicketConceptColumn = v[nameof(UserProfile.ShowTicketConceptColumn)] as bool? ?? true,
                 ShowTicketStudentColumn = v[nameof(UserProfile.ShowTicketStudentColumn)] as bool? ?? true,
                 ShowTicketDurationColumn = v[nameof(UserProfile.ShowTicketDurationColumn)] as bool? ?? true,
-                ShowTicketPriceColumn = v[nameof(UserProfile.ShowTicketPriceColumn)] as bool? ?? true
+                ShowTicketPriceColumn = v[nameof(UserProfile.ShowTicketPriceColumn)] as bool? ?? true,
+                PriceRounding = v[nameof(UserProfile.PriceRounding)] as double? ?? 0.5
             };
 
             return Task.FromResult(p);
@@ -102,6 +103,7 @@ namespace Apolo.Services
             v[nameof(UserProfile.ShowTicketStudentColumn)] = profile.ShowTicketStudentColumn;
             v[nameof(UserProfile.ShowTicketDurationColumn)] = profile.ShowTicketDurationColumn;
             v[nameof(UserProfile.ShowTicketPriceColumn)] = profile.ShowTicketPriceColumn;
+            v[nameof(UserProfile.PriceRounding)] = profile.PriceRounding;
 
             return Task.CompletedTask;
         }

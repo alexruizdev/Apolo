@@ -7,6 +7,11 @@ namespace Models
         public string DisplayName { get; set; } = string.Empty;
         public string Code { get; set; } = string.Empty;
     }
+    public class PriceRoundingOption
+    {
+        public string DisplayName { get; set; } = string.Empty;
+        public double Value { get; set; }
+    }
     public sealed class UserProfile
     {
         public string Language { get; set; } = string.Empty;
@@ -50,6 +55,7 @@ namespace Models
         public List<PolicySectionItem> ProposalCancellationPolicyItems { get; set; } = [];
 
         public bool DeveloperMode { get; set; } = false;
+        public double PriceRounding { get; set; } = 0.5;
 
     }
 }

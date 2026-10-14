@@ -1,4 +1,4 @@
-﻿using Apolo.ViewModels;
+using Apolo.ViewModels;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Models;
 using System.Collections.ObjectModel;
@@ -260,7 +260,7 @@ namespace ViewModels
 
             decimal finalPrice = Lesson.GetPrice(IsOnline, _parentViewModel.TravelAllowance,
                 IsWeekendOrHoliday, _parentViewModel.WeekendFee,
-                basePrice, IsPricePerHour, (int)Duration);
+                basePrice, IsPricePerHour, (int)Duration, _parentViewModel.PriceRounding);
 
 
             // Update the string property bound to the dialog title
@@ -280,7 +280,7 @@ namespace ViewModels
 
             decimal finalPrice = Lesson.GetPrice(IsOnline, (decimal)TravelAllowance,
                 IsWeekendOrHoliday, (decimal)WeekendFee,
-                basePrice, IsPricePerHour, (int)Duration);
+                basePrice, IsPricePerHour, (int)Duration, _parentViewModel.PriceRounding);
 
 
             // Update the string property bound to the dialog title

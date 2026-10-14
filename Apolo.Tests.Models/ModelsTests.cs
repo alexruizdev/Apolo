@@ -1,4 +1,4 @@
-﻿using Models;
+using Models;
 
 namespace Apolo.Tests.Models
 {
@@ -443,6 +443,74 @@ namespace Apolo.Tests.Models
             Assert.AreEqual(FrequencyUnit.PerMonth, report.BudgetPlus.Unit);
             Assert.AreEqual(2, report.BudgetPlus.SessionsPerMonth);
             Assert.AreEqual(80, report.BudgetPlus.TotalPricePerMonth);
+        }
+
+        [TestMethod]
+        public void TestRoundPrice()
+        {
+            // Default 0.50 step (factor 2)
+            Assert.AreEqual(10.00m, Lesson.RoundPrice(10.20m, 0.50m));
+            Assert.AreEqual(10.50m, Lesson.RoundPrice(10.25m, 0.50m));
+            Assert.AreEqual(10.50m, Lesson.RoundPrice(10.74m, 0.50m));
+            Assert.AreEqual(11.00m, Lesson.RoundPrice(10.75m, 0.50m));
+
+            // 1.00 step (factor 1)
+            Assert.AreEqual(10.00m, Lesson.RoundPrice(10.49m, 1.00m));
+            Assert.AreEqual(11.00m, Lesson.RoundPrice(10.50m, 1.00m));
+
+            // 0.25 step (factor 4)
+            Assert.AreEqual(10.00m, Lesson.RoundPrice(10.12m, 0.25m));
+            Assert.AreEqual(10.25m, Lesson.RoundPrice(10.13m, 0.25m));
+            Assert.AreEqual(10.50m, Lesson.RoundPrice(10.38m, 0.25m));
+
+            // 0.10 step (factor 10)
+            Assert.AreEqual(10.10m, Lesson.RoundPrice(10.14m, 0.10m));
+            Assert.AreEqual(10.20m, Lesson.RoundPrice(10.15m, 0.10m));
+
+            // 0.05 step (factor 20)
+            Assert.AreEqual(10.10m, Lesson.RoundPrice(10.12m, 0.05m));
+            Assert.AreEqual(10.15m, Lesson.RoundPrice(10.13m, 0.05m));
+
+            // Disabled (0m or negative) - standard 2 decimal places with AwayFromZero
+            Assert.AreEqual(10.13m, Lesson.RoundPrice(10.125m, 0m));
+            Assert.AreEqual(10.12m, Lesson.RoundPrice(10.124m, 0m));
+            Assert.AreEqual(10.13m, Lesson.RoundPrice(10.125m, -1m));
+        }
+
+        [TestMethod]
+        public void TestLessonGetPriceWithRounding()
+        {
+            // Price = 35/hr, 90 min (1.5h) => raw = 52.50
+            // With 1.00 rounding => 53.00
+            var priceRound1 = Lesson.GetPrice(isOnline: true, travelAllowance: 0, isWeekend: false, weekendFee: 0,
+                basePrice: 35.00m, isPricePerHour: true, duration: 90, priceRounding: 1.00m);
+            Assert.AreEqual(53.00m, priceRound1);
+
+            // With 0.50 rounding => 52.50
+            var priceRoundHalf = Lesson.GetPrice(isOnline: true, travelAllowance: 0, isWeekend: false, weekendFee: 0,
+                basePrice: 35.00m, isPricePerHour: true, duration: 90, priceRounding: 0.50m);
+            Assert.AreEqual(52.50m, priceRoundHalf);
+
+            // Price = 33/hr, 70 min => raw = 38.50
+            // With 5.00 rounding => 40.00
+            var priceRound5 = Lesson.GetPrice(isOnline: true, travelAllowance: 0, isWeekend: false, weekendFee: 0,
+                basePrice: 33.00m, isPricePerHour: true, duration: 70, priceRounding: 5.00m);
+            Assert.AreEqual(40.00m, priceRound5);
+        }
+
+        [TestMethod]
+        public void TestLessonConstructorAndSetWithRounding()
+        {
+            // Constructor with custom price rounding
+            var lesson = new Lesson(DateOnly.FromDateTime(DateTime.Today), "Test", false, Guid.NewGuid(), null,
+                isPricePerHour: true, durationMinutes: 90, basePrice: 35.00m,
+                isOnline: true, travelAllowance: 0, isWeekendOrHoliday: false, weekendFee: 0, tip: 0, notes: null,
+                priceRounding: 1.00m);
+            Assert.AreEqual(53.00m, lesson.FinalPrice);
+
+            // Set with disabled rounding
+            lesson.Set(isPricePerHour: true, duration: 90, price: 35.00m, online: true, travel: 0, weekend: false, fee: 0, priceRounding: 0m);
+            Assert.AreEqual(52.50m, lesson.FinalPrice);
         }
     }
 }

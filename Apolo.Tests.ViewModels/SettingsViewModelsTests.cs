@@ -62,6 +62,55 @@ namespace Apolo.Tests.ViewModels
             VerifyAction(InfoBarType.Success, isOpen: true);
         }
 
+        [TestMethod]
+        public void PriceRoundings_InitializesWithCorrectOptionsAndSelection()
+        {
+            Assert.HasCount(6, _viewModel.PriceRoundings);
+            Assert.AreEqual(0, _viewModel.PriceRoundings[0].Value);
+            Assert.AreEqual(0.05, _viewModel.PriceRoundings[1].Value);
+            Assert.AreEqual(0.10, _viewModel.PriceRoundings[2].Value);
+            Assert.AreEqual(0.25, _viewModel.PriceRoundings[3].Value);
+            Assert.AreEqual(0.50, _viewModel.PriceRoundings[4].Value);
+            Assert.AreEqual(1.00, _viewModel.PriceRoundings[5].Value);
+
+            Assert.IsNotNull(_viewModel.SelectedPriceRounding);
+            Assert.AreEqual(0.50, _viewModel.SelectedPriceRounding.Value);
+        }
+
+        [TestMethod]
+        public async Task SaveAsync_SavesSelectedPriceRounding()
+        {
+            _viewModel.SelectedPriceRounding = _viewModel.PriceRoundings[5]; // 1.00
+
+            await _viewModel.SaveProfileAsync();
+
+            _mockUserProfileService.Verify(u => u.SaveAsync(It.Is<UserProfile>(p => p.PriceRounding == 1.00)), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task RefreshProfileAsync_UpdatesPriceRoundingSelection()
+        {
+            var profile = DummyData.Profile();
+            profile.PriceRounding = 0.25;
+            _mockUserProfileService.Setup(u => u.LoadProfileAsync()).ReturnsAsync(profile);
+
+            await _viewModel.RefreshProfileAsync();
+
+            Assert.IsNotNull(_viewModel.SelectedPriceRounding);
+            Assert.AreEqual(0.25, _viewModel.SelectedPriceRounding.Value);
+        }
+
+        [TestMethod]
+        public void PriceRoundingExample_UpdatesWhenSelectionChanges()
+        {
+            _localizerMock.Setup(l => l.Get(It.IsAny<string>(), It.IsAny<object[]>()))
+                .Returns<string, object[]>((key, args) => $"Example: {args[0]} -> {args[1]}");
+
+            _viewModel.SelectedPriceRounding = _viewModel.PriceRoundings[5]; // 1.00
+            StringAssert.Contains(_viewModel.PriceRoundingExample, "23");
+            StringAssert.Contains(_viewModel.PriceRoundingExample, "->");
+        }
+
         // Delete async
         [TestMethod]
         public async Task DeleteAsyn_WhenBusy()
